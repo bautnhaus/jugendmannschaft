@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Jugendmannschaft – Trainings & Kader</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17202a;background:#f5f7fa}
+*{box-sizing:border-box} body{margin:0} .wrap{max-width:1400px;margin:auto;padding:18px}
+h1{margin:0 0 6px;font-size:26px}.sub{color:#667085;margin-bottom:18px}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 2px 8px #00000008}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.toolbar button,input,select{font:inherit}
+button{border:1px solid #cfd5dd;background:#fff;border-radius:9px;padding:8px 12px;cursor:pointer}
+button.primary{background:#17202a;color:white;border-color:#17202a}button.danger{color:#b42318}
+button:hover{filter:brightness(.97)}input,select{border:1px solid #cfd5dd;border-radius:8px;padding:7px 9px;background:white}
+table{width:100%;border-collapse:collapse;min-width:850px}th,td{padding:9px 7px;border-bottom:1px solid #eaecf0;text-align:left;vertical-align:middle}
+th{font-size:13px;color:#667085;background:#f9fafb;position:sticky;top:0;z-index:1}
+.tablewrap{overflow:auto;max-height:62vh}.tag{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:999px;background:#eef2f6;margin:2px;font-size:12px}.tag button{border:0;padding:0;background:transparent;font-size:13px}
+.att{width:75px;text-align:center}.muted{color:#667085}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.stat{font-size:24px;font-weight:700}.small{font-size:12px;color:#667085}
+.teamgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}@media(max-width:900px){.teamgrid{grid-template-columns:1fr}}
+.team{border:1px solid #dfe3e8;border-radius:12px;padding:12px;background:#fafbfc}.team h3{margin:0 0 8px}.playerline{padding:5px 0;border-bottom:1px solid #eaecf0}.playerline:last-child{border-bottom:0}
+.modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:18px;z-index:5}.modal.open{display:flex}.modalbox{background:white;border-radius:14px;padding:18px;max-width:600px;width:100%;max-height:90vh;overflow:auto}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}.taglist{margin:6px 0 14px}
+.notice{padding:10px 12px;border-radius:9px;background:#fff7e6;border:1px solid #ffd591;margin-top:10px}
+.hidden{display:none}
+
+/* iPhone optimization */
+html { -webkit-text-size-adjust: 100%; }
+body { padding-bottom: env(safe-area-inset-bottom); }
+.wrap { max-width: 100%; padding: 12px; }
+h1 { font-size: 22px; line-height: 1.2; }
+h2 { font-size: 19px; margin-top: 4px; }
+.card { border-radius: 12px; padding: 13px; margin-bottom: 12px; }
+.toolbar { gap: 7px; }
+button, input, select { min-height: 44px; }
+button { padding: 10px 13px; touch-action: manipulation; }
+input[type="checkbox"] { width: 24px; height: 24px; accent-color: #17202a; }
+input[type="date"], input[type="text"], input:not([type]), select { min-height: 44px; }
+.tablewrap { max-height: none; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { min-width: 760px; }
+th { position: sticky; top: 0; }
+.attendance-mobile-list { display:block; }
+.player-card { border:1px solid #e4e7ec; border-radius:12px; padding:11px; margin:7px 0; background:#fff; }
+.player-card-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.player-card-meta { font-size:12px; color:#667085; margin-top:4px; }
+.big-action { width:100%; min-height:50px; font-size:16px; font-weight:600; }
+.bottom-actions { position:sticky; bottom:0; z-index:3; background:#f5f7faeF; backdrop-filter:blur(8px); padding:8px 0 calc(8px + env(safe-area-inset-bottom)); }
+@media (max-width: 700px) {
+  .grid { grid-template-columns:1fr 1fr; gap:8px; }
+  .stat { font-size:21px; }
+  .grid .card { margin-bottom:0; }
+  .teamgrid { grid-template-columns:1fr; }
+  .team { padding:13px; }
+  .sub { font-size:13px; }
+  #playersTable { display:none; }
+  .desktop-only { display:none!important; }
+}
+@media (min-width:701px) {
+  .mobile-only { display:none!important; }
+}
+</style>
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#17202a"></head>
+<body>
+<div class="wrap">
+  <h1>Jugendmannschaft – Trainingsbeteiligung & Kader</h1>
+  <div class="sub">Die Daten werden automatisch im Browser gespeichert. Über „Sicherung exportieren“ kannst du jederzeit eine JSON-Sicherung anlegen.</div>
+
+  <div class="card">
+    <div class="toolbar">
+      <button class="primary" onclick="addPlayer()">+ Spieler hinzufügen</button>
+      <button onclick="addTraining()">+ Training anlegen</button>
+      <button onclick="exportJSON()">Sicherung exportieren</button>
+      <label><button onclick="document.getElementById('importFile').click()">Sicherung importieren</button></label>
+      <input id="importFile" type="file" accept=".json,application/json" class="hidden" onchange="importJSON(event)">
+      <button onclick="manageTags()">Position-Tags verwalten</button>
+      <button class="danger" onclick="clearAll()">Alles löschen</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="small">Spieler</div><div class="stat" id="playerCount">0</div></div>
+    <div class="card"><div class="small">Trainings</div><div class="stat" id="trainingCount">0</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Spieler & Trainingsbeteiligung</h2>
+    <p class="muted">Sortiert nach Teilnahmequote. Die Werte bleiben auch nach einer Aktualisierung der Seite erhalten.</p>
+    <div class="tablewrap"><table id="playersTable"></table></div><div id="mobilePlayers" class="mobile-only"></div>
+  </div>
+
+  <div class="card">
+    <h2>Kader für anstehende Spiele</h2>
+    <p>Automatisch werden die <b>Top 16</b> der spielberechtigten Spieler nach Trainingsbeteiligung ermittelt. Bei gleicher Quote entscheidet die absolute Anzahl der Teilnahmen.</p>
+    <div id="squad"></div>
+  </div>
+
+  <div class="card">
+    <h2>Teams für den Spieltag</h2>
+    <p class="muted">Wähle die anwesenden Spieler aus. Die Verteilung berücksichtigt zuerst das Level und erst danach die Position. „Trainer“ wird automatisch nicht als Spieler berücksichtigt.</p>
+    <div class="bottom-actions"><div class="toolbar" style="margin-bottom:10px">
+      <button onclick="selectSquad()">Top-16 auswählen</button>
+      <button onclick="selectAllPlayers()">Alle Spieler auswählen</button>
+      <button onclick="clearSelection()">Auswahl löschen</button>
+      <button class="primary" onclick="makeTeams()">Teams bilden</button>
+    </div>
+    <div id="attendanceSelection"></div>
+    <div id="teams" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<div id="modal" class="modal"><div class="modalbox" id="modalbox"></div></div>
+
+<script>
+const KEY="jugend_kader_app_v1";
+const defaultTags=["Torwart","Abwehr","Mittelfeld","Sturm","Trainer"];
+let state=load();
+let selectedForGame=new Set();
+
+function fresh(){return {version:1,players:[],trainings:[],positionTags:[...defaultTags]}}
+function load(){
+  try{const x=JSON.parse(localStorage.getItem(KEY)); if(x&&x.players&&x.trainings)return x}catch(e){}
+  return fresh();
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(state)); render()}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function playerIsCoach(p){return (p.positions||[]).includes("Trainer")}
+function eligiblePlayers(){return state.players.filter(p=>!playerIsCoach(p))}
+function attendance(p){let vals=state.trainings.map(t=>!!t.attendance?.[p.id]);let n=vals.filter(Boolean).length;return {n,total:vals.length,pct:vals.length?n/vals.length:0}}
+function rankPlayers(){
+  return [...eligiblePlayers()].sort((a,b)=>{
+    const aa=attendance(a),bb=attendance(b);
+    return bb.pct-aa.pct || bb.n-aa.n || a.name.localeCompare(b.name,"de");
+  })
+}
+function addPlayer(){
+  const id=crypto.randomUUID();
+  state.players.push({id,name:"Neuer Spieler",positions:[],level:"mittel"});
+  save(); editPlayer(id);
+}
+function editPlayer(id){
+  const p=state.players.find(x=>x.id===id); if(!p)return;
+  const tags=state.positionTags.map(t=>`<label><input type="checkbox" data-pos="${esc(t)}" ${(p.positions||[]).includes(t)?"checked":""}> ${esc(t)}</label>`).join(" &nbsp; ");
+  openModal(`<h2>Spieler bearbeiten</h2>
+    <div class="row"><label>Name<br><input id="editName" value="${esc(p.name)}" style="width:100%"></label></div>
+    <div><b>Position</b><div class="taglist">${tags}</div></div>
+    <div class="row"><label><b>Level</b><br><select id="editLevel">
+      <option value="stark" ${p.level==="stark"?"selected":""}>stark</option>
+      <option value="mittel" ${p.level==="mittel"?"selected":""}>mittel</option>
+      <option value="schwach" ${p.level==="schwach"?"selected":""}>schwach</option>
+    </select></label></div>
+    <div class="toolbar"><button class="primary" onclick="savePlayer('${id}')">Speichern</button><button onclick="closeModal()">Abbrechen</button><button class="danger" onclick="deletePlayer('${id}')">Spieler löschen</button></div>`);
+}
+function savePlayer(id){
+  const p=state.players.find(x=>x.id===id); if(!p)return;
+  p.name=document.getElementById("editName").value.trim()||"Unbenannt";
+  p.positions=[...document.querySelectorAll("[data-pos]:checked")].map(x=>x.dataset.pos);
+  p.level=document.getElementById("editLevel").value;
+  closeModal(); save();
+}
+function deletePlayer(id){
+  if(!confirm("Spieler wirklich löschen?"))return;
+  state.players=state.players.filter(p=>p.id!==id);
+  state.trainings.forEach(t=>{if(t.attendance)delete t.attendance[id]});
+  closeModal(); save();
+}
+function addTraining(){
+  const date=new Date().toISOString().slice(0,10);
+  const id=crypto.randomUUID();
+  state.trainings.push({id,date,attendance:{}});
+  save();
+}
+function deleteTraining(id){
+  if(confirm("Training löschen?")){state.trainings=state.trainings.filter(t=>t.id!==id);save()}
+}
+function toggleAttendance(tid,pid,checked){
+  const t=state.trainings.find(x=>x.id===tid); if(!t.attendance)t.attendance={};
+  t.attendance[pid]=checked; save();
+}
+function changeTrainingDate(id,val){const t=state.trainings.find(x=>x.id===id);if(t){t.date=val;save()}}
+function render(){
+  document.getElementById("playerCount").textContent=state.players.length;
+  document.getElementById("trainingCount").textContent=state.trainings.length;
+  const sorted=rankPlayers();
+  let h=`<thead><tr><th>Spieler</th><th>Position</th><th>Level</th><th>Teilnahmen</th><th>Quote</th>`;
+  state.trainings.forEach(t=>h+=`<th class="att"><input type="date" value="${esc(t.date)}" onchange="changeTrainingDate('${t.id}',this.value)"><br><button class="danger" onclick="deleteTraining('${t.id}')">×</button></th>`);
+  h+=`<th></th></tr></thead><tbody>`;
+  sorted.forEach(p=>{
+    const a=attendance(p);
+    const pos=(p.positions||[]).map(x=>`<span class="tag">${esc(x)}</span>`).join("")||'<span class="muted">–</span>';
+    h+=`<tr><td><b>${esc(p.name)}</b></td><td>${pos}</td><td>${esc(p.level||"mittel")}</td><td>${a.n}/${a.total}</td><td>${Math.round(a.pct*100)}%</td>`;
+    state.trainings.forEach(t=>h+=`<td class="att"><input type="checkbox" ${t.attendance?.[p.id]?"checked":""} onchange="toggleAttendance('${t.id}','${p.id}',this.checked)"></td>`);
+    h+=`<td><button onclick="editPlayer('${p.id}')">Bearbeiten</button></td></tr>`;
+  });
+  h+=`</tbody>`;
+  document.getElementById("playersTable").innerHTML=h;
+  renderSquad(sorted);
+  renderSelection();
+}
+
+function renderMobilePlayers(sorted=rankPlayers()){
+  const el=document.getElementById("mobilePlayers");
+  if(!el)return;
+  if(!sorted.length){el.innerHTML='<span class="muted">Noch keine Spieler angelegt.</span>';return}
+  el.innerHTML=sorted.map((p,i)=>{
+    const a=attendance(p);
+    const pos=(p.positions||[]).join(", ")||"keine Position";
+    return `<div class="player-card">
+      <div class="player-card-row">
+        <div><b>${i+1}. ${esc(p.name)}</b>
+          <div class="player-card-meta">${esc(pos)} · ${esc(p.level)} · ${a.n}/${a.total} Trainings (${Math.round(a.pct*100)}%)</div>
+        </div>
+        <button onclick="editPlayer('${p.id}')">Bearbeiten</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+function renderSquad(sorted=rankPlayers()){
+  const top=sorted.slice(0,16);
+  document.getElementById("squad").innerHTML=top.length?`<div class="taglist">${top.map((p,i)=>`<span class="tag"><b>${i+1}.</b> ${esc(p.name)} · ${Math.round(attendance(p).pct*100)}% · ${esc(p.level)}</span>`).join("")}</div>`:'<span class="muted">Noch keine Spieler angelegt.</span>';
+}
+function renderSelection(){
+  const list=rankPlayers();
+  document.getElementById("attendanceSelection").innerHTML=list.length?`<div class="tablewrap"><table><thead><tr><th>anwesend</th><th>Spieler</th><th>Position</th><th>Level</th><th>Quote</th></tr></thead><tbody>${
+    list.map(p=>`<tr><td><input type="checkbox" ${selectedForGame.has(p.id)?"checked":""} onchange="setGamePlayer('${p.id}',this.checked)"></td><td>${esc(p.name)}</td><td>${(p.positions||[]).map(esc).join(", ")||"–"}</td><td>${esc(p.level)}</td><td>${Math.round(attendance(p).pct*100)}%</td></tr>`).join("")
+  }</tbody></table></div>`:'<span class="muted">Keine Spieler vorhanden.</span>';
+}
+function setGamePlayer(id,on){on?selectedForGame.add(id):selectedForGame.delete(id);renderSelection()}
+function selectSquad(){selectedForGame=new Set(rankPlayers().slice(0,16).map(p=>p.id));renderSelection()}
+function selectAllPlayers(){selectedForGame=new Set(eligiblePlayers().map(p=>p.id));renderSelection()}
+function clearSelection(){selectedForGame.clear();renderSelection()}
+function score(p){return p.level==="stark"?3:p.level==="schwach"?1:2}
+function isGK(p){return (p.positions||[]).includes("Torwart")}
+function makeTeams(){
+  const players=eligiblePlayers().filter(p=>selectedForGame.has(p.id));
+  const gks=players.filter(isGK), field=players.filter(p=>!isGK(p));
+  if(players.length<5){document.getElementById("teams").innerHTML='<div class="notice">Für ein Team mit 4 Feldspielern und 1 Torwart werden mindestens 5 Spieler benötigt.</div>';return}
+  // Ziel: bei >=10 Spielern möglichst zwei 5er-Teams mit je einem Torwart.
+  let teamCount=(players.length>=10 && gks.length>=2)?2:1;
+  if(teamCount===2 && field.length<8) teamCount=1;
+  if(teamCount===1 && gks.length<1){document.getElementById("teams").innerHTML='<div class="notice">Mindestens ein Torwart wird für ein vollständiges Team benötigt.</div>';return}
+  // Starte mit den Torhütern in getrennten Teams.
+  let teams=Array.from({length:teamCount},()=>[]);
+  gks.sort((a,b)=>score(b)-score(a));
+  for(let i=0;i<teamCount;i++)teams[i].push(gks[i]);
+  const remaining=[...field].sort((a,b)=>score(b)-score(a));
+  // Greedy-Ausgleich nach Level: stärksten Spieler jeweils zum Team mit niedrigstem aktuellen Levelwert.
+  remaining.forEach(p=>{
+    teams.sort((A,B)=>teamPower(A)-teamPower(B));
+    teams[0].push(p);
+  });
+  // Bei zwei Kernteams sollen beide 5 Spieler haben, sofern genügend Feldspieler vorhanden sind.
+  if(teamCount===2){
+    // Lokale Verbesserungen: möglichst gleiche Teamstärke, dabei 4 Feldspieler je Team.
+    balanceTwoTeams(teams);
+  }
+  const assigned=new Set(teams.flat().map(p=>p.id));
+  const leftovers=players.filter(p=>!assigned.has(p.id));
+  let out=`<div class="teamgrid">`;
+  teams.forEach((team,i)=>out+=teamCard(`Team ${i+1}`,team));
+  out+=teamCard("Team 3 / übrige Spieler",leftovers,true);
+  out+=`</div><div class="small" style="margin-top:8px">Bewertung: stark=3, mittel=2, schwach=1. Das Level wird vor der Position gewichtet; Torwart wird für die Teamstruktur bevorzugt getrennt verteilt.</div>`;
+  document.getElementById("teams").innerHTML=out;
+}
+function teamPower(team){return team.reduce((s,p)=>s+score(p),0)}
+function balanceTwoTeams(ts){
+  // Brute-force über Feldspieler: Ziel ist minimale Differenz bei genau 4 Feldspielern je Team.
+  const all=ts.flat(), keepGK=all.filter(isGK), fs=all.filter(p=>!isGK(p));
+  if(keepGK.length!==2 || fs.length<8)return;
+  const A=[], n=fs.length;
+  let best=null;
+  function rec(i,chosen){
+    if(chosen.length===4){
+      const set=new Set(chosen.map(p=>p.id));
+      const t1=[keepGK[0],...chosen], t2=[keepGK[1],...fs.filter(p=>!set.has(p.id))];
+      const diff=Math.abs(teamPower(t1)-teamPower(t2));
+      const posPenalty=Math.abs(posVar(t1)-posVar(t2));
+      const val=diff*100+posPenalty;
+      if(!best||val<best.val)best={val,t1,t2};
+      return;
+    }
+    for(let j=i;j<n;j++)rec(j+1,[...chosen,fs[j]]);
+  }
+  rec(0,[]);
+  if(best){ts[0]=best.t1;ts[1]=best.t2}
+}
+function posVar(team){
+  const positions=["Abwehr","Mittelfeld","Sturm"];
+  return positions.reduce((s,pos)=>s+team.filter(p=>(p.positions||[]).includes(pos)).length,0);
+}
+function teamCard(title,team,muted=false){
+  return `<div class="team"><h3>${esc(title)} <span class="small">(${team.length})</span></h3>${team.length?team.map(p=>`<div class="playerline"><b>${esc(p.name)}</b><br><span class="small">${esc(p.level)} · ${(p.positions||[]).join(", ")||"keine Position"}</span></div>`).join(""):'<span class="muted">–</span>'}</div>`;
+}
+function manageTags(){
+  const list=state.positionTags.map((t,i)=>`<span class="tag">${esc(t)} <button onclick="removeTag(${i})">×</button></span>`).join("");
+  openModal(`<h2>Position-Tags</h2><div class="taglist">${list}</div><div class="row"><input id="newTag" placeholder="Neuer Position-Tag"><button class="primary" onclick="addTag()">Hinzufügen</button></div><button onclick="closeModal()">Schließen</button>`);
+}
+function addTag(){
+  const x=document.getElementById("newTag").value.trim();if(!x)return;
+  if(!state.positionTags.includes(x))state.positionTags.push(x);
+  save();manageTags();
+}
+function removeTag(i){
+  const t=state.positionTags[i];
+  if(!confirm(`Tag "${t}" entfernen? Er wird auch von Spielern entfernt.`))return;
+  state.positionTags.splice(i,1);state.players.forEach(p=>p.positions=(p.positions||[]).filter(x=>x!==t));save();manageTags();
+}
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="jugendmannschaft-sicherung-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(a.href);
+}
+function importJSON(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const x=JSON.parse(r.result);
+    if(!x||!Array.isArray(x.players)||!Array.isArray(x.trainings))throw Error();
+    if(!confirm("Die aktuelle Datenbank wird durch die Sicherung ersetzt. Fortfahren?"))return;
+    state={version:1,players:x.players,trainings:x.trainings,positionTags:x.positionTags?.length?x.positionTags:defaultTags};
+    selectedForGame.clear();save();alert("Sicherung erfolgreich importiert.");
+  }catch(e){alert("Die Datei konnte nicht als gültige Sicherung erkannt werden.")}};
+  r.readAsText(file);ev.target.value="";
+}
+function clearAll(){if(confirm("Wirklich alle Spieler, Trainings und Daten löschen?")){state=fresh();selectedForGame.clear();save()}}
+function openModal(content){document.getElementById("modalbox").innerHTML=content;document.getElementById("modal").classList.add("open")}
+function closeModal(){document.getElementById("modal").classList.remove("open")}
+document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()});
+render();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
