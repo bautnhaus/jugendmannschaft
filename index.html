@@ -2,334 +2,521 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Jugendmannschaft – Trainings & Kader</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Jugendmannschaft – Kader & Training</title>
+<link rel="manifest" href="manifest.json">
 <style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17202a;background:#f5f7fa}
-*{box-sizing:border-box} body{margin:0} .wrap{max-width:1400px;margin:auto;padding:18px}
-h1{margin:0 0 6px;font-size:26px}.sub{color:#667085;margin-bottom:18px}
-.card{background:#fff;border:1px solid #e4e7ec;border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 2px 8px #00000008}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.toolbar button,input,select{font:inherit}
-button{border:1px solid #cfd5dd;background:#fff;border-radius:9px;padding:8px 12px;cursor:pointer}
-button.primary{background:#17202a;color:white;border-color:#17202a}button.danger{color:#b42318}
-button:hover{filter:brightness(.97)}input,select{border:1px solid #cfd5dd;border-radius:8px;padding:7px 9px;background:white}
-table{width:100%;border-collapse:collapse;min-width:850px}th,td{padding:9px 7px;border-bottom:1px solid #eaecf0;text-align:left;vertical-align:middle}
-th{font-size:13px;color:#667085;background:#f9fafb;position:sticky;top:0;z-index:1}
-.tablewrap{overflow:auto;max-height:62vh}.tag{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:999px;background:#eef2f6;margin:2px;font-size:12px}.tag button{border:0;padding:0;background:transparent;font-size:13px}
-.att{width:75px;text-align:center}.muted{color:#667085}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:900px){.grid{grid-template-columns:1fr}}
-.stat{font-size:24px;font-weight:700}.small{font-size:12px;color:#667085}
-.teamgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}@media(max-width:900px){.teamgrid{grid-template-columns:1fr}}
-.team{border:1px solid #dfe3e8;border-radius:12px;padding:12px;background:#fafbfc}.team h3{margin:0 0 8px}.playerline{padding:5px 0;border-bottom:1px solid #eaecf0}.playerline:last-child{border-bottom:0}
-.modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:18px;z-index:5}.modal.open{display:flex}.modalbox{background:white;border-radius:14px;padding:18px;max-width:600px;width:100%;max-height:90vh;overflow:auto}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}.taglist{margin:6px 0 14px}
-.notice{padding:10px 12px;border-radius:9px;background:#fff7e6;border:1px solid #ffd591;margin-top:10px}
-.hidden{display:none}
-
-/* iPhone optimization */
-html { -webkit-text-size-adjust: 100%; }
-body { padding-bottom: env(safe-area-inset-bottom); }
-.wrap { max-width: 100%; padding: 12px; }
-h1 { font-size: 22px; line-height: 1.2; }
-h2 { font-size: 19px; margin-top: 4px; }
-.card { border-radius: 12px; padding: 13px; margin-bottom: 12px; }
-.toolbar { gap: 7px; }
-button, input, select { min-height: 44px; }
-button { padding: 10px 13px; touch-action: manipulation; }
-input[type="checkbox"] { width: 24px; height: 24px; accent-color: #17202a; }
-input[type="date"], input[type="text"], input:not([type]), select { min-height: 44px; }
-.tablewrap { max-height: none; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-table { min-width: 760px; }
-th { position: sticky; top: 0; }
-.attendance-mobile-list { display:block; }
-.player-card { border:1px solid #e4e7ec; border-radius:12px; padding:11px; margin:7px 0; background:#fff; }
-.player-card-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.player-card-meta { font-size:12px; color:#667085; margin-top:4px; }
-.big-action { width:100%; min-height:50px; font-size:16px; font-weight:600; }
-.bottom-actions { position:sticky; bottom:0; z-index:3; background:#f5f7faeF; backdrop-filter:blur(8px); padding:8px 0 calc(8px + env(safe-area-inset-bottom)); }
-@media (max-width: 700px) {
-  .grid { grid-template-columns:1fr 1fr; gap:8px; }
-  .stat { font-size:21px; }
-  .grid .card { margin-bottom:0; }
-  .teamgrid { grid-template-columns:1fr; }
-  .team { padding:13px; }
-  .sub { font-size:13px; }
-  #playersTable { display:none; }
-  .desktop-only { display:none!important; }
-}
-@media (min-width:701px) {
-  .mobile-only { display:none!important; }
-}
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#dbe1ea;--accent:#2563eb;--danger:#dc2626;--ok:#15803d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{position:sticky;top:0;z-index:10;background:#0f172a;color:white;padding:14px 16px}
+header h1{font-size:20px;margin:0 0 3px}
+header small{opacity:.8}
+main{max-width:1200px;margin:auto;padding:12px}
+.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:10px;position:sticky;top:65px;z-index:9;background:var(--bg)}
+.tabs button{white-space:nowrap}
+button,.btn,input,select{font:inherit}
+button,.btn{border:1px solid var(--line);background:white;border-radius:10px;padding:11px 14px;cursor:pointer;min-height:44px}
+button.primary,.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
+button.danger{color:white;background:var(--danger);border-color:var(--danger)}
+button.active{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0;box-shadow:0 1px 2px #00000008}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+h2,h3{margin:5px 0 12px}
+.muted{color:var(--muted)}
+.notice{padding:11px 12px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;margin:8px 0}
+.warning{background:#fff7ed;border-color:#fed7aa}
+.ok{background:#f0fdf4;border-color:#bbf7d0}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;min-width:850px}
+th,td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:top}
+th{background:#f8fafc;position:sticky;top:0}
+input[type=text],input[type=date],input[type=number],select{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:10px;min-height:42px;background:white}
+.checks{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid #cbd5e1;border-radius:999px;padding:5px 9px;background:#fff;font-size:14px}
+.chip input{margin:0}
+.badge{display:inline-block;border-radius:999px;padding:4px 8px;background:#e2e8f0;font-size:13px;margin:2px}
+.badge.strong{background:#dcfce7}.badge.medium{background:#fef3c7}.badge.weak{background:#fee2e2}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.stat{font-size:28px;font-weight:700}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:flex-end;justify-content:center;z-index:30}
+.modal.show{display:flex}
+.modalbox{background:white;width:min(620px,100%);border-radius:18px 18px 0 0;padding:16px;max-height:92vh;overflow:auto}
+.modalbox h2{margin-top:0}
+.formrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.formrow{grid-template-columns:1fr}.tabs{top:62px}.card{padding:12px}header{padding:12px}.toolbar button,.toolbar .btn{flex:1 1 auto}}
+.hidden{display:none!important}
+.teamgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.team{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+.team h3{display:flex;justify-content:space-between}
+.playerrow{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #eef2f7}
+.playerrow:last-child{border-bottom:0}
+.right{text-align:right}
 </style>
-<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#17202a"></head>
+</head>
 <body>
-<div class="wrap">
-  <h1>Jugendmannschaft – Trainingsbeteiligung & Kader</h1>
-  <div class="sub">Die Daten werden automatisch im Browser gespeichert. Über „Sicherung exportieren“ kannst du jederzeit eine JSON-Sicherung anlegen.</div>
+<header>
+  <h1>Jugendmannschaft</h1>
+  <small>Kader · Training · Spieltag</small>
+</header>
 
-  <div class="card">
-    <div class="toolbar">
-      <button class="primary" onclick="addPlayer()">+ Spieler hinzufügen</button>
-      <button onclick="addTraining()">+ Training anlegen</button>
-      <button onclick="exportJSON()">Sicherung exportieren</button>
-      <label><button onclick="document.getElementById('importFile').click()">Sicherung importieren</button></label>
-      <input id="importFile" type="file" accept=".json,application/json" class="hidden" onchange="importJSON(event)">
-      <button onclick="manageTags()">Position-Tags verwalten</button>
-      <button class="danger" onclick="clearAll()">Alles löschen</button>
+<main>
+  <div class="tabs">
+    <button class="active" data-tab="players">Spieler</button>
+    <button data-tab="trainings">Training</button>
+    <button data-tab="matchday">Spieltag</button>
+    <button data-tab="settings">Einstellungen</button>
+  </div>
+
+  <section id="players" class="tab">
+    <div class="card">
+      <div class="toolbar">
+        <button class="primary" onclick="addPlayer()">+ Spieler</button>
+        <button onclick="addTraining()">+ Training anlegen</button>
+        <button onclick="exportJSON()">JSON sichern</button>
+        <button onclick="document.getElementById('importFile').click()">JSON wiederherstellen</button>
+        <input id="importFile" class="hidden" type="file" accept=".json,application/json" onchange="importJSON(event)">
+      </div>
+      <div class="grid" style="margin-top:10px">
+        <div><div class="muted">Spieler</div><div id="playerCount" class="stat">0</div></div>
+        <div><div class="muted">Trainings</div><div id="trainingCount" class="stat">0</div></div>
+        <div><div class="muted">Kader (Top 16)</div><div id="squadCount" class="stat">0</div></div>
+      </div>
     </div>
-  </div>
-
-  <div class="grid">
-    <div class="card"><div class="small">Spieler</div><div class="stat" id="playerCount">0</div></div>
-    <div class="card"><div class="small">Trainings</div><div class="stat" id="trainingCount">0</div></div>
-  </div>
-
-  <div class="card">
-    <h2>Spieler & Trainingsbeteiligung</h2>
-    <p class="muted">Sortiert nach Teilnahmequote. Die Werte bleiben auch nach einer Aktualisierung der Seite erhalten.</p>
-    <div class="tablewrap"><table id="playersTable"></table></div><div id="mobilePlayers" class="mobile-only"></div>
-  </div>
-
-  <div class="card">
-    <h2>Kader für anstehende Spiele</h2>
-    <p>Automatisch werden die <b>Top 16</b> der spielberechtigten Spieler nach Trainingsbeteiligung ermittelt. Bei gleicher Quote entscheidet die absolute Anzahl der Teilnahmen.</p>
-    <div id="squad"></div>
-  </div>
-
-  <div class="card">
-    <h2>Teams für den Spieltag</h2>
-    <p class="muted">Wähle die anwesenden Spieler aus. Die Verteilung berücksichtigt zuerst das Level und erst danach die Position. „Trainer“ wird automatisch nicht als Spieler berücksichtigt.</p>
-    <div class="bottom-actions"><div class="toolbar" style="margin-bottom:10px">
-      <button onclick="selectSquad()">Top-16 auswählen</button>
-      <button onclick="selectAllPlayers()">Alle Spieler auswählen</button>
-      <button onclick="clearSelection()">Auswahl löschen</button>
-      <button class="primary" onclick="makeTeams()">Teams bilden</button>
+    <div class="card">
+      <h2>Spielerübersicht</h2>
+      <div class="notice">Die Kaderplätze 1–16 werden automatisch nach Trainingsanwesenheit bestimmt. Bei gleicher Quote entscheidet die Anzahl der besuchten Trainings.</div>
+      <div id="playerTable"></div>
     </div>
-    <div id="attendanceSelection"></div>
-    <div id="teams" style="margin-top:14px"></div>
-  </div>
+  </section>
+
+  <section id="trainings" class="tab hidden">
+    <div class="card">
+      <div class="toolbar">
+        <button class="primary" onclick="addTraining()">+ Training anlegen</button>
+      </div>
+      <div id="trainingList"></div>
+    </div>
+  </section>
+
+  <section id="matchday" class="tab hidden">
+    <div class="card">
+      <h2>Spieltag</h2>
+      <p class="muted">Wähle die verfügbaren Spieler. Die Aufteilung berücksichtigt zuerst das Level, danach die Position. Wenn möglich werden zwei Teams mit jeweils 4 Feldspielern + 1 Torwart gebildet; übrige Spieler kommen in Team 3.</p>
+      <div id="matchdayControls"></div>
+    </div>
+    <div id="teams"></div>
+  </section>
+
+  <section id="settings" class="tab hidden">
+    <div class="card">
+      <h2>Positionen</h2>
+      <p class="muted">Positionen können mehrfach pro Spieler gewählt werden.</p>
+      <div id="positionSettings"></div>
+    </div>
+    <div class="card">
+      <h2>Daten</h2>
+      <p class="muted">Die Daten werden lokal im Browser gespeichert. Vor größeren Änderungen bitte „JSON sichern“ verwenden.</p>
+      <div class="toolbar">
+        <button onclick="exportJSON()">JSON sichern</button>
+        <button onclick="document.getElementById('importFile2').click()">JSON wiederherstellen</button>
+        <input id="importFile2" class="hidden" type="file" accept=".json,application/json" onchange="importJSON(event)">
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="modal" class="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modalbox" id="modalContent"></div>
 </div>
 
-<div id="modal" class="modal"><div class="modalbox" id="modalbox"></div></div>
-
 <script>
-const KEY="jugend_kader_app_v1";
-const defaultTags=["Torwart","Abwehr","Mittelfeld","Sturm","Trainer"];
-let state=load();
-let selectedForGame=new Set();
+const STORAGE_KEY = "jugendmannschaft_state_v2";
+const DEFAULT_POSITIONS = ["Torwart","Abwehr","Mittelfeld","Sturm","Trainer"];
+const LEVELS = ["stark","mittel","schwach"];
+let state = loadState();
 
-function fresh(){return {version:1,players:[],trainings:[],positionTags:[...defaultTags]}}
-function load(){
-  try{const x=JSON.parse(localStorage.getItem(KEY)); if(x&&x.players&&x.trainings)return x}catch(e){}
-  return fresh();
+function uid(prefix="id"){ return prefix+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8); }
+
+function blankState(){
+  return {version:2, players:[], trainings:[], positions:[...DEFAULT_POSITIONS]};
 }
-function save(){localStorage.setItem(KEY,JSON.stringify(state)); render()}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function playerIsCoach(p){return (p.positions||[]).includes("Trainer")}
-function eligiblePlayers(){return state.players.filter(p=>!playerIsCoach(p))}
-function attendance(p){let vals=state.trainings.map(t=>!!t.attendance?.[p.id]);let n=vals.filter(Boolean).length;return {n,total:vals.length,pct:vals.length?n/vals.length:0}}
-function rankPlayers(){
-  return [...eligiblePlayers()].sort((a,b)=>{
-    const aa=attendance(a),bb=attendance(b);
-    return bb.pct-aa.pct || bb.n-aa.n || a.name.localeCompare(b.name,"de");
-  })
+function normalizeState(raw){
+  const s = raw && typeof raw==="object" ? raw : {};
+  const out = blankState();
+  out.version = 2;
+  out.positions = Array.isArray(s.positions) && s.positions.length ? [...new Set(s.positions.map(String).filter(Boolean))] : [...DEFAULT_POSITIONS];
+  out.players = Array.isArray(s.players) ? s.players.map(p=>({
+    id: String(p.id || uid("p")),
+    name: String(p.name || "Neuer Spieler"),
+    positions: Array.isArray(p.positions) ? p.positions.map(String).filter(Boolean) : (p.position ? [String(p.position)] : []),
+    level: LEVELS.includes(p.level) ? p.level : "",
+    created: p.created || new Date().toISOString()
+  })) : [];
+  out.trainings = Array.isArray(s.trainings) ? s.trainings.map(t=>({
+    id:String(t.id||uid("t")),
+    date:String(t.date||""),
+    name:String(t.name||""),
+    attendance: (t.attendance && typeof t.attendance==="object") ? {...t.attendance} : {}
+  })) : [];
+  return out;
 }
+function loadState(){
+  try { return normalizeState(JSON.parse(localStorage.getItem(STORAGE_KEY)||"null")); }
+  catch(e){ return blankState(); }
+}
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); renderAll(); }
+
+function esc(v){
+  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function fmtDate(d){
+  if(!d) return "";
+  const x = new Date(d+"T00:00:00");
+  return isNaN(x) ? d : x.toLocaleDateString("de-DE");
+}
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+
+function openModal(html){ document.getElementById("modalContent").innerHTML=html; document.getElementById("modal").classList.add("show"); }
+function closeModal(){ document.getElementById("modal").classList.remove("show"); }
+
 function addPlayer(){
-  const id=crypto.randomUUID();
-  state.players.push({id,name:"Neuer Spieler",positions:[],level:"mittel"});
-  save(); editPlayer(id);
+  openModal(`
+    <h2>Spieler hinzufügen</h2>
+    <label>Name<input id="newPlayerName" type="text" autocomplete="off" placeholder="Vor- und Nachname"></label>
+    <div class="toolbar" style="margin-top:12px">
+      <button class="primary" onclick="saveNewPlayer()">Speichern</button>
+      <button onclick="closeModal()">Abbrechen</button>
+    </div>`);
+  setTimeout(()=>document.getElementById("newPlayerName")?.focus(),50);
+}
+function saveNewPlayer(){
+  const name=document.getElementById("newPlayerName").value.trim();
+  if(!name) return;
+  state.players.push({id:uid("p"),name,positions:[],level:"",created:new Date().toISOString()});
+  save(); closeModal();
 }
 function editPlayer(id){
   const p=state.players.find(x=>x.id===id); if(!p)return;
-  const tags=state.positionTags.map(t=>`<label><input type="checkbox" data-pos="${esc(t)}" ${(p.positions||[]).includes(t)?"checked":""}> ${esc(t)}</label>`).join(" &nbsp; ");
-  openModal(`<h2>Spieler bearbeiten</h2>
-    <div class="row"><label>Name<br><input id="editName" value="${esc(p.name)}" style="width:100%"></label></div>
-    <div><b>Position</b><div class="taglist">${tags}</div></div>
-    <div class="row"><label><b>Level</b><br><select id="editLevel">
-      <option value="stark" ${p.level==="stark"?"selected":""}>stark</option>
-      <option value="mittel" ${p.level==="mittel"?"selected":""}>mittel</option>
-      <option value="schwach" ${p.level==="schwach"?"selected":""}>schwach</option>
-    </select></label></div>
-    <div class="toolbar"><button class="primary" onclick="savePlayer('${id}')">Speichern</button><button onclick="closeModal()">Abbrechen</button><button class="danger" onclick="deletePlayer('${id}')">Spieler löschen</button></div>`);
+  openModal(`
+    <h2>Spieler bearbeiten</h2>
+    <label>Name<input id="editName" type="text" value="${esc(p.name)}"></label>
+    <label style="display:block;margin-top:10px">Level
+      <select id="editLevel">
+        <option value="">—</option>
+        ${LEVELS.map(l=>`<option value="${l}" ${p.level===l?"selected":""}>${l}</option>`).join("")}
+      </select>
+    </label>
+    <div style="margin-top:10px"><b>Position</b><div class="checks" style="margin-top:6px">
+      ${state.positions.map(pos=>`<label class="chip"><input type="checkbox" name="editPos" value="${esc(pos)}" ${p.positions.includes(pos)?"checked":""}>${esc(pos)}</label>`).join("")}
+    </div></div>
+    <div class="toolbar" style="margin-top:12px">
+      <button class="primary" onclick="savePlayer('${id}')">Speichern</button>
+      <button onclick="closeModal()">Abbrechen</button>
+      <button class="danger" onclick="deletePlayer('${id}')">Spieler löschen</button>
+    </div>`);
 }
 function savePlayer(id){
   const p=state.players.find(x=>x.id===id); if(!p)return;
-  p.name=document.getElementById("editName").value.trim()||"Unbenannt";
-  p.positions=[...document.querySelectorAll("[data-pos]:checked")].map(x=>x.dataset.pos);
+  p.name=document.getElementById("editName").value.trim()||p.name;
   p.level=document.getElementById("editLevel").value;
-  closeModal(); save();
+  p.positions=[...document.querySelectorAll('input[name="editPos"]:checked')].map(x=>x.value);
+  save(); closeModal();
 }
 function deletePlayer(id){
-  if(!confirm("Spieler wirklich löschen?"))return;
+  if(!confirm("Spieler wirklich löschen?")) return;
   state.players=state.players.filter(p=>p.id!==id);
-  state.trainings.forEach(t=>{if(t.attendance)delete t.attendance[id]});
-  closeModal(); save();
-}
-function addTraining(){
-  const date=new Date().toISOString().slice(0,10);
-  const id=crypto.randomUUID();
-  state.trainings.push({id,date,attendance:{}});
-  save();
-}
-function deleteTraining(id){
-  if(confirm("Training löschen?")){state.trainings=state.trainings.filter(t=>t.id!==id);save()}
-}
-function toggleAttendance(tid,pid,checked){
-  const t=state.trainings.find(x=>x.id===tid); if(!t.attendance)t.attendance={};
-  t.attendance[pid]=checked; save();
-}
-function changeTrainingDate(id,val){const t=state.trainings.find(x=>x.id===id);if(t){t.date=val;save()}}
-function render(){
-  document.getElementById("playerCount").textContent=state.players.length;
-  document.getElementById("trainingCount").textContent=state.trainings.length;
-  const sorted=rankPlayers();
-  let h=`<thead><tr><th>Spieler</th><th>Position</th><th>Level</th><th>Teilnahmen</th><th>Quote</th>`;
-  state.trainings.forEach(t=>h+=`<th class="att"><input type="date" value="${esc(t.date)}" onchange="changeTrainingDate('${t.id}',this.value)"><br><button class="danger" onclick="deleteTraining('${t.id}')">×</button></th>`);
-  h+=`<th></th></tr></thead><tbody>`;
-  sorted.forEach(p=>{
-    const a=attendance(p);
-    const pos=(p.positions||[]).map(x=>`<span class="tag">${esc(x)}</span>`).join("")||'<span class="muted">–</span>';
-    h+=`<tr><td><b>${esc(p.name)}</b></td><td>${pos}</td><td>${esc(p.level||"mittel")}</td><td>${a.n}/${a.total}</td><td>${Math.round(a.pct*100)}%</td>`;
-    state.trainings.forEach(t=>h+=`<td class="att"><input type="checkbox" ${t.attendance?.[p.id]?"checked":""} onchange="toggleAttendance('${t.id}','${p.id}',this.checked)"></td>`);
-    h+=`<td><button onclick="editPlayer('${p.id}')">Bearbeiten</button></td></tr>`;
-  });
-  h+=`</tbody>`;
-  document.getElementById("playersTable").innerHTML=h;
-  renderSquad(sorted);
-  renderSelection();
+  state.trainings.forEach(t=>delete t.attendance[id]);
+  save(); closeModal();
 }
 
-function renderMobilePlayers(sorted=rankPlayers()){
-  const el=document.getElementById("mobilePlayers");
-  if(!el)return;
-  if(!sorted.length){el.innerHTML='<span class="muted">Noch keine Spieler angelegt.</span>';return}
-  el.innerHTML=sorted.map((p,i)=>{
-    const a=attendance(p);
-    const pos=(p.positions||[]).join(", ")||"keine Position";
-    return `<div class="player-card">
-      <div class="player-card-row">
-        <div><b>${i+1}. ${esc(p.name)}</b>
-          <div class="player-card-meta">${esc(pos)} · ${esc(p.level)} · ${a.n}/${a.total} Trainings (${Math.round(a.pct*100)}%)</div>
-        </div>
-        <button onclick="editPlayer('${p.id}')">Bearbeiten</button>
+function attendanceStats(p){
+  let attended=0;
+  for(const t of state.trainings) if(t.attendance[p.id]) attended++;
+  const total=state.trainings.length;
+  return {attended,total,rate:total?attended/total:0};
+}
+function sortedPlayers(){
+  return [...state.players].sort((a,b)=>{
+    const A=attendanceStats(a),B=attendanceStats(b);
+    return B.rate-A.rate || B.attended-A.attended || a.name.localeCompare(b.name,"de");
+  });
+}
+function isSquad(p){
+  return sortedPlayers().slice(0,16).some(x=>x.id===p.id);
+}
+function levelBadge(level){
+  if(!level) return '<span class="badge">kein Level</span>';
+  const c=level==="stark"?"strong":level==="mittel"?"medium":"weak";
+  return `<span class="badge ${c}">${esc(level)}</span>`;
+}
+
+function renderPlayers(){
+  const rows=sortedPlayers().map((p,i)=>{
+    const a=attendanceStats(p);
+    const pos=p.positions.length?p.positions.map(x=>`<span class="badge">${esc(x)}</span>`).join(""):'<span class="muted">—</span>';
+    return `<tr>
+      <td><b>${i+1}.</b> ${esc(p.name)} ${isSquad(p)?'<span class="badge strong">Kader</span>':''}</td>
+      <td>${pos}</td>
+      <td>${levelBadge(p.level)}</td>
+      <td>${a.attended}/${a.total} (${Math.round(a.rate*100)}%)</td>
+      <td class="right"><button onclick="editPlayer('${p.id}')">Bearbeiten</button></td>
+    </tr>`;
+  }).join("");
+  document.getElementById("playerTable").innerHTML = state.players.length ? `
+    <div class="tablewrap"><table>
+      <thead><tr><th>Spieler / Rang</th><th>Position</th><th>Level</th><th>Anwesenheit</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>` : '<p class="muted">Noch keine Spieler angelegt.</p>';
+}
+
+function addTraining(){
+  openModal(`
+    <h2>Training anlegen</h2>
+    <div class="formrow">
+      <label>Datum<input id="trainingDate" type="date" value="${todayISO()}"></label>
+      <label>Name (optional)<input id="trainingName" type="text" placeholder="z. B. Training"></label>
+    </div>
+    <div class="toolbar" style="margin-top:14px">
+      <button class="primary" onclick="saveTraining()">Training speichern</button>
+      <button onclick="closeModal()">Abbrechen</button>
+    </div>`);
+  setTimeout(()=>document.getElementById("trainingDate")?.focus(),50);
+}
+function saveTraining(){
+  const date=document.getElementById("trainingDate").value;
+  if(!date){ alert("Bitte ein Datum auswählen."); return; }
+  const name=document.getElementById("trainingName").value.trim();
+  state.trainings.push({id:uid("t"),date,name,attendance:{}});
+  state.trainings.sort((a,b)=>a.date.localeCompare(b.date));
+  save(); closeModal();
+  showTab("trainings");
+}
+function deleteTraining(id){
+  if(!confirm("Training wirklich löschen?")) return;
+  state.trainings=state.trainings.filter(t=>t.id!==id);
+  save();
+}
+function toggleAttendance(tid,pid,checked){
+  const t=state.trainings.find(x=>x.id===tid); if(!t)return;
+  t.attendance[pid]=checked;
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  renderAll();
+}
+function renderTrainings(){
+  const box=document.getElementById("trainingList");
+  if(!state.trainings.length){box.innerHTML='<p class="muted">Noch kein Training angelegt. Tippe oben auf „+ Training anlegen“.</p>';return;}
+  box.innerHTML=state.trainings.map((t,idx)=>{
+    const attended=state.players.filter(p=>t.attendance[p.id]).length;
+    return `<div class="card">
+      <div class="toolbar" style="justify-content:space-between">
+        <div><h3>${esc(t.name||"Training")} – ${fmtDate(t.date)}</h3><span class="muted">${attended} von ${state.players.length} anwesend</span></div>
+        <button class="danger" onclick="deleteTraining('${t.id}')">Löschen</button>
       </div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Spieler</th><th>Anwesend</th></tr></thead>
+        <tbody>${sortedPlayers().map(p=>`<tr>
+          <td>${esc(p.name)}</td>
+          <td><label class="chip"><input type="checkbox" ${t.attendance[p.id]?"checked":""} onchange="toggleAttendance('${t.id}','${p.id}',this.checked)"> anwesend</label></td>
+        </tr>`).join("")}</tbody>
+      </table></div>
     </div>`;
   }).join("");
 }
-function renderSquad(sorted=rankPlayers()){
-  const top=sorted.slice(0,16);
-  document.getElementById("squad").innerHTML=top.length?`<div class="taglist">${top.map((p,i)=>`<span class="tag"><b>${i+1}.</b> ${esc(p.name)} · ${Math.round(attendance(p).pct*100)}% · ${esc(p.level)}</span>`).join("")}</div>`:'<span class="muted">Noch keine Spieler angelegt.</span>';
-}
-function renderSelection(){
-  const list=rankPlayers();
-  document.getElementById("attendanceSelection").innerHTML=list.length?`<div class="tablewrap"><table><thead><tr><th>anwesend</th><th>Spieler</th><th>Position</th><th>Level</th><th>Quote</th></tr></thead><tbody>${
-    list.map(p=>`<tr><td><input type="checkbox" ${selectedForGame.has(p.id)?"checked":""} onchange="setGamePlayer('${p.id}',this.checked)"></td><td>${esc(p.name)}</td><td>${(p.positions||[]).map(esc).join(", ")||"–"}</td><td>${esc(p.level)}</td><td>${Math.round(attendance(p).pct*100)}%</td></tr>`).join("")
-  }</tbody></table></div>`:'<span class="muted">Keine Spieler vorhanden.</span>';
-}
-function setGamePlayer(id,on){on?selectedForGame.add(id):selectedForGame.delete(id);renderSelection()}
-function selectSquad(){selectedForGame=new Set(rankPlayers().slice(0,16).map(p=>p.id));renderSelection()}
-function selectAllPlayers(){selectedForGame=new Set(eligiblePlayers().map(p=>p.id));renderSelection()}
-function clearSelection(){selectedForGame.clear();renderSelection()}
-function score(p){return p.level==="stark"?3:p.level==="schwach"?1:2}
-function isGK(p){return (p.positions||[]).includes("Torwart")}
-function makeTeams(){
-  const players=eligiblePlayers().filter(p=>selectedForGame.has(p.id));
-  const gks=players.filter(isGK), field=players.filter(p=>!isGK(p));
-  if(players.length<5){document.getElementById("teams").innerHTML='<div class="notice">Für ein Team mit 4 Feldspielern und 1 Torwart werden mindestens 5 Spieler benötigt.</div>';return}
-  // Ziel: bei >=10 Spielern möglichst zwei 5er-Teams mit je einem Torwart.
-  let teamCount=(players.length>=10 && gks.length>=2)?2:1;
-  if(teamCount===2 && field.length<8) teamCount=1;
-  if(teamCount===1 && gks.length<1){document.getElementById("teams").innerHTML='<div class="notice">Mindestens ein Torwart wird für ein vollständiges Team benötigt.</div>';return}
-  // Starte mit den Torhütern in getrennten Teams.
-  let teams=Array.from({length:teamCount},()=>[]);
-  gks.sort((a,b)=>score(b)-score(a));
-  for(let i=0;i<teamCount;i++)teams[i].push(gks[i]);
-  const remaining=[...field].sort((a,b)=>score(b)-score(a));
-  // Greedy-Ausgleich nach Level: stärksten Spieler jeweils zum Team mit niedrigstem aktuellen Levelwert.
-  remaining.forEach(p=>{
-    teams.sort((A,B)=>teamPower(A)-teamPower(B));
-    teams[0].push(p);
-  });
-  // Bei zwei Kernteams sollen beide 5 Spieler haben, sofern genügend Feldspieler vorhanden sind.
-  if(teamCount===2){
-    // Lokale Verbesserungen: möglichst gleiche Teamstärke, dabei 4 Feldspieler je Team.
-    balanceTwoTeams(teams);
+
+function renderMatchday(){
+  const squad=sortedPlayers().slice(0,16);
+  if(!squad.length){
+    document.getElementById("matchdayControls").innerHTML='<p class="muted">Zuerst Spieler anlegen.</p>';
+    document.getElementById("teams").innerHTML="";
+    return;
   }
-  const assigned=new Set(teams.flat().map(p=>p.id));
-  const leftovers=players.filter(p=>!assigned.has(p.id));
-  let out=`<div class="teamgrid">`;
-  teams.forEach((team,i)=>out+=teamCard(`Team ${i+1}`,team));
-  out+=teamCard("Team 3 / übrige Spieler",leftovers,true);
-  out+=`</div><div class="small" style="margin-top:8px">Bewertung: stark=3, mittel=2, schwach=1. Das Level wird vor der Position gewichtet; Torwart wird für die Teamstruktur bevorzugt getrennt verteilt.</div>`;
-  document.getElementById("teams").innerHTML=out;
+  const selectedIds = getSelectedMatchday();
+  document.getElementById("matchdayControls").innerHTML=`
+    <div class="notice">Standardmäßig sind die aktuellen Top-16 ausgewählt.</div>
+    <div class="toolbar">
+      <button onclick="selectSquad()">Top 16 auswählen</button>
+      <button onclick="clearMatchday()">Auswahl leeren</button>
+      <button class="primary" onclick="balanceTeams()">Teams bilden</button>
+    </div>
+    <div class="checks" style="margin-top:10px">
+      ${state.players.map(p=>`<label class="chip"><input type="checkbox" class="matchPlayer" value="${p.id}" ${selectedIds.has(p.id)?"checked":""}>${esc(p.name)}</label>`).join("")}
+    </div>`;
+  document.querySelectorAll(".matchPlayer").forEach(x=>x.addEventListener("change",storeMatchdaySelection));
 }
-function teamPower(team){return team.reduce((s,p)=>s+score(p),0)}
-function balanceTwoTeams(ts){
-  // Brute-force über Feldspieler: Ziel ist minimale Differenz bei genau 4 Feldspielern je Team.
-  const all=ts.flat(), keepGK=all.filter(isGK), fs=all.filter(p=>!isGK(p));
-  if(keepGK.length!==2 || fs.length<8)return;
-  const A=[], n=fs.length;
-  let best=null;
-  function rec(i,chosen){
-    if(chosen.length===4){
-      const set=new Set(chosen.map(p=>p.id));
-      const t1=[keepGK[0],...chosen], t2=[keepGK[1],...fs.filter(p=>!set.has(p.id))];
-      const diff=Math.abs(teamPower(t1)-teamPower(t2));
-      const posPenalty=Math.abs(posVar(t1)-posVar(t2));
-      const val=diff*100+posPenalty;
-      if(!best||val<best.val)best={val,t1,t2};
-      return;
+let matchdaySelection=new Set();
+function getSelectedMatchday(){
+  if(matchdaySelection.size===0) return new Set(sortedPlayers().slice(0,16).map(p=>p.id));
+  return new Set(matchdaySelection);
+}
+function storeMatchdaySelection(){
+  matchdaySelection=new Set([...document.querySelectorAll(".matchPlayer:checked")].map(x=>x.value));
+}
+function selectSquad(){matchdaySelection=new Set(sortedPlayers().slice(0,16).map(p=>p.id));renderMatchday();}
+function clearMatchday(){matchdaySelection=new Set();renderMatchday();}
+
+function levelValue(p){return p.level==="stark"?3:p.level==="mittel"?2:p.level==="schwach"?1:2;}
+function positionPenalty(group){
+  const counts={Torwart:0,Abwehr:0,Mittelfeld:0,Sturm:0};
+  group.forEach(p=>p.positions.forEach(pos=>{if(pos in counts)counts[pos]++;}));
+  let pen=0;
+  if(group.some(p=>p.positions.includes("Torwart"))) pen+=0;
+  if(group.some(p=>p.positions.includes("Abwehr"))) pen+=0;
+  if(group.some(p=>p.positions.includes("Mittelfeld"))) pen+=0;
+  if(group.some(p=>p.positions.includes("Sturm"))) pen+=0;
+  return pen;
+}
+function combo(arr,k,start=0,prefix=[],out=[]){
+  if(prefix.length===k){out.push(prefix.slice());return out;}
+  for(let i=start;i<=arr.length-(k-prefix.length);i++) combo(arr,k,i+1,[...prefix,arr[i]],out);
+  return out;
+}
+function groupScore(g){return g.reduce((s,p)=>s+levelValue(p),0);}
+function hasGK(p){return p.positions.includes("Torwart");}
+function bestBalancedTwo(field){
+  if(field.length<8)return null;
+  let best=null,bestCost=Infinity;
+  const aCombos=combo(field,4);
+  for(const A of aCombos){
+    const aIds=new Set(A.map(p=>p.id));
+    const remaining=field.filter(p=>!aIds.has(p.id));
+    const bCombos=combo(remaining,4);
+    const sa=groupScore(A);
+    for(const B of bCombos){
+      const sb=groupScore(B);
+      const diff=Math.abs(sa-sb);
+      const cost=diff*1000 + Math.abs(A.filter(hasGK).length-B.filter(hasGK).length);
+      if(cost<bestCost){bestCost=cost;best={A,B};}
     }
-    for(let j=i;j<n;j++)rec(j+1,[...chosen,fs[j]]);
   }
-  rec(0,[]);
-  if(best){ts[0]=best.t1;ts[1]=best.t2}
+  return best;
 }
-function posVar(team){
-  const positions=["Abwehr","Mittelfeld","Sturm"];
-  return positions.reduce((s,pos)=>s+team.filter(p=>(p.positions||[]).includes(pos)).length,0);
+function chooseBestFive(players){
+  if(players.length<5)return null;
+  let best=null,bestCost=Infinity;
+  for(const g of combo(players,5)){
+    const gk=g.filter(hasGK).length;
+    if(gk<1)continue;
+    const cost=Math.abs(groupScore(g)-10)*10 + (gk>1?gk-1:0);
+    if(cost<bestCost){bestCost=cost;best=g;}
+  }
+  return best;
 }
-function teamCard(title,team,muted=false){
-  return `<div class="team"><h3>${esc(title)} <span class="small">(${team.length})</span></h3>${team.length?team.map(p=>`<div class="playerline"><b>${esc(p.name)}</b><br><span class="small">${esc(p.level)} · ${(p.positions||[]).join(", ")||"keine Position"}</span></div>`).join(""):'<span class="muted">–</span>'}</div>`;
+function balanceTeams(){
+  storeMatchdaySelection();
+  const selected=state.players.filter(p=>matchdaySelection.has(p.id));
+  if(selected.length<5){alert("Bitte mindestens 5 Spieler auswählen.");return;}
+  const gks=selected.filter(hasGK);
+  const field=selected.filter(p=>!hasGK(p));
+  let teams=[];
+  let warning="";
+  if(gks.length>=2 && field.length>=8){
+    const gkPairs=[[gks[0],gks[1]]];
+    const split=bestBalancedTwo(field);
+    if(split){
+      teams=[
+        {name:"Team 1",players:[gks[0],...split.A]},
+        {name:"Team 2",players:[gks[1],...split.B]}
+      ];
+      const used=new Set([...split.A,...split.B].map(p=>p.id));
+      const rest=selected.filter(p=>!used.has(p.id) && !gks.slice(0,2).some(g=>g.id===p.id));
+      if(rest.length)teams.push({name:"Team 3",players:rest});
+    }
+  } else if(gks.length>=1 && field.length>=4){
+    const five=chooseBestFive(selected);
+    if(five){
+      teams=[{name:"Team 1",players:five}];
+      const used=new Set(five.map(p=>p.id));
+      teams.push({name:"Team 3",players:selected.filter(p=>!used.has(p.id))});
+      warning="Für zwei vollständige Teams fehlen mindestens ein Torwart oder genügend Feldspieler.";
+    }
+  } else {
+    warning="Mit der aktuellen Auswahl ist kein vollständiges Team mit 4 Feldspielern + 1 Torwart möglich. Die Spieler werden dennoch nach Level gruppiert.";
+    const sorted=[...selected].sort((a,b)=>levelValue(b)-levelValue(a));
+    teams=[{name:"Team 1",players:sorted.slice(0,Math.ceil(sorted.length/2))},{name:"Team 2",players:sorted.slice(Math.ceil(sorted.length/2))}];
+  }
+  renderTeams(teams,warning);
 }
-function manageTags(){
-  const list=state.positionTags.map((t,i)=>`<span class="tag">${esc(t)} <button onclick="removeTag(${i})">×</button></span>`).join("");
-  openModal(`<h2>Position-Tags</h2><div class="taglist">${list}</div><div class="row"><input id="newTag" placeholder="Neuer Position-Tag"><button class="primary" onclick="addTag()">Hinzufügen</button></div><button onclick="closeModal()">Schließen</button>`);
+function renderTeams(teams,warning=""){
+  const box=document.getElementById("teams");
+  box.innerHTML=(warning?`<div class="card notice warning">${esc(warning)}</div>`:"")+`
+  <div class="teamgrid">${teams.map(t=>{
+    const score=groupScore(t.players);
+    return `<div class="team"><h3><span>${esc(t.name)}</span><span>${score} Punkte</span></h3>
+      ${t.players.map(p=>`<div class="playerrow"><span>${esc(p.name)}<br>${p.positions.map(x=>`<span class="badge">${esc(x)}</span>`).join("")}</span>${levelBadge(p.level)}</div>`).join("")}
+    </div>`;
+  }).join("")}</div>`;
 }
-function addTag(){
-  const x=document.getElementById("newTag").value.trim();if(!x)return;
-  if(!state.positionTags.includes(x))state.positionTags.push(x);
-  save();manageTags();
+
+function renderPositionSettings(){
+  document.getElementById("positionSettings").innerHTML=`
+    <div class="checks">${state.positions.map(p=>`<span class="chip">${esc(p)} <button style="min-height:28px;padding:2px 7px" onclick="removePosition('${encodeURIComponent(p)}')">×</button></span>`).join("")}</div>
+    <div class="toolbar" style="margin-top:12px">
+      <input id="newPosition" type="text" placeholder="Neue Position">
+      <button class="primary" onclick="addPosition()">Position hinzufügen</button>
+    </div>`;
 }
-function removeTag(i){
-  const t=state.positionTags[i];
-  if(!confirm(`Tag "${t}" entfernen? Er wird auch von Spielern entfernt.`))return;
-  state.positionTags.splice(i,1);state.players.forEach(p=>p.positions=(p.positions||[]).filter(x=>x!==t));save();manageTags();
+function addPosition(){
+  const el=document.getElementById("newPosition"),v=el.value.trim();
+  if(!v)return;
+  if(!state.positions.includes(v))state.positions.push(v);
+  save();
 }
+function removePosition(encoded){
+  const pos=decodeURIComponent(encoded);
+  if(DEFAULT_POSITIONS.includes(pos)){alert("Die Standard-Positionen können nicht gelöscht werden.");return;}
+  state.positions=state.positions.filter(x=>x!==pos);
+  state.players.forEach(p=>p.positions=p.positions.filter(x=>x!==pos));
+  save();
+}
+
 function exportJSON(){
   const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="jugendmannschaft-sicherung-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(a.href);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="jugendmannschaft-backup-"+todayISO()+".json";
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-function importJSON(ev){
-  const file=ev.target.files[0];if(!file)return;
+function importJSON(event){
+  const file=event.target.files?.[0]; if(!file)return;
   const r=new FileReader();
-  r.onload=()=>{try{
-    const x=JSON.parse(r.result);
-    if(!x||!Array.isArray(x.players)||!Array.isArray(x.trainings))throw Error();
-    if(!confirm("Die aktuelle Datenbank wird durch die Sicherung ersetzt. Fortfahren?"))return;
-    state={version:1,players:x.players,trainings:x.trainings,positionTags:x.positionTags?.length?x.positionTags:defaultTags};
-    selectedForGame.clear();save();alert("Sicherung erfolgreich importiert.");
-  }catch(e){alert("Die Datei konnte nicht als gültige Sicherung erkannt werden.")}};
-  r.readAsText(file);ev.target.value="";
+  r.onload=()=>{
+    try{
+      const parsed=JSON.parse(r.result);
+      if(!confirm("Vorhandene Daten durch dieses Backup ersetzen?"))return;
+      state=normalizeState(parsed);
+      save();
+      alert("Backup erfolgreich wiederhergestellt.");
+    }catch(e){alert("Die Datei ist kein gültiges Jugendmannschaft-Backup.");}
+    event.target.value="";
+  };
+  r.readAsText(file);
 }
-function clearAll(){if(confirm("Wirklich alle Spieler, Trainings und Daten löschen?")){state=fresh();selectedForGame.clear();save()}}
-function openModal(content){document.getElementById("modalbox").innerHTML=content;document.getElementById("modal").classList.add("open")}
-function closeModal(){document.getElementById("modal").classList.remove("open")}
-document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()});
-render();
-</script>
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+
+function showTab(id){
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("hidden",x.id!==id));
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));
+  if(id==="players")renderPlayers();
+  if(id==="trainings")renderTrainings();
+  if(id==="matchday")renderMatchday();
+  if(id==="settings")renderPositionSettings();
+}
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+
+function renderAll(){
+  document.getElementById("playerCount").textContent=state.players.length;
+  document.getElementById("trainingCount").textContent=state.trainings.length;
+  document.getElementById("squadCount").textContent=Math.min(16,state.players.length);
+  renderPlayers(); renderTrainings(); renderPositionSettings(); renderMatchday();
+}
+renderAll();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 }
 </script>
 </body>
