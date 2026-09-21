@@ -1,6 +1,6 @@
 {
   "name": "Jugendmannschaft",
-  "short_name": "Jugendteam",
+  "short_name": "Jugendmannschaft",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f5f7fb",

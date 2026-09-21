@@ -10,514 +10,140 @@
 <link rel="manifest" href="manifest.json">
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#dbe1ea;--accent:#2563eb;--danger:#dc2626;--ok:#15803d}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-header{position:sticky;top:0;z-index:10;background:#0f172a;color:white;padding:14px 16px}
-header h1{font-size:20px;margin:0 0 3px}
-header small{opacity:.8}
-main{max-width:1200px;margin:auto;padding:12px}
-.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:10px;position:sticky;top:65px;z-index:9;background:var(--bg)}
-.tabs button{white-space:nowrap}
-button,.btn,input,select{font:inherit}
-button,.btn{border:1px solid var(--line);background:white;border-radius:10px;padding:11px 14px;cursor:pointer;min-height:44px}
-button.primary,.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
-button.danger{color:white;background:var(--danger);border-color:var(--danger)}
-button.active{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0;box-shadow:0 1px 2px #00000008}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-h2,h3{margin:5px 0 12px}
-.muted{color:var(--muted)}
-.notice{padding:11px 12px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;margin:8px 0}
-.warning{background:#fff7ed;border-color:#fed7aa}
-.ok{background:#f0fdf4;border-color:#bbf7d0}
-.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-table{border-collapse:collapse;width:100%;min-width:850px}
-th,td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:top}
-th{background:#f8fafc;position:sticky;top:0}
-input[type=text],input[type=date],input[type=number],select{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:10px;min-height:42px;background:white}
-.checks{display:flex;flex-wrap:wrap;gap:6px}
-.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid #cbd5e1;border-radius:999px;padding:5px 9px;background:#fff;font-size:14px}
-.chip input{margin:0}
-.badge{display:inline-block;border-radius:999px;padding:4px 8px;background:#e2e8f0;font-size:13px;margin:2px}
-.badge.strong{background:#dcfce7}.badge.medium{background:#fef3c7}.badge.weak{background:#fee2e2}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
-.stat{font-size:28px;font-weight:700}
-.modal{position:fixed;inset:0;background:#0008;display:none;align-items:flex-end;justify-content:center;z-index:30}
-.modal.show{display:flex}
-.modalbox{background:white;width:min(620px,100%);border-radius:18px 18px 0 0;padding:16px;max-height:92vh;overflow:auto}
-.modalbox h2{margin-top:0}
-.formrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:600px){.formrow{grid-template-columns:1fr}.tabs{top:62px}.card{padding:12px}header{padding:12px}.toolbar button,.toolbar .btn{flex:1 1 auto}}
-.hidden{display:none!important}
-.teamgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
-.team{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
-.team h3{display:flex;justify-content:space-between}
-.playerrow{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #eef2f7}
-.playerrow:last-child{border-bottom:0}
-.right{text-align:right}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{position:sticky;top:0;z-index:10;background:#0f172a;color:white;padding:14px 16px}header h1{font-size:20px;margin:0 0 3px}header small{opacity:.8}
+main{max-width:1200px;margin:auto;padding:12px}.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:10px;position:sticky;top:65px;z-index:9;background:var(--bg)}.tabs button{white-space:nowrap}
+button,.btn,input,select{font:inherit}button,.btn{border:1px solid var(--line);background:white;border-radius:10px;padding:11px 14px;cursor:pointer;min-height:44px}button.primary,.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}button.danger{color:white;background:var(--danger);border-color:var(--danger)}button.active{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8}
+button:disabled{opacity:.55;cursor:default}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0;box-shadow:0 1px 2px #00000008}.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}h2,h3{margin:5px 0 12px}.muted{color:var(--muted)}.notice{padding:11px 12px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;margin:8px 0}.warning{background:#fff7ed;border-color:#fed7aa}.ok{background:#f0fdf4;border-color:#bbf7d0}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}table{border-collapse:collapse;width:100%;min-width:850px}th,td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:top}th{background:#f8fafc;position:sticky;top:0}
+input[type=text],input[type=date],input[type=email],input[type=password],input[type=number],select{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:10px;min-height:42px;background:white}.checks{display:flex;flex-wrap:wrap;gap:6px}.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid #cbd5e1;border-radius:999px;padding:5px 9px;background:#fff;font-size:14px}.chip input{margin:0}.badge{display:inline-block;border-radius:999px;padding:4px 8px;background:#e2e8f0;font-size:13px;margin:2px}.badge.strong{background:#dcfce7}.badge.medium{background:#fef3c7}.badge.weak{background:#fee2e2}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}.stat{font-size:28px;font-weight:700}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:flex-end;justify-content:center;z-index:30}.modal.show{display:flex}.modalbox{background:white;width:min(620px,100%);border-radius:18px 18px 0 0;padding:16px;max-height:92vh;overflow:auto}.modalbox h2{margin-top:0}.formrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:600px){.formrow{grid-template-columns:1fr}.tabs{top:62px}.card{padding:12px}header{padding:12px}.toolbar button,.toolbar .btn{flex:1 1 auto}}
+.hidden{display:none!important}.teamgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}.team{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}.team h3{display:flex;justify-content:space-between}.playerrow{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #eef2f7}.playerrow:last-child{border-bottom:0}.right{text-align:right}
+#loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}#loginCard{width:min(520px,100%)}.small{font-size:13px}.status{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;padding:12px;border-radius:12px;background:#172033;color:white;display:none;box-shadow:0 8px 30px #0003}.status.show{display:block}.status.error{background:#991b1b}.status.ok{background:#166534}
 </style>
 </head>
 <body>
-<header>
-  <h1>Jugendmannschaft</h1>
-  <small>Kader · Training · Spieltag</small>
-</header>
-
-<main>
-  <div class="tabs">
-    <button class="active" data-tab="players">Spieler</button>
-    <button data-tab="trainings">Training</button>
-    <button data-tab="matchday">Spieltag</button>
-    <button data-tab="settings">Einstellungen</button>
+<div id="loginView">
+  <div id="loginCard" class="card">
+    <h1>Jugendmannschaft</h1>
+    <p class="muted">Anmeldung für Trainer</p>
+    <div class="notice small">Die Verbindung wird direkt zwischen dieser App und deinem Supabase-Projekt hergestellt. Der Publishable Key ist für eine Browser-App vorgesehen. Bitte niemals einen Secret Key hier eintragen.</div>
+    <label>Supabase Project URL<input id="cfgUrl" type="text" placeholder="https://xxxxxxxx.supabase.co" autocomplete="url"></label>
+    <label style="display:block;margin-top:10px">Supabase Publishable Key<input id="cfgKey" type="text" placeholder="sb_publishable_…" autocomplete="off"></label>
+    <div class="toolbar" style="margin-top:12px"><button class="primary" onclick="saveConfigAndLogin()">Verbinden</button><button onclick="clearConfig()">Zurücksetzen</button></div>
+    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+    <label>E-Mail<input id="loginEmail" type="email" autocomplete="username" placeholder="trainer@example.de"></label>
+    <label style="display:block;margin-top:10px">Passwort<input id="loginPassword" type="password" autocomplete="current-password"></label>
+    <button class="primary" style="width:100%;margin-top:12px" onclick="login()">Anmelden</button>
+    <p id="loginMsg" class="small muted"></p>
   </div>
-
-  <section id="players" class="tab">
-    <div class="card">
-      <div class="toolbar">
-        <button class="primary" onclick="addPlayer()">+ Spieler</button>
-        <button onclick="addTraining()">+ Training anlegen</button>
-        <button onclick="exportJSON()">JSON sichern</button>
-        <button onclick="document.getElementById('importFile').click()">JSON wiederherstellen</button>
-        <input id="importFile" class="hidden" type="file" accept=".json,application/json" onchange="importJSON(event)">
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div><div class="muted">Spieler</div><div id="playerCount" class="stat">0</div></div>
-        <div><div class="muted">Trainings</div><div id="trainingCount" class="stat">0</div></div>
-        <div><div class="muted">Kader (Top 16)</div><div id="squadCount" class="stat">0</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <h2>Spielerübersicht</h2>
-      <div class="notice">Die Kaderplätze 1–16 werden automatisch nach Trainingsanwesenheit bestimmt. Bei gleicher Quote entscheidet die Anzahl der besuchten Trainings.</div>
-      <div id="playerTable"></div>
-    </div>
-  </section>
-
-  <section id="trainings" class="tab hidden">
-    <div class="card">
-      <div class="toolbar">
-        <button class="primary" onclick="addTraining()">+ Training anlegen</button>
-      </div>
-      <div id="trainingList"></div>
-    </div>
-  </section>
-
-  <section id="matchday" class="tab hidden">
-    <div class="card">
-      <h2>Spieltag</h2>
-      <p class="muted">Wähle die verfügbaren Spieler. Die Aufteilung berücksichtigt zuerst das Level, danach die Position. Wenn möglich werden zwei Teams mit jeweils 4 Feldspielern + 1 Torwart gebildet; übrige Spieler kommen in Team 3.</p>
-      <div id="matchdayControls"></div>
-    </div>
-    <div id="teams"></div>
-  </section>
-
-  <section id="settings" class="tab hidden">
-    <div class="card">
-      <h2>Positionen</h2>
-      <p class="muted">Positionen können mehrfach pro Spieler gewählt werden.</p>
-      <div id="positionSettings"></div>
-    </div>
-    <div class="card">
-      <h2>Daten</h2>
-      <p class="muted">Die Daten werden lokal im Browser gespeichert. Vor größeren Änderungen bitte „JSON sichern“ verwenden.</p>
-      <div class="toolbar">
-        <button onclick="exportJSON()">JSON sichern</button>
-        <button onclick="document.getElementById('importFile2').click()">JSON wiederherstellen</button>
-        <input id="importFile2" class="hidden" type="file" accept=".json,application/json" onchange="importJSON(event)">
-      </div>
-    </div>
-  </section>
-</main>
-
-<div id="modal" class="modal" onclick="if(event.target===this)closeModal()">
-  <div class="modalbox" id="modalContent"></div>
 </div>
 
-<script>
-const STORAGE_KEY = "jugendmannschaft_state_v2";
-const DEFAULT_POSITIONS = ["Torwart","Abwehr","Mittelfeld","Sturm","Trainer"];
-const LEVELS = ["stark","mittel","schwach"];
-let state = loadState();
+<div id="appView" class="hidden">
+<header><h1>Jugendmannschaft</h1><small id="headerSub">Kader · Training · Spieltag</small></header>
+<main>
+  <div class="tabs"><button class="active" data-tab="players">Spieler</button><button data-tab="trainings">Training</button><button data-tab="matchday">Spieltag</button><button data-tab="settings">Einstellungen</button></div>
+  <section id="players" class="tab"><div class="card"><div class="toolbar"><button class="primary adminOnly" onclick="addPlayer()">+ Spieler</button><button onclick="addTraining()">+ Training anlegen</button><button onclick="exportJSON()">JSON sichern</button><button class="adminOnly" onclick="document.getElementById('importFile').click()">JSON wiederherstellen</button><input id="importFile" class="hidden" type="file" accept=".json,application/json" onchange="importJSON(event)"></div><div class="grid" style="margin-top:10px"><div><div class="muted">Spieler</div><div id="playerCount" class="stat">0</div></div><div><div class="muted">Trainings</div><div id="trainingCount" class="stat">0</div></div><div><div class="muted">Kader (Top 16)</div><div id="squadCount" class="stat">0</div></div></div></div><div class="card"><h2>Spielerübersicht</h2><div class="notice">Die Kaderplätze 1–16 werden automatisch nach Trainingsanwesenheit bestimmt. Bei gleicher Quote entscheidet die Anzahl der besuchten Trainings.</div><div id="playerTable"></div></div></section>
+  <section id="trainings" class="tab hidden"><div class="card"><div class="toolbar"><button class="primary" onclick="addTraining()">+ Training anlegen</button></div><div id="trainingList"></div></div></section>
+  <section id="matchday" class="tab hidden"><div class="card"><h2>Spieltag</h2><p class="muted">Wähle die verfügbaren Spieler. Die Aufteilung berücksichtigt zuerst das Level, danach die Position. Wenn möglich werden zwei Teams mit jeweils 4 Feldspielern + 1 Torwart gebildet; übrige Spieler kommen in Team 3.</p><div id="matchdayControls"></div></div><div id="teams"></div></section>
+  <section id="settings" class="tab hidden"><div class="card"><h2>Positionen</h2><p class="muted">Positionen können mehrfach pro Spieler gewählt werden.</p><div id="positionSettings"></div></div><div class="card"><h2>Daten & Anmeldung</h2><p class="muted">Die Mannschaftsdaten liegen in Supabase. JSON sichern erstellt zusätzlich eine lokale Sicherung. Die Anmeldung bleibt auf diesem Gerät gespeichert.</p><div class="toolbar"><button onclick="exportJSON()">JSON sichern</button><button onclick="logout()">Abmelden</button></div><p id="accountInfo" class="small muted"></p></div></section>
+</main></div>
+<div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox" id="modalContent"></div></div><div id="status" class="status"></div>
 
-function uid(prefix="id"){ return prefix+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8); }
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-function blankState(){
-  return {version:2, players:[], trainings:[], positions:[...DEFAULT_POSITIONS]};
-}
-function normalizeState(raw){
-  const s = raw && typeof raw==="object" ? raw : {};
-  const out = blankState();
-  out.version = 2;
-  out.positions = Array.isArray(s.positions) && s.positions.length ? [...new Set(s.positions.map(String).filter(Boolean))] : [...DEFAULT_POSITIONS];
-  out.players = Array.isArray(s.players) ? s.players.map(p=>({
-    id: String(p.id || uid("p")),
-    name: String(p.name || "Neuer Spieler"),
-    positions: Array.isArray(p.positions) ? p.positions.map(String).filter(Boolean) : (p.position ? [String(p.position)] : []),
-    level: LEVELS.includes(p.level) ? p.level : "",
-    created: p.created || new Date().toISOString()
-  })) : [];
-  out.trainings = Array.isArray(s.trainings) ? s.trainings.map(t=>({
-    id:String(t.id||uid("t")),
-    date:String(t.date||""),
-    name:String(t.name||""),
-    attendance: (t.attendance && typeof t.attendance==="object") ? {...t.attendance} : {}
-  })) : [];
-  return out;
-}
-function loadState(){
-  try { return normalizeState(JSON.parse(localStorage.getItem(STORAGE_KEY)||"null")); }
-  catch(e){ return blankState(); }
-}
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); renderAll(); }
-
-function esc(v){
-  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-}
-function fmtDate(d){
-  if(!d) return "";
-  const x = new Date(d+"T00:00:00");
-  return isNaN(x) ? d : x.toLocaleDateString("de-DE");
-}
-function todayISO(){ return new Date().toISOString().slice(0,10); }
-
-function openModal(html){ document.getElementById("modalContent").innerHTML=html; document.getElementById("modal").classList.add("show"); }
-function closeModal(){ document.getElementById("modal").classList.remove("show"); }
-
-function addPlayer(){
-  openModal(`
-    <h2>Spieler hinzufügen</h2>
-    <label>Name<input id="newPlayerName" type="text" autocomplete="off" placeholder="Vor- und Nachname"></label>
-    <div class="toolbar" style="margin-top:12px">
-      <button class="primary" onclick="saveNewPlayer()">Speichern</button>
-      <button onclick="closeModal()">Abbrechen</button>
-    </div>`);
-  setTimeout(()=>document.getElementById("newPlayerName")?.focus(),50);
-}
-function saveNewPlayer(){
-  const name=document.getElementById("newPlayerName").value.trim();
-  if(!name) return;
-  state.players.push({id:uid("p"),name,positions:[],level:"",created:new Date().toISOString()});
-  save(); closeModal();
-}
-function editPlayer(id){
-  const p=state.players.find(x=>x.id===id); if(!p)return;
-  openModal(`
-    <h2>Spieler bearbeiten</h2>
-    <label>Name<input id="editName" type="text" value="${esc(p.name)}"></label>
-    <label style="display:block;margin-top:10px">Level
-      <select id="editLevel">
-        <option value="">—</option>
-        ${LEVELS.map(l=>`<option value="${l}" ${p.level===l?"selected":""}>${l}</option>`).join("")}
-      </select>
-    </label>
-    <div style="margin-top:10px"><b>Position</b><div class="checks" style="margin-top:6px">
-      ${state.positions.map(pos=>`<label class="chip"><input type="checkbox" name="editPos" value="${esc(pos)}" ${p.positions.includes(pos)?"checked":""}>${esc(pos)}</label>`).join("")}
-    </div></div>
-    <div class="toolbar" style="margin-top:12px">
-      <button class="primary" onclick="savePlayer('${id}')">Speichern</button>
-      <button onclick="closeModal()">Abbrechen</button>
-      <button class="danger" onclick="deletePlayer('${id}')">Spieler löschen</button>
-    </div>`);
-}
-function savePlayer(id){
-  const p=state.players.find(x=>x.id===id); if(!p)return;
-  p.name=document.getElementById("editName").value.trim()||p.name;
-  p.level=document.getElementById("editLevel").value;
-  p.positions=[...document.querySelectorAll('input[name="editPos"]:checked')].map(x=>x.value);
-  save(); closeModal();
-}
-function deletePlayer(id){
-  if(!confirm("Spieler wirklich löschen?")) return;
-  state.players=state.players.filter(p=>p.id!==id);
-  state.trainings.forEach(t=>delete t.attendance[id]);
-  save(); closeModal();
-}
-
-function attendanceStats(p){
-  let attended=0;
-  for(const t of state.trainings) if(t.attendance[p.id]) attended++;
-  const total=state.trainings.length;
-  return {attended,total,rate:total?attended/total:0};
-}
-function sortedPlayers(){
-  return [...state.players].sort((a,b)=>{
-    const A=attendanceStats(a),B=attendanceStats(b);
-    return B.rate-A.rate || B.attended-A.attended || a.name.localeCompare(b.name,"de");
-  });
-}
-function isSquad(p){
-  return sortedPlayers().slice(0,16).some(x=>x.id===p.id);
-}
-function levelBadge(level){
-  if(!level) return '<span class="badge">kein Level</span>';
-  const c=level==="stark"?"strong":level==="mittel"?"medium":"weak";
-  return `<span class="badge ${c}">${esc(level)}</span>`;
-}
-
-function renderPlayers(){
-  const rows=sortedPlayers().map((p,i)=>{
-    const a=attendanceStats(p);
-    const pos=p.positions.length?p.positions.map(x=>`<span class="badge">${esc(x)}</span>`).join(""):'<span class="muted">—</span>';
-    return `<tr>
-      <td><b>${i+1}.</b> ${esc(p.name)} ${isSquad(p)?'<span class="badge strong">Kader</span>':''}</td>
-      <td>${pos}</td>
-      <td>${levelBadge(p.level)}</td>
-      <td>${a.attended}/${a.total} (${Math.round(a.rate*100)}%)</td>
-      <td class="right"><button onclick="editPlayer('${p.id}')">Bearbeiten</button></td>
-    </tr>`;
-  }).join("");
-  document.getElementById("playerTable").innerHTML = state.players.length ? `
-    <div class="tablewrap"><table>
-      <thead><tr><th>Spieler / Rang</th><th>Position</th><th>Level</th><th>Anwesenheit</th><th></th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>` : '<p class="muted">Noch keine Spieler angelegt.</p>';
-}
-
-function addTraining(){
-  openModal(`
-    <h2>Training anlegen</h2>
-    <div class="formrow">
-      <label>Datum<input id="trainingDate" type="date" value="${todayISO()}"></label>
-      <label>Name (optional)<input id="trainingName" type="text" placeholder="z. B. Training"></label>
-    </div>
-    <div class="toolbar" style="margin-top:14px">
-      <button class="primary" onclick="saveTraining()">Training speichern</button>
-      <button onclick="closeModal()">Abbrechen</button>
-    </div>`);
-  setTimeout(()=>document.getElementById("trainingDate")?.focus(),50);
-}
-function saveTraining(){
-  const date=document.getElementById("trainingDate").value;
-  if(!date){ alert("Bitte ein Datum auswählen."); return; }
-  const name=document.getElementById("trainingName").value.trim();
-  state.trainings.push({id:uid("t"),date,name,attendance:{}});
-  state.trainings.sort((a,b)=>a.date.localeCompare(b.date));
-  save(); closeModal();
-  showTab("trainings");
-}
-function deleteTraining(id){
-  if(!confirm("Training wirklich löschen?")) return;
-  state.trainings=state.trainings.filter(t=>t.id!==id);
-  save();
-}
-function toggleAttendance(tid,pid,checked){
-  const t=state.trainings.find(x=>x.id===tid); if(!t)return;
-  t.attendance[pid]=checked;
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
-  renderAll();
-}
-function renderTrainings(){
-  const box=document.getElementById("trainingList");
-  if(!state.trainings.length){box.innerHTML='<p class="muted">Noch kein Training angelegt. Tippe oben auf „+ Training anlegen“.</p>';return;}
-  box.innerHTML=state.trainings.map((t,idx)=>{
-    const attended=state.players.filter(p=>t.attendance[p.id]).length;
-    return `<div class="card">
-      <div class="toolbar" style="justify-content:space-between">
-        <div><h3>${esc(t.name||"Training")} – ${fmtDate(t.date)}</h3><span class="muted">${attended} von ${state.players.length} anwesend</span></div>
-        <button class="danger" onclick="deleteTraining('${t.id}')">Löschen</button>
-      </div>
-      <div class="tablewrap"><table>
-        <thead><tr><th>Spieler</th><th>Anwesend</th></tr></thead>
-        <tbody>${sortedPlayers().map(p=>`<tr>
-          <td>${esc(p.name)}</td>
-          <td><label class="chip"><input type="checkbox" ${t.attendance[p.id]?"checked":""} onchange="toggleAttendance('${t.id}','${p.id}',this.checked)"> anwesend</label></td>
-        </tr>`).join("")}</tbody>
-      </table></div>
-    </div>`;
-  }).join("");
-}
-
-function renderMatchday(){
-  const squad=sortedPlayers().slice(0,16);
-  if(!squad.length){
-    document.getElementById("matchdayControls").innerHTML='<p class="muted">Zuerst Spieler anlegen.</p>';
-    document.getElementById("teams").innerHTML="";
-    return;
-  }
-  const selectedIds = getSelectedMatchday();
-  document.getElementById("matchdayControls").innerHTML=`
-    <div class="notice">Standardmäßig sind die aktuellen Top-16 ausgewählt.</div>
-    <div class="toolbar">
-      <button onclick="selectSquad()">Top 16 auswählen</button>
-      <button onclick="clearMatchday()">Auswahl leeren</button>
-      <button class="primary" onclick="balanceTeams()">Teams bilden</button>
-    </div>
-    <div class="checks" style="margin-top:10px">
-      ${state.players.map(p=>`<label class="chip"><input type="checkbox" class="matchPlayer" value="${p.id}" ${selectedIds.has(p.id)?"checked":""}>${esc(p.name)}</label>`).join("")}
-    </div>`;
-  document.querySelectorAll(".matchPlayer").forEach(x=>x.addEventListener("change",storeMatchdaySelection));
-}
+const CONFIG_KEY='jugendmannschaft_supabase_config_v1';
+const DEFAULT_POSITIONS=['Torwart','Abwehr','Mittelfeld','Sturm','Trainer'];
+const LEVELS=['stark','mittel','schwach'];
+let supabase=null, currentUser=null, team=null, season=null, role='trainer';
+let state={players:[],trainings:[],positions:[]};
 let matchdaySelection=new Set();
-function getSelectedMatchday(){
-  if(matchdaySelection.size===0) return new Set(sortedPlayers().slice(0,16).map(p=>p.id));
-  return new Set(matchdaySelection);
-}
-function storeMatchdaySelection(){
-  matchdaySelection=new Set([...document.querySelectorAll(".matchPlayer:checked")].map(x=>x.value));
-}
-function selectSquad(){matchdaySelection=new Set(sortedPlayers().slice(0,16).map(p=>p.id));renderMatchday();}
-function clearMatchday(){matchdaySelection=new Set();renderMatchday();}
 
-function levelValue(p){return p.level==="stark"?3:p.level==="mittel"?2:p.level==="schwach"?1:2;}
-function positionPenalty(group){
-  const counts={Torwart:0,Abwehr:0,Mittelfeld:0,Sturm:0};
-  group.forEach(p=>p.positions.forEach(pos=>{if(pos in counts)counts[pos]++;}));
-  let pen=0;
-  if(group.some(p=>p.positions.includes("Torwart"))) pen+=0;
-  if(group.some(p=>p.positions.includes("Abwehr"))) pen+=0;
-  if(group.some(p=>p.positions.includes("Mittelfeld"))) pen+=0;
-  if(group.some(p=>p.positions.includes("Sturm"))) pen+=0;
-  return pen;
-}
-function combo(arr,k,start=0,prefix=[],out=[]){
-  if(prefix.length===k){out.push(prefix.slice());return out;}
-  for(let i=start;i<=arr.length-(k-prefix.length);i++) combo(arr,k,i+1,[...prefix,arr[i]],out);
-  return out;
-}
-function groupScore(g){return g.reduce((s,p)=>s+levelValue(p),0);}
-function hasGK(p){return p.positions.includes("Torwart");}
-function bestBalancedTwo(field){
-  if(field.length<8)return null;
-  let best=null,bestCost=Infinity;
-  const aCombos=combo(field,4);
-  for(const A of aCombos){
-    const aIds=new Set(A.map(p=>p.id));
-    const remaining=field.filter(p=>!aIds.has(p.id));
-    const bCombos=combo(remaining,4);
-    const sa=groupScore(A);
-    for(const B of bCombos){
-      const sb=groupScore(B);
-      const diff=Math.abs(sa-sb);
-      const cost=diff*1000 + Math.abs(A.filter(hasGK).length-B.filter(hasGK).length);
-      if(cost<bestCost){bestCost=cost;best={A,B};}
-    }
-  }
-  return best;
-}
-function chooseBestFive(players){
-  if(players.length<5)return null;
-  let best=null,bestCost=Infinity;
-  for(const g of combo(players,5)){
-    const gk=g.filter(hasGK).length;
-    if(gk<1)continue;
-    const cost=Math.abs(groupScore(g)-10)*10 + (gk>1?gk-1:0);
-    if(cost<bestCost){bestCost=cost;best=g;}
-  }
-  return best;
-}
-function balanceTeams(){
-  storeMatchdaySelection();
-  const selected=state.players.filter(p=>matchdaySelection.has(p.id));
-  if(selected.length<5){alert("Bitte mindestens 5 Spieler auswählen.");return;}
-  const gks=selected.filter(hasGK);
-  const field=selected.filter(p=>!hasGK(p));
-  let teams=[];
-  let warning="";
-  if(gks.length>=2 && field.length>=8){
-    const gkPairs=[[gks[0],gks[1]]];
-    const split=bestBalancedTwo(field);
-    if(split){
-      teams=[
-        {name:"Team 1",players:[gks[0],...split.A]},
-        {name:"Team 2",players:[gks[1],...split.B]}
-      ];
-      const used=new Set([...split.A,...split.B].map(p=>p.id));
-      const rest=selected.filter(p=>!used.has(p.id) && !gks.slice(0,2).some(g=>g.id===p.id));
-      if(rest.length)teams.push({name:"Team 3",players:rest});
-    }
-  } else if(gks.length>=1 && field.length>=4){
-    const five=chooseBestFive(selected);
-    if(five){
-      teams=[{name:"Team 1",players:five}];
-      const used=new Set(five.map(p=>p.id));
-      teams.push({name:"Team 3",players:selected.filter(p=>!used.has(p.id))});
-      warning="Für zwei vollständige Teams fehlen mindestens ein Torwart oder genügend Feldspieler.";
-    }
-  } else {
-    warning="Mit der aktuellen Auswahl ist kein vollständiges Team mit 4 Feldspielern + 1 Torwart möglich. Die Spieler werden dennoch nach Level gruppiert.";
-    const sorted=[...selected].sort((a,b)=>levelValue(b)-levelValue(a));
-    teams=[{name:"Team 1",players:sorted.slice(0,Math.ceil(sorted.length/2))},{name:"Team 2",players:sorted.slice(Math.ceil(sorted.length/2))}];
-  }
-  renderTeams(teams,warning);
-}
-function renderTeams(teams,warning=""){
-  const box=document.getElementById("teams");
-  box.innerHTML=(warning?`<div class="card notice warning">${esc(warning)}</div>`:"")+`
-  <div class="teamgrid">${teams.map(t=>{
-    const score=groupScore(t.players);
-    return `<div class="team"><h3><span>${esc(t.name)}</span><span>${score} Punkte</span></h3>
-      ${t.players.map(p=>`<div class="playerrow"><span>${esc(p.name)}<br>${p.positions.map(x=>`<span class="badge">${esc(x)}</span>`).join("")}</span>${levelBadge(p.level)}</div>`).join("")}
-    </div>`;
-  }).join("")}</div>`;
+const $=id=>document.getElementById(id);
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmtDate(d){if(!d)return '';const x=new Date(d+'T00:00:00');return isNaN(x)?d:x.toLocaleDateString('de-DE');}
+function todayISO(){return new Date().toISOString().slice(0,10);}
+function showStatus(msg,type=''){const el=$('status');el.textContent=msg;el.className='status show '+type;clearTimeout(showStatus.t);showStatus.t=setTimeout(()=>el.className='status',3500);}
+function setLoginMsg(msg,error=false){$('loginMsg').textContent=msg||'';$('loginMsg').style.color=error?'#b91c1c':'';}
+function openModal(html){$('modalContent').innerHTML=html;$('modal').classList.add('show');}
+function closeModal(){$('modal').classList.remove('show');}
+function config(){try{return JSON.parse(localStorage.getItem(CONFIG_KEY)||'null')}catch{return null}}
+function initConfigFields(){const c=config();if(c){$('cfgUrl').value=c.url||'';$('cfgKey').value=c.key||'';}}
+function clearConfig(){localStorage.removeItem(CONFIG_KEY);$('cfgUrl').value='';$('cfgKey').value='';setLoginMsg('Konfiguration gelöscht.');}
+function getClient(){const c=config();if(!c?.url||!c?.key)throw new Error('Bitte zuerst Project URL und Publishable Key eintragen.');if(!supabase||supabase.__configUrl!==c.url){supabase=createClient(c.url,c.key);try{supabase.__configUrl=c.url}catch{}}return supabase;}
+window.saveConfigAndLogin=async()=>{const url=$('cfgUrl').value.trim().replace(/\/$/,'');const key=$('cfgKey').value.trim();if(!url||!key){setLoginMsg('Bitte Project URL und Publishable Key eintragen.',true);return}localStorage.setItem(CONFIG_KEY,JSON.stringify({url,key}));setLoginMsg('Verbindung wird geprüft …');try{getClient();setLoginMsg('Verbindung hergestellt. Bitte jetzt E-Mail und Passwort eingeben.');showStatus('Supabase-Verbindung gespeichert.','ok');}catch(e){setLoginMsg(e.message,true);}};
+window.login=async()=>{try{const c=getClient();const email=$('loginEmail').value.trim();const password=$('loginPassword').value;if(!email||!password){setLoginMsg('Bitte E-Mail und Passwort eingeben.',true);return}setLoginMsg('Anmeldung …');const {data,error}=await c.auth.signInWithPassword({email,password});if(error)throw error;currentUser=data.user;await loadApp();}catch(e){console.error(e);setLoginMsg('Anmeldung fehlgeschlagen: '+(e.message||e),true);}};
+window.logout=async()=>{if(supabase)await supabase.auth.signOut();currentUser=null;team=null;season=null;$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');setLoginMsg('Abgemeldet.');};
+
+async function loadApp(){
+  const c=getClient();
+  const {data:members,error:me}=await c.from('team_members').select('team_id,user_id,role').eq('user_id',currentUser.id);
+  if(me)throw me;if(!members?.length)throw new Error('Dieser Trainer ist noch keiner Mannschaft zugeordnet.');
+  team=members[0].team_id;role=members[0].role||'trainer';
+  const {data:teamRow,error:te}=await c.from('teams').select('id,name').eq('id',team).single();if(te)throw te;
+  const {data:seasonRows,error:se}=await c.from('seasons').select('id,name,start_date,end_date,is_active').eq('team_id',team).eq('is_active',true).limit(1);if(se)throw se;season=seasonRows?.[0]||null;
+  const {data:pos,error:pe}=await c.from('positions').select('id,name,sort_order').eq('team_id',team).order('sort_order').order('name');if(pe)throw pe;
+  const {data:players,error:pl}=await c.from('players').select('id,name,level,active,created_at').eq('team_id',team).eq('active',true).order('name');if(pl)throw pl;
+  const {data:pp,error:ppE}=await c.from('player_positions').select('player_id,position_id').in('player_id',(players||[]).map(x=>x.id).length?(players||[]).map(x=>x.id):['00000000-0000-0000-0000-000000000000']);if(ppE)throw ppE;
+  const {data:trainings,error:tr}=await c.from('trainings').select('id,training_date,name').eq('team_id',team).order('training_date');if(tr)throw tr;
+  const tids=(trainings||[]).map(x=>x.id);let attendance=[];if(tids.length){const {data:a,error:ae}=await c.from('attendance').select('training_id,player_id,present').in('training_id',tids);if(ae)throw ae;attendance=a||[];}
+  state.positions=(pos||[]).map(x=>x.name);
+  state.players=(players||[]).map(p=>({...p,positions:(pp||[]).filter(x=>x.player_id===p.id).map(x=>(pos||[]).find(y=>y.id===x.position_id)?.name).filter(Boolean)}));
+  state.trainings=(trainings||[]).map(t=>{const at={};attendance.filter(a=>a.training_id===t.id).forEach(a=>{at[a.player_id]=!!a.present});return {id:t.id,date:t.training_date,name:t.name||'',attendance:at};});
+  $('headerSub').textContent=(teamRow?.name||'Jugendmannschaft')+(season?' · Saison '+season.name:'')+' · '+(role==='admin'?'Admin':'Trainer');
+  $('accountInfo').textContent=currentUser?.email?`Angemeldet als ${currentUser.email} · Rolle: ${role}`:'';
+  document.querySelectorAll('.adminOnly').forEach(x=>x.classList.toggle('hidden',role!=='admin'));
+  $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');renderAll();
 }
 
-function renderPositionSettings(){
-  document.getElementById("positionSettings").innerHTML=`
-    <div class="checks">${state.positions.map(p=>`<span class="chip">${esc(p)} <button style="min-height:28px;padding:2px 7px" onclick="removePosition('${encodeURIComponent(p)}')">×</button></span>`).join("")}</div>
-    <div class="toolbar" style="margin-top:12px">
-      <input id="newPosition" type="text" placeholder="Neue Position">
-      <button class="primary" onclick="addPosition()">Position hinzufügen</button>
-    </div>`;
-}
-function addPosition(){
-  const el=document.getElementById("newPosition"),v=el.value.trim();
-  if(!v)return;
-  if(!state.positions.includes(v))state.positions.push(v);
-  save();
-}
-function removePosition(encoded){
-  const pos=decodeURIComponent(encoded);
-  if(DEFAULT_POSITIONS.includes(pos)){alert("Die Standard-Positionen können nicht gelöscht werden.");return;}
-  state.positions=state.positions.filter(x=>x!==pos);
-  state.players.forEach(p=>p.positions=p.positions.filter(x=>x!==pos));
-  save();
-}
+async function dbInsert(table,row){const {data,error}=await getClient().from(table).insert(row).select().single();if(error)throw error;return data;}
+async function dbUpdate(table,match,values){let q=getClient().from(table).update(values);for(const [k,v] of Object.entries(match))q=q.eq(k,v);const {error}=await q;if(error)throw error;}
+async function dbDelete(table,match){let q=getClient().from(table).delete();for(const [k,v] of Object.entries(match))q=q.eq(k,v);const {error}=await q;if(error)throw error;}
+function adminGuard(){if(role!=='admin'){showStatus('Nur ein Admin darf den Kader ändern.','error');return false}return true;}
 
-function exportJSON(){
-  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="jugendmannschaft-backup-"+todayISO()+".json";
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-}
-function importJSON(event){
-  const file=event.target.files?.[0]; if(!file)return;
-  const r=new FileReader();
-  r.onload=()=>{
-    try{
-      const parsed=JSON.parse(r.result);
-      if(!confirm("Vorhandene Daten durch dieses Backup ersetzen?"))return;
-      state=normalizeState(parsed);
-      save();
-      alert("Backup erfolgreich wiederhergestellt.");
-    }catch(e){alert("Die Datei ist kein gültiges Jugendmannschaft-Backup.");}
-    event.target.value="";
-  };
-  r.readAsText(file);
-}
+window.addPlayer=()=>{if(!adminGuard())return;openModal(`<h2>Spieler hinzufügen</h2><label>Name<input id="newPlayerName" type="text" autocomplete="off" placeholder="Vor- und Nachname"></label><div class="toolbar" style="margin-top:12px"><button class="primary" onclick="saveNewPlayer()">Speichern</button><button onclick="closeModal()">Abbrechen</button></div>`);setTimeout(()=>$('newPlayerName')?.focus(),50);};
+window.saveNewPlayer=async()=>{try{const name=$('newPlayerName').value.trim();if(!name)return;const p=await dbInsert('players',{team_id:team,name,level:null,active:true});state.players.push({...p,positions:[]});closeModal();renderAll();showStatus('Spieler gespeichert.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
+window.editPlayer=id=>{const p=state.players.find(x=>x.id===id);if(!p)return;if(!adminGuard())return;openModal(`<h2>Spieler bearbeiten</h2><label>Name<input id="editName" type="text" value="${esc(p.name)}"></label><label style="display:block;margin-top:10px">Level<select id="editLevel"><option value="">—</option>${LEVELS.map(l=>`<option value="${l}" ${p.level===l?'selected':''}>${l}</option>`).join('')}</select></label><div style="margin-top:10px"><b>Position</b><div class="checks" style="margin-top:6px">${state.positions.map(pos=>`<label class="chip"><input type="checkbox" name="editPos" value="${esc(pos)}" ${p.positions.includes(pos)?'checked':''}>${esc(pos)}</label>`).join('')}</div></div><div class="toolbar" style="margin-top:12px"><button class="primary" onclick="savePlayer('${id}')">Speichern</button><button onclick="closeModal()">Abbrechen</button><button class="danger" onclick="deletePlayer('${id}')">Spieler löschen</button></div>`);};
+window.savePlayer=async id=>{try{const p=state.players.find(x=>x.id===id);if(!p)return;const name=$('editName').value.trim()||p.name;const level=$('editLevel').value||null;const positions=[...document.querySelectorAll('input[name="editPos"]:checked')].map(x=>x.value);await dbUpdate('players',{id},{name,level});const posRows=(state.positions||[]).filter(x=>positions.includes(x)).map(name=>statePosId(name)).filter(Boolean).map(position_id=>({player_id:id,position_id}));await dbDelete('player_positions',{player_id:id});if(posRows.length){const {error}=await getClient().from('player_positions').insert(posRows);if(error)throw error;}p.name=name;p.level=level||'';p.positions=positions;closeModal();renderAll();showStatus('Spieler gespeichert.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
+async function statePosId(name){const {data,error}=await getClient().from('positions').select('id').eq('team_id',team).eq('name',name).maybeSingle();if(error)throw error;return data?.id||null;}
+window.deletePlayer=async id=>{if(!adminGuard())return;if(!confirm('Spieler wirklich löschen?'))return;try{await dbUpdate('players',{id},{active:false});state.players=state.players.filter(p=>p.id!==id);state.trainings.forEach(t=>delete t.attendance[id]);closeModal();renderAll();showStatus('Spieler gelöscht.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
 
-function showTab(id){
-  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("hidden",x.id!==id));
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));
-  if(id==="players")renderPlayers();
-  if(id==="trainings")renderTrainings();
-  if(id==="matchday")renderMatchday();
-  if(id==="settings")renderPositionSettings();
-}
-document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+function attendanceStats(p){let attended=0;for(const t of state.trainings)if(t.attendance[p.id])attended++;const total=state.trainings.length;return {attended,total,rate:total?attended/total:0};}
+function sortedPlayers(){return [...state.players].sort((a,b)=>{const A=attendanceStats(a),B=attendanceStats(b);return B.rate-A.rate||B.attended-A.attended||a.name.localeCompare(b.name,'de');});}
+function isSquad(p){return sortedPlayers().slice(0,16).some(x=>x.id===p.id);}
+function levelBadge(level){if(!level)return '<span class="badge">kein Level</span>';const c=level==='stark'?'strong':level==='mittel'?'medium':'weak';return `<span class="badge ${c}">${esc(level)}</span>`;}
+function renderPlayers(){const rows=sortedPlayers().map((p,i)=>{const a=attendanceStats(p);const pos=p.positions.length?p.positions.map(x=>`<span class="badge">${esc(x)}</span>`).join(''):'<span class="muted">—</span>';return `<tr><td><b>${i+1}.</b> ${esc(p.name)} ${isSquad(p)?'<span class="badge strong">Kader</span>':''}</td><td>${pos}</td><td>${levelBadge(p.level)}</td><td>${a.attended}/${a.total} (${Math.round(a.rate*100)}%)</td><td class="right"><button onclick="editPlayer('${p.id}')">Bearbeiten</button></td></tr>`;}).join('');$('playerTable').innerHTML=state.players.length?`<div class="tablewrap"><table><thead><tr><th>Spieler / Rang</th><th>Position</th><th>Level</th><th>Anwesenheit</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`:'<p class="muted">Noch keine Spieler angelegt.</p>';}
 
-function renderAll(){
-  document.getElementById("playerCount").textContent=state.players.length;
-  document.getElementById("trainingCount").textContent=state.trainings.length;
-  document.getElementById("squadCount").textContent=Math.min(16,state.players.length);
-  renderPlayers(); renderTrainings(); renderPositionSettings(); renderMatchday();
-}
-renderAll();
+window.addTraining=()=>{openModal(`<h2>Training anlegen</h2><div class="formrow"><label>Datum<input id="trainingDate" type="date" value="${todayISO()}"></label><label>Name (optional)<input id="trainingName" type="text" placeholder="z. B. Training"></label></div><div class="toolbar" style="margin-top:14px"><button class="primary" onclick="saveTraining()">Training speichern</button><button onclick="closeModal()">Abbrechen</button></div>`);};
+window.saveTraining=async()=>{try{const date=$('trainingDate').value;if(!date){alert('Bitte ein Datum auswählen.');return}const name=$('trainingName').value.trim();const t=await dbInsert('trainings',{team_id:team,season_id:season?.id||null,training_date:date,name:name||null});state.trainings.push({id:t.id,date:t.training_date,name:t.name||'',attendance:{}});state.trainings.sort((a,b)=>a.date.localeCompare(b.date));closeModal();renderAll();showTab('trainings');showStatus('Training gespeichert.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
+window.deleteTraining=async id=>{if(!confirm('Training wirklich löschen?'))return;try{await dbDelete('trainings',{id});state.trainings=state.trainings.filter(t=>t.id!==id);renderAll();showStatus('Training gelöscht.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
+window.toggleAttendance=async(tid,pid,checked)=>{try{const {error}=await getClient().from('attendance').upsert({training_id:tid,player_id:pid,present:checked},{onConflict:'training_id,player_id'});if(error)throw error;const t=state.trainings.find(x=>x.id===tid);if(t)t.attendance[pid]=checked;renderAll();}catch(e){showStatus(e.message||String(e),'error');}};
+function renderTrainings(){const box=$('trainingList');if(!state.trainings.length){box.innerHTML='<p class="muted">Noch kein Training angelegt. Tippe oben auf „+ Training anlegen“.</p>';return;}box.innerHTML=state.trainings.map(t=>{const attended=state.players.filter(p=>t.attendance[p.id]).length;return `<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3>${esc(t.name||'Training')} – ${fmtDate(t.date)}</h3><span class="muted">${attended} von ${state.players.length} anwesend</span></div><button class="danger" onclick="deleteTraining('${t.id}')">Löschen</button></div><div class="tablewrap"><table><thead><tr><th>Spieler</th><th>Anwesend</th></tr></thead><tbody>${sortedPlayers().map(p=>`<tr><td>${esc(p.name)}</td><td><label class="chip"><input type="checkbox" ${t.attendance[p.id]?'checked':''} onchange="toggleAttendance('${t.id}','${p.id}',this.checked)"> anwesend</label></td></tr>`).join('')}</tbody></table></div></div>`;}).join('');}
 
-if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
-}
+function getSelectedMatchday(){if(matchdaySelection.size===0)return new Set(sortedPlayers().slice(0,16).map(p=>p.id));return new Set(matchdaySelection);}
+function storeMatchdaySelection(){matchdaySelection=new Set([...document.querySelectorAll('.matchPlayer:checked')].map(x=>x.value));}
+window.selectSquad=()=>{matchdaySelection=new Set(sortedPlayers().slice(0,16).map(p=>p.id));renderMatchday();};window.clearMatchday=()=>{matchdaySelection=new Set();renderMatchday();};
+function renderMatchday(){const squad=sortedPlayers().slice(0,16);if(!squad.length){$('matchdayControls').innerHTML='<p class="muted">Zuerst Spieler anlegen.</p>';$('teams').innerHTML='';return}const selectedIds=getSelectedMatchday();$('matchdayControls').innerHTML=`<div class="notice">Standardmäßig sind die aktuellen Top-16 ausgewählt.</div><div class="toolbar"><button onclick="selectSquad()">Top 16 auswählen</button><button onclick="clearMatchday()">Auswahl leeren</button><button class="primary" onclick="balanceTeams()">Teams bilden</button></div><div class="checks" style="margin-top:10px">${state.players.map(p=>`<label class="chip"><input type="checkbox" class="matchPlayer" value="${p.id}" ${selectedIds.has(p.id)?'checked':''}>${esc(p.name)}</label>`).join('')}</div>`;document.querySelectorAll('.matchPlayer').forEach(x=>x.addEventListener('change',storeMatchdaySelection));}
+function levelValue(p){return p.level==='stark'?3:p.level==='mittel'?2:p.level==='schwach'?1:2;}function combo(arr,k,start=0,prefix=[],out=[]){if(prefix.length===k){out.push(prefix.slice());return out;}for(let i=start;i<=arr.length-(k-prefix.length);i++)combo(arr,k,i+1,[...prefix,arr[i]],out);return out;}function groupScore(g){return g.reduce((s,p)=>s+levelValue(p),0);}function hasGK(p){return p.positions.includes('Torwart');}
+function bestBalancedTwo(field){if(field.length<8)return null;let best=null,bestCost=Infinity;for(const A of combo(field,4)){const ids=new Set(A.map(p=>p.id));const remaining=field.filter(p=>!ids.has(p.id));const sa=groupScore(A);for(const B of combo(remaining,4)){const sb=groupScore(B);const diff=Math.abs(sa-sb);const cost=diff*1000+Math.abs(A.filter(hasGK).length-B.filter(hasGK).length);if(cost<bestCost){bestCost=cost;best={A,B};}}}return best;}
+function chooseBestFive(players){if(players.length<5)return null;let best=null,bestCost=Infinity;for(const g of combo(players,5)){const gk=g.filter(hasGK).length;if(gk<1)continue;const cost=Math.abs(groupScore(g)-10)*10+(gk>1?gk-1:0);if(cost<bestCost){bestCost=cost;best=g;}}return best;}
+window.balanceTeams=()=>{storeMatchdaySelection();const selected=state.players.filter(p=>matchdaySelection.has(p.id));if(selected.length<5){alert('Bitte mindestens 5 Spieler auswählen.');return}const gks=selected.filter(hasGK),field=selected.filter(p=>!hasGK(p));let teams=[],warning='';if(gks.length>=2&&field.length>=8){const split=bestBalancedTwo(field);if(split){teams=[{name:'Team 1',players:[gks[0],...split.A]},{name:'Team 2',players:[gks[1],...split.B]}];const used=new Set([...split.A,...split.B].map(p=>p.id));const rest=selected.filter(p=>!used.has(p.id)&&!gks.slice(0,2).some(g=>g.id===p.id));if(rest.length)teams.push({name:'Team 3',players:rest});}}else if(gks.length>=1&&field.length>=4){const five=chooseBestFive(selected);if(five){teams=[{name:'Team 1',players:five}];const used=new Set(five.map(p=>p.id));teams.push({name:'Team 3',players:selected.filter(p=>!used.has(p.id))});warning='Für zwei vollständige Teams fehlen mindestens ein Torwart oder genügend Feldspieler.';}}else{warning='Mit der aktuellen Auswahl ist kein vollständiges Team mit 4 Feldspielern + 1 Torwart möglich. Die Spieler werden dennoch nach Level gruppiert.';const sorted=[...selected].sort((a,b)=>levelValue(b)-levelValue(a));teams=[{name:'Team 1',players:sorted.slice(0,Math.ceil(sorted.length/2))},{name:'Team 2',players:sorted.slice(Math.ceil(sorted.length/2))}];}renderTeams(teams,warning);};
+function renderTeams(teams,warning=''){const box=$('teams');box.innerHTML=(warning?`<div class="card notice warning">${esc(warning)}</div>`:'')+`<div class="teamgrid">${teams.map(t=>{const score=groupScore(t.players);return `<div class="team"><h3><span>${esc(t.name)}</span><span>${score} Punkte</span></h3>${t.players.map(p=>`<div class="playerrow"><span>${esc(p.name)}<br>${p.positions.map(x=>`<span class="badge">${esc(x)}</span>`).join('')}</span>${levelBadge(p.level)}</div>`).join('')}</div>`;}).join('')}</div>`;}
+
+function renderPositionSettings(){$('positionSettings').innerHTML=`<div class="checks">${state.positions.map(p=>`<span class="chip">${esc(p)} <button style="min-height:28px;padding:2px 7px" onclick="removePosition('${encodeURIComponent(p)}')">×</button></span>`).join('')}</div><div class="toolbar" style="margin-top:12px"><input id="newPosition" type="text" placeholder="Neue Position"><button class="primary" onclick="addPosition()">Position hinzufügen</button></div>`;}
+window.addPosition=async()=>{if(!adminGuard())return;try{const el=$('newPosition'),v=el.value.trim();if(!v)return;if(state.positions.includes(v))return;const max=state.positions.length?state.positions.length:0;await dbInsert('positions',{team_id:team,name:v,sort_order:max});state.positions.push(v);renderPositionSettings();showStatus('Position hinzugefügt.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
+window.removePosition=async encoded=>{if(!adminGuard())return;const pos=decodeURIComponent(encoded);if(DEFAULT_POSITIONS.includes(pos)){alert('Die Standard-Positionen können nicht gelöscht werden.');return}if(!confirm(`Position „${pos}“ wirklich löschen?`))return;try{const {data:p,error:pe}=await getClient().from('positions').select('id').eq('team_id',team).eq('name',pos).maybeSingle();if(pe)throw pe;if(p?.id)await dbDelete('positions',{id:p.id});state.positions=state.positions.filter(x=>x!==pos);state.players.forEach(p=>p.positions=p.positions.filter(x=>x!==pos));renderAll();showStatus('Position gelöscht.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
+
+function exportJSON(){const backup={version:3,exportedAt:new Date().toISOString(),teamId:team,season:season,positions:state.positions,players:state.players,trainings:state.trainings};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jugendmannschaft-backup-'+todayISO()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+window.exportJSON=exportJSON;
+window.importJSON=async event=>{if(!adminGuard())return;const file=event.target.files?.[0];if(!file)return;const r=new FileReader();r.onload=async()=>{try{const parsed=JSON.parse(r.result);if(!confirm('Die Backup-Daten in Supabase übernehmen? Bestehende Daten werden nicht automatisch gelöscht.'))return;const posMap={};for(const pos of (parsed.positions||[])){let {data:p}=await getClient().from('positions').select('id').eq('team_id',team).eq('name',String(pos)).maybeSingle();if(!p)p=await dbInsert('positions',{team_id:team,name:String(pos),sort_order:Object.keys(posMap).length});posMap[pos]=p.id;}for(const p of (parsed.players||[])){let existing=await getClient().from('players').select('id').eq('team_id',team).eq('name',String(p.name)).eq('active',true).maybeSingle();if(!existing.data)existing={data:await dbInsert('players',{team_id:team,name:String(p.name),level:LEVELS.includes(p.level)?p.level:null,active:true})};const pid=existing.data.id;await dbDelete('player_positions',{player_id:pid});const rows=(p.positions||[]).map(x=>posMap[x]).filter(Boolean).map(position_id=>({player_id:pid,position_id}));if(rows.length)await getClient().from('player_positions').insert(rows);}showStatus('Backup übernommen. Daten werden neu geladen …','ok');await loadApp();}catch(e){showStatus('Backup konnte nicht übernommen werden: '+(e.message||e),'error');}finally{event.target.value='';}};r.readAsText(file);};
+
+window.showTab=id=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==id));document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));if(id==='players')renderPlayers();if(id==='trainings')renderTrainings();if(id==='matchday')renderMatchday();if(id==='settings')renderPositionSettings();};
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function renderAll(){$('playerCount').textContent=state.players.length;$('trainingCount').textContent=state.trainings.length;$('squadCount').textContent=Math.min(16,state.players.length);renderPlayers();renderTrainings();renderPositionSettings();renderMatchday();}
+
+initConfigFields();
+try{const c=config();if(c){getClient().auth.getSession().then(async({data})=>{if(data.session){currentUser=data.session.user;try{await loadApp()}catch(e){console.error(e);setLoginMsg('Gespeicherte Anmeldung konnte nicht geladen werden: '+(e.message||e),true);}}});}}catch(e){console.error(e);}
 </script>
-</body>
-</html>
+</body></html>
