@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f172a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Jugendmannschaft – Kader & Training V6</title>
+<title>Jugendmannschaft – Kader & Training V8</title>
 <link rel="manifest" href="manifest.json">
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#dbe1ea;--accent:#2563eb;--danger:#dc2626;--ok:#15803d}
@@ -27,10 +27,7 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
   <div id="loginCard" class="card">
     <h1>Jugendmannschaft</h1>
     <p class="muted">Anmeldung für Trainer</p>
-    <div class="notice small">Die Verbindung wird direkt zwischen dieser App und deinem Supabase-Projekt hergestellt. Der Publishable Key ist für eine Browser-App vorgesehen. Bitte niemals einen Secret Key hier eintragen.</div>
-    <label>Supabase Project URL<input id="cfgUrl" type="text" placeholder="https://xxxxxxxx.supabase.co" autocomplete="url"></label>
-    <label style="display:block;margin-top:10px">Supabase Publishable Key<input id="cfgKey" type="text" placeholder="sb_publishable_…" autocomplete="off"></label>
-    <div class="toolbar" style="margin-top:12px"><button class="primary" onclick="saveConfigAndLogin()">Verbinden</button><button onclick="clearConfig()">Zurücksetzen</button></div>
+    <div class="notice small">Die Verbindung zu Supabase ist bereits in dieser App eingerichtet. Du musst keine URL oder API-Schlüssel eingeben. Jeder Trainer meldet sich nur mit seinem eigenen Konto an.</div>
     <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
     <label>E-Mail<input id="loginEmail" type="email" autocomplete="username" placeholder="trainer@example.de"></label>
     <label style="display:block;margin-top:10px">Passwort<input id="loginPassword" type="password" autocomplete="current-password"></label>
@@ -71,11 +68,13 @@ function setLoginMsg(msg,error=false){$('loginMsg').textContent=msg||'';$('login
 function openModal(html){$('modalContent').innerHTML=html;$('modal').classList.add('show');}
 function closeModal(){$('modal').classList.remove('show');}
 window.closeModal=closeModal;
-function config(){try{return JSON.parse(localStorage.getItem(CONFIG_KEY)||'null')}catch{return null}}
-function initConfigFields(){const c=config();if(c){$('cfgUrl').value=c.url||'';$('cfgKey').value=c.key||'';}}
-function clearConfig(){localStorage.removeItem(CONFIG_KEY);$('cfgUrl').value='';$('cfgKey').value='';setLoginMsg('Konfiguration gelöscht.');}
-function getClient(){const c=config();if(!c?.url||!c?.key)throw new Error('Bitte zuerst Project URL und Publishable Key eintragen.');if(!supabase||supabase.__configUrl!==c.url){supabase=createClient(c.url,c.key);try{supabase.__configUrl=c.url}catch{}}return supabase;}
-window.saveConfigAndLogin=async()=>{const url=$('cfgUrl').value.trim().replace(/\/$/,'');const key=$('cfgKey').value.trim();if(!url||!key){setLoginMsg('Bitte Project URL und Publishable Key eintragen.',true);return}localStorage.setItem(CONFIG_KEY,JSON.stringify({url,key}));setLoginMsg('Verbindung wird geprüft …');try{getClient();setLoginMsg('Verbindung hergestellt. Bitte jetzt E-Mail und Passwort eingeben.');showStatus('Supabase-Verbindung gespeichert.','ok');}catch(e){setLoginMsg(e.message,true);}};
+const SUPABASE_URL='https://qdugtpzgefpswnnqbusd.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_O2lK6QCTWa4YlVdkljMcDw_zrSMfa3W';
+function config(){return {url:SUPABASE_URL,key:SUPABASE_PUBLISHABLE_KEY}}
+function initConfigFields(){}
+function clearConfig(){setLoginMsg('Die Supabase-Konfiguration ist fest in der App hinterlegt.','');}
+function getClient(){const c=config();if(!supabase){supabase=createClient(c.url,c.key);try{supabase.__configUrl=c.url}catch{}}return supabase;}
+window.saveConfigAndLogin=async()=>{setLoginMsg('Die Verbindung ist bereits eingerichtet. Bitte E-Mail und Passwort eingeben.');};
 window.login=async()=>{try{const c=getClient();const email=$('loginEmail').value.trim();const password=$('loginPassword').value;if(!email||!password){setLoginMsg('Bitte E-Mail und Passwort eingeben.',true);return}setLoginMsg('Anmeldung …');const {data,error}=await c.auth.signInWithPassword({email,password});if(error)throw error;currentUser=data.user;await loadApp();}catch(e){console.error(e);setLoginMsg('Anmeldung fehlgeschlagen: '+(e.message||e),true);}};
 window.logout=async()=>{if(supabase)await supabase.auth.signOut();currentUser=null;team=null;season=null;$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');setLoginMsg('Abgemeldet.');};
 
