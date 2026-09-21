@@ -143,83 +143,91 @@ function levelValue(p){return LEVEL_POINTS[p.level]||0;}
 function groupScore(g){return g.reduce((s,p)=>s+levelValue(p),0);}
 function hasGK(p){return (p.positions||[]).some(x=>x.toLowerCase()==='torwart');}
 function distributeByLevel(players, teamCount, sizes){
+  // Greedy level balancing: each player is placed into the team with the
+  // lowest projected strength, while also respecting the target sizes.
   const teams=Array.from({length:teamCount},()=>[]);
-  const buckets={};
-  for(const p of players) (buckets[p.level||'schwach']??=[]).push(p);
-  const order=['herausragend','stark','mittel','schwach'];
-  let cursor=0;
-  for(const level of order){
-    const bucket=buckets[level]||[];
-    bucket.sort((a,b)=>a.name.localeCompare(b.name,'de'));
-    for(const p of bucket){
-      let candidates=[];
-      for(let i=0;i<teamCount;i++) if(teams[i].length<sizes[i]) candidates.push(i);
-      if(!candidates.length) break;
-      const minCount=Math.min(...candidates.map(i=>teams[i].length));
-      const same=candidates.filter(i=>teams[i].length===minCount);
-      const idx=same[cursor%same.length]; cursor++;
-      teams[idx].push(p);
-    }
+  const remaining=players.slice().sort((a,b)=>levelValue(b)-levelValue(a)||a.name.localeCompare(b.name,'de'));
+  for(const p of remaining){
+    const candidates=[];
+    for(let i=0;i<teamCount;i++) if(teams[i].length<sizes[i]) candidates.push(i);
+    if(!candidates.length) break;
+    candidates.sort((a,b)=>{
+      const sa=groupScore(teams[a]), sb=groupScore(teams[b]);
+      if(sa!==sb) return sa-sb;
+      if(teams[a].length!==teams[b].length) return teams[a].length-teams[b].length;
+      const oa=['herausragend','stark','mittel','schwach'];
+      const ca=oa.reduce((n,l)=>n+(teams[a].filter(x=>x.level===l).length),0);
+      const cb=oa.reduce((n,l)=>n+(teams[b].filter(x=>x.level===l).length),0);
+      return ca-cb;
+    });
+    teams[candidates[0]].push(p);
   }
   return teams;
 }
 function improveGoalkeepers(teams){
-  // Try to ensure at least one goalkeeper in each of the first two teams without changing much strength.
   for(let i=0;i<Math.min(2,teams.length);i++){
     if(teams[i].some(hasGK)) continue;
-    let found=null;
-    for(let j=i+1;j<teams.length && !found;j++){
-      const gkIndex=teams[j].findIndex(hasGK);
-      if(gkIndex<0) continue;
+    let best=null;
+    for(let j=i+1;j<teams.length;j++){
+      const gkIndex=teams[j].findIndex(hasGK); if(gkIndex<0) continue;
       for(let k=0;k<teams[i].length;k++){
-        const non=teams[i][k];
-        if(hasGK(non)) continue;
-        found={j,gkIndex,k,non};break;
+        const non=teams[i][k]; if(hasGK(non)) continue;
+        const before=Math.abs(groupScore(teams[i])-groupScore(teams[j]));
+        const after=Math.abs((groupScore(teams[i])-levelValue(non)+levelValue(teams[j][gkIndex]))-(groupScore(teams[j])-levelValue(teams[j][gkIndex])+levelValue(non)));
+        const delta=after-before;
+        if(!best||delta<best.delta) best={j,gkIndex,k,delta};
       }
     }
-    if(found){const gk=teams[found.j][found.gkIndex];teams[found.j][found.gkIndex]=found.non;teams[i][found.k]=gk;}
+    if(best){const gk=teams[best.j][best.gkIndex],non=teams[i][best.k];teams[best.j][best.gkIndex]=non;teams[i][best.k]=gk;}
   }
 }
-function rebalanceSizes(teams,sizes){
-  for(let i=0;i<teams.length;i++){
-    while(teams[i].length>sizes[i]){
-      let target=-1;for(let j=0;j<teams.length;j++) if(teams[j].length<sizes[j]){target=j;break;}
-      if(target<0) break;teams[target].push(teams[i].pop());
-    }
+function makeBalancedTeams(selected){
+  const gks=selected.filter(hasGK), field=selected.filter(p=>!hasGK(p));
+  // Prefer two complete 5-player teams whenever there are enough players and goalkeepers.
+  if(selected.length>=10 && gks.length>=2 && field.length>=8){
+    const firstTwo=distributeByLevel(selected,2,[5,5]);
+    // Keep exactly the first ten in the two complete teams; all remaining form team 3.
+    const usedIds=new Set(firstTwo.flat().map(p=>p.id));
+    const remaining=selected.filter(p=>!usedIds.has(p.id));
+    improveGoalkeepers(firstTwo);
+    return [...firstTwo, ...(remaining.length?[remaining]:[])];
   }
+  if(selected.length>=10){
+    const a=Math.ceil(selected.length/2), b=selected.length-a;
+    const teams=distributeByLevel(selected,2,[a,b]);
+    improveGoalkeepers(teams);
+    return teams;
+  }
+  const teams=[selected.slice()];
+  improveGoalkeepers(teams);
+  return teams;
 }
 window.balanceTeams=()=>{
   storeMatchdaySelection();
   const selected=state.players.filter(p=>matchdaySelection.has(p.id));
   if(selected.length<5){$('teams').innerHTML='<div class="card notice warning">Bitte mindestens 5 Spieler auswählen.</div>';return;}
-  const gks=selected.filter(hasGK), field=selected.filter(p=>!hasGK(p));
-  let teams=[], warning='';
-  if(gks.length>=3 && field.length>=12 && selected.length>=15){
-    const sizes=[5,5,selected.length-10];
-    teams=distributeByLevel(selected,3,sizes);improveGoalkeepers(teams);
-  } else if(gks.length>=2 && field.length>=8){
-    const sizes=[5,5,Math.max(0,selected.length-10)];
-    teams=distributeByLevel(selected,3,sizes);improveGoalkeepers(teams);
-    if(!teams[2]?.length) teams=teams.slice(0,2);
-    else warning='Zwei vollständige Teams mit je 4 Feldspielern + 1 Torwart wurden gebildet; übrige Spieler sind in Team 3.';
-  } else {
-    const teamCount=selected.length>=10?2:1;
-    if(teamCount===2){const a=Math.ceil(selected.length/2),b=selected.length-a;teams=distributeByLevel(selected,2,[a,b]);}
-    else teams=[selected.slice()];
-    improveGoalkeepers(teams);
-    warning='Mit der aktuellen Auswahl sind keine zwei vollständigen Teams mit je 4 Feldspielern + 1 Torwart möglich. Die Aufteilung erfolgt deshalb möglichst gleichmäßig nach Level.';
-  }
+  const teams=makeBalancedTeams(selected);
+  const scores=teams.map(groupScore);
+  const warning=(selected.filter(hasGK).length>=2 && selected.filter(p=>!hasGK(p)).length>=8 && selected.length>=10)
+    ? 'Die ersten beiden Teams werden mit je 5 Spielern gebildet; alle übrigen Spieler bilden Team 3. Die Level werden möglichst gleichmäßig verteilt.'
+    : 'Die Auswahl wird möglichst gleichmäßig nach Level verteilt. Die Position wird dabei nur für die Torwart-Verteilung berücksichtigt.';
   renderTeams(teams,warning);
 };
-function renderTeams(teams,warning=''){const box=$('teams');box.innerHTML=(warning?`<div class="card notice warning">${esc(warning)}</div>`:'')+`<div class="teamgrid">${teams.map(t=>{const score=groupScore(t.players);const counts=['schwach','mittel','stark','herausragend'].map(l=>`${l}: ${t.players.filter(p=>p.level===l).length}`).join(' · ');return `<div class="team"><h3><span>${esc(t.name)}</span><span class="teamScore">${score} Punkte</span></h3><div class="small muted" style="margin-bottom:8px">${esc(counts)}</div>${t.players.map(p=>`<div class="playerrow"><span>${esc(p.name)}${p.positions?.length?'<br>'+p.positions.map(x=>{const pr=state.positionRows.find(r=>r.name===x);const bg=pr?.color||'#e2e8f0';return `<span class="positionBadge" style="background:${esc(bg)}">${esc(x)}</span>`}).join(''):''}</span>${levelBadge(p.level)}</div>`).join('')}</div>`;}).join('')}</div>`;}
+function renderTeams(teams,warning=''){
+  const box=$('teams');
+  box.innerHTML=(warning?`<div class="card notice warning">${esc(warning)}</div>`:'')+`<div class="teamgrid">${teams.map((t,idx)=>{
+    const score=groupScore(t);
+    const counts=['schwach','mittel','stark','herausragend'].map(l=>`${l}: ${t.filter(p=>p.level===l).length}`).join(' · ');
+    return `<div class="team"><h3><span>Team ${idx+1}</span><span class="teamScore">${score} Punkte</span></h3><div class="small muted" style="margin-bottom:8px">${esc(counts)}</div>${t.map(p=>`<div class="playerrow"><span>${esc(p.name)}${p.positions?.length?'<br>'+p.positions.map(x=>{const pr=state.positionRows.find(r=>r.name===x);const bg=pr?.color||'#e2e8f0';return `<span class="positionBadge" style="background:${esc(bg)}">${esc(x)}</span>`}).join(''):''}</span>${levelBadge(p.level)}</div>`).join('')}</div>`;}).join('')}</div>`;
+}
 
 function renderPositionSettings(){
-  const rows=state.positionRows.map((p,i)=>`<div class="positionEditRow"><input id="posName_${p.id}" type="text" value="${esc(p.name)}"><input id="posColor_${p.id}" type="color" value="${/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#e2e8f0'}"><button type="button" onclick="savePosition('${p.id}')">Speichern</button></div>`).join('');
+  const rows=state.positionRows.map((p,i)=>`<div class="positionEditRow"><input id="posName_${p.id}" type="text" value="${esc(p.name)}"><input id="posColor_${p.id}" type="color" value="${/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#e2e8f0'}"><button type="button" onclick="savePosition('${p.id}')">Speichern</button><button type="button" onclick="removePosition('${encodeURIComponent(p.name)}')">Löschen</button></div>`).join('');
   $('positionSettings').innerHTML=`<div>${rows||'<p class="muted">Noch keine Positionen.</p>'}</div><div class="toolbar" style="margin-top:12px"><input id="newPosition" type="text" placeholder="Neue Position"><input id="newPositionColor" type="color" value="#e2e8f0" style="width:58px;height:44px"><button class="primary" onclick="addPosition()">Position hinzufügen</button></div>`;
 }
 window.savePosition=async id=>{if(!adminGuard())return;try{const row=state.positionRows.find(x=>x.id===id);if(!row)return;const name=$(`posName_${id}`).value.trim();const color=$(`posColor_${id}`).value;if(!name){showStatus('Bitte einen Positionsnamen eingeben.','error');return}const duplicate=state.positionRows.find(x=>x.id!==id&&x.name.toLowerCase()===name.toLowerCase());if(duplicate){showStatus('Dieser Positionsname existiert bereits.','error');return}await dbUpdate('positions',{id},{name,color});state.players.forEach(p=>{p.positions=p.positions.map(x=>x===row.name?name:x);});row.name=name;row.color=color;state.positions=state.positionRows.map(x=>x.name);renderAll();showStatus('Position gespeichert.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
 window.addPosition=async()=>{if(!adminGuard())return;try{const el=$('newPosition'),v=el.value.trim(),color=$('newPositionColor').value;if(!v)return;if(state.positions.some(x=>x.toLowerCase()===v.toLowerCase())){showStatus('Diese Position gibt es bereits.','error');return}const max=state.positionRows.length;const p=await dbInsert('positions',{team_id:team,name:v,sort_order:max,color});state.positionRows.push(p);state.positions.push(v);renderPositionSettings();showStatus('Position hinzugefügt.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
-window.removePosition=async encoded=>{if(!adminGuard())return;const pos=decodeURIComponent(encoded);if(!confirm(`Position „${pos}“ wirklich löschen?`))return;try{const p=state.positionRows.find(x=>x.name===pos);if(p)await dbDelete('positions',{id:p.id});state.positionRows=state.positionRows.filter(x=>x.name!==pos);state.positions=state.positionRows.map(x=>x.name);state.players.forEach(pl=>pl.positions=pl.positions.filter(x=>x!==pos));renderAll();showStatus('Position gelöscht.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
+window.removePosition=async encoded=>{if(!adminGuard())return;const pos=decodeURIComponent(encoded);if(!confirm(`Position „${pos}“ wirklich löschen?`))return;try{const p=state.positionRows.find(x=>x.name===pos);if(!p)return;await dbDelete('player_positions',{position_id:p.id});await dbDelete('positions',{id:p.id});state.positionRows=state.positionRows.filter(x=>x.id!==p.id);state.positions=state.positionRows.map(x=>x.name);state.players.forEach(pl=>pl.positions=(pl.positions||[]).filter(x=>x!==pos));renderAll();showStatus('Position gelöscht.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
 
 function exportJSON(){const backup={version:4,exportedAt:new Date().toISOString(),teamId:team,season:season,positions:state.positions,players:state.players,trainings:state.trainings};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jugendmannschaft-backup-'+todayISO()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 window.exportJSON=exportJSON;
