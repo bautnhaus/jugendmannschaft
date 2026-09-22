@@ -43,7 +43,7 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
   <section id="players" class="tab"><div class="card"><div class="toolbar"><button class="primary adminOnly" onclick="addPlayer()">+ Spieler</button></div><div class="grid" style="margin-top:10px"><div><div class="muted">Spieler</div><div id="playerCount" class="stat">0</div></div><div><div class="muted">Trainings</div><div id="trainingCount" class="stat">0</div></div><div><div class="muted">Kader (Top 16)</div><div id="squadCount" class="stat">0</div></div></div></div><div class="card"><h2>Spielerübersicht</h2><div class="notice">Die Kaderplätze 1–16 werden automatisch nach Trainingsanwesenheit bestimmt. Bei gleicher Quote entscheidet die Anzahl der besuchten Trainings.</div><div id="playerTable"></div></div></section>
   <section id="trainings" class="tab hidden"><div class="card"><div class="toolbar"><button class="primary" onclick="addTraining()">+ Training anlegen</button></div><div id="trainingList"></div></div></section>
   <section id="matchday" class="tab hidden"><div class="card"><div class="toolbar"><h2 style="margin:0;flex:1">Spieltage</h2><button class="primary" onclick="addMatchday()">+ Spieltag anlegen</button></div><div id="matchdayList"></div></div><div id="matchdayEditor"></div><div id="teams"></div></section>
-  <section id="settings" class="tab hidden"><div class="card adminOnly"><h2>Positionen</h2><p class="muted">Namen und Farben aller Positionen können geändert werden. Positionen können mehrfach pro Spieler gewählt werden.</p><div id="positionSettings"></div></div><div class="card"><h2>Mein Konto</h2><p id="accountInfo" class="small muted"></p><div class="formrow"><label>E-Mail-Adresse<input id="accountEmail" type="email" autocomplete="email"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changeEmail()">E-Mail ändern</button></div></div><div class="formrow" style="margin-top:10px"><label>Neues Passwort<input id="newPassword" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changePassword()">Passwort ändern</button></div></div><div class="notice small" style="margin-top:12px">Nach einer E-Mail-Änderung kann Supabase eine Bestätigung an die neue Adresse verlangen. Für das Löschen des Kontos ist eine ausdrückliche Bestätigung erforderlich.</div><div class="toolbar" style="margin-top:10px"><button class="adminOnly" onclick="exportJSON()">JSON sichern</button><button onclick="logout()">Abmelden</button><button class="danger" onclick="deleteMyAccount()">Mein Konto löschen</button></div></div><div class="card adminOnly"><h2>Trainer verwalten</h2><p class="muted">Gib die E-Mail-Adresse des neuen Trainers ein. Er erhält anschließend eine Einladung per E-Mail und kann darüber sein Passwort festlegen.</p><div class="formrow"><label>E-Mail des Trainers<input id="trainerEmailAdd" type="email" placeholder="trainer@example.de"></label><label>Rolle<select id="trainerRoleAdd"><option value="trainer">Trainer</option><option value="admin">Admin</option></select></label></div><button class="primary" style="margin-top:10px" onclick="addTrainerToTeam()">Trainer zur Mannschaft hinzufügen</button><div class="notice small" style="margin-top:10px">Aus Sicherheitsgründen kann die App keine Passwörter anderer Trainer sehen oder ändern. Jeder Trainer verwaltet sein eigenes Konto.</div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><h3>Trainer der Mannschaft</h3><div id="trainerList"></div></div></section>
+  <section id="settings" class="tab hidden"><div class="card adminOnly"><h2>Positionen</h2><p class="muted">Namen und Farben aller Positionen können geändert werden. Positionen können mehrfach pro Spieler gewählt werden.</p><div id="positionSettings"></div></div><div class="card"><h2>Mein Konto</h2><p id="accountInfo" class="small muted"></p><div class="formrow"><label>E-Mail-Adresse<input id="accountEmail" type="email" autocomplete="email"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changeEmail()">E-Mail ändern</button></div></div><div class="formrow" style="margin-top:10px"><label>Neues Passwort<input id="newPassword" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changePassword()">Passwort ändern</button></div></div><div class="notice small" style="margin-top:12px">Nach einer E-Mail-Änderung kann Supabase eine Bestätigung an die neue Adresse verlangen. Für das Löschen des Kontos ist eine ausdrückliche Bestätigung erforderlich.</div><div class="toolbar" style="margin-top:10px"><button class="adminOnly" onclick="exportJSON()">JSON sichern</button><button class="adminOnly" onclick="$('importFile').click()">JSON wiederherstellen</button><input id="importFile" class="hidden" type="file" accept="application/json,.json" onchange="importJSON(event)"><button onclick="logout()">Abmelden</button><button class="danger" onclick="deleteMyAccount()">Mein Konto löschen</button></div></div><div class="card adminOnly"><h2>Trainer verwalten</h2><p class="muted">Gib die E-Mail-Adresse des neuen Trainers ein. Er erhält anschließend eine Einladung per E-Mail und kann darüber sein Passwort festlegen.</p><div class="formrow"><label>Eindeutiger Trainername<input id="trainerLabelAdd" type="text" placeholder="z. B. Max Mustermann" autocomplete="off"></label><label>E-Mail des Trainers<input id="trainerEmailAdd" type="email" placeholder="trainer@example.de"></label></div><label style="display:block;margin-top:10px">Rolle<select id="trainerRoleAdd"><option value="trainer">Trainer</option><option value="admin">Admin</option></select></label><button class="primary" style="margin-top:10px" onclick="addTrainerToTeam()">Trainer zur Mannschaft hinzufügen</button><div class="notice small" style="margin-top:10px">Aus Sicherheitsgründen kann die App keine Passwörter anderer Trainer sehen oder ändern. Jeder Trainer verwaltet sein eigenes Konto.</div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><h3>Trainer der Mannschaft</h3><div id="trainerList"></div></div></section>
 </main></div>
 <div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox" id="modalContent"></div></div><div id="status" class="status"></div>
 
@@ -85,60 +85,45 @@ window.changePassword=async()=>{try{const password=$('newPassword').value;if(pas
 window.deleteMyAccount=async()=>{if(!confirm('Möchtest du dein Trainerkonto wirklich dauerhaft löschen? Diese Aktion kann nicht rückgängig gemacht werden.'))return;if(!confirm('Wirklich löschen? Deine persönliche Anmeldung wird entfernt. Bei einem Admin kann dadurch die Mannschaft ohne Admin zurückbleiben.'))return;try{const {error}=await getClient().rpc('delete_my_account');if(error)throw error;await getClient().auth.signOut();currentUser=null;team=null;season=null;$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');setLoginMsg('Dein Konto wurde gelöscht.');}catch(e){showStatus('Konto konnte nicht gelöscht werden: '+(e.message||e),'error');}};
 window.addTrainerToTeam=async()=>{
   if(!adminGuard()) return;
-
   try {
+    const label=$('trainerLabelAdd').value.trim();
     const email=$('trainerEmailAdd').value.trim().toLowerCase();
     const newRole=$('trainerRoleAdd').value;
-
-    if(!email){
-      showStatus('Bitte eine E-Mail-Adresse eingeben.','error');
-      return;
-    }
-
-    if(!team){
-      showStatus('Keine Mannschaft ausgewählt. Bitte Seite neu laden.','error');
-      return;
-    }
-
+    if(!label){showStatus('Bitte einen eindeutigen Trainername eingeben.','error');return;}
+    if(!email){showStatus('Bitte eine E-Mail-Adresse eingeben.','error');return;}
+    if(!team){showStatus('Keine Mannschaft ausgewählt. Bitte Seite neu laden.','error');return;}
+    if(state.trainers.some(t=>(t.admin_label||'').toLowerCase()===label.toLowerCase())){showStatus('Dieser Trainername ist bereits vergeben.','error');return;}
     showStatus('Einladung wird verschickt …');
-
-    const {data,error}=await getClient().functions.invoke(
-      'invite-trainer',
-      {
-        body:{
-          email:email,
-          role:newRole,
-          team_id:team
-        }
-      }
-    );
-
+    const {data,error}=await getClient().functions.invoke('invite-trainer',{body:{email,role:newRole,team_id:team}});
     if(error) throw error;
     if(data?.error) throw new Error(data.error);
 
-    $('trainerEmailAdd').value='';
-
-    showStatus(
-      data?.message || 'Die Einladung wurde erfolgreich verschickt.',
-      'ok'
-    );
-
+    // Der bestehende Edge Function Vertrag bleibt unverändert. Nach der Einladung
+    // wird die dauerhaft gültige Admin-Bezeichnung in team_members gespeichert.
+    let saved=false, lastError=null;
+    for(let attempt=0;attempt<5&&!saved;attempt++){
+      const {data:profileRows,error:pe}=await getClient().from('profiles').select('id,email').eq('email',email).limit(1);
+      if(pe){lastError=pe;break;}
+      const uid=profileRows?.[0]?.id;
+      if(uid){
+        const {error:ue}=await getClient().from('team_members').update({admin_label:label}).eq('team_id',team).eq('user_id',uid);
+        if(!ue){saved=true;break;}
+        lastError=ue;
+      }
+      await new Promise(r=>setTimeout(r,500));
+    }
+    if(!saved){
+      showStatus('Einladung wurde verschickt, aber der Trainername konnte noch nicht gespeichert werden. Bitte nach kurzer Zeit erneut laden und den Namen prüfen.','error');
+    }else{
+      $('trainerLabelAdd').value='';$('trainerEmailAdd').value='';
+      showStatus(data?.message||'Die Einladung wurde erfolgreich verschickt.','ok');
+    }
+    await loadApp();
   } catch(e) {
     console.error('invite-trainer:',e);
-
-    let message=e?.message || String(e);
-
-    if(e?.context){
-      try{
-        const body=await e.context.json();
-        if(body?.error) message=body.error;
-      }catch{}
-    }
-
-    showStatus(
-      'Trainer konnte nicht eingeladen werden: '+message,
-      'error'
-    );
+    let message=e?.message||String(e);
+    if(e?.context){try{const body=await e.context.json();if(body?.error)message=body.error;}catch{}}
+    showStatus('Trainer konnte nicht eingeladen werden: '+message,'error');
   }
 };
 window.logout=async()=>{if(supabase)await supabase.auth.signOut();currentUser=null;team=null;season=null;$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');setLoginMsg('Abgemeldet.');};
@@ -149,8 +134,15 @@ async function loadApp(){
   if(me)throw me;if(!members?.length)throw new Error('Dieser Trainer ist noch keiner Mannschaft zugeordnet.');
   team=members[0].team_id;role=members[0].role||'trainer';
   state.trainers=[];
-  const {data:teamMembers,error:tme}=await c.from('team_members').select('user_id,role').eq('team_id',team);
-  if(tme)throw tme;
+  let teamMembers=[];
+  {
+    const r=await c.from('team_members').select('user_id,role,admin_label').eq('team_id',team);
+    if(r.error){
+      const fallback=await c.from('team_members').select('user_id,role').eq('team_id',team);
+      if(fallback.error)throw fallback.error;
+      teamMembers=(fallback.data||[]).map(x=>({...x,admin_label:''}));
+    }else teamMembers=r.data||[];
+  }
   const memberIds=(teamMembers||[]).map(x=>x.user_id);
   let profiles=[];
   if(memberIds.length){
@@ -159,7 +151,7 @@ async function loadApp(){
       console.warn('Profile-E-Mails konnten nicht geladen werden:',profe.message);
     }else{profiles=profileRows||[];}
   }
-  state.trainers=(teamMembers||[]).map(m=>({user_id:m.user_id,role:m.role||'trainer',email:profiles.find(p=>p.id===m.user_id)?.email||''}));
+  state.trainers=(teamMembers||[]).map(m=>({user_id:m.user_id,role:m.role||'trainer',admin_label:m.admin_label||'',email:profiles.find(p=>p.id===m.user_id)?.email||''}));
   const {data:teamRow,error:te}=await c.from('teams').select('id,name').eq('id',team).single();if(te)throw te;
   const {data:seasonRows,error:se}=await c.from('seasons').select('id,name,start_date,end_date,is_active').eq('team_id',team).eq('is_active',true).limit(1);if(se)throw se;season=seasonRows?.[0]||null;
   const {data:pos,error:pe}=await c.from('positions').select('id,name,sort_order,color').eq('team_id',team).order('sort_order').order('name');if(pe)throw pe;
@@ -274,9 +266,24 @@ function renderTrainerList(){
   if(!state.trainers.length){box.innerHTML='<p class="muted">Keine Trainer gefunden.</p>';return;}
   box.innerHTML=state.trainers.map(t=>{
     const isMe=t.user_id===currentUser?.id;
-    return `<div class="card" style="margin:8px 0;padding:10px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><b>${esc(t.email||'E-Mail nicht verfügbar')}</b><br><span class="muted small">${isMe?'Du · ':''}${t.role==='admin'?'Admin':'Trainer'}</span></div><div class="toolbar">${isMe?'<span class="small muted">Eigenes Konto</span>':`<select onchange="changeTrainerRole('${t.user_id}',this.value)"><option value="trainer" ${t.role==='trainer'?'selected':''}>Trainer</option><option value="admin" ${t.role==='admin'?'selected':''}>Admin</option></select><button class="danger" type="button" onclick="removeTrainer('${t.user_id}')">Entfernen</button>`}</div></div></div>`;
+    const label=t.admin_label||'Noch kein Admin-Name';
+    return `<div class="card" style="margin:8px 0;padding:10px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><b>${esc(label)}</b><br><span class="small">${esc(t.email||'E-Mail nicht verfügbar')}</span><br><span class="muted small">${isMe?'Du · ':''}${t.role==='admin'?'Admin':'Trainer'}</span></div><div class="toolbar">${isMe?'<span class="small muted">Eigenes Konto</span>':`<select onchange="changeTrainerRole('${t.user_id}',this.value)"><option value="trainer" ${t.role==='trainer'?'selected':''}>Trainer</option><option value="admin" ${t.role==='admin'?'selected':''}>Admin</option></select><button type="button" onclick="editTrainerLabel('${t.user_id}')">Name ändern</button><button class="danger" type="button" onclick="removeTrainer('${t.user_id}')">Entfernen</button>`}</div></div></div>`;
   }).join('');
 }
+window.editTrainerLabel=async userId=>{
+  if(!adminGuard())return;
+  const target=state.trainers.find(x=>x.user_id===userId);if(!target)return;
+  const label=prompt('Dauerhafter Admin-Name für diesen Trainer:',target.admin_label||'');
+  if(label===null)return;
+  const clean=label.trim();
+  if(!clean){showStatus('Der Trainername darf nicht leer sein.','error');return;}
+  if(state.trainers.some(x=>x.user_id!==userId&&(x.admin_label||'').toLowerCase()===clean.toLowerCase())){showStatus('Dieser Trainername ist bereits vergeben.','error');return;}
+  try{
+    const {error}=await getClient().from('team_members').update({admin_label:clean}).eq('team_id',team).eq('user_id',userId);
+    if(error)throw error;
+    target.admin_label=clean;renderTrainerList();showStatus('Trainername gespeichert.','ok');
+  }catch(e){showStatus('Trainername konnte nicht gespeichert werden: '+(e.message||e),'error');}
+};
 window.changeTrainerRole=async(userId,newRole)=>{
   if(!adminGuard())return;
   const target=state.trainers.find(x=>x.user_id===userId);
@@ -315,7 +322,7 @@ window.savePosition=async id=>{if(!adminGuard())return;try{const row=state.posit
 window.addPosition=async()=>{if(!adminGuard())return;try{const el=$('newPosition'),v=el.value.trim(),color=$('newPositionColor').value;if(!v)return;if(state.positions.some(x=>x.toLowerCase()===v.toLowerCase())){showStatus('Diese Position gibt es bereits.','error');return}const max=state.positionRows.length;const p=await dbInsert('positions',{team_id:team,name:v,sort_order:max,color});state.positionRows.push(p);state.positions.push(v);renderPositionSettings();showStatus('Position hinzugefügt.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
 window.removePosition=async encoded=>{if(!adminGuard())return;const pos=decodeURIComponent(encoded);if(!confirm(`Position „${pos}“ wirklich löschen?`))return;try{const p=state.positionRows.find(x=>x.name===pos);if(!p)return;await dbDelete('player_positions',{position_id:p.id});await dbDelete('positions',{id:p.id});state.positionRows=state.positionRows.filter(x=>x.id!==p.id);state.positions=state.positionRows.map(x=>x.name);state.players.forEach(pl=>pl.positions=(pl.positions||[]).filter(x=>x!==pos));renderAll();showStatus('Position gelöscht.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
 
-function exportJSON(){const backup={version:4,exportedAt:new Date().toISOString(),teamId:team,season:season,positions:state.positions,players:state.players,trainings:state.trainings};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jugendmannschaft-backup-'+todayISO()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+function exportJSON(){if(!adminGuard())return;const backup={version:4,exportedAt:new Date().toISOString(),teamId:team,season:season,positions:state.positions,players:state.players,trainings:state.trainings};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jugendmannschaft-backup-'+todayISO()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 window.exportJSON=exportJSON;
 window.importJSON=async event=>{if(!adminGuard())return;const file=event.target.files?.[0];if(!file)return;const r=new FileReader();r.onload=async()=>{try{const parsed=JSON.parse(r.result);if(!confirm('Die Backup-Daten in Supabase übernehmen? Bestehende Daten werden nicht automatisch gelöscht.'))return;const posMap={};for(const pos of (parsed.positions||[])){let {data:p}=await getClient().from('positions').select('id').eq('team_id',team).eq('name',String(pos)).maybeSingle();if(!p)p=await dbInsert('positions',{team_id:team,name:String(pos),sort_order:Object.keys(posMap).length,color:'#e2e8f0'});posMap[pos]=p.id;}for(const p of (parsed.players||[])){let existing=await getClient().from('players').select('id').eq('team_id',team).eq('name',String(p.name)).eq('active',true).maybeSingle();if(!existing.data)existing={data:await dbInsert('players',{team_id:team,name:String(p.name),level:LEVELS.includes(p.level)?p.level:null,active:true})};const pid=existing.data.id;await dbDelete('player_positions',{player_id:pid});const rows=(p.positions||[]).map(x=>posMap[x]).filter(Boolean).map(position_id=>({player_id:pid,position_id}));if(rows.length)await getClient().from('player_positions').insert(rows);}showStatus('Backup übernommen. Daten werden neu geladen …','ok');await loadApp();}catch(e){showStatus('Backup konnte nicht übernommen werden: '+(e.message||e),'error');}finally{event.target.value='';}};r.readAsText(file);};
 
