@@ -191,7 +191,28 @@ function isSquad(p){return [...state.players].sort((a,b)=>{const A=attendanceSta
 function levelBadge(level){if(!level)return '<span class="badge">kein Level</span>';const c=level==='herausragend'?'outstanding':level==='stark'?'strong':level==='mittel'?'medium':'weak';return `<span class="badge ${c}">${esc(LEVEL_LABELS[level]||level)}</span>`;}
 window.setPlayerSort=key=>{if(playerSort.key===key)playerSort.dir=playerSort.dir==='asc'?'desc':'asc';else{playerSort.key=key;playerSort.dir='asc';}renderPlayers();};
 function sortHeader(key,label){const arrow=playerSort.key===key?(playerSort.dir==='asc'?' ↑':' ↓'):'';return `<button type="button" style="padding:6px 8px;min-height:36px" onclick="setPlayerSort('${key}')">${label}${arrow}</button>`;}
-function renderPlayers(){const rows=sortedPlayers().map((p,i)=>{const a=attendanceStats(p);const top=isSquad(p);const pos=orderedPositions(p.positions||[]).map(x=>{const pr=state.positionRows.find(r=>r.name===x);return `<span class="positionBadge" style="background:${esc(pr?.color||'#e2e8f0')}">${esc(x)}</span>`}).join('')||'<span class="muted">—</span>';return `<tr style="cursor:pointer" data-player-card="${esc(p.id)}"><td>${p.photo_data?`<img src="${p.photo_data}" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:8px;vertical-align:middle;margin-right:7px">`:''}<b>${i+1}.</b> ${esc(displayName(p))} ${top?'<span class="badge strong">Top 16</span>':''}</td><td>${pos}</td><td>${levelBadge(p.level)}</td><td><span class="${top?'top16Attendance':''}">${a.attended}/${a.total} (${Math.round(a.rate*100)}%)</span></td><td class="right"><button type="button" data-edit-player="${esc(p.id)}">Bearbeiten</button></td></tr>`;}).join('');$('playerTable').innerHTML=state.players.length?`<div class="tablewrap"><table><thead><tr><th>${sortHeader('lastName','Nachname')}</th><th>Position</th><th>Level</th><th>${sortHeader('training','Training')}</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`:'<p class="muted">Noch keine Spieler angelegt.</p>';}
+function renderPlayers(){
+  const rows=sortedPlayers().map((p,i)=>{
+    const a=attendanceStats(p);
+    const top=isSquad(p);
+    const first=String(p.first_name||'').trim();
+    const last=String(p.last_name||'').trim();
+    return `<tr style="cursor:pointer" data-player-card="${esc(p.id)}">
+      <td class="right"><b>${i+1}</b></td>
+      <td>${p.photo_data?`<img src="${p.photo_data}" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:8px;display:block">`:'<div style="width:42px;height:42px;border-radius:8px;background:#eef2f7"></div>'}</td>
+      <td>${esc(first||'—')}</td>
+      <td>${esc(last||'—')}</td>
+      <td><span class="${top?'top16Attendance':''}">${a.attended}/${a.total} (${Math.round(a.rate*100)}%)</span></td>
+    </tr>`;
+  }).join('');
+  $('playerTable').innerHTML=state.players.length?`<div class="tablewrap"><table><thead><tr>
+    <th>#</th>
+    <th>Bild</th>
+    <th>${sortHeader('firstName','Vorname')}</th>
+    <th>${sortHeader('lastName','Nachname')}</th>
+    <th>${sortHeader('training','Trainingsbeteiligung')}</th>
+  </tr></thead><tbody>${rows}</tbody></table></div>`:'<p class="muted">Noch keine Spieler angelegt.</p>';
+}
 function orderedPositions(list){const rank=new Map(POSITION_ORDER.map((x,i)=>[x.toLowerCase(),i]));return [...list].sort((a,b)=>(rank.get(String(a).toLowerCase())??99)-(rank.get(String(b).toLowerCase())??99)||String(a).localeCompare(String(b),'de'));}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-edit-player]');if(b){e.preventDefault();e.stopPropagation();window.editPlayer(b.getAttribute('data-edit-player'));return}const row=e.target.closest('[data-player-card]');if(row){window.openPlayerCard(row.getAttribute('data-player-card'));}});
 window.openPlayerCard=id=>{const p=state.players.find(x=>x.id===id);if(!p)return;const a=attendanceStats(p);const positions=orderedPositions(p.positions||[]).map(x=>`<span class="positionBadge">${esc(x)}</span>`).join('')||'<span class="muted">Keine Position</span>';openModal(`<h2>Spielerkarte</h2><div style="display:flex;gap:14px;align-items:center">${p.photo_data?`<img src="${p.photo_data}" alt="" style="width:96px;height:96px;object-fit:cover;border-radius:14px">`:''}<div><h3>${esc(displayName(p))}</h3>${levelBadge(p.level)} ${isSquad(p)?'<span class="badge strong">Top 16</span>':''}</div></div><div class="card" style="margin:14px 0 0"><b>Positionen</b><div style="margin-top:6px">${positions}</div></div><div class="grid" style="margin-top:10px"><div class="card"><div class="muted">Trainingsteilnahme</div><div class="stat">${a.attended}/${a.total}</div><div>${Math.round(a.rate*100)} %</div></div><div class="card"><div class="muted">Spiele</div><div class="stat">—</div><div class="small muted">Wird mit der gespeicherten Spieltagsauswahl ergänzt.</div></div></div><div class="toolbar" style="margin-top:12px"><button class="primary" onclick="closeModal();editPlayer('${id}')">Bearbeiten</button><button onclick="closeModal()">Schließen</button></div>`);};
