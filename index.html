@@ -18,7 +18,7 @@ button:disabled{opacity:.55;cursor:default}.card{background:var(--card);border:1
 .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}table{border-collapse:collapse;width:100%;min-width:850px}th,td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:top}th{background:#f8fafc;position:sticky;top:0}
 input[type=text],input[type=date],input[type=email],input[type=password],input[type=number],select{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:10px;min-height:42px;background:white}.checks{display:flex;flex-wrap:wrap;gap:6px}.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid #cbd5e1;border-radius:999px;padding:5px 9px;background:#fff;font-size:14px}.chip input{margin:0}.badge{display:inline-block;border-radius:999px;padding:4px 8px;background:#e2e8f0;font-size:13px;margin:2px}.badge.strong{background:#dcfce7}.badge.medium{background:#fef3c7}.badge.weak{background:#fee2e2}.badge.outstanding{background:#e9d5ff}.positionBadge{border-radius:999px;padding:4px 8px;font-size:13px;margin:2px;display:inline-block}.trainingItem{border:1px solid var(--line);border-radius:12px;margin:10px 0;background:#fff;overflow:hidden}.trainingHeader{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#fff;border:0;border-radius:0;padding:12px}.trainingHeader .chev{font-size:20px;min-width:30px}.attendanceList{padding:0 10px 10px}.attendanceRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 4px;border-bottom:1px solid #eef2f7}.attendanceRow:last-child{border-bottom:0}.attendanceCheck{min-width:48px;min-height:44px;display:flex;align-items:center;justify-content:center}.attendanceCheck input{width:22px;height:22px}.positionEditRow{display:grid;grid-template-columns:1fr 58px auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.positionEditRow input[type=color]{width:52px;height:42px;padding:3px;border:1px solid #cbd5e1;border-radius:9px;background:#fff}.levelLegend{display:flex;gap:6px;flex-wrap:wrap}.teamScore{font-weight:700}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}.stat{font-size:28px;font-weight:700}
 .modal{position:fixed;inset:0;background:#0008;display:none;align-items:flex-end;justify-content:center;z-index:30}.modal.show{display:flex}.modalbox{background:white;width:min(620px,100%);border-radius:18px 18px 0 0;padding:16px;max-height:92vh;overflow:auto}.modalbox h2{margin-top:0}.formrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:600px){.formrow{grid-template-columns:1fr}.tabs{top:62px}.card{padding:12px}header{padding:12px}.toolbar button,.toolbar .btn{flex:1 1 auto}}
-.hidden{display:none!important}.teamgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}.team{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}.team h3{display:flex;justify-content:space-between}.playerrow{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #eef2f7}.playerrow:last-child{border-bottom:0}.right{text-align:right}.top16Attendance{display:inline-block;background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:4px 7px;font-weight:700}.top16Row{background:#f0fdf4}
+.hidden{display:none!important}.teamgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}.team{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}.team h3{display:flex;justify-content:space-between}.playerrow{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #eef2f7}.playerrow:last-child{border-bottom:0}.right{text-align:right}.top16Attendance{display:inline-block;background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:4px 7px;font-weight:700}.top16Row{background:#f0fdf4}.matchdayDateInput{width:160px!important;max-width:160px!important}.teamMoveButtons{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.teamMoveButtons button{min-height:34px;padding:6px 9px;font-size:13px}
 #loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}#loginCard{width:min(520px,100%)}.small{font-size:13px}.status{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;padding:12px;border-radius:12px;background:#172033;color:white;display:none;box-shadow:0 8px 30px #0003}.status.show{display:block}.status.error{background:#991b1b}.status.ok{background:#166534}
 </style>
 </head>
@@ -155,10 +155,14 @@ async function loadApp(){
   const {data:pp,error:ppE}=await c.from('player_positions').select('player_id,position_id').in('player_id',(players||[]).map(x=>x.id).length?(players||[]).map(x=>x.id):['00000000-0000-0000-0000-000000000000']);if(ppE)throw ppE;
   const {data:trainings,error:tr}=await c.from('trainings').select('id,training_date,name').eq('team_id',team).order('training_date');if(tr)throw tr;
   const tids=(trainings||[]).map(x=>x.id);let attendance=[];if(tids.length){const {data:a,error:ae}=await c.from('attendance').select('training_id,player_id,present').in('training_id',tids);if(ae)throw ae;attendance=a||[];}
+  const {data:matchdayRows,error:mde}=await c.from('matchdays').select('id,match_date,name').eq('team_id',team).order('match_date',{ascending:false});if(mde)throw mde;
+  const mdIds=(matchdayRows||[]).map(x=>x.id);let matchdayPlayers=[];if(mdIds.length){const {data:mp,error:mpe}=await c.from('matchday_players').select('matchday_id,player_id,team_number').in('matchday_id',mdIds);if(mpe)throw mpe;matchdayPlayers=mp||[];}
   state.positionRows=pos||[];
   state.positions=(pos||[]).map(x=>x.name);
   state.players=(players||[]).map(p=>({...p,positions:(pp||[]).filter(x=>x.player_id===p.id).map(x=>(pos||[]).find(y=>y.id===x.position_id)?.name).filter(Boolean)}));
   state.trainings=(trainings||[]).map(t=>{const at={};attendance.filter(a=>a.training_id===t.id).forEach(a=>{at[a.player_id]=!!a.present});return {id:t.id,date:t.training_date,name:t.name||'',attendance:at};}).sort((a,b)=>b.date.localeCompare(a.date));
+  state.matchdays=(matchdayRows||[]).map(m=>({id:m.id,date:m.match_date,name:m.name||'',selected:matchdayPlayers.filter(x=>x.matchday_id===m.id).map(x=>x.player_id),teams:matchdayPlayers.filter(x=>x.matchday_id===m.id&&x.team_number).reduce((acc,x)=>{const n=Number(x.team_number);(acc[n]||(acc[n]=[])).push(x.player_id);return acc;},{} )}));
+  currentMatchdayId=state.matchdays[0]?.id||null;matchdaySelection=new Set(state.matchdays[0]?.selected||[]);
   $('headerSub').textContent=(teamRow?.name||'Jugendmannschaft')+(season?' · Saison '+season.name:'')+' · '+(role==='admin'?'Admin':'Trainer');
   $('accountInfo').textContent=currentUser?.email?`Angemeldet als ${currentUser.email} · Rolle: ${role}`:'';if($('accountEmail'))$('accountEmail').value=currentUser?.email||'';
   document.querySelectorAll('.adminOnly').forEach(x=>x.classList.toggle('hidden',role!=='admin'));
@@ -227,125 +231,28 @@ window.toggleTrainingOpen=toggleTrainingOpen;
 function renderTrainings(){const box=$('trainingList');if(!state.trainings.length){box.innerHTML='<p class="muted">Noch kein Training angelegt. Tippe oben auf „+ Training anlegen“.</p>';return;}box.innerHTML=state.trainings.map((t,idx)=>{const attended=state.players.filter(p=>t.attendance[p.id]).length;const open=idx===0;return `<div class="trainingItem"><button type="button" class="trainingHeader" onclick="toggleTrainingOpen('${t.id}')"><span><b>${esc(t.name||'Training')}</b> – ${fmtDate(t.date)}<br><span class="muted small">${attended} von ${state.players.length} anwesend</span></span><span class="chev" id="trainingIcon_${t.id}">${open?'▾':'▸'}</span></button><div id="training_${t.id}" class="${open?'':'hidden'}"><div class="attendanceList">${sortedPlayers().map(p=>`<div class="attendanceRow"><span>${p.photo_data?`<img src="${p.photo_data}" alt="" style="width:38px;height:38px;object-fit:cover;border-radius:8px;vertical-align:middle;margin-right:8px">`:''}${esc(displayName(p))}</span><label class="attendanceCheck"><input type="checkbox" ${t.attendance[p.id]?'checked':''} onchange="toggleAttendance('${t.id}','${p.id}',this.checked)"></label></div>`).join('')}<div class="toolbar" style="padding-top:10px"><button class="danger" onclick="deleteTraining('${t.id}')">Training löschen</button></div></div></div></div>`;}).join('');}
 
 function getSelectedMatchday(){return new Set(matchdaySelection);}
+async function saveMatchdaySelection(){const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md)return;md.selected=[...matchdaySelection];try{await dbDelete('matchday_players',{matchday_id:md.id});const rows=md.selected.map(player_id=>({matchday_id:md.id,player_id,team_number:null}));if(rows.length){const {error}=await getClient().from('matchday_players').insert(rows);if(error)throw error}renderMatchday();}catch(e){showStatus('Spielerauswahl konnte nicht gespeichert werden: '+(e.message||e),'error');}}
 function storeMatchdaySelection(){matchdaySelection=new Set([...document.querySelectorAll('.matchPlayer:checked')].map(x=>x.value));}
-window.selectSquad=()=>{matchdaySelection=new Set(sortedPlayers().slice(0,16).map(p=>p.id));renderMatchdayEditor();};
-window.clearMatchday=()=>{matchdaySelection=new Set();renderMatchdayEditor();};
-window.addMatchday=()=>{
-  openModal(`<h2>Spieltag anlegen</h2><div class="formrow"><label>Datum<input id="matchdayDate" type="date" value="${todayISO()}"></label><label>Name (optional)<input id="matchdayName" type="text" placeholder="z. B. Meisterschaftsspiel"></label></div><div class="toolbar" style="margin-top:14px"><button class="primary" onclick="saveMatchday()">Spieltag speichern</button><button type="button" onclick="closeModal()">Abbrechen</button></div>`);
-};
-window.saveMatchday=()=>{
-  const date=$('matchdayDate').value;if(!date){alert('Bitte ein Datum auswählen.');return;}
-  const name=$('matchdayName').value.trim();
-  const id='md_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
-  state.matchdays.push({id,date,name,selected:[]});
-  state.matchdays.sort((a,b)=>b.date.localeCompare(a.date));
-  currentMatchdayId=id;matchdaySelection=new Set();closeModal();renderMatchday();showStatus('Spieltag angelegt.','ok');
-};
-window.openMatchday=id=>{
-  const md=state.matchdays.find(x=>x.id===id);if(!md)return;
-  currentMatchdayId=id;matchdaySelection=new Set(md.selected||[]);renderMatchday();
-};
-window.deleteMatchday=id=>{
-  if(!confirm('Spieltag wirklich löschen?'))return;
-  state.matchdays=state.matchdays.filter(x=>x.id!==id);
-  if(currentMatchdayId===id){currentMatchdayId=state.matchdays[0]?.id||null;matchdaySelection=new Set(state.matchdays[0]?.selected||[]);}
-  renderMatchday();showStatus('Spieltag gelöscht.','ok');
-};
-function renderMatchday(){
-  const list=$('matchdayList'), editor=$('matchdayEditor');
-  if(!state.matchdays.length){list.innerHTML='<p class="muted">Noch kein Spieltag angelegt.</p>';editor.innerHTML='';$('teams').innerHTML='';return;}
-  if(!currentMatchdayId||!state.matchdays.some(x=>x.id===currentMatchdayId))currentMatchdayId=state.matchdays[0].id;
-  list.innerHTML=state.matchdays.map(md=>{const active=md.id===currentMatchdayId;return `<div class="trainingItem" style="padding:0"><button type="button" class="trainingHeader" onclick="openMatchday('${md.id}')"><span><b>${esc(md.name||'Spieltag')}</b> – ${fmtDate(md.date)}<br><span class="muted small">${(md.selected||[]).length} Spieler ausgewählt</span></span><span>${active?'✓':''}</span></button></div>`}).join('');
-  renderMatchdayEditor();
-}
-function renderMatchdayEditor(){
-  const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md){$('matchdayEditor').innerHTML='';return;}
-  const selectedIds=getSelectedMatchday();
-  const topSet=new Set(sortedPlayers().slice(0,16).map(p=>p.id));
-  $('matchdayEditor').innerHTML=`<div class="card"><h2>${esc(md.name||'Spieltag')} – ${fmtDate(md.date)}</h2><div class="notice">Die Top 16 werden wie in der Spielerübersicht grün hervorgehoben. Sie werden nicht automatisch ausgewählt.</div><div class="toolbar"><button onclick="selectSquad()">Top 16 auswählen</button><button onclick="clearMatchday()">Auswahl leeren</button><button class="primary" onclick="balanceTeams()">Teams bilden</button><button class="danger" onclick="deleteMatchday('${md.id}')">Spieltag löschen</button></div><div class="checks" style="margin-top:10px">${sortedPlayers().map(p=>`<label class="chip ${topSet.has(p.id)?'top16Attendance':''}"><input type="checkbox" class="matchPlayer" value="${p.id}" ${selectedIds.has(p.id)?'checked':''}>${esc(displayName(p))}</label>`).join('')}</div></div>`;
-  document.querySelectorAll('.matchPlayer').forEach(x=>x.addEventListener('change',()=>{storeMatchdaySelection();md.selected=[...matchdaySelection];const label=document.querySelector(`button[onclick=\"openMatchday('${md.id}')\"] .muted`);if(label)label.textContent=`${md.selected.length} Spieler ausgewählt`; }));
-}
+window.selectSquad=()=>{matchdaySelection=new Set(sortedPlayers().slice(0,16).map(p=>p.id));saveMatchdaySelection();};
+window.clearMatchday=()=>{matchdaySelection=new Set();saveMatchdaySelection();};
+window.addMatchday=()=>{openModal(`<h2>Spieltag anlegen</h2><div class="formrow"><label>Datum<input id="matchdayDate" class="matchdayDateInput" type="date" value="${todayISO()}"></label><label>Name (optional)<input id="matchdayName" type="text" placeholder="z. B. Meisterschaftsspiel"></label></div><div class="toolbar" style="margin-top:14px"><button class="primary" onclick="saveMatchday()">Spieltag speichern</button><button type="button" onclick="closeModal()">Abbrechen</button></div>`);};
+window.saveMatchday=async()=>{const date=$('matchdayDate').value;if(!date){alert('Bitte ein Datum auswählen.');return}const name=$('matchdayName').value.trim();try{const md=await dbInsert('matchdays',{team_id:team,season_id:season?.id||null,match_date:date,name:name||null});const local={id:md.id,date:md.match_date||date,name:md.name||name,selected:[],teams:{}};state.matchdays=[local,...state.matchdays].sort((a,b)=>b.date.localeCompare(a.date));currentMatchdayId=local.id;matchdaySelection=new Set();closeModal();renderMatchday();showStatus('Spieltag angelegt.','ok');}catch(e){showStatus('Spieltag konnte nicht angelegt werden: '+(e.message||e),'error');}};
+window.openMatchday=id=>{const md=state.matchdays.find(x=>x.id===id);if(!md)return;currentMatchdayId=id;matchdaySelection=new Set(md.selected||[]);renderMatchday();};
+window.deleteMatchday=async id=>{if(!confirm('Spieltag wirklich löschen?'))return;try{await dbDelete('matchday_players',{matchday_id:id});await dbDelete('matchdays',{id});state.matchdays=state.matchdays.filter(x=>x.id!==id);if(currentMatchdayId===id){currentMatchdayId=state.matchdays[0]?.id||null;matchdaySelection=new Set(state.matchdays[0]?.selected||[]);}renderMatchday();showStatus('Spieltag gelöscht.','ok');}catch(e){showStatus('Spieltag konnte nicht gelöscht werden: '+(e.message||e),'error');}};
+function renderMatchday(){const list=$('matchdayList'),editor=$('matchdayEditor');if(!state.matchdays.length){list.innerHTML='<p class="muted">Noch kein Spieltag angelegt.</p>';editor.innerHTML='';$('teams').innerHTML='';return}if(!currentMatchdayId||!state.matchdays.some(x=>x.id===currentMatchdayId))currentMatchdayId=state.matchdays[0].id;const current=state.matchdays.find(x=>x.id===currentMatchdayId);matchdaySelection=new Set(current?.selected||[]);list.innerHTML=state.matchdays.map(md=>{const active=md.id===currentMatchdayId;return `<div class="trainingItem" style="padding:0"><button type="button" class="trainingHeader" onclick="openMatchday('${md.id}')"><span><b>${esc(md.name||'Spieltag')}</b> – ${fmtDate(md.date)}<br><span class="muted small">${(md.selected||[]).length} Spieler ausgewählt${Object.keys(md.teams||{}).length?' · Teams gespeichert':''}</span></span><span>${active?'✓':''}</span></button></div>`}).join('');renderMatchdayEditor();}
+function renderMatchdayEditor(){const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md){$('matchdayEditor').innerHTML='';$('teams').innerHTML='';return}const selectedIds=getSelectedMatchday();const topSet=new Set(sortedPlayers().slice(0,16).map(p=>p.id));$('matchdayEditor').innerHTML=`<div class="card"><h2>${esc(md.name||'Spieltag')} – ${fmtDate(md.date)}</h2><div class="notice">Die Top 16 werden wie in der Spielerübersicht grün hervorgehoben. Sie werden nicht automatisch ausgewählt.</div><div class="toolbar"><button onclick="selectSquad()">Top 16 auswählen</button><button onclick="clearMatchday()">Auswahl leeren</button><button class="primary" onclick="balanceTeams()">Teams bilden</button><button class="danger" onclick="deleteMatchday('${md.id}')">Spieltag löschen</button></div><div class="checks" style="margin-top:10px">${sortedPlayers().map(p=>`<label class="chip ${topSet.has(p.id)?'top16Attendance':''}"><input type="checkbox" class="matchPlayer" value="${p.id}" ${selectedIds.has(p.id)?'checked':''}>${esc(displayName(p))}</label>`).join('')}</div></div>`;document.querySelectorAll('.matchPlayer').forEach(x=>x.addEventListener('change',async()=>{storeMatchdaySelection();await saveMatchdaySelection();}));renderSavedTeams(md);}
+function teamArrayFromSaved(md){const result=[];for(const n of Object.keys(md.teams||{}).sort((a,b)=>Number(a)-Number(b)))result.push((md.teams[n]||[]).map(id=>state.players.find(p=>p.id===id)).filter(Boolean));return result;}
+function renderSavedTeams(md){const teams=teamArrayFromSaved(md);if(!teams.length){$('teams').innerHTML='';return}renderTeams(teams,'Gespeicherte Teams. Spieler können unabhängig von Position und Level zwischen den Teams verschoben werden.');}
 function levelValue(p){return LEVEL_POINTS[p.level]||0;}
 function groupScore(g){return g.reduce((s,p)=>s+levelValue(p),0);}
 function hasGK(p){return (p.positions||[]).some(x=>x.toLowerCase()==='torwart');}
-function distributeByLevel(players, teamCount, sizes){
-  // Greedy level balancing: each player is placed into the team with the
-  // lowest projected strength, while also respecting the target sizes.
-  const teams=Array.from({length:teamCount},()=>[]);
-  const remaining=players.slice().sort((a,b)=>levelValue(b)-levelValue(a)||a.name.localeCompare(b.name,'de'));
-  for(const p of remaining){
-    const candidates=[];
-    for(let i=0;i<teamCount;i++) if(teams[i].length<sizes[i]) candidates.push(i);
-    if(!candidates.length) break;
-    candidates.sort((a,b)=>{
-      const sa=groupScore(teams[a]), sb=groupScore(teams[b]);
-      if(sa!==sb) return sa-sb;
-      if(teams[a].length!==teams[b].length) return teams[a].length-teams[b].length;
-      const oa=['herausragend','stark','mittel','schwach'];
-      const ca=oa.reduce((n,l)=>n+(teams[a].filter(x=>x.level===l).length),0);
-      const cb=oa.reduce((n,l)=>n+(teams[b].filter(x=>x.level===l).length),0);
-      return ca-cb;
-    });
-    teams[candidates[0]].push(p);
-  }
-  return teams;
-}
-function improveGoalkeepers(teams){
-  for(let i=0;i<Math.min(2,teams.length);i++){
-    if(teams[i].some(hasGK)) continue;
-    let best=null;
-    for(let j=i+1;j<teams.length;j++){
-      const gkIndex=teams[j].findIndex(hasGK); if(gkIndex<0) continue;
-      for(let k=0;k<teams[i].length;k++){
-        const non=teams[i][k]; if(hasGK(non)) continue;
-        const before=Math.abs(groupScore(teams[i])-groupScore(teams[j]));
-        const after=Math.abs((groupScore(teams[i])-levelValue(non)+levelValue(teams[j][gkIndex]))-(groupScore(teams[j])-levelValue(teams[j][gkIndex])+levelValue(non)));
-        const delta=after-before;
-        if(!best||delta<best.delta) best={j,gkIndex,k,delta};
-      }
-    }
-    if(best){const gk=teams[best.j][best.gkIndex],non=teams[i][best.k];teams[best.j][best.gkIndex]=non;teams[i][best.k]=gk;}
-  }
-}
-function makeBalancedTeams(selected){
-  const gks=selected.filter(hasGK), field=selected.filter(p=>!hasGK(p));
-  // Prefer two complete 5-player teams whenever there are enough players and goalkeepers.
-  if(selected.length>=10 && gks.length>=2 && field.length>=8){
-    const firstTwo=distributeByLevel(selected,2,[5,5]);
-    // Keep exactly the first ten in the two complete teams; all remaining form team 3.
-    const usedIds=new Set(firstTwo.flat().map(p=>p.id));
-    const remaining=selected.filter(p=>!usedIds.has(p.id));
-    improveGoalkeepers(firstTwo);
-    return [...firstTwo, ...(remaining.length?[remaining]:[])];
-  }
-  if(selected.length>=10){
-    const a=Math.ceil(selected.length/2), b=selected.length-a;
-    const teams=distributeByLevel(selected,2,[a,b]);
-    improveGoalkeepers(teams);
-    return teams;
-  }
-  const teams=[selected.slice()];
-  improveGoalkeepers(teams);
-  return teams;
-}
-window.balanceTeams=()=>{
-  storeMatchdaySelection();
-  const selected=state.players.filter(p=>matchdaySelection.has(p.id));
-  if(selected.length<5){$('teams').innerHTML='<div class="card notice warning">Bitte mindestens 5 Spieler auswählen.</div>';return;}
-  const teams=makeBalancedTeams(selected);
-  const scores=teams.map(groupScore);
-  const warning=(selected.filter(hasGK).length>=2 && selected.filter(p=>!hasGK(p)).length>=8 && selected.length>=10)
-    ? 'Die ersten beiden Teams werden mit je 5 Spielern gebildet; alle übrigen Spieler bilden Team 3. Die Level werden möglichst gleichmäßig verteilt.'
-    : 'Die Auswahl wird möglichst gleichmäßig nach Level verteilt. Die Position wird dabei nur für die Torwart-Verteilung berücksichtigt.';
-  renderTeams(teams,warning);
-};
-function renderTeams(teams,warning=''){
-  const box=$('teams');
-  box.innerHTML=(warning?`<div class="card notice warning">${esc(warning)}</div>`:'')+`<div class="teamgrid">${teams.map((t,idx)=>{
-    const score=groupScore(t);
-    const counts=['schwach','mittel','stark','herausragend'].map(l=>`${l}: ${t.filter(p=>p.level===l).length}`).join(' · ');
-    return `<div class="team"><h3><span>Team ${idx+1}</span><span class="teamScore">${score} Punkte</span></h3><div class="small muted" style="margin-bottom:8px">${esc(counts)}</div>${t.map(p=>`<div class="playerrow"><span>${esc(displayName(p))}${p.positions?.length?'<br>'+p.positions.map(x=>{const pr=state.positionRows.find(r=>r.name===x);const bg=pr?.color||'#e2e8f0';return `<span class="positionBadge" style="background:${esc(bg)}">${esc(x)}</span>`}).join(''):''}</span>${levelBadge(p.level)}</div>`).join('')}</div>`;}).join('')}</div>`;
-}
+function distributeByLevel(players, teamCount, sizes){const teams=Array.from({length:teamCount},()=>[]);const remaining=players.slice().sort((a,b)=>levelValue(b)-levelValue(a)||displayName(a).localeCompare(displayName(b),'de'));for(const p of remaining){const candidates=[];for(let i=0;i<teamCount;i++)if(teams[i].length<sizes[i])candidates.push(i);if(!candidates.length)break;candidates.sort((a,b)=>groupScore(teams[a])-groupScore(teams[b])||teams[a].length-teams[b].length);teams[candidates[0]].push(p);}return teams;}
+function improveGoalkeepers(teams){for(let i=0;i<Math.min(2,teams.length);i++){if(teams[i].some(hasGK))continue;let best=null;for(let j=i+1;j<teams.length;j++){const gkIndex=teams[j].findIndex(hasGK);if(gkIndex<0)continue;for(let k=0;k<teams[i].length;k++){const non=teams[i][k];if(hasGK(non))continue;const before=Math.abs(groupScore(teams[i])-groupScore(teams[j]));const after=Math.abs((groupScore(teams[i])-levelValue(non)+levelValue(teams[j][gkIndex]))-(groupScore(teams[j])-levelValue(teams[j][gkIndex])+levelValue(non)));const delta=after-before;if(!best||delta<best.delta)best={j,gkIndex,k,delta};}}if(best){const gk=teams[best.j][best.gkIndex],non=teams[i][best.k];teams[best.j][best.gkIndex]=non;teams[i][best.k]=gk;}}}
+function makeBalancedTeams(selected){const gks=selected.filter(hasGK),field=selected.filter(p=>!hasGK(p));if(selected.length>=10&&gks.length>=2&&field.length>=8){const firstTwo=distributeByLevel(selected,2,[5,5]);const usedIds=new Set(firstTwo.flat().map(p=>p.id));const remaining=selected.filter(p=>!usedIds.has(p.id));improveGoalkeepers(firstTwo);return [...firstTwo,...(remaining.length?[remaining]:[])];}if(selected.length>=10){const a=Math.ceil(selected.length/2),b=selected.length-a;const teams=distributeByLevel(selected,2,[a,b]);improveGoalkeepers(teams);return teams;}return [selected.slice()];}
+window.balanceTeams=async()=>{storeMatchdaySelection();const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md)return;const selected=state.players.filter(p=>matchdaySelection.has(p.id));if(selected.length<5){$('teams').innerHTML='<div class="card notice warning">Bitte mindestens 5 Spieler auswählen.</div>';return}await saveTeamsForMatchday(makeBalancedTeams(selected));};
+async function saveTeamsForMatchday(teams){const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md)return;try{const selectedIds=teams.flat().map(p=>p.id);await dbDelete('matchday_players',{matchday_id:md.id});const rows=selectedIds.map(player_id=>({matchday_id:md.id,player_id,team_number:teams.findIndex(t=>t.some(p=>p.id===player_id))+1}));if(rows.length){const {error}=await getClient().from('matchday_players').insert(rows);if(error)throw error}md.selected=selectedIds;md.teams={};teams.forEach((t,i)=>md.teams[i+1]=t.map(p=>p.id));matchdaySelection=new Set(selectedIds);renderMatchday();showStatus('Teams gespeichert.','ok');}catch(e){showStatus('Teams konnten nicht gespeichert werden: '+(e.message||e),'error');}}
+window.movePlayer=async(playerId,fromTeam,toTeam)=>{const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md)return;const teams=teamArrayFromSaved(md);const from=Number(fromTeam)-1,to=Number(toTeam)-1;if(from===to||!teams[from]||!teams[to])return;const idx=teams[from].findIndex(p=>p.id===playerId);if(idx<0)return;const [player]=teams[from].splice(idx,1);teams[to].push(player);await saveTeamsForMatchday(teams);};
+function renderTeams(teams,warning=''){const box=$('teams');box.innerHTML=(warning?`<div class="card notice">${esc(warning)}</div>`:'')+`<div class="teamgrid">${teams.map((t,idx)=>{const score=groupScore(t);const counts=['schwach','mittel','stark','herausragend'].map(l=>`${l}: ${t.filter(p=>p.level===l).length}`).join(' · ');return `<div class="team"><h3><span>Team ${idx+1}</span><span class="teamScore">${score} Punkte</span></h3><div class="small muted" style="margin-bottom:8px">${esc(counts)}</div>${t.map(p=>`<div class="playerrow"><span>${esc(displayName(p))}${p.positions?.length?'<br>'+p.positions.map(x=>{const pr=state.positionRows.find(r=>r.name===x);const bg=pr?.color||'#e2e8f0';return `<span class="positionBadge" style="background:${esc(bg)}">${esc(x)}</span>`}).join(''):''}<div class="teamMoveButtons">${teams.map((_,target)=>target!==idx?`<button type="button" onclick="movePlayer('${p.id}',${idx+1},${target+1})">→ Team ${target+1}</button>`:'').join('')}</div></span>${levelBadge(p.level)}</div>`).join('')}</div>`;}).join('')}</div>`;}
 
 function renderPositionSettings(){
   const rows=state.positionRows.map((p,i)=>`<div class="positionEditRow"><input id="posName_${p.id}" type="text" value="${esc(displayName(p))}"><input id="posColor_${p.id}" type="color" value="${/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#e2e8f0'}"><button type="button" onclick="savePosition('${p.id}')">Speichern</button><button type="button" onclick="removePosition('${encodeURIComponent(p.name)}')">Löschen</button></div>`).join('');
