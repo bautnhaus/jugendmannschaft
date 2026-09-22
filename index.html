@@ -40,10 +40,10 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 <header><h1>Jugendmannschaft</h1><small id="headerSub">Kader · Training · Spieltag</small></header>
 <main>
   <div class="tabs"><button class="active" data-tab="players">Spieler</button><button data-tab="trainings">Training</button><button data-tab="matchday">Spieltag</button><button data-tab="settings">Einstellungen</button></div>
-  <section id="players" class="tab"><div class="card"><div class="toolbar"><button class="primary adminOnly" onclick="addPlayer()">+ Spieler</button><button onclick="addTraining()">+ Training anlegen</button><button onclick="exportJSON()">JSON sichern</button><button class="adminOnly" onclick="document.getElementById('importFile').click()">JSON wiederherstellen</button><input id="importFile" class="hidden" type="file" accept=".json,application/json" onchange="importJSON(event)"></div><div class="grid" style="margin-top:10px"><div><div class="muted">Spieler</div><div id="playerCount" class="stat">0</div></div><div><div class="muted">Trainings</div><div id="trainingCount" class="stat">0</div></div><div><div class="muted">Kader (Top 16)</div><div id="squadCount" class="stat">0</div></div></div></div><div class="card"><h2>Spielerübersicht</h2><div class="notice">Die Kaderplätze 1–16 werden automatisch nach Trainingsanwesenheit bestimmt. Bei gleicher Quote entscheidet die Anzahl der besuchten Trainings.</div><div id="playerTable"></div></div></section>
+  <section id="players" class="tab"><div class="card"><div class="toolbar"><button class="primary adminOnly" onclick="addPlayer()">+ Spieler</button></div><div class="grid" style="margin-top:10px"><div><div class="muted">Spieler</div><div id="playerCount" class="stat">0</div></div><div><div class="muted">Trainings</div><div id="trainingCount" class="stat">0</div></div><div><div class="muted">Kader (Top 16)</div><div id="squadCount" class="stat">0</div></div></div></div><div class="card"><h2>Spielerübersicht</h2><div class="notice">Die Kaderplätze 1–16 werden automatisch nach Trainingsanwesenheit bestimmt. Bei gleicher Quote entscheidet die Anzahl der besuchten Trainings.</div><div id="playerTable"></div></div></section>
   <section id="trainings" class="tab hidden"><div class="card"><div class="toolbar"><button class="primary" onclick="addTraining()">+ Training anlegen</button></div><div id="trainingList"></div></div></section>
   <section id="matchday" class="tab hidden"><div class="card"><div class="toolbar"><h2 style="margin:0;flex:1">Spieltage</h2><button class="primary" onclick="addMatchday()">+ Spieltag anlegen</button></div><div id="matchdayList"></div></div><div id="matchdayEditor"></div><div id="teams"></div></section>
-  <section id="settings" class="tab hidden"><div class="card"><h2>Positionen</h2><p class="muted">Namen und Farben aller Positionen können geändert werden. Positionen können mehrfach pro Spieler gewählt werden.</p><div id="positionSettings"></div></div><div class="card"><h2>Mein Konto</h2><p id="accountInfo" class="small muted"></p><div class="formrow"><label>E-Mail-Adresse<input id="accountEmail" type="email" autocomplete="email"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changeEmail()">E-Mail ändern</button></div></div><div class="formrow" style="margin-top:10px"><label>Neues Passwort<input id="newPassword" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changePassword()">Passwort ändern</button></div></div><div class="notice small" style="margin-top:12px">Nach einer E-Mail-Änderung kann Supabase eine Bestätigung an die neue Adresse verlangen. Für das Löschen des Kontos ist eine ausdrückliche Bestätigung erforderlich.</div><div class="toolbar" style="margin-top:10px"><button onclick="exportJSON()">JSON sichern</button><button onclick="logout()">Abmelden</button><button class="danger" onclick="deleteMyAccount()">Mein Konto löschen</button></div></div><div class="card adminOnly"><h2>Trainer verwalten</h2><p class="muted">Gib die E-Mail-Adresse des neuen Trainers ein. Er erhält anschließend eine Einladung per E-Mail und kann darüber sein Passwort festlegen.</p><div class="formrow"><label>E-Mail des Trainers<input id="trainerEmailAdd" type="email" placeholder="trainer@example.de"></label><label>Rolle<select id="trainerRoleAdd"><option value="trainer">Trainer</option><option value="admin">Admin</option></select></label></div><button class="primary" style="margin-top:10px" onclick="addTrainerToTeam()">Trainer zur Mannschaft hinzufügen</button><div class="notice small" style="margin-top:10px">Aus Sicherheitsgründen kann die App keine Passwörter anderer Trainer sehen oder ändern. Jeder Trainer verwaltet sein eigenes Konto.</div></div></section>
+  <section id="settings" class="tab hidden"><div class="card adminOnly"><h2>Positionen</h2><p class="muted">Namen und Farben aller Positionen können geändert werden. Positionen können mehrfach pro Spieler gewählt werden.</p><div id="positionSettings"></div></div><div class="card"><h2>Mein Konto</h2><p id="accountInfo" class="small muted"></p><div class="formrow"><label>E-Mail-Adresse<input id="accountEmail" type="email" autocomplete="email"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changeEmail()">E-Mail ändern</button></div></div><div class="formrow" style="margin-top:10px"><label>Neues Passwort<input id="newPassword" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changePassword()">Passwort ändern</button></div></div><div class="notice small" style="margin-top:12px">Nach einer E-Mail-Änderung kann Supabase eine Bestätigung an die neue Adresse verlangen. Für das Löschen des Kontos ist eine ausdrückliche Bestätigung erforderlich.</div><div class="toolbar" style="margin-top:10px"><button class="adminOnly" onclick="exportJSON()">JSON sichern</button><button onclick="logout()">Abmelden</button><button class="danger" onclick="deleteMyAccount()">Mein Konto löschen</button></div></div><div class="card adminOnly"><h2>Trainer verwalten</h2><p class="muted">Gib die E-Mail-Adresse des neuen Trainers ein. Er erhält anschließend eine Einladung per E-Mail und kann darüber sein Passwort festlegen.</p><div class="formrow"><label>E-Mail des Trainers<input id="trainerEmailAdd" type="email" placeholder="trainer@example.de"></label><label>Rolle<select id="trainerRoleAdd"><option value="trainer">Trainer</option><option value="admin">Admin</option></select></label></div><button class="primary" style="margin-top:10px" onclick="addTrainerToTeam()">Trainer zur Mannschaft hinzufügen</button><div class="notice small" style="margin-top:10px">Aus Sicherheitsgründen kann die App keine Passwörter anderer Trainer sehen oder ändern. Jeder Trainer verwaltet sein eigenes Konto.</div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><h3>Trainer der Mannschaft</h3><div id="trainerList"></div></div></section>
 </main></div>
 <div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox" id="modalContent"></div></div><div id="status" class="status"></div>
 
@@ -59,7 +59,7 @@ let playerSort={key:'lastName',dir:'asc'};
 const LEVEL_POINTS={schwach:1,mittel:2,stark:3,herausragend:4};
 const POSITION_COLORS=['#dbeafe','#dcfce7','#fef3c7','#fee2e2','#ede9fe','#cffafe','#fce7f3','#e2e8f0'];
 let supabase=null, currentUser=null, team=null, season=null, role='trainer';
-let state={players:[],trainings:[],positions:[],positionRows:[],matchdays:[]};
+let state={players:[],trainings:[],positions:[],positionRows:[],matchdays:[],trainers:[]};
 let matchdaySelection=new Set();
 let currentMatchdayId=null;
 
@@ -148,6 +148,18 @@ async function loadApp(){
   const {data:members,error:me}=await c.from('team_members').select('team_id,user_id,role').eq('user_id',currentUser.id);
   if(me)throw me;if(!members?.length)throw new Error('Dieser Trainer ist noch keiner Mannschaft zugeordnet.');
   team=members[0].team_id;role=members[0].role||'trainer';
+  state.trainers=[];
+  const {data:teamMembers,error:tme}=await c.from('team_members').select('user_id,role').eq('team_id',team);
+  if(tme)throw tme;
+  const memberIds=(teamMembers||[]).map(x=>x.user_id);
+  let profiles=[];
+  if(memberIds.length){
+    const {data:profileRows,error:profe}=await c.from('profiles').select('id,email').in('id',memberIds);
+    if(profe){
+      console.warn('Profile-E-Mails konnten nicht geladen werden:',profe.message);
+    }else{profiles=profileRows||[];}
+  }
+  state.trainers=(teamMembers||[]).map(m=>({user_id:m.user_id,role:m.role||'trainer',email:profiles.find(p=>p.id===m.user_id)?.email||''}));
   const {data:teamRow,error:te}=await c.from('teams').select('id,name').eq('id',team).single();if(te)throw te;
   const {data:seasonRows,error:se}=await c.from('seasons').select('id,name,start_date,end_date,is_active').eq('team_id',team).eq('is_active',true).limit(1);if(se)throw se;season=seasonRows?.[0]||null;
   const {data:pos,error:pe}=await c.from('positions').select('id,name,sort_order,color').eq('team_id',team).order('sort_order').order('name');if(pe)throw pe;
@@ -255,6 +267,46 @@ async function saveTeamsForMatchday(teams){const md=state.matchdays.find(x=>x.id
 window.movePlayer=async(playerId,fromTeam,toTeam)=>{const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md)return;const teams=teamArrayFromSaved(md);const from=Number(fromTeam)-1,to=Number(toTeam)-1;if(from===to||!teams[from]||!teams[to])return;const idx=teams[from].findIndex(p=>p.id===playerId);if(idx<0)return;const [player]=teams[from].splice(idx,1);teams[to].push(player);await saveTeamsForMatchday(teams);};
 function renderTeams(teams,warning=''){const box=$('teams');box.innerHTML=(warning?`<div class="card notice">${esc(warning)}</div>`:'')+`<div class="teamgrid">${teams.map((t,idx)=>{const score=groupScore(t);const counts=['schwach','mittel','stark','herausragend'].map(l=>`${l}: ${t.filter(p=>p.level===l).length}`).join(' · ');return `<div class="team"><h3><span>Team ${idx+1}</span><span class="teamScore">${score} Punkte</span></h3><div class="small muted" style="margin-bottom:8px">${esc(counts)}</div>${t.map(p=>`<div class="playerrow"><span>${esc(displayName(p))}${p.positions?.length?'<br>'+p.positions.map(x=>{const pr=state.positionRows.find(r=>r.name===x);const bg=pr?.color||'#e2e8f0';return `<span class="positionBadge" style="background:${esc(bg)}">${esc(x)}</span>`}).join(''):''}<div class="teamMoveButtons">${teams.map((_,target)=>target!==idx?`<button type="button" onclick="movePlayer('${p.id}',${idx+1},${target+1})">→ Team ${target+1}</button>`:'').join('')}</div></span>${levelBadge(p.level)}</div>`).join('')}</div>`;}).join('')}</div>`;}
 
+function renderTrainerList(){
+  const box=$('trainerList');
+  if(!box)return;
+  if(role!=='admin'){box.innerHTML='';return;}
+  if(!state.trainers.length){box.innerHTML='<p class="muted">Keine Trainer gefunden.</p>';return;}
+  box.innerHTML=state.trainers.map(t=>{
+    const isMe=t.user_id===currentUser?.id;
+    return `<div class="card" style="margin:8px 0;padding:10px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><b>${esc(t.email||'E-Mail nicht verfügbar')}</b><br><span class="muted small">${isMe?'Du · ':''}${t.role==='admin'?'Admin':'Trainer'}</span></div><div class="toolbar">${isMe?'<span class="small muted">Eigenes Konto</span>':`<select onchange="changeTrainerRole('${t.user_id}',this.value)"><option value="trainer" ${t.role==='trainer'?'selected':''}>Trainer</option><option value="admin" ${t.role==='admin'?'selected':''}>Admin</option></select><button class="danger" type="button" onclick="removeTrainer('${t.user_id}')">Entfernen</button>`}</div></div></div>`;
+  }).join('');
+}
+window.changeTrainerRole=async(userId,newRole)=>{
+  if(!adminGuard())return;
+  const target=state.trainers.find(x=>x.user_id===userId);
+  if(!target)return;
+  if(userId===currentUser?.id){showStatus('Die eigene Rolle kann hier nicht geändert werden.','error');renderTrainerList();return;}
+  if(newRole!=='admin'&&newRole!=='trainer')return;
+  if(target.role===newRole)return;
+  if(target.role==='admin'&&newRole==='trainer'&&state.trainers.filter(x=>x.role==='admin').length<=1){showStatus('Mindestens ein Admin muss erhalten bleiben.','error');renderTrainerList();return;}
+  try{
+    await dbUpdate('team_members',{team_id:team,user_id:userId},{role:newRole});
+    target.role=newRole;
+    renderTrainerList();
+    showStatus('Rolle geändert.','ok');
+  }catch(e){renderTrainerList();showStatus('Rolle konnte nicht geändert werden: '+(e.message||e),'error');}
+};
+window.removeTrainer=async userId=>{
+  if(!adminGuard())return;
+  const target=state.trainers.find(x=>x.user_id===userId);
+  if(!target||userId===currentUser?.id)return;
+  if(target.role==='admin'&&state.trainers.filter(x=>x.role==='admin').length<=1){showStatus('Der letzte Admin kann nicht entfernt werden.','error');return;}
+  const label=target.email||'diesen Trainer';
+  if(!confirm(`${label} wirklich aus der Mannschaft entfernen? Das Trainerkonto selbst wird nicht gelöscht.`))return;
+  try{
+    await dbDelete('team_members',{team_id:team,user_id:userId});
+    state.trainers=state.trainers.filter(x=>x.user_id!==userId);
+    renderTrainerList();
+    showStatus('Trainer wurde aus der Mannschaft entfernt.','ok');
+  }catch(e){showStatus('Trainer konnte nicht entfernt werden: '+(e.message||e),'error');}
+};
+
 function renderPositionSettings(){
   const rows=state.positionRows.map((p,i)=>`<div class="positionEditRow"><input id="posName_${p.id}" type="text" value="${esc(displayName(p))}"><input id="posColor_${p.id}" type="color" value="${/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#e2e8f0'}"><button type="button" onclick="savePosition('${p.id}')">Speichern</button><button type="button" onclick="removePosition('${encodeURIComponent(p.name)}')">Löschen</button></div>`).join('');
   $('positionSettings').innerHTML=`<div>${rows||'<p class="muted">Noch keine Positionen.</p>'}</div><div class="toolbar" style="margin-top:12px"><input id="newPosition" type="text" placeholder="Neue Position"><input id="newPositionColor" type="color" value="#e2e8f0" style="width:58px;height:44px"><button class="primary" onclick="addPosition()">Position hinzufügen</button></div>`;
@@ -267,9 +319,9 @@ function exportJSON(){const backup={version:4,exportedAt:new Date().toISOString(
 window.exportJSON=exportJSON;
 window.importJSON=async event=>{if(!adminGuard())return;const file=event.target.files?.[0];if(!file)return;const r=new FileReader();r.onload=async()=>{try{const parsed=JSON.parse(r.result);if(!confirm('Die Backup-Daten in Supabase übernehmen? Bestehende Daten werden nicht automatisch gelöscht.'))return;const posMap={};for(const pos of (parsed.positions||[])){let {data:p}=await getClient().from('positions').select('id').eq('team_id',team).eq('name',String(pos)).maybeSingle();if(!p)p=await dbInsert('positions',{team_id:team,name:String(pos),sort_order:Object.keys(posMap).length,color:'#e2e8f0'});posMap[pos]=p.id;}for(const p of (parsed.players||[])){let existing=await getClient().from('players').select('id').eq('team_id',team).eq('name',String(p.name)).eq('active',true).maybeSingle();if(!existing.data)existing={data:await dbInsert('players',{team_id:team,name:String(p.name),level:LEVELS.includes(p.level)?p.level:null,active:true})};const pid=existing.data.id;await dbDelete('player_positions',{player_id:pid});const rows=(p.positions||[]).map(x=>posMap[x]).filter(Boolean).map(position_id=>({player_id:pid,position_id}));if(rows.length)await getClient().from('player_positions').insert(rows);}showStatus('Backup übernommen. Daten werden neu geladen …','ok');await loadApp();}catch(e){showStatus('Backup konnte nicht übernommen werden: '+(e.message||e),'error');}finally{event.target.value='';}};r.readAsText(file);};
 
-window.showTab=id=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==id));document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));if(id==='players')renderPlayers();if(id==='trainings')renderTrainings();if(id==='matchday')renderMatchday();if(id==='settings')renderPositionSettings();};
+window.showTab=id=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==id));document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));if(id==='players')renderPlayers();if(id==='trainings')renderTrainings();if(id==='matchday')renderMatchday();if(id==='settings'){renderPositionSettings();renderTrainerList();}};
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
-function renderAll(){$('playerCount').textContent=state.players.length;$('trainingCount').textContent=state.trainings.length;$('squadCount').textContent=Math.min(16,state.players.length);renderPlayers();renderTrainings();renderPositionSettings();renderMatchday();}
+function renderAll(){$('playerCount').textContent=state.players.length;$('trainingCount').textContent=state.trainings.length;$('squadCount').textContent=Math.min(16,state.players.length);renderPlayers();renderTrainings();renderPositionSettings();renderTrainerList();renderMatchday();}
 
 initConfigFields();
 try{const c=config();if(c){getClient().auth.getSession().then(async({data})=>{if(data.session){currentUser=data.session.user;try{await loadApp()}catch(e){console.error(e);setLoginMsg('Gespeicherte Anmeldung konnte nicht geladen werden: '+(e.message||e),true);}}});}}catch(e){console.error(e);}
