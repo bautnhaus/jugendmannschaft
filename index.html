@@ -42,7 +42,7 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
   <div class="tabs"><button class="active" data-tab="players">Spieler</button><button data-tab="trainings">Training</button><button data-tab="matchday">Spieltag</button><button data-tab="settings">Einstellungen</button></div>
   <section id="players" class="tab"><div class="card"><div class="toolbar"><button class="primary adminOnly" onclick="addPlayer()">+ Spieler</button><button onclick="addTraining()">+ Training anlegen</button><button onclick="exportJSON()">JSON sichern</button><button class="adminOnly" onclick="document.getElementById('importFile').click()">JSON wiederherstellen</button><input id="importFile" class="hidden" type="file" accept=".json,application/json" onchange="importJSON(event)"></div><div class="grid" style="margin-top:10px"><div><div class="muted">Spieler</div><div id="playerCount" class="stat">0</div></div><div><div class="muted">Trainings</div><div id="trainingCount" class="stat">0</div></div><div><div class="muted">Kader (Top 16)</div><div id="squadCount" class="stat">0</div></div></div></div><div class="card"><h2>Spielerübersicht</h2><div class="notice">Die Kaderplätze 1–16 werden automatisch nach Trainingsanwesenheit bestimmt. Bei gleicher Quote entscheidet die Anzahl der besuchten Trainings.</div><div id="playerTable"></div></div></section>
   <section id="trainings" class="tab hidden"><div class="card"><div class="toolbar"><button class="primary" onclick="addTraining()">+ Training anlegen</button></div><div id="trainingList"></div></div></section>
-  <section id="matchday" class="tab hidden"><div class="card"><h2>Spieltag</h2><p class="muted">Wähle die verfügbaren Spieler. Die Aufteilung berücksichtigt zuerst das Level, danach die Position. Wenn möglich werden zwei Teams mit jeweils 4 Feldspielern + 1 Torwart gebildet; übrige Spieler kommen in Team 3.</p><div id="matchdayControls"></div></div><div id="teams"></div></section>
+  <section id="matchday" class="tab hidden"><div class="card"><div class="toolbar"><h2 style="margin:0;flex:1">Spieltage</h2><button class="primary" onclick="addMatchday()">+ Spieltag anlegen</button></div><div id="matchdayList"></div></div><div id="matchdayEditor"></div><div id="teams"></div></section>
   <section id="settings" class="tab hidden"><div class="card"><h2>Positionen</h2><p class="muted">Namen und Farben aller Positionen können geändert werden. Positionen können mehrfach pro Spieler gewählt werden.</p><div id="positionSettings"></div></div><div class="card"><h2>Mein Konto</h2><p id="accountInfo" class="small muted"></p><div class="formrow"><label>E-Mail-Adresse<input id="accountEmail" type="email" autocomplete="email"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changeEmail()">E-Mail ändern</button></div></div><div class="formrow" style="margin-top:10px"><label>Neues Passwort<input id="newPassword" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changePassword()">Passwort ändern</button></div></div><div class="notice small" style="margin-top:12px">Nach einer E-Mail-Änderung kann Supabase eine Bestätigung an die neue Adresse verlangen. Für das Löschen des Kontos ist eine ausdrückliche Bestätigung erforderlich.</div><div class="toolbar" style="margin-top:10px"><button onclick="exportJSON()">JSON sichern</button><button onclick="logout()">Abmelden</button><button class="danger" onclick="deleteMyAccount()">Mein Konto löschen</button></div></div><div class="card adminOnly"><h2>Trainer verwalten</h2><p class="muted">Gib die E-Mail-Adresse des neuen Trainers ein. Er erhält anschließend eine Einladung per E-Mail und kann darüber sein Passwort festlegen.</p><div class="formrow"><label>E-Mail des Trainers<input id="trainerEmailAdd" type="email" placeholder="trainer@example.de"></label><label>Rolle<select id="trainerRoleAdd"><option value="trainer">Trainer</option><option value="admin">Admin</option></select></label></div><button class="primary" style="margin-top:10px" onclick="addTrainerToTeam()">Trainer zur Mannschaft hinzufügen</button><div class="notice small" style="margin-top:10px">Aus Sicherheitsgründen kann die App keine Passwörter anderer Trainer sehen oder ändern. Jeder Trainer verwaltet sein eigenes Konto.</div></div></section>
 </main></div>
 <div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox" id="modalContent"></div></div><div id="status" class="status"></div>
@@ -59,8 +59,9 @@ let playerSort={key:'lastName',dir:'asc'};
 const LEVEL_POINTS={schwach:1,mittel:2,stark:3,herausragend:4};
 const POSITION_COLORS=['#dbeafe','#dcfce7','#fef3c7','#fee2e2','#ede9fe','#cffafe','#fce7f3','#e2e8f0'];
 let supabase=null, currentUser=null, team=null, season=null, role='trainer';
-let state={players:[],trainings:[],positions:[],positionRows:[]};
+let state={players:[],trainings:[],positions:[],positionRows:[],matchdays:[]};
 let matchdaySelection=new Set();
+let currentMatchdayId=null;
 
 const $=id=>document.getElementById(id);
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -227,9 +228,43 @@ function renderTrainings(){const box=$('trainingList');if(!state.trainings.lengt
 
 function getSelectedMatchday(){return new Set(matchdaySelection);}
 function storeMatchdaySelection(){matchdaySelection=new Set([...document.querySelectorAll('.matchPlayer:checked')].map(x=>x.value));}
-window.selectSquad=()=>{matchdaySelection=new Set(sortedPlayers().slice(0,16).map(p=>p.id));renderMatchday();};
-window.clearMatchday=()=>{matchdaySelection=new Set();renderMatchday();};
-function renderMatchday(){const selectedIds=getSelectedMatchday();if(!state.players.length){$('matchdayControls').innerHTML='<p class="muted">Zuerst Spieler anlegen.</p>';$('teams').innerHTML='';return}const status='Top 16 werden hervorgehoben, aber nicht automatisch ausgewählt.';$('matchdayControls').innerHTML=`<div class="notice">${status}</div><div class="toolbar"><button onclick="selectSquad()">Top 16 auswählen</button><button onclick="clearMatchday()">Auswahl leeren</button><button class="primary" onclick="balanceTeams()">Teams bilden</button></div><div class="checks" style="margin-top:10px">${state.players.map(p=>`<label class="chip"><input type="checkbox" class="matchPlayer" value="${p.id}" ${selectedIds.has(p.id)?'checked':''}>${esc(displayName(p))}</label>`).join('')}</div>`;document.querySelectorAll('.matchPlayer').forEach(x=>x.addEventListener('change',storeMatchdaySelection));}
+window.selectSquad=()=>{matchdaySelection=new Set(sortedPlayers().slice(0,16).map(p=>p.id));renderMatchdayEditor();};
+window.clearMatchday=()=>{matchdaySelection=new Set();renderMatchdayEditor();};
+window.addMatchday=()=>{
+  openModal(`<h2>Spieltag anlegen</h2><div class="formrow"><label>Datum<input id="matchdayDate" type="date" value="${todayISO()}"></label><label>Name (optional)<input id="matchdayName" type="text" placeholder="z. B. Meisterschaftsspiel"></label></div><div class="toolbar" style="margin-top:14px"><button class="primary" onclick="saveMatchday()">Spieltag speichern</button><button type="button" onclick="closeModal()">Abbrechen</button></div>`);
+};
+window.saveMatchday=()=>{
+  const date=$('matchdayDate').value;if(!date){alert('Bitte ein Datum auswählen.');return;}
+  const name=$('matchdayName').value.trim();
+  const id='md_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
+  state.matchdays.push({id,date,name,selected:[]});
+  state.matchdays.sort((a,b)=>b.date.localeCompare(a.date));
+  currentMatchdayId=id;matchdaySelection=new Set();closeModal();renderMatchday();showStatus('Spieltag angelegt.','ok');
+};
+window.openMatchday=id=>{
+  const md=state.matchdays.find(x=>x.id===id);if(!md)return;
+  currentMatchdayId=id;matchdaySelection=new Set(md.selected||[]);renderMatchday();
+};
+window.deleteMatchday=id=>{
+  if(!confirm('Spieltag wirklich löschen?'))return;
+  state.matchdays=state.matchdays.filter(x=>x.id!==id);
+  if(currentMatchdayId===id){currentMatchdayId=state.matchdays[0]?.id||null;matchdaySelection=new Set(state.matchdays[0]?.selected||[]);}
+  renderMatchday();showStatus('Spieltag gelöscht.','ok');
+};
+function renderMatchday(){
+  const list=$('matchdayList'), editor=$('matchdayEditor');
+  if(!state.matchdays.length){list.innerHTML='<p class="muted">Noch kein Spieltag angelegt.</p>';editor.innerHTML='';$('teams').innerHTML='';return;}
+  if(!currentMatchdayId||!state.matchdays.some(x=>x.id===currentMatchdayId))currentMatchdayId=state.matchdays[0].id;
+  list.innerHTML=state.matchdays.map(md=>{const active=md.id===currentMatchdayId;return `<div class="trainingItem" style="padding:0"><button type="button" class="trainingHeader" onclick="openMatchday('${md.id}')"><span><b>${esc(md.name||'Spieltag')}</b> – ${fmtDate(md.date)}<br><span class="muted small">${(md.selected||[]).length} Spieler ausgewählt</span></span><span>${active?'✓':''}</span></button></div>`}).join('');
+  renderMatchdayEditor();
+}
+function renderMatchdayEditor(){
+  const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md){$('matchdayEditor').innerHTML='';return;}
+  const selectedIds=getSelectedMatchday();
+  const topSet=new Set(sortedPlayers().slice(0,16).map(p=>p.id));
+  $('matchdayEditor').innerHTML=`<div class="card"><h2>${esc(md.name||'Spieltag')} – ${fmtDate(md.date)}</h2><div class="notice">Die Top 16 werden wie in der Spielerübersicht grün hervorgehoben. Sie werden nicht automatisch ausgewählt.</div><div class="toolbar"><button onclick="selectSquad()">Top 16 auswählen</button><button onclick="clearMatchday()">Auswahl leeren</button><button class="primary" onclick="balanceTeams()">Teams bilden</button><button class="danger" onclick="deleteMatchday('${md.id}')">Spieltag löschen</button></div><div class="checks" style="margin-top:10px">${sortedPlayers().map(p=>`<label class="chip ${topSet.has(p.id)?'top16Attendance':''}"><input type="checkbox" class="matchPlayer" value="${p.id}" ${selectedIds.has(p.id)?'checked':''}>${esc(displayName(p))}</label>`).join('')}</div></div>`;
+  document.querySelectorAll('.matchPlayer').forEach(x=>x.addEventListener('change',()=>{storeMatchdaySelection();md.selected=[...matchdaySelection];const label=document.querySelector(`button[onclick=\"openMatchday('${md.id}')\"] .muted`);if(label)label.textContent=`${md.selected.length} Spieler ausgewählt`; }));
+}
 function levelValue(p){return LEVEL_POINTS[p.level]||0;}
 function groupScore(g){return g.reduce((s,p)=>s+levelValue(p),0);}
 function hasGK(p){return (p.positions||[]).some(x=>x.toLowerCase()==='torwart');}
