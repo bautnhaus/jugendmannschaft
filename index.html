@@ -368,9 +368,118 @@ window.savePosition=async id=>{if(!adminGuard())return;try{const row=state.posit
 window.addPosition=async()=>{if(!adminGuard())return;try{const el=$('newPosition'),v=el.value.trim(),color=$('newPositionColor').value;if(!v)return;if(state.positions.some(x=>x.toLowerCase()===v.toLowerCase())){showStatus('Diese Position gibt es bereits.','error');return}const max=state.positionRows.length;const p=await dbInsert('positions',{team_id:team,name:v,sort_order:max,color});state.positionRows.push(p);state.positions.push(v);renderPositionSettings();showStatus('Position hinzugefügt.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
 window.removePosition=async encoded=>{if(!adminGuard())return;const pos=decodeURIComponent(encoded);if(!confirm(`Position „${pos}“ wirklich löschen?`))return;try{const p=state.positionRows.find(x=>x.name===pos);if(!p)return;await dbDelete('player_positions',{position_id:p.id});await dbDelete('positions',{id:p.id});state.positionRows=state.positionRows.filter(x=>x.id!==p.id);state.positions=state.positionRows.map(x=>x.name);state.players.forEach(pl=>pl.positions=(pl.positions||[]).filter(x=>x!==pos));renderAll();showStatus('Position gelöscht.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
 
-function exportJSON(){if(!adminGuard())return;const backup={version:4,exportedAt:new Date().toISOString(),teamId:team,season:season,positions:state.positions,players:state.players,trainings:state.trainings};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jugendmannschaft-backup-'+todayISO()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+async function buildBackupSnapshot(){
+  const c=getClient();
+  const [posR,playerR,ppR,trainingR,matchdayR]=await Promise.all([
+    c.from('positions').select('id,name,sort_order,color').eq('team_id',team).order('sort_order').order('name'),
+    c.from('players').select('id,name,first_name,last_name,level,photo_data,active,created_at').eq('team_id',team),
+    c.from('player_positions').select('player_id,position_id'),
+    c.from('trainings').select('id,training_date,name').eq('team_id',team).order('training_date'),
+    c.from('matchdays').select('id,match_date,name').eq('team_id',team).order('match_date')
+  ]);
+  for(const r of [posR,playerR,ppR,trainingR,matchdayR])if(r.error)throw r.error;
+  const players=playerR.data||[], trainings=trainingR.data||[], matchdays=matchdayR.data||[];
+  const playerIds=players.map(x=>x.id), trainingIds=trainings.map(x=>x.id), matchdayIds=matchdays.map(x=>x.id);
+  let attendance=[], matchdayPlayers=[];
+  if(trainingIds.length){const r=await c.from('attendance').select('training_id,player_id,present').in('training_id',trainingIds);if(r.error)throw r.error;attendance=r.data||[];}
+  if(matchdayIds.length){const r=await c.from('matchday_players').select('matchday_id,player_id,team_number,goalkeeper').in('matchday_id',matchdayIds);if(r.error)throw r.error;matchdayPlayers=r.data|| [];}
+  return {version:5,exportedAt:new Date().toISOString(),teamId:team,season:season,positions:posR.data||[],players,playerPositions:(ppR.data||[]).filter(x=>playerIds.includes(x.player_id)),trainings,attendance,matchdays,matchdayPlayers};
+}
+function downloadBackup(backup,prefix='jugendmannschaft-backup'){
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=prefix+'-'+todayISO()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+async function exportJSON(){
+  if(!adminGuard())return;
+  try{const backup=await buildBackupSnapshot();downloadBackup(backup);showStatus('Vollständiges Backup wurde erstellt.','ok');}
+  catch(e){showStatus('Backup konnte nicht erstellt werden: '+(e.message||e),'error');}
+}
 window.exportJSON=exportJSON;
-window.importJSON=async event=>{if(!adminGuard())return;const file=event.target.files?.[0];if(!file)return;const r=new FileReader();r.onload=async()=>{try{const parsed=JSON.parse(r.result);if(!confirm('Die Backup-Daten in Supabase übernehmen? Bestehende Daten werden nicht automatisch gelöscht.'))return;const posMap={};for(const pos of (parsed.positions||[])){let {data:p}=await getClient().from('positions').select('id').eq('team_id',team).eq('name',String(pos)).maybeSingle();if(!p)p=await dbInsert('positions',{team_id:team,name:String(pos),sort_order:Object.keys(posMap).length,color:'#e2e8f0'});posMap[pos]=p.id;}for(const p of (parsed.players||[])){let existing=await getClient().from('players').select('id').eq('team_id',team).eq('name',String(p.name)).eq('active',true).maybeSingle();if(!existing.data)existing={data:await dbInsert('players',{team_id:team,name:String(p.name),level:LEVELS.includes(p.level)?p.level:null,active:true})};const pid=existing.data.id;await dbDelete('player_positions',{player_id:pid});const rows=(p.positions||[]).map(x=>posMap[x]).filter(Boolean).map(position_id=>({player_id:pid,position_id}));if(rows.length)await getClient().from('player_positions').insert(rows);}showStatus('Backup übernommen. Daten werden neu geladen …','ok');await loadApp();}catch(e){showStatus('Backup konnte nicht übernommen werden: '+(e.message||e),'error');}finally{event.target.value='';}};r.readAsText(file);};
+async function replaceTeamDataWithBackup(c, backup){
+  const {data:curPlayers,error:cp}=await c.from('players').select('id').eq('team_id',team);if(cp)throw cp;
+  const {data:curTrainings,error:ct}=await c.from('trainings').select('id').eq('team_id',team);if(ct)throw ct;
+  const {data:curMatchdays,error:cm}=await c.from('matchdays').select('id').eq('team_id',team);if(cm)throw cm;
+  const playerIds=(curPlayers||[]).map(x=>x.id),trainingIds=(curTrainings||[]).map(x=>x.id),matchdayIds=(curMatchdays||[]).map(x=>x.id);
+
+  if(playerIds.length){let x=await c.from('player_positions').delete().in('player_id',playerIds);if(x.error)throw x.error;}
+  if(trainingIds.length){let x=await c.from('attendance').delete().in('training_id',trainingIds);if(x.error)throw x.error;}
+  if(matchdayIds.length){let x=await c.from('matchday_players').delete().in('matchday_id',matchdayIds);if(x.error)throw x.error;}
+  if(matchdayIds.length){let x=await c.from('matchdays').delete().in('id',matchdayIds);if(x.error)throw x.error;}
+  if(trainingIds.length){let x=await c.from('trainings').delete().in('id',trainingIds);if(x.error)throw x.error;}
+  if(playerIds.length){let x=await c.from('players').delete().in('id',playerIds);if(x.error)throw x.error;}
+
+  const {data:curPositions,error:posErr}=await c.from('positions').select('id').eq('team_id',team);if(posErr)throw posErr;
+  const positionIds=(curPositions||[]).map(x=>x.id);
+  if(positionIds.length){let x=await c.from('player_positions').delete().in('position_id',positionIds);if(x.error)throw x.error;let y=await c.from('positions').delete().in('id',positionIds);if(y.error)throw y.error;}
+
+  if(backup.positions.length){let x=await c.from('positions').insert(backup.positions.map(p=>({id:p.id,team_id:team,name:p.name,sort_order:p.sort_order,color:p.color||'#6b7280'})));if(x.error)throw x.error;}
+  if(backup.players.length){let x=await c.from('players').insert(backup.players.map(p=>({id:p.id,team_id:team,name:p.name,first_name:p.first_name||null,last_name:p.last_name||null,level:LEVELS.includes(p.level)?p.level:null,photo_data:p.photo_data||null,active:p.active!==false,created_at:p.created_at||undefined})));if(x.error)throw x.error;}
+  if(backup.playerPositions.length){let x=await c.from('player_positions').insert(backup.playerPositions.map(p=>({player_id:p.player_id,position_id:p.position_id})));if(x.error)throw x.error;}
+  if(backup.trainings.length){let x=await c.from('trainings').insert(backup.trainings.map(t=>({id:t.id,team_id:team,training_date:t.training_date,name:t.name||''})));if(x.error)throw x.error;}
+  if(backup.attendance.length){let x=await c.from('attendance').insert(backup.attendance.map(a=>({training_id:a.training_id,player_id:a.player_id,present:!!a.present})));if(x.error)throw x.error;}
+  if(backup.matchdays.length){let x=await c.from('matchdays').insert(backup.matchdays.map(m=>({id:m.id,team_id:team,match_date:m.match_date,name:m.name||''})));if(x.error)throw x.error;}
+  if(backup.matchdayPlayers.length){let x=await c.from('matchday_players').insert(backup.matchdayPlayers.map(m=>({matchday_id:m.matchday_id,player_id:m.player_id,team_number:m.team_number,goalkeeper:!!m.goalkeeper})));if(x.error)throw x.error;}
+}
+
+function validateBackup(parsed){
+  if(!parsed||parsed.version!==5)throw new Error('Nicht unterstützte Backup-Version.');
+  if(parsed.teamId!==team)throw new Error('Dieses Backup gehört zu einer anderen Mannschaft.');
+  for(const key of ['positions','players','playerPositions','trainings','attendance','matchdays','matchdayPlayers']){
+    if(!Array.isArray(parsed[key]))throw new Error('Das Backup ist unvollständig: '+key+'.');
+  }
+  const ids=(arr,key)=>new Set(arr.map(x=>x[key]).filter(Boolean));
+  const positionIds=ids(parsed.positions,'id'),playerIds=ids(parsed.players,'id'),trainingIds=ids(parsed.trainings,'id'),matchdayIds=ids(parsed.matchdays,'id');
+  if(positionIds.size!==parsed.positions.length)throw new Error('Das Backup enthält doppelte Positions-IDs.');
+  if(playerIds.size!==parsed.players.length)throw new Error('Das Backup enthält doppelte Spieler-IDs.');
+  if(trainingIds.size!==parsed.trainings.length)throw new Error('Das Backup enthält doppelte Trainings-IDs.');
+  if(matchdayIds.size!==parsed.matchdays.length)throw new Error('Das Backup enthält doppelte Spieltags-IDs.');
+  if(parsed.playerPositions.some(x=>!playerIds.has(x.player_id)||!positionIds.has(x.position_id)))throw new Error('Das Backup enthält ungültige Spieler-Positions-Zuordnungen.');
+  if(parsed.attendance.some(x=>!trainingIds.has(x.training_id)||!playerIds.has(x.player_id)))throw new Error('Das Backup enthält ungültige Anwesenheitsdaten.');
+  if(parsed.matchdayPlayers.some(x=>!matchdayIds.has(x.matchday_id)||!playerIds.has(x.player_id)))throw new Error('Das Backup enthält ungültige Spieltagsdaten.');
+  return true;
+}
+
+window.importJSON=async event=>{
+  if(!adminGuard())return;
+  const file=event.target.files?.[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=async()=>{
+    let safety=null, started=false;
+    try{
+      const parsed=JSON.parse(r.result);
+      validateBackup(parsed);
+      const ok=confirm('⚠️ Backup wiederherstellen?\n\nDer aktuelle Datenstand wird durch den Stand aus der Backup-Datei ersetzt.\n\nÄnderungen, die nach Erstellung des Backups vorgenommen wurden, gehen dabei verloren.\n\nVorher wird automatisch ein Sicherheits-Backup des aktuellen Datenstands heruntergeladen.');
+      if(!ok)return;
+
+      showStatus('Sicherheits-Backup wird erstellt …');
+      safety=await buildBackupSnapshot();
+      downloadBackup(safety,'jugendmannschaft-sicherheitsbackup');
+      started=true;
+
+      showStatus('Backup wird wiederhergestellt …');
+      const c=getClient();
+      await replaceTeamDataWithBackup(c,parsed);
+      await loadApp();
+      showStatus('Backup erfolgreich wiederhergestellt.','ok');
+    }catch(e){
+      console.error('Backup restore:',e);
+      if(started&&safety){
+        try{
+          showStatus('Fehler erkannt – ursprünglicher Datenstand wird wiederhergestellt …');
+          await replaceTeamDataWithBackup(getClient(),safety);
+          await loadApp();
+          showStatus('Wiederherstellung fehlgeschlagen. Der ursprüngliche Datenstand wurde automatisch zurückgespielt.','error');
+        }catch(rollbackError){
+          console.error('Backup rollback:',rollbackError);
+          showStatus('Wiederherstellung fehlgeschlagen. Auch das automatische Zurückspielen konnte nicht abgeschlossen werden. Das zuvor heruntergeladene Sicherheits-Backup ist verfügbar.','error');
+        }
+      }else{
+        showStatus('Backup konnte nicht wiederhergestellt werden: '+(e.message||e),'error');
+      }
+    }finally{event.target.value='';}
+  };
+  r.readAsText(file);
+};
 
 window.showTab=id=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==id));document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));if(id==='players')renderPlayers();if(id==='trainings')renderTrainings();if(id==='matchday')renderMatchday();if(id==='settings'){renderPositionSettings();renderTrainerList();}};
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
