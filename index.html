@@ -67,6 +67,14 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
     <label style="display:block;margin-top:10px">Passwort<input id="loginPassword" type="password" autocomplete="current-password"></label>
     <button class="primary" style="width:100%;margin-top:12px" onclick="login()">Anmelden</button>
     <p id="loginMsg" class="small muted"></p>
+    <div id="inviteSetup" class="hidden" style="margin-top:18px;padding-top:18px;border-top:1px solid var(--line)">
+      <h2 style="margin-top:0">Einladung als Trainer</h2>
+      <p class="muted small">Lege jetzt dein persönliches Passwort fest. Danach kannst du die Mannschafts-App direkt nutzen.</p>
+      <label>Neues Passwort<input id="invitePassword" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label>
+      <label style="display:block;margin-top:10px">Passwort wiederholen<input id="invitePassword2" type="password" autocomplete="new-password"></label>
+      <button class="primary" style="width:100%;margin-top:12px" onclick="finishInvitation()">Passwort festlegen</button>
+      <p id="inviteMsg" class="small muted"></p>
+    </div>
   </div>
 </div>
 
@@ -485,7 +493,69 @@ window.showTab=id=>{document.querySelectorAll('.tab').forEach(x=>x.classList.tog
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 function renderAll(){$('playerCount').textContent=state.players.length;$('trainingCount').textContent=state.trainings.length;$('squadCount').textContent=Math.min(16,state.players.length);renderPlayers();renderTrainings();renderPositionSettings();renderTrainerList();renderMatchday();}
 
+function isInvitationLink(){
+  const hash=window.location.hash||'';
+  const query=window.location.search||'';
+  return /(^|[#&])type=invite(&|$)/i.test(hash) || /(^|[?&])type=invite(&|$)/i.test(query);
+}
+let pendingInvitation=isInvitationLink();
+function showInviteSetup(){
+  $('loginView').classList.remove('hidden');
+  $('appView').classList.add('hidden');
+  $('inviteSetup').classList.remove('hidden');
+  $('loginEmail').disabled=true;
+  $('loginPassword').disabled=true;
+  $('inviteMsg').textContent='';
+  setLoginMsg('Einladung erkannt. Bitte lege jetzt dein persönliches Passwort fest.');
+}
+window.finishInvitation=async()=>{
+  const p1=$('invitePassword').value;
+  const p2=$('invitePassword2').value;
+  $('inviteMsg').textContent='';
+  $('inviteMsg').style.color='';
+  if(p1.length<6){$('inviteMsg').textContent='Das Passwort muss mindestens 6 Zeichen lang sein.';$('inviteMsg').style.color='#b91c1c';return;}
+  if(p1!==p2){$('inviteMsg').textContent='Die beiden Passwörter stimmen nicht überein.';$('inviteMsg').style.color='#b91c1c';return;}
+  try{
+    $('inviteMsg').textContent='Passwort wird gespeichert …';
+    const {data,error}=await getClient().auth.updateUser({password:p1});
+    if(error)throw error;
+    currentUser=data.user||currentUser;
+    pendingInvitation=false;
+    window.history.replaceState({},document.title,window.location.pathname+window.location.search);
+    $('inviteSetup').classList.add('hidden');
+    $('loginEmail').disabled=false;
+    $('loginPassword').disabled=false;
+    await loadApp();
+    showStatus('Passwort gespeichert. Willkommen in der Mannschafts-App.','ok');
+  }catch(e){
+    console.error('Trainer-Einladung:',e);
+    $('inviteMsg').textContent='Passwort konnte nicht gespeichert werden: '+(e.message||e);
+    $('inviteMsg').style.color='#b91c1c';
+  }
+};
+
 initConfigFields();
-try{const c=config();if(c){getClient().auth.getSession().then(async({data})=>{if(data.session){currentUser=data.session.user;try{await loadApp()}catch(e){console.error(e);setLoginMsg('Gespeicherte Anmeldung konnte nicht geladen werden: '+(e.message||e),true);}}});}}catch(e){console.error(e);}
+try{
+  const c=config();
+  if(c){
+    const client=getClient();
+    client.auth.onAuthStateChange((event,session)=>{
+      if(session){
+        currentUser=session.user;
+        if(pendingInvitation) showInviteSetup();
+      }
+    });
+    client.auth.getSession().then(async({data})=>{
+      if(!data.session)return;
+      currentUser=data.session.user;
+      if(pendingInvitation){
+        showInviteSetup();
+        return;
+      }
+      try{await loadApp();}
+      catch(e){console.error(e);setLoginMsg('Gespeicherte Anmeldung konnte nicht geladen werden: '+(e.message||e),true);}
+    });
+  }
+}catch(e){console.error(e);}
 </script>
 </body></html>
