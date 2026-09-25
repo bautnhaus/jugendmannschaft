@@ -1,0 +1,23 @@
+name: Deploy DEV
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout develop
+        uses: actions/checkout@v4
+
+      - name: Push develop to DEV repository
+        env:
+          DEV_REPO_TOKEN: ${{ secrets.DEV_REPO_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add dev https://x-access-token:${DEV_REPO_TOKEN}@github.com/bautnhaus/jugendmannschaft-dev.git
+          git push dev HEAD:main --force
