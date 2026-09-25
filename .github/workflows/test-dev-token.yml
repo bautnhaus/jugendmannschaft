@@ -1,0 +1,14 @@
+name: Test DEV token
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check DEV token
+        env:
+          DEV_REPO_TOKEN: ${{ secrets.DEV_REPO_TOKEN }}
+        run: |
+          curl -s -H "Authorization: Bearer ${DEV_REPO_TOKEN}" https://api.github.com/user | grep '"login"'
