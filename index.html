@@ -111,11 +111,11 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const CONFIG_KEY='jugendmannschaft_supabase_config_v1';
 const DEFAULT_POSITIONS=['Torwart','Abwehr','Mittelfeld','Sturm','Trainer'];
-const LEVELS=['schwach','mittel','stark','herausragend'];
-const LEVEL_LABELS={schwach:'🥅 Einsteiger',mittel:'⚽ Fortgeschritten',stark:'💪 Stark',herausragend:'⭐ Profi'};
+const LEVELS=['Einsteiger','Fortgeschritten','Stark','Profi'];
+const LEVEL_LABELS={Einsteiger:'🥅 Einsteiger',Fortgeschritten:'⚽ Fortgeschritten',Stark:'💪 Stark',Profi:'⭐ Profi'};
 const POSITION_ORDER=['Torwart','Abwehr','Mittelfeld','Sturm'];
 let playerSort={key:'lastName',dir:'asc'};
-const LEVEL_POINTS={schwach:1,mittel:2,stark:3,herausragend:4};
+const LEVEL_POINTS={Einsteiger:1,Fortgeschritten:2,Stark:3,Profi:4};
 const POSITION_COLORS=['#dbeafe','#dcfce7','#fef3c7','#fee2e2','#ede9fe','#cffafe','#fce7f3','#e2e8f0'];
 let supabase=null, currentUser=null, team=null, season=null, role='trainer';
 let state={players:[],trainings:[],positions:[],positionRows:[],matchdays:[],trainers:[]};
@@ -255,7 +255,7 @@ function top16RankMap(){return new Map(top16Ranking().map((p,i)=>[p.id,i]));}
 function sortedPlayers(){const arr=[...state.players];const cmpText=(a,b)=>String(a||'').localeCompare(String(b||''),'de',{sensitivity:'base'});const rankMap=top16RankMap();arr.sort((a,b)=>{const A=attendanceStats(a),B=attendanceStats(b);let v=0;if(playerSort.key==='firstName')v=cmpText(a.first_name,b.first_name);else if(playerSort.key==='lastName')v=cmpText(a.last_name,b.last_name);else if(playerSort.key==='training')v=(B.rate-A.rate)||trainingRecencyCompare(a,b)||matchdayFairnessCompare(a,b);else if(playerSort.key==='top16')v=rankMap.get(a.id)-rankMap.get(b.id);else v=cmpText(displayName(a),displayName(b));if(v===0)v=cmpText(displayName(a),displayName(b));return playerSort.key==='top16'?v:(playerSort.dir==='asc'?v:-v);});return arr;}
 function isSquad(p){const rank=top16Ranking();return rank.slice(0,16).some(x=>x.id===p.id);}
 
-function levelBadge(level){if(!level)return '<span class="badge">kein Level</span>';const c=level==='herausragend'?'outstanding':level==='stark'?'strong':level==='mittel'?'medium':'weak';return `<span class="badge ${c}">${esc(LEVEL_LABELS[level]||level)}</span>`;}
+function levelBadge(level){if(!level)return '<span class="badge">kein Level</span>';const c=level==='Profi'?'outstanding':level==='Stark'?'strong':level==='Fortgeschritten'?'medium':'weak';return `<span class="badge ${c}">${esc(LEVEL_LABELS[level]||level)}</span>`;}
 window.setPlayerSort=key=>{if(playerSort.key===key)playerSort.dir=playerSort.dir==='asc'?'desc':'asc';else{playerSort.key=key;playerSort.dir='asc';}renderPlayers();};
 function sortHeader(key,label){const arrow=playerSort.key===key?(playerSort.dir==='asc'?' ↑':' ↓'):'';return `<button type="button" class="sortHeaderBtn" onclick="setPlayerSort('${key}')"><span class="sortHeaderLabel" title="${esc(label)}">${esc(label)}</span><span class="sortHeaderArrow">${arrow}</span></button>`;}
 function renderPlayers(){
@@ -383,7 +383,7 @@ function renderTeamsHtml(teams,moveFn,kind){
   teams=sortTeamsForDisplay(teams);
   return `<div class="matchdayTeamGrid">${teams.map((t,idx)=>{
     const score=groupScore(t);
-    const counts=[['schwach','Einst.'],['mittel','Fortg.'],['stark','Stark'],['herausragend','Profi']].map(([l,label])=>{const n=t.filter(p=>p.level===l).length;return n?`<span class="matchdayLevelCount">${label}: ${n}</span>`:''}).join('');
+    const counts=[['Einsteiger','Einst.'],['Fortgeschritten','Fortg.'],['Stark','Stark'],['Profi','Profi']].map(([l,label])=>{const n=t.filter(p=>p.level===l).length;return n?`<span class="matchdayLevelCount">${label}: ${n}</span>`:''}).join('');
     const teamNo=idx+1;
     const currentGK=(kind==='matchday'?md?.goalkeepers?.[teamNo]:tr?.goalkeepers?.[teamNo])||'';
     const gkOptions=(kind==='matchday'||kind==='training')?`<label class="small muted" style="display:block;margin-top:8px">Torwart<select style="margin-top:4px;min-height:38px" onchange="${kind==='matchday'?'setMatchdayGoalkeeper':'setTrainingGoalkeeper'}(${teamNo},this.value)"><option value="">— auswählen —</option>${[...t].sort((a,b)=>(hasGK(b)?1:0)-(hasGK(a)?1:0)||displayName(a).localeCompare(displayName(b),'de')).map(p=>`<option value="${p.id}" ${currentGK===p.id?'selected':''}>${esc(displayName(p))}</option>`).join('')}</select></label>`:'';
