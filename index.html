@@ -373,9 +373,8 @@ window.openPlayerCard=id=>{
     ? history.map(({md,selected,teamNo,goalkeeper})=>`<div class="playerrow"><span>${fmtDate(md.date)}${md.name?` · ${esc(md.name)}`:''}</span><span>${selected?(teamNo?`<button type="button" class="badge strong participationBadge" style="cursor:pointer;border:1px solid #86efac" onclick="showMatchdayTeam('${md.id}',${teamNo})">🟢 dabei · Team ${teamNo}</button>${goalkeeper?'<span class="badge strong participationBadge">🥅 Torwart</span>':''}`:'<span class="badge strong participationBadge">🟢 dabei</span>'):'<span class="badge weak participationBadge">🔴 nicht dabei</span>'}</span></div>`).join('')
     : '<p class="muted">Noch keine Spieltage angelegt.</p>';
   openModal(`<div class="playerCardHeader">
-      <div class="playerCardHero">${playerAvatarHtml(p.photo_data||'')}</div>
+      <div class="playerCardHero"><div class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}${isSquad(p)?materialIcon('apparel','playerCardSquadIcon'):''}</div></div>
       <div class="playerCardIdentity">
-        <div class="playerCardIdentityTop">${isSquad(p)?'<span class="badge strong playerCardSquadBadge">Kaderempfehlung</span>':''}</div>
         <h2 class="playerCardName">${esc(displayName(p))}</h2>
         <div class="playerCardMeta">
           <span>${materialIcon('cake')} ${p.birth_year?esc(p.birth_year):'Jahrgang offen'}</span>
