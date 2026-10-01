@@ -61,7 +61,36 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 @media(max-width:600px){.sectionHeading{margin-top:14px}.sectionHeading h2{font-size:18px}.sectionHeading p{font-size:12px}.tablewrap th,.tablewrap td{font-size:13px}.statsGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.statsGrid>div{text-align:center}.participationBadge{display:inline-flex;align-items:center;justify-content:center;height:30px;min-height:30px!important;min-width:92px;white-space:nowrap;box-sizing:border-box;line-height:1;padding:4px 8px}.recommendedTeamBadge{color:#111827!important;background:#dcfce7!important;border-color:#bbf7d0!important}.recommendedTeamOption .muted{color:white!important}
 .tablewrap th:nth-child(1){width:7%;text-align:right}.tablewrap th:nth-child(2){width:12%}.tablewrap th:nth-child(3){width:26%}.tablewrap th:nth-child(4){width:22%}.tablewrap th:nth-child(5){width:33%}.sortHeaderBtn{font-size:12px!important}.playerTableRow td{height:52px;padding-top:7px;padding-bottom:7px}.attendanceCell{font-size:12px}}
 @media (pointer:coarse) and (orientation:landscape) and (max-height:600px){.tabs{position:sticky;left:auto;right:auto;bottom:auto;top:70px;padding:8px 2px 10px;background:var(--bg);border-top:0;border-bottom:1px solid var(--line);box-shadow:none;z-index:9}.tabs button{font-size:13px;padding-left:4px;padding-right:4px}main{padding-bottom:12px}}
+
+.playerCardHeader{display:flex;gap:14px;align-items:center;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.playerCardHero .playerPhoto,.playerCardHero .playerAvatar{width:88px;height:88px}
+.playerCardHero .playerAvatar .material-symbols-outlined{font-size:54px}
+.playerCardIdentity{min-width:0}.playerCardEyebrow{font-size:12px;color:var(--muted);margin-bottom:2px}.playerCardIdentity h2{margin:0 0 7px;font-size:22px;line-height:1.15;overflow-wrap:anywhere}.playerCardBadges{display:flex;gap:6px;flex-wrap:wrap}
+.playerCardSection{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}.playerCardSectionTitle{font-size:15px;font-weight:800;margin-bottom:10px}.playerCardInfoGrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.playerCardInfoFull{grid-column:1/-1}.playerCardInfoLabel{font-size:12px;color:var(--muted);margin-bottom:4px}.playerCardInfoValue{font-weight:650;display:flex;align-items:center;gap:5px}.playerCardPositions{display:flex;gap:7px;flex-wrap:wrap}.playerCardPosition{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid var(--line);border-radius:9px;background:#f8fafc;font-size:13px}.playerCardPosition .material-symbols-outlined{font-size:19px}.playerCardLevel{display:flex;align-items:center;gap:9px}.playerCardStars{font-size:19px;letter-spacing:1px;line-height:1}.playerCardStats{display:grid;grid-template-columns:1fr 1fr;gap:9px}.playerCardStat{text-align:center;padding:9px 6px;border:1px solid var(--line);border-radius:10px;background:#f8fafc}.playerCardStatValue{font-size:22px;font-weight:800}.playerCardStatLabel{font-size:12px;margin-top:2px}.playerCardStatSub{font-size:12px;color:var(--muted);margin-top:2px}.playerCardDetails{margin-top:10px}.playerCardDetails summary{cursor:pointer;font-weight:700}.playerCardNotes{font-size:13px;line-height:1.45;white-space:pre-wrap;color:var(--text)}.playerCardActions{margin-top:12px}
+@media(max-width:520px){.playerCardHeader{gap:11px}.playerCardHero .playerPhoto,.playerCardHero .playerAvatar{width:76px;height:76px}.playerCardHero .playerAvatar .material-symbols-outlined{font-size:46px}.playerCardIdentity h2{font-size:20px}.playerCardSection{padding:10px}.playerCardInfoGrid{gap:9px}.playerCardStats{gap:7px}.playerCardStatValue{font-size:20px}}
 .material-symbols-outlined{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;font-size:22px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;font-feature-settings:'liga';font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}.playerIdentityGrid{display:grid;grid-template-columns:118px minmax(0,1fr);gap:14px;align-items:start}.playerPhotoBlock{display:flex;flex-direction:column;align-items:center;gap:8px}.playerAvatar,.playerPhoto{width:104px;height:104px;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--line);background:#eef2f7}.playerAvatar .material-symbols-outlined{font-size:64px;color:#64748b}.playerPhoto img{width:100%;height:100%;object-fit:cover}.photoActionButton{width:100%;padding:8px 6px;min-height:40px;font-size:13px;white-space:nowrap}.photoSheet{display:grid;gap:8px;margin-top:10px}.photoSheet button{display:flex;align-items:center;gap:9px;justify-content:flex-start}.sportSection{margin-top:12px}.sportLabel{font-weight:700;margin-bottom:7px}.sportHint{font-size:13px;color:var(--muted);margin-top:6px}.choiceGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.choiceButton{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:68px;padding:8px 5px;border:1px solid #cbd5e1;border-radius:11px;background:#fff;color:var(--text);cursor:pointer}.choiceButton.active{background:#eff6ff;border-color:#60a5fa;color:#1d4ed8;box-shadow:0 0 0 1px #93c5fd inset}.choiceButton .choiceCheck{position:absolute;top:5px;right:5px;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;display:none;align-items:center;justify-content:center}.choiceButton.active .choiceCheck{display:flex}.choiceIcon{font-size:24px}.levelStars{font-size:18px;letter-spacing:1px;line-height:1}.levelLabel{font-size:13px;text-align:center}.footIcon{font-size:26px}.footIcon.mirrored{transform:scaleX(-1)}.positionChoiceGrid{grid-template-columns:repeat(4,minmax(0,1fr))}.photoSheetBackdrop{position:fixed;inset:0;background:#0006;z-index:45;display:none;align-items:flex-end}.photoSheetBackdrop.show{display:flex}.photoSheetCard{background:#fff;width:100%;border-radius:18px 18px 0 0;padding:12px 14px 20px;box-shadow:0 -4px 20px #0002}.photoSheetTitle{font-weight:700;font-size:18px;margin:2px 2px 10px}.photoSheetCancel{margin-top:8px}@media(max-width:520px){.playerIdentityGrid{grid-template-columns:minmax(0,1fr);gap:12px}.playerPhotoBlock{align-items:center}.playerIdentityGrid>div:last-child{min-width:0}.playerIdentityGrid label{display:block;width:100%}.playerPhoto,.playerAvatar{width:88px;height:88px}.playerAvatar .material-symbols-outlined{font-size:54px}.choiceGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.positionChoiceGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* E03 player card redesign */
+.playerCardHero{display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px;align-items:center;padding:4px 0 14px;border-bottom:1px solid var(--line)}
+.playerCardHero .playerPhoto,.playerCardHero .playerAvatar{width:88px!important;height:88px!important;border-radius:18px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f1f5f9}
+.playerCardHero .playerPhoto img{width:100%;height:100%;object-fit:cover}
+.playerCardHero .playerAvatar .material-symbols-outlined{font-size:56px;color:#94a3b8}
+.playerCardName{font-size:21px;font-weight:750;line-height:1.2;margin:0 0 7px;overflow-wrap:anywhere}
+.playerCardMeta{display:flex;flex-wrap:wrap;gap:5px 10px;color:var(--muted);font-size:13px;margin-top:7px}
+.playerCardMeta span{display:inline-flex;align-items:center;gap:4px}
+.playerCardSection{border:1px solid var(--line);border-radius:13px;background:#fff;padding:12px;margin-top:10px}
+.playerCardSectionTitle{font-size:14px;font-weight:700;margin:0 0 9px;display:flex;align-items:center;gap:7px}
+.playerCardSectionTitle .material-symbols-outlined{font-size:19px;color:#64748b}
+.playerCardStats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.playerCardStat{background:#f8fafc;border-radius:10px;padding:10px;min-width:0}
+.playerCardStatValue{font-size:21px;font-weight:750;line-height:1.25;font-variant-numeric:tabular-nums}
+.playerCardStatLabel{font-size:12px;color:var(--muted);margin-top:3px}
+.playerCardNotes{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
+.playerCardDetails{margin-top:10px;border:1px solid var(--line);border-radius:13px;background:#fff;padding:12px}
+.playerCardDetails summary{cursor:pointer;font-weight:700;display:flex;align-items:center;gap:7px}
+.playerCardDetails[open] summary{margin-bottom:8px}
+@media(max-width:380px){.playerCardHero{grid-template-columns:72px minmax(0,1fr);gap:10px}.playerCardHero .playerPhoto,.playerCardHero .playerAvatar{width:72px!important;height:72px!important}.playerCardName{font-size:19px}.playerCardStats{gap:6px}.playerCardStat{padding:8px}}
+
 </style>
 </head>
 <body>
@@ -307,7 +336,66 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-edit-playe
 function playerMatchdayHistory(p){return state.matchdays.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(md=>{const selected=(md.selected||[]).includes(p.id);const teamNo=Object.keys(md.teams||{}).find(n=>(md.teams[n]||[]).includes(p.id));const goalkeeper=!!(teamNo&&md.goalkeepers?.[teamNo]===p.id);return {md,selected,teamNo,goalkeeper};});}
 window.showMatchdayTeam=(matchdayId,teamNo)=>{const md=state.matchdays.find(x=>x.id===matchdayId);if(!md)return;const ids=(md.teams?.[teamNo]||[]);const players=ids.map(id=>state.players.find(p=>p.id===id)).filter(Boolean);const content=$('modalContent');const previousHtml=content.innerHTML;const detailsState=[...content.querySelectorAll('details')].map((d,i)=>({i,open:d.open}));content.innerHTML=`<h2>${esc(md.name||'Spieltag')} – Team ${esc(teamNo)}</h2><div class="muted" style="margin-bottom:12px">${fmtDate(md.date)}</div><div>${players.length?players.map(p=>`<div class="playerrow"><span><b>${esc(displayName(p))}</b><br>${p.positions?.length?p.positions.map(x=>`<span class="positionBadge">${esc(x)}</span>`).join(''):''}</span>${levelBadge(p.level)}</div>`).join(''):'<p class="muted">Keine Teamzuordnung gespeichert.</p>'}</div><div class="toolbar" style="margin-top:12px"><button type="button" onclick="closeMatchdayTeam()">Zurück</button><button type="button" onclick="closeModal()">Spielerkarte schließen</button></div>`;window._playerCardRestore=()=>{content.innerHTML=previousHtml;[...content.querySelectorAll('details')].forEach((d,i)=>{if(detailsState[i])d.open=detailsState[i].open;});window._playerCardRestore=null;};};
 window.closeMatchdayTeam=()=>{if(window._playerCardRestore){const restore=window._playerCardRestore;restore();}};
-window.openPlayerCard=id=>{const p=state.players.find(x=>x.id===id);if(!p)return;const a=attendanceStats(p);const positions=orderedPositions(p.positions||[]).map(x=>`<span class="positionBadge">${esc(x)}</span>`).join('')||'<span class="muted">Keine Position</span>';const history=playerMatchdayHistory(p);const trainingGKCount=state.trainings.reduce((n,t)=>n+Object.values(t.goalkeepers||{}).filter(id=>id===p.id).length,0);const trainingGKTotal=state.trainings.reduce((n,t)=>n+Object.keys(t.goalkeepers||{}).length,0);const matchdayGKCount=history.filter(x=>x.goalkeeper).length;const matchdayHtml=history.length?history.map(({md,selected,teamNo,goalkeeper})=>`<div class="playerrow"><span>${fmtDate(md.date)}${md.name?` · ${esc(md.name)}`:''}</span><span>${selected?(teamNo?`<button type="button" class="badge strong participationBadge" style="cursor:pointer;border:1px solid #86efac" onclick="showMatchdayTeam('${md.id}',${teamNo})">🟢 dabei · Team ${teamNo}</button>${goalkeeper?'<span class="badge strong participationBadge">🥅 Torwart</span>':''}`:'<span class="badge strong participationBadge">🟢 dabei</span>'):'<span class="badge weak participationBadge">🔴 nicht dabei</span>'}</span></div>`).join(''):'<p class="muted">Noch keine Spieltage angelegt.</p>';openModal(`<h2>Spielerkarte</h2><div style="display:flex;gap:14px;align-items:center">${p.photo_data?`<img src="${p.photo_data}" alt="" style="width:96px;height:96px;object-fit:cover;border-radius:14px">`:''}<div><h3>${esc(displayName(p))}</h3>${levelBadge(p.level)} ${isSquad(p)?'<span class="badge strong">Kaderempfehlung</span>':''}</div></div><div class="card" style="margin:14px 0 0"><b>Positionen</b><div style="margin-top:6px">${positions}</div></div><div class="grid" style="margin-top:10px"><div class="card"><div class="muted">Trainingsteilnahme</div><div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:6px"><div><div class="stat" style="font-size:24px">${a.attended}/${a.total}</div><div>${Math.round(a.rate*100)} %</div><div class="small muted">Teilnahme</div></div><div><div class="stat" style="font-size:24px">${trainingGKCount}/${trainingGKTotal}</div><div>${trainingGKTotal?Math.round(trainingGKCount/trainingGKTotal*100):0} %</div><div class="small muted">Einsatz als Torwart</div></div></div></div><div class="card"><div class="muted">Spieltagsbeteiligung</div><div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:6px"><div><div class="stat" style="font-size:24px">${history.filter(x=>x.selected).length}/${history.length}</div><div>${history.length?Math.round(history.filter(x=>x.selected).length/history.length*100):0} %</div><div class="small muted">Teilnahme</div></div><div><div class="stat" style="font-size:24px">${matchdayGKCount}/${history.length}</div><div>${history.length?Math.round(matchdayGKCount/history.length*100):0} %</div><div class="small muted">Einsatz als Torwart</div></div></div></div></div><div class="card" style="margin-top:10px"><b>Notizen</b><div class="small muted" style="margin-top:6px;white-space:pre-wrap">${esc(p.notes||'Noch keine Notizen hinterlegt.')}</div></div><details class="card" style="margin:10px 0 0"><summary style="cursor:pointer;font-weight:700">Spieltage</summary><div style="margin-top:10px">${matchdayHtml}</div></details><div class="toolbar" style="margin-top:12px"><button class="primary" onclick="closeModal();editPlayer('${id}')">Bearbeiten</button><button onclick="closeModal()">Schließen</button></div>`);};
+window.openPlayerCard=id=>{
+  const p=state.players.find(x=>x.id===id);
+  if(!p)return;
+  const a=attendanceStats(p);
+  const positions=orderedPositions(p.positions||[]);
+  const positionHtml=positions.length
+    ? positions.map(x=>`<span class="playerCardPosition">${materialIcon(positionIconName(x))}<span>${esc(x)}</span></span>`).join('')
+    : '<span class="muted">Keine Position hinterlegt</span>';
+  const history=playerMatchdayHistory(p);
+  const trainingGKCount=state.trainings.reduce((n,t)=>n+Object.values(t.goalkeepers||{}).filter(id=>id===p.id).length,0);
+  const trainingGKTotal=state.trainings.reduce((n,t)=>n+Object.keys(t.goalkeepers||{}).length,0);
+  const matchdayGKCount=history.filter(x=>x.goalkeeper).length;
+  const selectedMatchdays=history.filter(x=>x.selected).length;
+  const levelStars=p.level&&LEVEL_STARS[p.level]?`${'★'.repeat(LEVEL_STARS[p.level])}${'☆'.repeat(4-LEVEL_STARS[p.level])}`:'–';
+  const footLabels={links:'Linksfuß',rechts:'Rechtsfuß',beidfüßig:'Beidfüßig'};
+  const footIcons={links:'barefoot',rechts:'barefoot',beidfüßig:'all_inclusive'};
+  const foot=p.preferred_foot&&footLabels[p.preferred_foot]
+    ? `<span class="playerCardInfoValue">${materialIcon(footIcons[p.preferred_foot],p.preferred_foot==='rechts'?'mirrored':'')} ${footLabels[p.preferred_foot]}</span>`
+    : '<span class="muted">Nicht angegeben</span>';
+  const matchdayHtml=history.length
+    ? history.map(({md,selected,teamNo,goalkeeper})=>`<div class="playerrow"><span>${fmtDate(md.date)}${md.name?` · ${esc(md.name)}`:''}</span><span>${selected?(teamNo?`<button type="button" class="badge strong participationBadge" style="cursor:pointer;border:1px solid #86efac" onclick="showMatchdayTeam('${md.id}',${teamNo})">🟢 dabei · Team ${teamNo}</button>${goalkeeper?'<span class="badge strong participationBadge">🥅 Torwart</span>':''}`:'<span class="badge strong participationBadge">🟢 dabei</span>'):'<span class="badge weak participationBadge">🔴 nicht dabei</span>'}</span></div>`).join('')
+    : '<p class="muted">Noch keine Spieltage angelegt.</p>';
+  openModal(`<div class="playerCardHeader">
+      <div class="playerCardHero">${playerAvatarHtml(p.photo_data||'')}</div>
+      <div class="playerCardIdentity">
+        <div class="playerCardEyebrow">Spielerkarte</div>
+        <h2>${esc(displayName(p))}</h2>
+        <div class="playerCardBadges">${levelBadge(p.level)}${isSquad(p)?'<span class="badge strong">Kaderempfehlung</span>':''}</div>
+      </div>
+    </div>
+    <section class="playerCardSection">
+      <div class="playerCardSectionTitle">Aktuell</div>
+      <div class="playerCardInfoGrid">
+        <div><div class="playerCardInfoLabel">Geburtsjahr</div><div class="playerCardInfoValue">${p.birth_year||'<span class="muted">Nicht angegeben</span>'}</div></div>
+        <div><div class="playerCardInfoLabel">Spielbein</div><div>${foot}</div></div>
+        <div class="playerCardInfoFull"><div class="playerCardInfoLabel">Positionen</div><div class="playerCardPositions">${positionHtml}</div></div>
+        <div class="playerCardInfoFull"><div class="playerCardInfoLabel">Spielstärke</div><div class="playerCardLevel"><span class="playerCardStars">${levelStars}</span><span>${esc(p.level||'Nicht angegeben')}</span></div></div>
+      </div>
+    </section>
+    <section class="playerCardSection">
+      <div class="playerCardSectionTitle">Training</div>
+      <div class="playerCardStats">
+        <div class="playerCardStat"><div class="playerCardStatValue">${a.attended}/${a.total}</div><div class="playerCardStatLabel">Teilnahmen</div><div class="playerCardStatSub">${Math.round(a.rate*100)} %</div></div>
+        <div class="playerCardStat"><div class="playerCardStatValue">${trainingGKCount}/${trainingGKTotal}</div><div class="playerCardStatLabel">Einsatz als Torwart</div><div class="playerCardStatSub">${trainingGKTotal?Math.round(trainingGKCount/trainingGKTotal*100):0} %</div></div>
+      </div>
+    </section>
+    <section class="playerCardSection">
+      <div class="playerCardSectionTitle">Spieltage</div>
+      <div class="playerCardStats">
+        <div class="playerCardStat"><div class="playerCardStatValue">${selectedMatchdays}/${history.length}</div><div class="playerCardStatLabel">Teilnahmen</div><div class="playerCardStatSub">${history.length?Math.round(selectedMatchdays/history.length*100):0} %</div></div>
+        <div class="playerCardStat"><div class="playerCardStatValue">${matchdayGKCount}/${history.length}</div><div class="playerCardStatLabel">Einsatz als Torwart</div><div class="playerCardStatSub">${history.length?Math.round(matchdayGKCount/history.length*100):0} %</div></div>
+      </div>
+      <details class="playerCardDetails"><summary>Spieltage anzeigen</summary><div style="margin-top:10px">${matchdayHtml}</div></details>
+    </section>
+    <section class="playerCardSection">
+      <div class="playerCardSectionTitle">Notizen</div>
+      <div class="playerCardNotes">${esc(p.notes||'Noch keine Notizen hinterlegt.')}</div>
+    </section>
+    <div class="toolbar playerCardActions"><button class="primary" onclick="closeModal();editPlayer('${id}')">Bearbeiten</button><button onclick="closeModal()">Schließen</button></div>`);
+};
 
 window.addTraining=()=>{openModal(`<h2>Training anlegen</h2><div class="formrow"><label>Datum<input id="trainingDate" type="date" value="${todayISO()}"></label><label>Name (optional)<input id="trainingName" type="text" placeholder="z. B. Training"></label></div><div class="toolbar" style="margin-top:14px"><button class="primary" onclick="saveTraining()">Training speichern</button><button type="button" onclick="closeModal();return false">Abbrechen</button></div>`);};
 window.saveTraining=async()=>{try{const date=$('trainingDate').value;if(!date){alert('Bitte ein Datum auswählen.');return}const name=$('trainingName').value.trim();const t=await dbInsert('trainings',{team_id:team,season_id:season?.id||null,training_date:date,name:name||null});state.trainings.push({id:t.id,date:t.training_date,name:t.name||'',attendance:{},teams:{}});state.trainings.sort((a,b)=>b.date.localeCompare(a.date));trainingOpenId=t.id;closeModal();renderAll();showTab('trainings');showStatus('Training gespeichert.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
