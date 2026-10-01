@@ -105,6 +105,12 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerCardPosition{display:inline-flex;flex:0 0 auto;white-space:nowrap;word-break:keep-all;overflow-wrap:normal;align-items:center}
 .playerCardLevel{display:flex;align-items:center;gap:7px;margin-top:0;flex-wrap:wrap}
 @media(max-width:380px){.playerCardHeader{grid-template-columns:88px minmax(0,1fr);column-gap:10px}.playerCardHero .playerPhoto,.playerCardHero .playerAvatar{width:88px!important;height:88px!important;min-width:88px}.playerCardHero .playerAvatar .material-symbols-outlined{font-size:50px}.playerCardName{font-size:19px}.playerCardMeta{font-size:12px}.playerCardPosition{font-size:12px;padding:4px 6px}.playerCardPosition .material-symbols-outlined{font-size:17px}.playerCardStars{font-size:17px}}
+
+/* Kaderempfehlung als rundes Badge am Avatar */
+.playerCardAvatarWrap{position:relative;display:inline-flex;flex:0 0 auto;align-self:flex-start;overflow:visible;line-height:0}
+.playerCardAvatarWrap .playerPhoto,.playerCardAvatarWrap .playerAvatar{display:flex;flex:0 0 auto}
+.playerCardSquadIcon{position:absolute;right:-5px;bottom:-5px;width:30px;height:30px;border-radius:50%;background:#dcfce7;border:2px solid #fff;color:#166534;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;box-sizing:border-box;z-index:2}
+.playerCardSquadIcon .material-symbols-outlined{font-size:18px;line-height:1;color:#166534}
 </style>
 </head>
 <body>
