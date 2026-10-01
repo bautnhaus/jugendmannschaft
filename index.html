@@ -77,7 +77,7 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerCardHero .playerAvatar .material-symbols-outlined{font-size:56px;color:#94a3b8}
 .playerCardName{font-size:21px;font-weight:750;line-height:1.2;margin:0 0 7px;overflow-wrap:anywhere}
 .playerCardMeta{display:flex;flex-wrap:wrap;gap:5px 10px;color:var(--muted);font-size:13px;margin-top:7px}
-.playerCardMeta span{display:inline-flex;align-items:center;gap:4px}
+.playerCardMeta span{display:inline-flex;align-items:center;gap:4px}.playerCardHeader{display:grid;grid-template-columns:88px minmax(0,1fr);column-gap:14px;row-gap:10px;align-items:center}.playerCardHeaderDetails{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--line)}.playerCardHeaderDetails .playerCardInfoLabel{margin:0}.playerCardHeaderDetails .playerCardPositions{flex:1}.playerCardHeaderDetails .playerCardLevel{margin-left:auto}
 .playerCardSection{border:1px solid var(--line);border-radius:13px;background:#fff;padding:12px;margin-top:10px}
 .playerCardSectionTitle{font-size:14px;font-weight:700;margin:0 0 9px;display:flex;align-items:center;gap:7px}
 .playerCardSectionTitle .material-symbols-outlined{font-size:19px;color:#64748b}
@@ -89,7 +89,7 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerCardDetails{margin-top:10px;border:1px solid var(--line);border-radius:13px;background:#fff;padding:12px}
 .playerCardDetails summary{cursor:pointer;font-weight:700;display:flex;align-items:center;gap:7px}
 .playerCardDetails[open] summary{margin-bottom:8px}
-@media(max-width:380px){.playerCardHero{grid-template-columns:72px minmax(0,1fr);gap:10px}.playerCardHero .playerPhoto,.playerCardHero .playerAvatar{width:72px!important;height:72px!important}.playerCardName{font-size:19px}.playerCardStats{gap:6px}.playerCardStat{padding:8px}}
+@media(max-width:380px){.playerCardHeader{grid-template-columns:72px minmax(0,1fr);column-gap:10px}.playerCardHero{grid-template-columns:72px minmax(0,1fr);gap:10px}.playerCardHero .playerPhoto,.playerCardHero .playerAvatar{width:72px!important;height:72px!important}.playerCardName{font-size:19px}.playerCardStats{gap:6px}.playerCardStat{padding:8px}}
 
 </style>
 </head>
@@ -364,17 +364,16 @@ window.openPlayerCard=id=>{
         <div class="playerCardEyebrow">Spielerkarte</div>
         <h2>${esc(displayName(p))}</h2>
         <div class="playerCardBadges">${levelBadge(p.level)}${isSquad(p)?'<span class="badge strong">Kaderempfehlung</span>':''}</div>
+        <div class="playerCardMeta">
+          <span>${materialIcon('cake')} ${p.birth_year?esc(p.birth_year):'Jahrgang offen'}</span>
+          <span>${p.preferred_foot&&footLabels[p.preferred_foot]?materialIcon(footIcons[p.preferred_foot],p.preferred_foot==='rechts'?'mirrored':'')+' '+footLabels[p.preferred_foot]:'Spielbein offen'}</span>
+        </div>
+      </div>
+      <div class="playerCardHeaderDetails">
+        <div class="playerCardInfoLabel">Positionen</div><div class="playerCardPositions">${positionHtml}</div>
+        <div class="playerCardLevel"><span class="playerCardStars">${levelStars}</span><span>${esc(p.level||'Nicht angegeben')}</span></div>
       </div>
     </div>
-    <section class="playerCardSection">
-      <div class="playerCardSectionTitle">Aktuell</div>
-      <div class="playerCardInfoGrid">
-        <div><div class="playerCardInfoLabel">Geburtsjahr</div><div class="playerCardInfoValue">${p.birth_year||'<span class="muted">Nicht angegeben</span>'}</div></div>
-        <div><div class="playerCardInfoLabel">Spielbein</div><div>${foot}</div></div>
-        <div class="playerCardInfoFull"><div class="playerCardInfoLabel">Positionen</div><div class="playerCardPositions">${positionHtml}</div></div>
-        <div class="playerCardInfoFull"><div class="playerCardInfoLabel">Spielstärke</div><div class="playerCardLevel"><span class="playerCardStars">${levelStars}</span><span>${esc(p.level||'Nicht angegeben')}</span></div></div>
-      </div>
-    </section>
     <section class="playerCardSection">
       <div class="playerCardSectionTitle">Training</div>
       <div class="playerCardStats">
