@@ -111,8 +111,8 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 </main></div>
 <div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox" id="modalContent"></div></div><div id="photoSheet" class="photoSheetBackdrop" onclick="if(event.target===this)closePhotoSheet()"></div><div id="status" class="status"></div>
 
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
 
 const CONFIG_KEY='jugendmannschaft_supabase_config_v1';
 const DEFAULT_POSITIONS=['Torwart','Abwehr','Mittelfeld','Sturm','Trainer'];
@@ -144,7 +144,7 @@ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_hNQoCezONeov2Zfv_Sg7GA_ns2poaJq';
 function config(){return {url:SUPABASE_URL,key:SUPABASE_PUBLISHABLE_KEY}}
 function initConfigFields(){}
 function clearConfig(){setLoginMsg('Die Supabase-Konfiguration ist fest in der App hinterlegt.','');}
-function getClient(){const c=config();if(!supabase){supabase=createClient(c.url,c.key);try{supabase.__configUrl=c.url}catch{}}return supabase;}
+function getClient(){const c=config();if(!supabase){supabase=window.supabase.createClient(c.url,c.key);try{supabase.__configUrl=c.url}catch{}}return supabase;}
 window.saveConfigAndLogin=async()=>{setLoginMsg('Die Verbindung ist bereits eingerichtet. Bitte E-Mail und Passwort eingeben.');};
 window.login=async()=>{try{const c=getClient();const email=$('loginEmail').value.trim();const password=$('loginPassword').value;if(!email||!password){setLoginMsg('Bitte E-Mail und Passwort eingeben.',true);return}setLoginMsg('Anmeldung …');const {data,error}=await c.auth.signInWithPassword({email,password});if(error)throw error;currentUser=data.user;await loadApp();}catch(e){console.error(e);setLoginMsg('Anmeldung fehlgeschlagen: '+(e.message||e),true);}};
 window.changeEmail=async()=>{try{const email=$('accountEmail').value.trim();if(!email||email===currentUser.email){showStatus('Bitte eine neue E-Mail-Adresse eingeben.','error');return}const {data,error}=await getClient().auth.updateUser({email});if(error)throw error;showStatus('E-Mail-Änderung gestartet. Bitte die Bestätigungs-E-Mail(s) beachten.','ok');}catch(e){showStatus('E-Mail konnte nicht geändert werden: '+(e.message||e),'error');}};
