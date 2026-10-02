@@ -136,6 +136,43 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerCardTileMetric span{color:#475569;overflow-wrap:anywhere}
 .playerCardTile:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
 @media(max-width:380px){.playerCardStatsTiles{gap:7px}.playerCardTile{padding:8px}.playerCardTileHead{gap:5px;margin-bottom:8px}.playerCardTileTitle{font-size:12px}.playerCardTileBody{gap:5px}.playerCardDonut{width:58px;height:58px;flex-basis:58px}.playerCardDonut:before{inset:6px}.playerCardDonutValue{font-size:14px}.playerCardDonutTotal{font-size:9px}.playerCardTilePercent{font-size:14px}.playerCardTileCaption,.playerCardTileMetric{font-size:10px}.playerCardTileMetric strong{font-size:12px}}
+
+/* Spielerübersicht – kompakte Variante des Spielerkarten-Kopfbereichs */
+.playerListControls{display:flex;gap:8px;align-items:center;margin:8px 0 10px;min-width:0}
+.playerSearchWrap{display:flex;align-items:center;gap:7px;flex:1;min-width:0;border:1px solid var(--line);border-radius:11px;background:#fff;padding:0 10px;height:42px;color:var(--muted)}
+.playerSearchWrap .material-symbols-outlined,.playerSortWrap .material-symbols-outlined{font-size:19px;flex:0 0 auto}
+.playerSearchWrap input{border:0!important;outline:0!important;box-shadow:none!important;min-width:0;padding:7px 0!important;height:40px;background:transparent!important;font-size:14px!important}
+.playerSortWrap{display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:11px;background:#fff;padding:0 7px;height:42px;color:var(--muted);flex:0 0 auto;max-width:48%}
+.playerSortWrap select{width:auto;min-width:0;max-width:100%;border:0!important;background:transparent!important;padding:6px 0!important;min-height:38px;font-size:12px!important;color:var(--text);outline:0}
+.playerFilterChips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 9px;scrollbar-width:none}.playerFilterChips::-webkit-scrollbar{display:none}
+.playerFilterChip{border:1px solid #e2e8f0;border-radius:999px;background:#f8fafc;color:#475569;padding:6px 10px;min-height:32px;white-space:nowrap;font-size:12px;flex:0 0 auto}
+.playerFilterChip.active{background:#2563eb;border-color:#2563eb;color:#fff}
+.playerListRows{display:flex;flex-direction:column;gap:8px}
+.playerListRow{width:100%;display:flex;align-items:center;gap:10px;text-align:left;padding:10px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--text);min-width:0;min-height:0;box-shadow:0 1px 3px #0f172a08}
+.playerListRow.isRecommended{border:2px solid #38a875;padding:9px;background:#fbfffc}
+.playerListAvatar{width:54px;height:54px;flex:0 0 54px;display:flex;align-items:center;justify-content:center;overflow:visible}
+.playerListAvatar .playerCardAvatarWrap{width:48px;height:48px}
+.playerListAvatar .playerPhoto,.playerListAvatar .playerAvatar{width:48px!important;height:48px!important;min-width:48px!important;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;margin:0!important;background:#f1f5f9;color:#94a3b8}
+.playerListAvatar .playerPhoto img{width:100%;height:100%;object-fit:cover}
+.playerListAvatar .playerAvatar .material-symbols-outlined{font-size:38px}
+.playerListAvatar .playerCardSquadIcon{width:25px;height:25px;right:-5px;bottom:-4px;font-size:15px}
+.playerListAvatar .playerCardSquadIcon .material-symbols-outlined{font-size:15px}
+.playerListIdentity{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:3px}
+.playerListName{font-weight:750;font-size:14px;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.playerListPositions{display:flex;flex-wrap:wrap;gap:4px;min-width:0;max-width:100%}
+.playerListPosition{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;font-size:10px;line-height:1.25;white-space:nowrap;color:#263445;border:1px solid #0000000a}
+.playerListNoPosition{font-size:10px;color:var(--muted)}
+.playerListLevel{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:11px;line-height:1.2;font-weight:600}
+.playerListStars{font-size:12px;letter-spacing:.3px;color:#d69e26;white-space:nowrap}
+.playerListTraining{width:48px;flex:0 0 48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.playerListDonut{width:43px;height:43px;border-radius:50%;display:grid;place-items:center;position:relative;background:conic-gradient(#9299a3 calc(var(--progress)*1%),#e5e7eb 0)}
+.playerListDonut:before{content:"";position:absolute;inset:4px;border-radius:50%;background:#fff}
+.playerListDonut span{position:relative;z-index:1;font-size:10px;font-weight:750;font-variant-numeric:tabular-nums;color:#374151}
+.playerListTrainingLabel{font-size:9px;line-height:1;color:var(--muted)}
+.playerListChevron{font-size:20px;color:#64748b;flex:0 0 16px}
+.playerListFooter{display:flex;justify-content:space-between;gap:8px;padding:10px 2px 0;color:var(--muted);font-size:11px}
+@media(max-width:380px){.playerListRow{gap:7px;padding:8px}.playerListRow.isRecommended{padding:7px}.playerListAvatar{width:48px;flex-basis:48px}.playerListAvatar .playerCardAvatarWrap{width:44px;height:44px}.playerListAvatar .playerPhoto,.playerListAvatar .playerAvatar{width:44px!important;height:44px!important;min-width:44px!important}.playerListTraining{width:43px;flex-basis:43px}.playerListDonut{width:39px;height:39px}.playerSortWrap{max-width:46%}.playerSortWrap select{font-size:11px!important}}
+
 </style>
 </head>
 <body>
@@ -196,6 +233,8 @@ const POSITION_ICONS={Torwart:'sports_handball',Abwehr:'shield',Mittelfeld:'grou
 const PREFERRED_FOOT_ICONS={links:'barefoot',rechts:'barefoot',beidfüßig:'all_inclusive'};
 const POSITION_ORDER=['Torwart','Abwehr','Mittelfeld','Sturm'];
 let playerSort={key:'lastName',dir:'asc'};
+let playerPositionFilter='Alle';
+let playerSearchText='';
 const LEVEL_POINTS={Einsteiger:1,Fortgeschritten:2,Stark:3,Profi:4};
 const POSITION_COLORS=['#dbeafe','#dcfce7','#fef3c7','#fee2e2','#ede9fe','#cffafe','#fce7f3','#e2e8f0'];
 let supabase=null, currentUser=null, team=null, season=null, role='trainer';
@@ -355,32 +394,47 @@ function sortedPlayers(){const arr=[...state.players];const cmpText=(a,b)=>Strin
 function isSquad(p){const rank=top16Ranking();return rank.slice(0,16).some(x=>x.id===p.id);}
 
 function levelBadge(level){if(!level)return '<span class="badge">kein Level</span>';const c=level==='Profi'?'outstanding':level==='Stark'?'strong':level==='Fortgeschritten'?'medium':'weak';return `<span class="badge ${c}">${esc(LEVEL_LABELS[level]||level)}</span>`;}
-window.setPlayerSort=key=>{if(playerSort.key===key)playerSort.dir=playerSort.dir==='asc'?'desc':'asc';else{playerSort.key=key;playerSort.dir='asc';}renderPlayers();};
-function sortHeader(key,label){const arrow=playerSort.key===key?(playerSort.dir==='asc'?' ↑':' ↓'):'';return `<button type="button" class="sortHeaderBtn" onclick="setPlayerSort('${key}')"><span class="sortHeaderLabel" title="${esc(label)}">${esc(label)}</span><span class="sortHeaderArrow">${arrow}</span></button>`;}
+window.setPlayerSort=key=>{playerSort={key,dir:'asc'};renderPlayers();};
 function renderPlayers(){
-  const rows=sortedPlayers().map((p,i)=>{
-    const a=attendanceStats(p);
-    const top=isSquad(p);
-    const first=String(p.first_name||'').trim();
-    const last=String(p.last_name||'').trim();
-    return `<tr class="playerTableRow ${top?'top16Row':''}" style="cursor:pointer" data-player-card="${esc(p.id)}">
-      <td class="right"><b>${i+1}</b></td>
-      <td>${p.photo_data?`<img src="${p.photo_data}" alt="" style="width:38px;height:38px;object-fit:cover;border-radius:8px;display:block">`:'<div style="width:38px;height:38px;border-radius:8px;background:#eef2f7"></div>'}</td>
-      <td class="ellipsisCell" title="${esc(first||'—')}">${esc(first||'—')}</td>
-      <td class="ellipsisCell" title="${esc(last||'—')}">${esc(last||'—')}</td>
-      <td class="attendanceCell">${a.attended}/${a.total} (${Math.round(a.rate*100)}%)</td>
-    </tr>`;
+  const ranked=top16Ranking();
+  const rankMap=new Map(ranked.map((p,i)=>[p.id,i]));
+  const cmpText=(a,b)=>String(a||'').localeCompare(String(b||''),'de',{sensitivity:'base'});
+  const sorted=[...state.players].sort((a,b)=>{
+    let v=0;
+    if(playerSort.key==='firstName')v=cmpText(a.first_name,b.first_name);
+    else if(playerSort.key==='lastName')v=cmpText(a.last_name,b.last_name);
+    else if(playerSort.key==='training')v=(attendanceStats(b).rate-attendanceStats(a).rate)||trainingRecencyCompare(a,b)||matchdayFairnessCompare(a,b);
+    else if(playerSort.key==='top16')v=rankMap.get(a.id)-rankMap.get(b.id);
+    if(v===0)v=cmpText(displayName(a),displayName(b));
+    return playerSort.key==='top16'?v:(playerSort.dir==='desc'?-v:v);
+  });
+  const query=playerSearchText.trim().toLocaleLowerCase('de');
+  const filtered=sorted.filter(p=>{
+    const matchesQuery=!query||[displayName(p),p.first_name,p.last_name,...(p.positions||[])].some(x=>String(x||'').toLocaleLowerCase('de').includes(query));
+    const matchesPosition=playerPositionFilter==='Alle'||(p.positions||[]).includes(playerPositionFilter);
+    return matchesQuery&&matchesPosition;
+  });
+  const rows=filtered.map(p=>{
+    const a=attendanceStats(p),top=rankMap.get(p.id)<16;
+    const positions=orderedPositions(p.positions||[]).map(name=>{const pr=state.positionRows.find(x=>x.name===name);const bg=/^#[0-9a-f]{6}$/i.test(pr?.color||'')?pr.color:'#e2e8f0';return `<span class="playerListPosition" style="background:${esc(bg)}">${esc(name)}</span>`;}).join('');
+    const stars=p.level&&LEVEL_STARS[p.level]?`${'★'.repeat(LEVEL_STARS[p.level])}${'☆'.repeat(4-LEVEL_STARS[p.level])}`:'–';
+    const pct=Math.round(a.rate*100);
+    return `<button type="button" class="playerListRow ${top?'isRecommended':''}" data-player-card="${esc(p.id)}" aria-label="Spielerkarte ${esc(displayName(p))}">
+      <span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}${top?materialIcon('apparel','playerCardSquadIcon'):''}</span></span>
+      <span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span><span class="playerListPositions">${positions||'<span class="playerListNoPosition">Keine Position</span>'}</span><span class="playerListLevel"><span class="playerListStars">${stars}</span><span>${esc(p.level||'Kein Level')}</span></span></span>
+      <span class="playerListTraining"><span class="playerListDonut" style="--progress:${pct}"><span>${pct}%</span></span><span class="playerListTrainingLabel">Training</span></span>
+      <span class="material-symbols-outlined playerListChevron">chevron_right</span>
+    </button>`;
   }).join('');
-  $('playerTable').innerHTML=state.players.length?`<div class="tablewrap"><table><thead><tr>
-    <th>#</th>
-    <th>Bild</th>
-    <th>${sortHeader('firstName','Vorname')}</th>
-    <th>${sortHeader('lastName','Name')}</th>
-    <th>${sortHeader('training','Trainings')}</th>
-  </tr></thead><tbody>${rows}</tbody></table></div>`:'<p class="muted">Noch keine Spieler angelegt.</p>';
+  const positionOptions=['Alle',...state.positionRows.map(p=>p.name).filter(n=>n!=='Trainer')];
+  const chips=positionOptions.map(name=>`<button type="button" class="playerFilterChip ${playerPositionFilter===name?'active':''}" data-player-filter="${esc(name)}">${esc(name)}${name==='Alle'?` (${state.players.length})`:''}</button>`).join('');
+  const sortOptions=[['top16','Kaderempfehlung'],['lastName','Nachname A–Z'],['firstName','Vorname A–Z'],['training','Trainingsbeteiligung']].map(([v,label])=>`<option value="${v}" ${playerSort.key===v?'selected':''}>${label}</option>`).join('');
+  $('playerTable').innerHTML=state.players.length?`<div class="playerListControls"><label class="playerSearchWrap"><span class="material-symbols-outlined">search</span><input id="playerListSearch" type="search" placeholder="Suche nach Name oder Position …" value="${esc(playerSearchText)}" oninput="setPlayerSearch(this.value)"></label><label class="playerSortWrap"><span class="material-symbols-outlined">sort</span><select aria-label="Spieler sortieren" onchange="setPlayerSort(this.value)">${sortOptions}</select></label></div><div class="playerFilterChips">${chips}</div><div class="playerListRows">${rows||'<p class="muted">Keine passenden Spieler gefunden.</p>'}</div><div class="playerListFooter"><span>${filtered.length} von ${state.players.length} Spielern</span><span>${playerSort.key==='top16'?'Nach Kaderempfehlung sortiert':playerSort.key==='training'?'Nach Trainingsbeteiligung sortiert':playerSort.key==='firstName'?'Nach Vorname sortiert':'Nach Nachname sortiert'}</span></div>`:'<p class="muted">Noch keine Spieler angelegt.</p>';
 }
+window.setPlayerPositionFilter=name=>{playerPositionFilter=name;renderPlayers();};
+window.setPlayerSearch=value=>{playerSearchText=value;const el=$('playerListSearch');const pos=el?.selectionStart;renderPlayers();const next=$('playerListSearch');if(next){next.focus();if(pos!==null&&pos!==undefined)next.setSelectionRange(pos,pos);}};
 function orderedPositions(list){const rank=new Map(POSITION_ORDER.map((x,i)=>[x.toLowerCase(),i]));return [...list].sort((a,b)=>(rank.get(String(a).toLowerCase())??99)-(rank.get(String(b).toLowerCase())??99)||String(a).localeCompare(String(b),'de'));}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-edit-player]');if(b){e.preventDefault();e.stopPropagation();window.editPlayer(b.getAttribute('data-edit-player'));return}const row=e.target.closest('[data-player-card]');if(row){window.openPlayerCard(row.getAttribute('data-player-card'));}});
+document.addEventListener('click',e=>{const filter=e.target.closest('[data-player-filter]');if(filter){e.preventDefault();setPlayerPositionFilter(filter.getAttribute('data-player-filter'));return}const b=e.target.closest('[data-edit-player]');if(b){e.preventDefault();e.stopPropagation();window.editPlayer(b.getAttribute('data-edit-player'));return}const row=e.target.closest('[data-player-card]');if(row){window.openPlayerCard(row.getAttribute('data-player-card'));}});
 function playerMatchdayHistory(p){return state.matchdays.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(md=>{const selected=(md.selected||[]).includes(p.id);const teamNo=Object.keys(md.teams||{}).find(n=>(md.teams[n]||[]).includes(p.id));const goalkeeper=!!(teamNo&&md.goalkeepers?.[teamNo]===p.id);return {md,selected,teamNo,goalkeeper};});}
 window.showMatchdayTeam=(matchdayId,teamNo)=>{const md=state.matchdays.find(x=>x.id===matchdayId);if(!md)return;const ids=(md.teams?.[teamNo]||[]);const players=ids.map(id=>state.players.find(p=>p.id===id)).filter(Boolean);const content=$('modalContent');const previousHtml=content.innerHTML;const detailsState=[...content.querySelectorAll('details')].map((d,i)=>({i,open:d.open}));content.innerHTML=`<h2>${esc(md.name||'Spieltag')} – Team ${esc(teamNo)}</h2><div class="muted" style="margin-bottom:12px">${fmtDate(md.date)}</div><div>${players.length?players.map(p=>`<div class="playerrow"><span><b>${esc(displayName(p))}</b><br>${p.positions?.length?p.positions.map(x=>`<span class="positionBadge">${esc(x)}</span>`).join(''):''}</span>${levelBadge(p.level)}</div>`).join(''):'<p class="muted">Keine Teamzuordnung gespeichert.</p>'}</div><div class="toolbar" style="margin-top:12px"><button type="button" onclick="closeMatchdayTeam()">Zurück</button><button type="button" onclick="closeModal()">Spielerkarte schließen</button></div>`;window._playerCardRestore=()=>{content.innerHTML=previousHtml;[...content.querySelectorAll('details')].forEach((d,i)=>{if(detailsState[i])d.open=detailsState[i].open;});window._playerCardRestore=null;};};
 window.closeMatchdayTeam=()=>{if(window._playerCardRestore){const restore=window._playerCardRestore;restore();}};
