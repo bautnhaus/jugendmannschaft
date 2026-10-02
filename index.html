@@ -111,6 +111,31 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerCardAvatarWrap .playerPhoto,.playerCardAvatarWrap .playerAvatar{display:flex;flex:0 0 auto}
 .playerCardSquadIcon{position:absolute;right:-5px;bottom:-5px;width:30px;height:30px;border-radius:50%;background:#dcfce7;border:2px solid #fff;color:#166534;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;box-sizing:border-box;z-index:2}
 .playerCardSquadIcon .material-symbols-outlined{font-size:18px;line-height:1;color:#166534}
+
+/* Player card statistics tiles */
+.playerCardStatsTiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+.playerCardTile{display:block;width:100%;min-width:0;text-align:left;border:1px solid var(--tile-border);border-radius:15px;padding:10px;background:var(--tile-bg);color:var(--text);min-height:0;box-shadow:none;cursor:pointer}
+.playerCardTile.training{--tile-bg:#f0fbf4;--tile-border:#c8f0d9;--tile-main:#15803d;--tile-track:#ccefdc}
+.playerCardTile.matchday{--tile-bg:#f1f7ff;--tile-border:#d4e8ff;--tile-main:#1674df;--tile-track:#d6e9ff}
+.playerCardTileHead{display:flex;align-items:center;gap:7px;min-width:0;margin-bottom:10px}
+.playerCardTileIcon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--tile-main) 13%,white);color:var(--tile-main);flex:0 0 30px}
+.playerCardTileIcon .material-symbols-outlined{font-size:18px}
+.playerCardTileTitle{font-weight:750;font-size:14px;min-width:0;flex:1}
+.playerCardTileArrow{color:#64748b;font-size:20px;flex:0 0 auto}
+.playerCardTileBody{display:flex;align-items:center;gap:8px;min-width:0}
+.playerCardDonut{width:72px;height:72px;flex:0 0 72px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--tile-main) calc(var(--progress)*1%),var(--tile-track) 0);position:relative}
+.playerCardDonut:before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--tile-bg)}
+.playerCardDonutInner{position:relative;z-index:1;text-align:center;line-height:1.1}
+.playerCardDonutValue{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.playerCardDonutTotal{font-size:10px;color:var(--muted);margin-top:3px}
+.playerCardTileSide{min-width:0;flex:1;display:flex;flex-direction:column;gap:5px}
+.playerCardTilePercent{font-size:17px;font-weight:800;line-height:1.1;color:var(--text)}
+.playerCardTileCaption{font-size:11px;color:var(--muted);line-height:1.2}
+.playerCardTileMetric{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:5px;font-size:11px;line-height:1.2;min-width:0}
+.playerCardTileMetric strong{font-size:14px;line-height:1.05;font-variant-numeric:tabular-nums}
+.playerCardTileMetric span{color:#475569;overflow-wrap:anywhere}
+.playerCardTile:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+@media(max-width:380px){.playerCardStatsTiles{gap:7px}.playerCardTile{padding:8px}.playerCardTileHead{gap:5px;margin-bottom:8px}.playerCardTileTitle{font-size:12px}.playerCardTileBody{gap:5px}.playerCardDonut{width:58px;height:58px;flex-basis:58px}.playerCardDonut:before{inset:6px}.playerCardDonutValue{font-size:14px}.playerCardDonutTotal{font-size:9px}.playerCardTilePercent{font-size:14px}.playerCardTileCaption,.playerCardTileMetric{font-size:10px}.playerCardTileMetric strong{font-size:12px}}
 </style>
 </head>
 <body>
@@ -356,6 +381,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-edit-playe
 function playerMatchdayHistory(p){return state.matchdays.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(md=>{const selected=(md.selected||[]).includes(p.id);const teamNo=Object.keys(md.teams||{}).find(n=>(md.teams[n]||[]).includes(p.id));const goalkeeper=!!(teamNo&&md.goalkeepers?.[teamNo]===p.id);return {md,selected,teamNo,goalkeeper};});}
 window.showMatchdayTeam=(matchdayId,teamNo)=>{const md=state.matchdays.find(x=>x.id===matchdayId);if(!md)return;const ids=(md.teams?.[teamNo]||[]);const players=ids.map(id=>state.players.find(p=>p.id===id)).filter(Boolean);const content=$('modalContent');const previousHtml=content.innerHTML;const detailsState=[...content.querySelectorAll('details')].map((d,i)=>({i,open:d.open}));content.innerHTML=`<h2>${esc(md.name||'Spieltag')} – Team ${esc(teamNo)}</h2><div class="muted" style="margin-bottom:12px">${fmtDate(md.date)}</div><div>${players.length?players.map(p=>`<div class="playerrow"><span><b>${esc(displayName(p))}</b><br>${p.positions?.length?p.positions.map(x=>`<span class="positionBadge">${esc(x)}</span>`).join(''):''}</span>${levelBadge(p.level)}</div>`).join(''):'<p class="muted">Keine Teamzuordnung gespeichert.</p>'}</div><div class="toolbar" style="margin-top:12px"><button type="button" onclick="closeMatchdayTeam()">Zurück</button><button type="button" onclick="closeModal()">Spielerkarte schließen</button></div>`;window._playerCardRestore=()=>{content.innerHTML=previousHtml;[...content.querySelectorAll('details')].forEach((d,i)=>{if(detailsState[i])d.open=detailsState[i].open;});window._playerCardRestore=null;};};
 window.closeMatchdayTeam=()=>{if(window._playerCardRestore){const restore=window._playerCardRestore;restore();}};
+window.openPlayerTrainingDetails=id=>{const p=state.players.find(x=>x.id===id);if(!p)return;const rows=state.trainings.slice().sort((a,b)=>b.date.localeCompare(a.date));const body=rows.length?rows.map(t=>`<div class="playerrow"><span><b>${fmtDate(t.date)}</b>${t.name?`<br><span class="muted small">${esc(t.name)}</span>`:''}</span><span class="badge ${t.attendance?.[id]?'strong':'weak'}">${t.attendance?.[id]?'Teilgenommen':'Nicht teilgenommen'}</span></div>`).join(''):'<p class="muted">Noch keine Trainings angelegt.</p>';openModal(`<h2>Training · ${esc(displayName(p))}</h2><p class="muted small">Teilnahme an den einzelnen Trainingsterminen</p>${body}<div class="toolbar" style="margin-top:12px"><button type="button" onclick="closeModal();openPlayerCard('${id}')">Zurück zur Spielerkarte</button><button type="button" onclick="closeModal();showTab('trainings')">Trainingsübersicht</button></div>`);};
+window.openPlayerMatchdayDetails=id=>{const p=state.players.find(x=>x.id===id);if(!p)return;const rows=playerMatchdayHistory(p);const body=rows.length?rows.map(({md,selected,teamNo,goalkeeper})=>`<div class="playerrow"><span><b>${fmtDate(md.date)}</b>${md.name?`<br><span class="muted small">${esc(md.name)}</span>`:''}</span><span class="right"><span class="badge ${teamNo?'strong':selected?'medium':'weak'}">${teamNo?'Einsatz':selected?'Nominiert':'Nicht nominiert'}</span>${goalkeeper?'<br><span class="small muted">Torwart</span>':''}</span></div>`).join(''):'<p class="muted">Noch keine Spieltage angelegt.</p>';openModal(`<h2>Spieltage · ${esc(displayName(p))}</h2><p class="muted small">Nominierungen und tatsächliche Einsätze</p>${body}<div class="toolbar" style="margin-top:12px"><button type="button" onclick="closeModal();openPlayerCard('${id}')">Zurück zur Spielerkarte</button><button type="button" onclick="closeModal();showTab('matchday')">Spieltagsübersicht</button></div>`);};
 window.openPlayerCard=id=>{
   const p=state.players.find(x=>x.id===id);
   if(!p)return;
@@ -390,21 +417,22 @@ window.openPlayerCard=id=>{
         <div class="playerCardLevel"><span class="playerCardStars">${levelStars}</span><span>${esc(p.level||'Nicht angegeben')}</span></div>
       </div>
     </div>
-    <section class="playerCardSection">
-      <div class="playerCardSectionTitle">Training</div>
-      <div class="playerCardStats">
-        <div class="playerCardStat"><div class="playerCardStatValue">${a.attended}/${a.total}</div><div class="playerCardStatLabel">Teilnahmen</div><div class="playerCardStatSub">${Math.round(a.rate*100)} %</div></div>
-        <div class="playerCardStat"><div class="playerCardStatValue">${trainingGKCount}/${trainingGKTotal}</div><div class="playerCardStatLabel">Einsatz als Torwart</div><div class="playerCardStatSub">${trainingGKTotal?Math.round(trainingGKCount/trainingGKTotal*100):0} %</div></div>
-      </div>
-    </section>
-    <section class="playerCardSection">
-      <div class="playerCardSectionTitle">Spieltage</div>
-      <div class="playerCardStats">
-        <div class="playerCardStat"><div class="playerCardStatValue">${selectedMatchdays}/${history.length}</div><div class="playerCardStatLabel">Teilnahmen</div><div class="playerCardStatSub">${history.length?Math.round(selectedMatchdays/history.length*100):0} %</div></div>
-        <div class="playerCardStat"><div class="playerCardStatValue">${matchdayGKCount}/${history.length}</div><div class="playerCardStatLabel">Einsatz als Torwart</div><div class="playerCardStatSub">${history.length?Math.round(matchdayGKCount/history.length*100):0} %</div></div>
-      </div>
-      <details class="playerCardDetails"><summary>Spieltage anzeigen</summary><div style="margin-top:10px">${matchdayHtml}</div></details>
-    </section>
+    <div class="playerCardStatsTiles">
+      <button type="button" class="playerCardTile training" onclick="openPlayerTrainingDetails('${id}')" aria-label="Trainingsdetails für ${esc(displayName(p))} öffnen">
+        <span class="playerCardTileHead"><span class="playerCardTileIcon">${materialIcon('trending_up')}</span><span class="playerCardTileTitle">Training</span><span class="material-symbols-outlined playerCardTileArrow">chevron_right</span></span>
+        <span class="playerCardTileBody">
+          <span class="playerCardDonut" style="--progress:${Math.round(a.rate*100)}"><span class="playerCardDonutInner"><span class="playerCardDonutValue">${a.attended}</span><br><span class="playerCardDonutTotal">von ${a.total}</span></span></span>
+          <span class="playerCardTileSide"><span class="playerCardTilePercent">${Math.round(a.rate*100)} %</span><span class="playerCardTileCaption">Teilnahme</span></span>
+        </span>
+      </button>
+      <button type="button" class="playerCardTile matchday" onclick="openPlayerMatchdayDetails('${id}')" aria-label="Spieltagsdetails für ${esc(displayName(p))} öffnen">
+        <span class="playerCardTileHead"><span class="playerCardTileIcon">${materialIcon('trophy')}</span><span class="playerCardTileTitle">Spieltage</span><span class="material-symbols-outlined playerCardTileArrow">chevron_right</span></span>
+        <span class="playerCardTileBody">
+          <span class="playerCardDonut" style="--progress:${history.length?Math.round(history.filter(x=>x.teamNo).length/history.length*100):0}"><span class="playerCardDonutInner"><span class="playerCardDonutValue">${history.filter(x=>x.teamNo).length}</span><br><span class="playerCardDonutTotal">von ${history.length}</span></span></span>
+          <span class="playerCardTileSide"><span class="playerCardTileMetric"><strong>${history.length}</strong><span>Spieltage</span></span><span class="playerCardTileMetric"><strong>${selectedMatchdays}</strong><span>Nominierungen</span></span><span class="playerCardTileMetric"><strong>${history.filter(x=>x.teamNo).length}</strong><span>Einsätze</span></span><span class="playerCardTileMetric"><strong>${matchdayGKCount}</strong><span>Torwart</span></span></span>
+        </span>
+      </button>
+    </div>
     <section class="playerCardSection">
       <div class="playerCardSectionTitle">Notizen</div>
       <div class="playerCardNotes">${esc(p.notes||'Noch keine Notizen hinterlegt.')}</div>
