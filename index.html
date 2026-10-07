@@ -195,7 +195,40 @@ textarea{font:inherit;width:100%;border:1px solid #cbd5e1;border-radius:9px;padd
 .trainingPlayerSortWrap select{width:auto;min-width:0;border:0!important;background:transparent!important;padding:6px 0!important;min-height:38px;font-size:12px!important;color:var(--text);outline:0}
 .trainingSummary.trainingAttendanceSummary{grid-template-columns:1fr 1fr!important;padding-right:10px!important}.trainingAttendanceSummary .yesText{color:#15803d!important}.trainingAttendanceSummary .noText{color:#dc2626!important}
 .trainingAttendanceSummary>div{text-align:center!important;display:flex;flex-direction:column;align-items:center;justify-content:center}
-</style></head>
+</style>
+<style>
+/* E07.1 Teambildung – auf Basis des bestehenden Trainings-UI */
+.trainingDetailTabs{grid-template-columns:repeat(3,1fr)!important;margin:10px 0 10px!important}
+.trainingTeamAttendanceSummary{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px 10px 25px;margin:0 0 9px;min-height:102px}
+.trainingTeamAttendanceSummary strong{font-size:30px;line-height:1.05;color:var(--ok)}
+.trainingTeamAttendanceSummary span{font-size:13px;color:#475569;margin-top:3px}
+.trainingTeamAttendanceSummary small{position:absolute;right:10px;bottom:8px;color:var(--muted);font-size:12px}
+.trainingBuildTeamsButton{width:100%!important}
+.trainingTeamChangeNotice{margin:0 0 9px}
+.trainingTeamTabs{display:flex;gap:4px;background:#eef2f7;border-radius:999px;padding:2px;margin:10px 0;overflow-x:auto;scrollbar-width:none}
+.trainingTeamTabs::-webkit-scrollbar{display:none}
+.trainingTeamTab{flex:1 1 0;min-width:76px;border:0;background:transparent;border-radius:999px;min-height:38px;padding:7px 9px;font-size:14px;color:#475569;white-space:nowrap}
+.trainingTeamTab.active{background:#2563eb;color:#fff;box-shadow:0 1px 2px #0002}
+.trainingTeamPanel{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.trainingGoalkeeperRow{padding:11px;border-bottom:1px solid #eef2f7}
+.trainingGoalkeeperLabel{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#475569;margin-bottom:6px}
+.trainingGoalkeeperLabel .material-symbols-outlined{font-size:21px;color:#2563eb}
+.trainingGoalkeeperRow select{width:100%;min-height:40px;padding:7px 10px;font-size:13px}
+.trainingTeamPlayerList{padding:0 10px}
+.trainingTeamPlayerRow{padding:9px 0}
+.trainingTeamPlayerAction{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.trainingGoalkeeperBadge{width:28px;height:28px;border-radius:50%;background:#2563eb;color:#fff;display:inline-flex;align-items:center;justify-content:center;flex:0 0 28px}
+.trainingGoalkeeperBadge .material-symbols-outlined{font-size:17px}
+.trainingTeamMoveSelect{width:auto;min-width:86px;max-width:92px;min-height:36px!important;border-radius:10px!important;padding:6px 25px 6px 8px!important;font-size:12px!important;color:#1d4ed8!important;background:#eff6ff!important;border-color:#bfdbfe!important}
+@media(max-width:600px){
+  .trainingTeamTab{font-size:13px;min-width:72px}
+  .trainingTeamPlayerList{padding:0 8px}
+  .trainingTeamMoveSelect{min-width:82px;max-width:88px;font-size:11px!important}
+  .trainingGoalkeeperBadge{width:26px;height:26px;flex-basis:26px}
+  .trainingGoalkeeperBadge .material-symbols-outlined{font-size:16px}
+}
+</style>
+</head>
 <body>
 <div id="loginView">
   <div id="loginCard" class="card">
@@ -620,8 +653,9 @@ let trainingResponseFilter='all';
 let trainingAttendanceFilter='all';
 let trainingSearchText='';
 let trainingPlayerSort={key:'lastName',dir:'asc'};
+let trainingTeamTab=0;
 let trainingNoteOpen=false;
-function toggleTrainingOpen(id){playerEventReturn=null;trainingOpenId=id;trainingNoteOpen=false;trainingDetailMode='responses';trainingResponseFilter='all';trainingAttendanceFilter='all';trainingSearchText='';renderTrainings();}
+function toggleTrainingOpen(id){playerEventReturn=null;trainingOpenId=id;trainingNoteOpen=false;trainingDetailMode='responses';trainingResponseFilter='all';trainingAttendanceFilter='all';trainingSearchText='';trainingTeamTab=0;renderTrainings();}
 window.toggleTrainingOpen=toggleTrainingOpen;
 function closeTrainingDetail(){trainingOpenId=null;trainingNoteOpen=false;renderTrainings();}
 function openTrainingNote(id){trainingOpenId=id;trainingNoteOpen=true;renderTrainings();}
@@ -640,7 +674,50 @@ function trainingArrayFromSaved(t){const result=[];for(const n of Object.keys(t.
 async function saveTeamsForTraining(teams){const t=state.trainings.find(x=>x.id===trainingOpenId);if(!t)return;try{teams=sortTeamsForDisplay(teams);const oldGK={...(t.goalkeepers||{})};await dbDelete('training_players',{training_id:t.id});const selectedIds=teams.flat().map(p=>p.id);const rows=selectedIds.map(player_id=>{const teamNumber=teams.findIndex(x=>x.some(p=>p.id===player_id))+1;return {training_id:t.id,player_id,team_number:teamNumber,goalkeeper:oldGK[teamNumber]===player_id};});if(rows.length){const {error}=await getClient().from('training_players').insert(rows);if(error)throw error;}t.teams={};t.goalkeepers={};teams.forEach((g,i)=>{t.teams[i+1]=g.map(p=>p.id);const old=oldGK[i+1];if(old&&g.some(p=>p.id===old))t.goalkeepers[i+1]=old;});renderTrainings();showStatus('Trainingsteams gespeichert.','ok');}catch(e){showStatus('Trainingsteams konnten nicht gespeichert werden: '+(e.message||e),'error');}}
 window.moveTrainingPlayer=async(playerId,fromTeam,toTeam)=>{const t=state.trainings.find(x=>x.id===trainingOpenId);if(!t)return;const teams=trainingArrayFromSaved(t);const from=Number(fromTeam)-1,to=Number(toTeam)-1;if(from===to||!teams[from]||!teams[to])return;const idx=teams[from].findIndex(p=>p.id===playerId);if(idx<0)return;const [player]=teams[from].splice(idx,1);teams[to].push(player);await saveTeamsForTraining(teams);};
 window.balanceTrainingTeams=async()=>{const t=state.trainings.find(x=>x.id===trainingOpenId);if(!t)return;const selected=state.players.filter(p=>t.attendance[p.id]);if(selected.length<5){showStatus('Für die Teambildung müssen mindestens 5 Kinder anwesend sein.','error');return}openTeamCountChoice(selected,'training');};
-function renderTrainingTeams(t){const teams=trainingArrayFromSaved(t);if(!teams.length)return '';return `<div class="eventTeams"><div class="sectionHeading" style="margin:14px 2px 6px"><div class="sectionIcon">⚽</div><div><h2>Gebildete Teams</h2><p class="muted">Gespeicherte Einteilung · Spieler können manuell verschoben werden.</p></div></div>${renderTeamsHtml(teams,`moveTrainingPlayer`,'training')}</div>`;}
+function trainingAttendanceCount(t){return state.players.filter(p=>!!t.attendance?.[p.id]).length;}
+function trainingSavedTeamCount(t){return Object.values(t.teams||{}).reduce((sum,ids)=>sum+(Array.isArray(ids)?ids.length:0),0);}
+function trainingTeamsNeedRebuild(t){const saved=trainingSavedTeamCount(t);return Object.keys(t.teams||{}).length>0&&saved!==trainingAttendanceCount(t);}
+function trainingTeamPlayerRow(t,p,teamNo,teams){
+  const currentGK=t.goalkeepers?.[teamNo]===p.id;
+  const positions=orderedPositions(p.positions||[]).map(x=>`<span class="trainingPosition">${esc(x)}</span>`).join('');
+  const level=p.level&&LEVEL_STARS[p.level]?`${'★'.repeat(LEVEL_STARS[p.level])}${'☆'.repeat(4-LEVEL_STARS[p.level])}`:'';
+  const moveOptions=teams.map((_,i)=>`<option value="${i+1}" ${i+1===teamNo?'selected':''}>Team ${i+1}</option>`).join('');
+  return `<div class="trainingPlayerRow trainingTeamPlayerRow">
+    <div class="trainingPlayerIdentity">
+      ${playerAvatarHtml(p.photo_data||'')}
+      <div class="trainingPlayerMeta">
+        <div class="trainingPlayerName">${esc(displayName(p))}</div>
+        <div class="trainingPlayerTags">${positions}${level?`<span class="trainingLevel"><span class="trainingLevelStars">${level}</span> ${esc(p.level||'')}</span>`:''}</div>
+      </div>
+    </div>
+    <div class="trainingTeamPlayerAction">
+      ${currentGK?`<span class="trainingGoalkeeperBadge" title="Torwart" aria-label="Torwart">${materialIcon('front_hand')}</span>`:''}
+      <select class="trainingTeamMoveSelect" aria-label="Team für ${esc(displayName(p))}" onchange="setTrainingPlayerTeam('${t.id}','${p.id}',${teamNo},this.value)">${moveOptions}</select>
+    </div>
+  </div>`;
+}
+function renderTrainingTeams(t){
+  const teams=trainingArrayFromSaved(t);
+  if(!teams.length)return '';
+  if(trainingTeamTab<0||trainingTeamTab>=teams.length)trainingTeamTab=0;
+  const teamNo=trainingTeamTab+1;
+  const team=teams[trainingTeamTab]||[];
+  const currentGK=t.goalkeepers?.[teamNo]||'';
+  const gkOptions=team.slice().sort((a,b)=>displayName(a).localeCompare(displayName(b),'de')).map(p=>`<option value="${p.id}" ${currentGK===p.id?'selected':''}>${esc(displayName(p))}</option>`).join('');
+  const tabs=teams.map((_,i)=>`<button type="button" class="trainingTeamTab ${i===trainingTeamTab?'active':''}" onclick="setTrainingTeamTab(${i})">Team ${i+1}</button>`).join('');
+  return `<div class="trainingTeamTabs" role="tablist" aria-label="Gebildete Teams">${tabs}</div>
+    <div class="trainingTeamPanel">
+      <div class="trainingGoalkeeperRow">
+        <div class="trainingGoalkeeperLabel">${materialIcon('front_hand')}<span>Torwart</span></div>
+        <select aria-label="Torwart für Team ${teamNo}" onchange="setTrainingGoalkeeper(${teamNo},this.value)">
+          <option value="">Noch nicht festgelegt</option>${gkOptions}
+        </select>
+      </div>
+      <div class="trainingTeamPlayerList">${team.map(p=>trainingTeamPlayerRow(t,p,teamNo,teams)).join('')}</div>
+    </div>`;
+}
+window.setTrainingTeamTab=i=>{trainingTeamTab=Math.max(0,Number(i)||0);renderTrainings();};
+window.setTrainingPlayerTeam=async(tid,pid,fromTeam,toTeam)=>{if(String(fromTeam)===String(toTeam))return;await window.moveTrainingPlayer(pid,fromTeam,toTeam);};
 function renderTrainingOverview(){
   const box=$('trainingList');
   const all=[...state.trainings].sort((a,b)=>trainingEndDate(a)-trainingEndDate(b));
@@ -671,12 +748,25 @@ function renderPastTrainingCard(t){const present=state.players.filter(p=>t.atten
 function renderCancelledTrainingCard(t){return `<button class="trainingCompactCard cancelled" type="button" onclick="toggleTrainingOpen('${t.id}')"><div><strong>${esc(fmtDateLong(t.date))}</strong><div class="trainingCardTime">${esc(fmtTrainingTime(t)||'')}</div></div><div class="trainingCompactSide"><span class="trainingStatus cancelled">Abgesagt</span></div><span class="trainingCardArrow">›</span></button>`;}
 function renderTrainingDetail(t){
   const isResponses=trainingDetailMode==='responses';
-  const canAttendance=trainingIsPast(t)||t.status==='done'||state.players.some(p=>t.attendance[p.id]);
+  const isTeams=trainingDetailMode==='teams';
   const search=esc(trainingSearchText);
   const filters=isResponses?`<div class="trainingFilterChips"><button class="trainingFilterChip ${trainingResponseFilter==='all'?'active':''}" onclick="setTrainingResponseFilter('all')">Alle (${state.players.length})</button><button class="trainingFilterChip ${trainingResponseFilter==='yes'?'active':''}" onclick="setTrainingResponseFilter('yes')">Zusagen (${responseCounts(t).yes})</button><button class="trainingFilterChip ${trainingResponseFilter==='no'?'active':''}" onclick="setTrainingResponseFilter('no')">Absagen (${responseCounts(t).no})</button><button class="trainingFilterChip ${trainingResponseFilter==='open'?'active':''}" onclick="setTrainingResponseFilter('open')">Offen (${responseCounts(t).open})</button></div>`:`<div class="trainingFilterChips"><button class="trainingFilterChip ${trainingAttendanceFilter==='all'?'active':''}" onclick="setTrainingAttendanceFilter('all')">Alle (${state.players.length})</button><button class="trainingFilterChip ${trainingAttendanceFilter==='present'?'active':''}" onclick="setTrainingAttendanceFilter('present')">Anwesend (${state.players.filter(p=>t.attendance[p.id]).length})</button><button class="trainingFilterChip ${trainingAttendanceFilter==='missing'?'active':''}" onclick="setTrainingAttendanceFilter('missing')">Abwesend (${state.players.length-state.players.filter(p=>t.attendance[p.id]).length})</button></div>`;
   const rows=sortTrainingPlayers(state.players).map(p=>trainingPlayerRow(t,p,isResponses?'responses':'attendance')).filter(Boolean).join('');
   const trainers=state.trainers.map(tr=>{const label=tr.admin_label||tr.email||'Trainer';const yes=!!t.trainerAttendance?.[tr.user_id];return `<button type="button" class="trainingTrainerChip ${yes?'trainerYes':'trainerNo'}" onclick="toggleTrainerAttendance('${t.id}','${tr.user_id}',${!yes})">${esc(label)} · ${yes?'Ja':'Nein'}</button>`;}).join('');
-  return `<div class="trainingDetail"><div class="trainingDetailHeader"><button class="iconBack" type="button" onclick="closeTrainingDetail()" aria-label="Zurück">${materialIcon('arrow_back')}</button><div class="trainingDetailTitle"><div class="trainingTitleLine"><h2>Training</h2><span class="trainingStatus ${trainingStatusClass(t)}">${trainingStatusLabel(t)}</span></div><div class="muted">${esc(fmtDateLong(t.date))}${fmtTrainingTime(t)?` · ${esc(fmtTrainingTime(t))}`:''}</div></div><button class="iconMore" type="button" onclick="editTraining('${t.id}')" aria-label="Bearbeiten">${materialIcon('more_vert')}</button></div><div class="trainingDetailInfo">${trainingInfoLines(t)}${t.note?`<button class="trainingNoteLine" type="button" onclick="openTrainingNote('${t.id}')">${materialIcon('sticky_note_2')}<span class="trainingNoteText">${esc(t.note)}</span><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></button>`:''}</div>${trainers?`<div class="trainingTrainerRow">${materialIcon('groups')}<div>${trainers}</div></div>`:''}<div class="trainingSegmented"><button class="${isResponses?'active':''}" onclick="setTrainingDetailMode('responses')">Rückmeldungen</button><button class="${!isResponses?'active':''}" onclick="setTrainingDetailMode('attendance')">Anwesenheit</button></div>${isResponses?trainingResponseSummary(t):trainingAttendanceSummary(t)}${!isResponses?`<button class="trainingBulkAction" type="button" onclick="markConfirmedPresent('${t.id}')">${materialIcon('group_add')} Alle Zusagen als anwesend markieren</button>`:''}<div class="playerListControls"><label class="playerSearchWrap"><span class="material-symbols-outlined">search</span><input id="trainingSearch" type="search" placeholder="Suche nach Name, Vorname, Position oder Verein …" value="${search}" oninput="setTrainingSearch(this.value)">${trainingSearchText?'<button type="button" class="playerSearchClear" aria-label="Suchbegriff löschen" onclick="clearTrainingSearch(event)"><span class="material-symbols-outlined">close</span></button>':''}</label><label class="playerSortWrap"><span class="material-symbols-outlined">sort</span><select aria-label="Spieler sortieren" onchange="setTrainingPlayerSort(this.value)">${trainingPlayerSortOptions()}</select></label></div>${filters}<div class="trainingPlayerList">${rows||'<div class="notice small">Keine Spieler für diesen Filter gefunden.</div>'}</div>${!isResponses?`<div class="trainingTeamActions"><button class="primary" onclick="balanceTrainingTeams()">Teams bilden</button>${Object.keys(t.teams||{}).length?renderTrainingTeams(t):''}</div>`:''}<div class="trainingDetailActions">${t.status==='cancelled'?`<button onclick="restoreTraining('${t.id}')">Wieder auf „Geplant“ setzen</button>`:`<button onclick="cancelTraining('${t.id}')">Training absagen</button>`}${t.status!=='done'&&t.status!=='cancelled'?`<button onclick="markTrainingDone('${t.id}')">Als durchgeführt markieren</button>`:''}<button onclick="editTraining('${t.id}')">Bearbeiten</button><button class="danger" onclick="deleteTraining('${t.id}')">Löschen</button></div></div>`;
+  const present=trainingAttendanceCount(t);
+  const hasTeams=Object.keys(t.teams||{}).length>0;
+  const teamChanged=trainingTeamsNeedRebuild(t);
+  const teamContent=isTeams?`
+    <div class="trainingTeamAttendanceSummary">
+      <strong>${present}</strong>
+      <span>Anwesend</span>
+      <small>${state.players.length} Spieler</small>
+    </div>
+    ${teamChanged?`<div class="notice warning trainingTeamChangeNotice"><b>Die Anwesenheit hat sich geändert.</b><br>Die Teams wurden für ${trainingSavedTeamCount(t)} anwesende Spieler gebildet. Aktuell sind ${present} Spieler anwesend. Du kannst die Teams neu bilden.</div>`:''}
+    <div class="trainingTeamActions"><button class="primary trainingBuildTeamsButton" type="button" onclick="balanceTrainingTeams()">${hasTeams?'Teams neu bilden':'Teams bilden'}</button></div>
+    ${hasTeams?renderTrainingTeams(t):''}
+  `:'';
+  return `<div class="trainingDetail"><div class="trainingDetailHeader"><button class="iconBack" type="button" onclick="closeTrainingDetail()" aria-label="Zurück">${materialIcon('arrow_back')}</button><div class="trainingDetailTitle"><div class="trainingTitleLine"><h2>Training</h2><span class="trainingStatus ${trainingStatusClass(t)}">${trainingStatusLabel(t)}</span></div><div class="muted">${esc(fmtDateLong(t.date))}${fmtTrainingTime(t)?` · ${esc(fmtTrainingTime(t))}`:''}</div></div><button class="iconMore" type="button" onclick="editTraining('${t.id}')" aria-label="Bearbeiten">${materialIcon('more_vert')}</button></div><div class="trainingDetailInfo">${trainingInfoLines(t)}${t.note?`<button class="trainingNoteLine" type="button" onclick="openTrainingNote('${t.id}')">${materialIcon('sticky_note_2')}<span class="trainingNoteText">${esc(t.note)}</span><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></button>`:''}</div>${trainers?`<div class="trainingTrainerRow">${materialIcon('groups')}<div>${trainers}</div></div>`:''}<div class="trainingSegmented trainingDetailTabs"><button class="${isResponses?'active':''}" onclick="setTrainingDetailMode('responses')">Rückmeldungen</button><button class="${!isResponses&&!isTeams?'active':''}" onclick="setTrainingDetailMode('attendance')">Anwesenheit</button><button class="${isTeams?'active':''}" onclick="setTrainingDetailMode('teams')">Teambildung</button></div>${isTeams?teamContent:`${isResponses?trainingResponseSummary(t):trainingAttendanceSummary(t)}${!isResponses?`<button class="trainingBulkAction" type="button" onclick="markConfirmedPresent('${t.id}')">${materialIcon('group_add')} Alle Zusagen als anwesend markieren</button>`:''}<div class="playerListControls"><label class="playerSearchWrap"><span class="material-symbols-outlined">search</span><input id="trainingSearch" type="search" placeholder="Suche nach Name, Vorname, Position oder Verein …" value="${search}" oninput="setTrainingSearch(this.value)">${trainingSearchText?'<button type="button" class="playerSearchClear" aria-label="Suchbegriff löschen" onclick="clearTrainingSearch(event)"><span class="material-symbols-outlined">close</span></button>':''}</label><label class="playerSortWrap"><span class="material-symbols-outlined">sort</span><select aria-label="Spieler sortieren" onchange="setTrainingPlayerSort(this.value)">${trainingPlayerSortOptions()}</select></label></div>${filters}<div class="trainingPlayerList">${rows||'<div class="notice small">Keine Spieler für diesen Filter gefunden.</div>'}</div>`}<div class="trainingDetailActions">${t.status==='cancelled'?`<button onclick="restoreTraining('${t.id}')">Wieder auf „Geplant“ setzen</button>`:`<button onclick="cancelTraining('${t.id}')">Training absagen</button>`}${t.status!=='done'&&t.status!=='cancelled'?`<button onclick="markTrainingDone('${t.id}')">Als durchgeführt markieren</button>`:''}<button onclick="editTraining('${t.id}')">Bearbeiten</button><button class="danger" onclick="deleteTraining('${t.id}')">Löschen</button></div></div>`;
 }
 function renderTrainingNoteDetail(t){
   return `<div class="trainingDetail"><div class="trainingDetailHeader"><button class="iconBack" type="button" onclick="closeTrainingNote()" aria-label="Zurück zum Training">${materialIcon('arrow_back')}</button><div class="trainingDetailTitle"><div class="trainingTitleLine"><h2>Notiz</h2></div><div class="muted">${esc(fmtDateLong(t.date))}${fmtTrainingTime(t)?` · ${esc(fmtTrainingTime(t))}`:''}</div></div><button class="iconMore" type="button" onclick="editTraining('${t.id}')" aria-label="Bearbeiten">${materialIcon('more_vert')}</button></div><div class="trainingNoteFull"><div class="trainingNoteFullLabel">${materialIcon('sticky_note_2')}<span>Notiz zum Training</span></div><div class="trainingNoteFullText">${esc(t.note||'Keine Notiz hinterlegt.').replace(/\n/g,'<br>')}</div></div></div>`;
