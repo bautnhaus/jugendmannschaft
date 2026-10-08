@@ -260,6 +260,152 @@ textarea{font:inherit;width:100%;border:1px solid #cbd5e1;border-radius:9px;padd
   .trainingGoalkeeperBadge .material-symbols-outlined{font-size:16px}
 }
 </style>
+
+<style>
+/* E07 form layout hardening: prevent native controls from exceeding their grid/flex track on iPhone */
+.modalbox .trainingFormField,
+.modalbox .trainingTimeRow,
+.modalbox .seriesDateRow,
+.modalbox .trainingTimeRow > label,
+.modalbox .seriesDateRow > label {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+.modalbox .trainingFormField { display:block !important; width:100% !important; }
+.modalbox .trainingFormField > input,
+.modalbox .trainingFormField > select,
+.modalbox .trainingFormField > textarea {
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+.modalbox .trainingTimeRow,
+.modalbox .seriesDateRow {
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  width:100% !important;
+  gap:10px !important;
+  overflow:visible !important;
+}
+.modalbox .trainingTimeRow > label,
+.modalbox .seriesDateRow > label {
+  flex:1 1 0 !important;
+  width:0 !important;
+  display:block !important;
+}
+.modalbox .trainingTimeRow input,
+.modalbox .trainingTimeRow select,
+.modalbox .seriesDateRow input {
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+.modalbox input[type="date"],
+.modalbox input[type="time"],
+.modalbox select {
+  min-width:0 !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+}
+</style>
+
+<style id="e07-form-final-layout">
+/* E07 final mobile form layout: keep the modal and every control inside the viewport. */
+.modalbox,
+.modalbox * {
+  box-sizing: border-box;
+}
+.modalbox {
+  width: min(620px, 100%);
+  max-width: 100%;
+  overflow-x: hidden;
+}
+.modalbox .trainingFormField,
+.modalbox .trainingTimeRow,
+.modalbox .seriesDateRow {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.modalbox .trainingFormField > label,
+.modalbox .trainingFormField > input,
+.modalbox .trainingFormField > select,
+.modalbox .trainingFormField > textarea {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Startzeit + Dauer / Von + Bis: two real, equal columns. */
+.modalbox .trainingTimeRow,
+.modalbox .seriesDateRow {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 10px !important;
+  align-items: start;
+}
+.modalbox .trainingTimeRow > label,
+.modalbox .seriesDateRow > label {
+  display: block;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  flex: none !important;
+}
+.modalbox .trainingTimeRow input[type="time"],
+.modalbox .trainingTimeRow select,
+.modalbox .seriesDateRow input[type="date"] {
+  display: block;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  box-sizing: border-box !important;
+}
+
+/* Single date is one full-width field. */
+.modalbox #trainingSingleDate,
+.modalbox #trainingSingleDate > label,
+.modalbox #trainingSingleDate input[type="date"] {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+.modalbox #trainingSingleDate input[type="date"] {
+  display: block;
+  height: 44px !important;
+  min-height: 44px !important;
+  box-sizing: border-box !important;
+}
+
+/* Series box follows the same inner width as the form. */
+.modalbox .seriesFields {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+.modalbox .seriesFields .seriesDateRow {
+  width: 100% !important;
+}
+
+@media (max-width: 600px) {
+  .modalbox {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .modalbox .trainingTimeRow,
+  .modalbox .seriesDateRow {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+}
+</style>
 </head>
 <body>
 <div id="loginView">
