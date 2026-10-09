@@ -489,9 +489,10 @@ async function statePosId(name){const {data,error}=await getClient().from('posit
 window.deletePlayer=async id=>{if(!memberGuard())return;if(!confirm('Spieler wirklich löschen?'))return;try{await dbUpdate('players',{id},{active:false});const check=await getClient().from('players').select('id,active').eq('id',id).maybeSingle();if(check.error)throw check.error;if(check.data?.active!==false)throw new Error('Der Spieler konnte nicht dauerhaft aus dem Kader entfernt werden.');state.players=state.players.filter(p=>p.id!==id);state.trainings.forEach(t=>delete t.attendance[id]);closeModal();renderAll();showStatus('Spieler gelöscht.','ok');}catch(e){showStatus(e.message||String(e),'error');}};
 
 function displayName(p){const full=[p.first_name,p.last_name].filter(Boolean).join(' ').trim();return full||p.name||'Unbekannt';}
-function attendanceStats(p){let attended=0;for(const t of state.trainings)if(t.attendance[p.id])attended++;const total=state.trainings.length;return {attended,total,rate:total?attended/total:0};}
+function trainingCountsForStats(t){if(trainingIsCancelled(t))return false;const attendanceRecorded=Object.keys(t.attendance||{}).length>0;return trainingIsPast(t)||attendanceRecorded;}
+function attendanceStats(p){const eligible=state.trainings.filter(trainingCountsForStats);let attended=0;for(const t of eligible)if(t.attendance?.[p.id])attended++;const total=eligible.length;return {attended,total,rate:total?attended/total:0};}
 let top16RandomTie=new Map();
-function recentTrainings(){return [...state.trainings].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.id||'').localeCompare(String(a.id||'')));}
+function recentTrainings(){return state.trainings.filter(trainingCountsForStats).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.id||'').localeCompare(String(a.id||'')));}
 function trainingRecencyCompare(a,b){for(const t of recentTrainings()){const ap=!!t.attendance?.[a.id],bp=!!t.attendance?.[b.id];if(ap!==bp)return ap?-1:1;}return 0;}
 function recentMatchdays(){return [...state.matchdays].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.id||'').localeCompare(String(a.id||'')));}
 function matchdayFairnessCompare(a,b){for(const md of recentMatchdays()){const ap=(md.selected||[]).includes(a.id),bp=(md.selected||[]).includes(b.id);if(ap!==bp)return ap?1:-1;}return 0;}
