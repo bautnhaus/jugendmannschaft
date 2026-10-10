@@ -874,8 +874,43 @@ window.openMatchday=id=>{playerEventReturn=null;const willOpen=currentMatchdayId
 window.editMatchday=async id=>{const md=state.matchdays.find(x=>x.id===id);if(!md)return;openModal(`<h2>Spieltag bearbeiten</h2><div class="formrow"><label>Datum<input id="editMatchdayDate" type="date" value="${esc(md.date)}"></label><label>Name (optional)<input id="editMatchdayName" type="text" value="${esc(md.name||'')}"></label></div><div class="toolbar" style="margin-top:14px"><button class="primary" onclick="saveMatchdayEdit('${id}')">Speichern</button><button type="button" onclick="closeModal()">Abbrechen</button></div>`);};
 window.saveMatchdayEdit=async id=>{try{const md=state.matchdays.find(x=>x.id===id);if(!md)return;const date=$('editMatchdayDate').value;if(!date){showStatus('Bitte ein Datum auswählen.','error');return}const name=$('editMatchdayName').value.trim();await dbUpdate('matchdays',{id},{match_date:date,name:name||null});md.date=date;md.name=name;state.matchdays.sort((a,b)=>b.date.localeCompare(a.date));closeModal();renderAll();showStatus('Spieltag gespeichert.','ok');}catch(e){showStatus('Spieltag konnte nicht gespeichert werden: '+(e.message||e),'error');}};
 window.deleteMatchday=async id=>{if(!confirm('Spieltag wirklich löschen?'))return;try{await dbDelete('matchday_players',{matchday_id:id});await dbDelete('matchdays',{id});state.matchdays=state.matchdays.filter(x=>x.id!==id);if(currentMatchdayId===id)currentMatchdayId=state.matchdays[0]?.id||null;matchdaySelection=new Set(state.matchdays.find(x=>x.id===currentMatchdayId)?.selected||[]);renderMatchday();showStatus('Spieltag gelöscht.','ok');}catch(e){showStatus('Spieltag konnte nicht gelöscht werden: '+(e.message||e),'error');}};
+let matchdayOverviewFilter='all';
+function setMatchdayOverviewFilter(filter){matchdayOverviewFilter=filter;renderMatchday();}
 function renderMatchday(){
   const list=$('matchdayList');
+  if(currentMatchdayId&&state.matchdays.some(x=>x.id===currentMatchdayId)){
+    list.innerHTML=`<div class="trainingDetailActions" style="margin-top:0;padding-top:0;border-top:0"><button type="button" onclick="closeMatchdayDetail()">‹ Zurück zu den Spieltagen</button></div>`;
+    const detail=document.createElement('div');list.appendChild(detail);
+    renderMatchdayExpanded();
+    return;
+  }
+  if(!state.matchdays.length){list.innerHTML='<p class="muted">Noch kein Spieltag angelegt. Tippe oben auf „+ Spieltag anlegen“.</p>';return;}
+  const all=[...state.matchdays].sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+  const today=new Date();today.setHours(0,0,0,0);
+  const upcoming=all.filter(m=>{const d=new Date(m.date||0);d.setHours(0,0,0,0);return d>=today;});
+  const past=all.filter(m=>{const d=new Date(m.date||0);d.setHours(0,0,0,0);return d<today;}).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+  const next=upcoming[0];let html=`<div class="trainingOverviewTabs"><button class="${matchdayOverviewFilter==='all'?'active':''}" onclick="setMatchdayOverviewFilter('all')">Alle</button><button class="${matchdayOverviewFilter==='planned'?'active':''}" onclick="setMatchdayOverviewFilter('planned')">Geplant</button><button class="${matchdayOverviewFilter==='past'?'active':''}" onclick="setMatchdayOverviewFilter('past')">Vergangen</button></div>`;
+  if(matchdayOverviewFilter==='planned'){
+    if(next)html+=`<div class="trainingOverviewSection"><h3>Nächster Spieltag</h3>${renderNextMatchdayCard(next)}</div>`;
+    if(upcoming.slice(1).length)html+=`<div class="trainingOverviewSection"><h3>Weitere geplante Spieltage</h3>${upcoming.slice(1).map(renderCompactMatchdayCard).join('')}</div>`;
+    if(!next)html+='<div class="notice small">Keine geplanten Spieltage vorhanden.</div>';
+  }else if(matchdayOverviewFilter==='past'){
+    html+=`<div class="trainingOverviewSection"><h3>Vergangene Spieltage</h3>${past.length?past.map(renderPastMatchdayCard).join(''):'<div class="notice small">Noch keine vergangenen Spieltage.</div>'}</div>`;
+  }else{
+    if(next)html+=`<div class="trainingOverviewSection"><h3>Nächster Spieltag</h3>${renderNextMatchdayCard(next)}</div>`;
+    if(upcoming.slice(1).length)html+=`<div class="trainingOverviewSection"><h3>Weitere geplante Spieltage</h3>${upcoming.slice(1).map(renderCompactMatchdayCard).join('')}</div>`;
+    if(past.length)html+=`<div class="trainingOverviewSection"><h3>Vergangene Spieltage</h3>${past.map(renderPastMatchdayCard).join('')}</div>`;
+  }
+  list.innerHTML=html;
+}
+function matchdayCounts(md){return {selected:new Set(md.selected||[]).size};}
+function renderNextMatchdayCard(md){const c=matchdayCounts(md);return `<button class="trainingNextCard" type="button" onclick="openMatchday('${md.id}')"><div class="trainingCardTop"><div><strong>${fmtDate(md.date)}</strong><div class="trainingCardName">${esc(md.name||'Spieltag')}</div><div class="trainingCardTime">${esc(md.kickoff_time||md.start_time||'Anstoßzeit noch offen')}</div></div><span class="trainingStatus planned">Geplant</span></div>${md.opponent?`<div class="trainingInfoLine"><span class="material-symbols-outlined">sports_soccer</span><span>Gegner: ${esc(md.opponent)}</span></div>`:''}${md.location?`<div class="trainingInfoLine"><span class="material-symbols-outlined">location_on</span><span>${esc(md.location)}</span></div>`:''}<div class="trainingResponseCard"><div class="trainingResponseHeader"><b>Kaderplanung</b><span>${state.players.length} Spieler im Team</span></div><div class="small muted" style="margin-top:7px">${c.selected} Spieler ausgewählt</div></div><span class="trainingCardArrow">›</span></button>`;}
+function renderCompactMatchdayCard(md){const c=matchdayCounts(md);return `<button class="trainingCompactCard" type="button" onclick="openMatchday('${md.id}')"><div><strong>${fmtDate(md.date)}</strong><div class="trainingCardName">${esc(md.name||'Spieltag')}</div><div class="trainingCardTime">${esc(md.kickoff_time||md.start_time||'Anstoßzeit offen')}</div>${md.opponent?`<div class="muted small">Gegner: ${esc(md.opponent)}</div>`:''}${md.location?`<div class="muted small">${materialIcon('location_on')} ${esc(md.location)}</div>`:''}</div><div class="trainingCompactSide"><span class="trainingStatus planned">Geplant</span><b>${c.selected} im Kader</b></div><span class="trainingCardArrow">›</span></button>`;}
+function renderPastMatchdayCard(md){const c=matchdayCounts(md);return `<button class="trainingCompactCard past" type="button" onclick="openMatchday('${md.id}')"><div><strong>${fmtDate(md.date)}</strong><div class="trainingCardName">${esc(md.name||'Spieltag')}</div><div class="trainingCardTime">${esc(md.kickoff_time||md.start_time||'')}</div>${md.opponent?`<div class="muted small">Gegner: ${esc(md.opponent)}</div>`:''}</div><div class="trainingCompactSide"><span class="trainingStatus done">Vergangen</span><b>${c.selected} nominiert</b></div><span class="trainingCardArrow">›</span></button>`;}
+function closeMatchdayDetail(){currentMatchdayId=null;matchdaySelection=new Set();renderMatchday();}
+window.openMatchday= id => {currentMatchdayId=currentMatchdayId===id?null:id;const md=state.matchdays.find(x=>x.id===currentMatchdayId);matchdaySelection=new Set(md?.selected||[]);renderMatchday();};
+function renderMatchdayExpanded(){
+  const list=document.createElement('div');
   if(!state.matchdays.length){list.innerHTML='<p class="muted">Noch kein Spieltag angelegt.</p>';return;}
   if(currentMatchdayId&&!state.matchdays.some(x=>x.id===currentMatchdayId))currentMatchdayId=null;
   const ranked=top16Ranking(),topSet=new Set(ranked.slice(0,16).map(p=>p.id));
@@ -893,7 +928,7 @@ function renderMatchday(){
       ${renderMatchdayTeams(md)}
     </div>`:''}</div>`;
   }).join('');
-  if(currentMatchdayId){const md=state.matchdays.find(x=>x.id===currentMatchdayId);matchdaySelection=new Set(md?.selected||[]);document.querySelectorAll('.matchPlayer').forEach(x=>x.addEventListener('change',async()=>{storeMatchdaySelection();await saveMatchdaySelection();}));}
+  if(currentMatchdayId){const selected=list.querySelector('.trainingItem');if(selected){const target=$('matchdayList');target.appendChild(selected);const md=state.matchdays.find(x=>x.id===currentMatchdayId);matchdaySelection=new Set(md?.selected||[]);selected.querySelectorAll('.matchPlayer').forEach(x=>x.addEventListener('change',async()=>{storeMatchdaySelection();await saveMatchdaySelection();}));}}
 }
 function renderMatchdayTeams(md){const teams=teamArrayFromSaved(md);if(!teams.length)return '';return `<div class="eventTeams"><div class="sectionHeading" style="margin:14px 2px 6px"><div class="sectionIcon">⚽</div><div><h2>Gebildete Teams</h2><p class="muted">Gespeicherte Einteilung · Spieler können manuell verschoben werden.</p></div></div>${renderTeamsHtml(teams,'movePlayer','matchday')}</div>`;}
 function teamArrayFromSaved(md){const result=[];for(const n of Object.keys(md.teams||{}).sort((a,b)=>Number(a)-Number(b)))result.push((md.teams[n]||[]).map(id=>state.players.find(p=>p.id===id)).filter(Boolean));return result;}
