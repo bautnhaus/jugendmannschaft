@@ -190,6 +190,14 @@ textarea{font:inherit;width:100%;border:1px solid #cbd5e1;border-radius:9px;padd
 .matchdayOptionsWrap{position:relative;flex:0 0 auto}.matchdayOptionsMenu{position:absolute;z-index:50;right:0;top:44px;min-width:170px;padding:5px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px #0f172a1f}.matchdayOptionsMenu button{display:flex;align-items:center;gap:8px;width:100%;border:0;background:#fff;text-align:left;padding:10px;border-radius:8px;min-height:40px}.matchdayOptionsMenu button:hover{background:#f8fafc}.matchdayOptionsMenu .dangerText{color:#dc2626}
 .matchdayTrainingPlayerList{margin-top:8px}.matchdayTrainingPlayerList .trainingPlayerRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #eef2f7;min-width:0}.matchdayTrainingPlayerList .trainingPlayerIdentity{min-width:0;flex:1}.matchdayTrainingPlayerList .trainingPlayerMeta{min-width:0}.matchdayTrainingPlayerList .trainingPlayerName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.matchdayRecommendedRow{background:#f0f7ff;border-radius:10px;padding:8px!important;margin:3px 0;border:1px solid #dbeafe}.matchdayRecommendationLabel{display:inline-block;font-size:11px;font-weight:700;color:#1d4ed8;background:#dbeafe;border-radius:999px;padding:2px 7px;margin-top:4px}.matchdayNominationControl{display:flex;align-items:center;gap:5px;flex:0 0 auto;font-size:12px;color:#475569;white-space:nowrap}.matchdayNominationControl input{width:20px;height:20px;min-height:20px;flex:0 0 auto}.matchdayPlayedToggle{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}.matchdayPlayedToggle button{min-height:32px;padding:5px 8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#475569;font-size:12px;white-space:nowrap}.matchdayPlayedToggle button.active.yes{background:#dcfce7;border-color:#86efac;color:#166534;font-weight:700}.matchdayPlayedToggle button.active.no{background:#fef2f2;border-color:#fecaca;color:#b91c1c;font-weight:700}.matchdayNoteLine.expanded .trainingNoteText{display:block!important;-webkit-line-clamp:unset!important;line-clamp:unset!important}.matchdayNoteLine.expanded .material-symbols-outlined:last-child{transform:rotate(180deg)}
 @media(max-width:600px){.matchdayTrainingPlayerList .trainingPlayerRow{gap:7px}.matchdayNominationControl{font-size:11px}.matchdayPlayedToggle button{font-size:11px;padding:5px 6px}.matchdayOptionsMenu{top:40px}}
+
+/* Matchday header uses the same fixed-size add control as the training header. */
+.trainingPageHeader > button.iconAddButton{flex:0 0 42px!important;width:42px!important;min-width:42px!important;max-width:42px!important;height:42px!important;min-height:42px!important;max-height:42px!important;align-self:center;box-sizing:border-box}
+/* Matchday overview cards deliberately use the shared training card layout without a separate grid rebuild. */
+.matchdayCompactCard{display:block!important;grid-template-columns:none!important;}
+.matchdayCompactCard.matchdayNextCard{display:block!important;}
+.matchdayCompactCard .trainingCompactSide{max-width:130px}
+
 </style>
 <style>
 .iconAddButton{width:40px!important;min-width:40px!important;max-width:40px!important;height:40px!important;min-height:40px!important;max-height:40px!important;flex:0 0 40px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:10px!important;font-size:23px!important;line-height:1!important}
@@ -1005,17 +1013,22 @@ function renderMatchday(){
     return;
   }
   if(!state.matchdays.length){list.innerHTML='<p class="muted">Noch kein Spieltag angelegt. Tippe oben auf „+ Spieltag anlegen“.</p>';return;}
-  const today=new Date();today.setHours(0,0,0,0);const sorted=[...state.matchdays].sort((a,b)=>{const da=new Date(String(a.date)+'T00:00:00'),db=new Date(String(b.date)+'T00:00:00');return da-db;});
-  const upcomingSorted=sorted.filter(matchdayIsUpcoming).sort((a,b)=>new Date(`${a.date}T${fmtTime(a.kickoffTime)||'23:59'}:00`)-new Date(`${b.date}T${fmtTime(b.kickoffTime)||'23:59'}:00`));
+  const sorted=[...state.matchdays].sort((a,b)=>new Date(`${a.date}T${fmtTime(a.kickoffTime)||'23:59'}:00`)-new Date(`${b.date}T${fmtTime(b.kickoffTime)||'23:59'}:00`));
+  const upcomingSorted=sorted.filter(m=>m.status!=='cancelled'&&m.status!=='done'&&matchdayIsUpcoming(m));
   const nextId=upcomingSorted[0]?.id;
-  const filtered=sorted.filter(md=>matchdayOverviewFilter==='all'||(matchdayOverviewFilter==='planned'&&matchdayIsUpcoming(md))||(matchdayOverviewFilter==='past'&&!matchdayIsUpcoming(md)));
-  list.innerHTML=`<div class="matchdayOverviewTabs"><button class="${matchdayOverviewFilter==='all'?'active':''}" onclick="setMatchdayOverviewFilter('all')">Alle</button><button class="${matchdayOverviewFilter==='planned'?'active':''}" onclick="setMatchdayOverviewFilter('planned')">Geplant</button><button class="${matchdayOverviewFilter==='past'?'active':''}" onclick="setMatchdayOverviewFilter('past')">Vergangen</button></div><div class="matchdayOverviewHeading"><h2>Einträge</h2></div>`+filtered.map(md=>{
+  const pastSorted=sorted.filter(m=>m.status!=='cancelled'&&(m.status==='done'||!matchdayIsUpcoming(m))).sort((a,b)=>new Date(`${b.date}T${fmtTime(b.kickoffTime)||'23:59'}:00`)-new Date(`${a.date}T${fmtTime(a.kickoffTime)||'23:59'}:00`));
+  const cancelledSorted=sorted.filter(m=>m.status==='cancelled').sort((a,b)=>new Date(`${b.date}T${fmtTime(b.kickoffTime)||'23:59'}:00`)-new Date(`${a.date}T${fmtTime(a.kickoffTime)||'23:59'}:00`));
+  let filtered=[];
+  if(matchdayOverviewFilter==='planned')filtered=upcomingSorted;
+  else if(matchdayOverviewFilter==='past')filtered=pastSorted;
+  else filtered=[...upcomingSorted,...pastSorted,...cancelledSorted];
+  list.innerHTML=`<div class="trainingOverviewTabs"><button class="${matchdayOverviewFilter==='all'?'active':''}" onclick="setMatchdayOverviewFilter('all')">Alle</button><button class="${matchdayOverviewFilter==='planned'?'active':''}" onclick="setMatchdayOverviewFilter('planned')">Geplant</button><button class="${matchdayOverviewFilter==='past'?'active':''}" onclick="setMatchdayOverviewFilter('past')">Vergangen</button></div>`+filtered.map(md=>{
     const selectedIds=new Set(md.selected||[]),teamCount=Object.keys(md.teams||{}).length;
-    const details=[md.opponent,md.gameType,fmtMatchdayTime(md)?fmtMatchdayTime(md):null,md.location].filter(Boolean);
-    const upcoming=matchdayIsUpcoming(md),isNext=md.id===nextId;
+    const upcoming=md.status!=='cancelled'&&md.status!=='done'&&matchdayIsUpcoming(md),isNext=md.id===nextId;
     const statusClass=md.status==='cancelled'?'cancelled':md.status==='done'||!upcoming?'done':'planned';const statusLabel=statusClass==='cancelled'?'Abgesagt':statusClass==='done'?'Durchgeführt':'Geplant';
     return `<button class="trainingCompactCard matchdayCompactCard ${isNext?'matchdayNextCard':''} ${statusClass==='cancelled'?'cancelled':statusClass==='done'?'past':''}" type="button" onclick="openMatchday('${md.id}')"><div><strong>${esc(fmtDateLong(md.date))}</strong>${md.name?`<div class="trainingCardName">${esc(md.name)}</div>`:''}<div class="trainingCardTime">${esc(fmtMatchdayTime(md)||'Anstoßzeit offen')}</div>${md.opponent?`<div class="trainingInfoLine">${materialIcon('sports_soccer')}<span>${esc(md.opponent)}</span></div>`:''}${md.location?`<div class="trainingInfoLine">${materialIcon('location_on')}<span>${esc(md.location)}</span></div>`:''}</div><div class="trainingCompactSide"><span class="trainingStatus ${statusClass}">${statusLabel}</span><b>${selectedIds.size} nominiert</b>${teamCount?`<b>${teamCount} Teams</b>`:''}</div><span class="trainingCardArrow">›</span></button>`;
   }).join('')||'<p class="muted">Keine passenden Spieltage vorhanden.</p>';
+
 }
 function renderMatchdayTeams(md){
   const teams=sortTeamsForDisplay(teamArrayFromSaved(md));
