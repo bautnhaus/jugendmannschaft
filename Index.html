@@ -1004,6 +1004,7 @@ function renderMatchday(){
     document.querySelectorAll('.matchPlayer').forEach(x=>x.addEventListener('change',async()=>{storeMatchdaySelection();await saveMatchdaySelection();}));
     return;
   }
+  // Direct adaptation of renderTrainingOverview(): same grouping and filter flow, using matchday data.
   const all=[...state.matchdays].sort((a,b)=>matchdayEndDate(a)-matchdayEndDate(b));
   const upcoming=all.filter(matchdayIsUpcoming);
   const past=all.filter(m=>!matchdayIsCancelled(m)&&!matchdayIsUpcoming(m)).sort((a,b)=>matchdayEndDate(b)-matchdayEndDate(a));
@@ -1018,11 +1019,13 @@ function renderMatchday(){
     overview+=`<div class="trainingOverviewSection"><h3>Vergangene Spieltage</h3>${past.length?past.map(renderPastMatchdayCard).join(''):'<div class="notice small">Noch keine vergangenen Spieltage.</div>'}</div>`;
   }else{
     if(next)overview+=`<div class="trainingOverviewSection"><h3>Nächster Spieltag</h3>${renderNextMatchdayCard(next)}</div>`;
-    if(upcoming.slice(1).length)overview+=`<div class="trainingOverviewSection"><h3>Weitere geplante Spieltage</h3>${upcoming.slice(1).map(renderCompactMatchdayCard).join('')}</div>`;
+    const rest=upcoming.slice(1);
+    if(rest.length)overview+=`<div class="trainingOverviewSection"><h3>Weitere geplante Spieltage</h3>${rest.map(renderCompactMatchdayCard).join('')}</div>`;
     if(past.length)overview+=`<div class="trainingOverviewSection"><h3>Vergangene Spieltage</h3>${past.map(renderPastMatchdayCard).join('')}</div>`;
     if(cancelled.length)overview+=`<div class="trainingOverviewSection trainingCancelledSection"><h3>Abgesagte Spieltage</h3>${cancelled.map(renderCancelledMatchdayCard).join('')}</div>`;
     if(!all.length)overview='<p class="muted">Noch kein Spieltag angelegt. Tippe oben auf „+“.</p>';
   }
+  if(matchdayOverviewFilter!=='all'&&cancelled.length)overview+=`<div class="trainingOverviewSection trainingCancelledSection"><h3>Abgesagt</h3>${cancelled.slice(0,3).map(renderCancelledMatchdayCard).join('')}</div>`;
   list.innerHTML=`<div class="trainingOverviewTabs"><button class="${matchdayOverviewFilter==='all'?'active':''}" onclick="setMatchdayOverviewFilter('all')">Alle</button><button class="${matchdayOverviewFilter==='planned'?'active':''}" onclick="setMatchdayOverviewFilter('planned')">Geplant</button><button class="${matchdayOverviewFilter==='past'?'active':''}" onclick="setMatchdayOverviewFilter('past')">Vergangen</button></div>${overview}`;
 
 }
