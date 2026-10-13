@@ -1402,5 +1402,7 @@ try{
 .matchdaySquadTile .matchdayNominationBadge{align-self:center;margin:0 0 0 4px;padding:4px 8px;background:#dcfce7;color:#15803d;white-space:nowrap}
 .matchdayDetail .trainingPlayerIdentity{align-items:center}
 .matchdayDetail .trainingPlayerTags{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:3px}
+/* Anwesenheitsliste: Tags wie in der Trainings-Anwesenheitsliste nebeneinander darstellen */
+.matchdayDetail .matchdayTrainingPlayerList .trainingPlayerTags{display:flex;flex-direction:row;align-items:center;gap:4px;flex-wrap:wrap;margin-top:3px}
 .matchdayDetail .trainingPlayerTags .positionBadge{margin:0}
 @media(max-width:380px){.matchdayDetail .matchdayActionRow button,.matchdayDetail .matchdayBulkSelect button{font-size:11px;padding:7px 4px}.playerListRow.matchdaySquadTile{grid-template-columns:44px minmax(0,1fr) auto;gap:7px}}</style>
