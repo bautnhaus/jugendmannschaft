@@ -188,54 +188,6 @@ textarea{font:inherit;width:100%;border:1px solid #cbd5e1;border-radius:9px;padd
 .matchdayOptionsWrap{position:relative;flex:0 0 auto}.matchdayOptionsMenu{position:absolute;z-index:50;right:0;top:44px;min-width:170px;padding:5px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px #0f172a1f}.matchdayOptionsMenu button{display:flex;align-items:center;gap:8px;width:100%;border:0;background:#fff;text-align:left;padding:10px;border-radius:8px;min-height:40px}.matchdayOptionsMenu button:hover{background:#f8fafc}.matchdayOptionsMenu .dangerText{color:#dc2626}
 .matchdayTrainingPlayerList{margin-top:8px}.matchdayTrainingPlayerList .trainingPlayerRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #eef2f7;min-width:0}.matchdayTrainingPlayerList .trainingPlayerIdentity{min-width:0;flex:1}.matchdayTrainingPlayerList .trainingPlayerMeta{min-width:0}.matchdayTrainingPlayerList .matchdayAttendanceTags{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:3px}.matchdayTrainingPlayerList .trainingPlayerName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.matchdayRecommendedRow{background:#f0f7ff;border-radius:10px;padding:8px!important;margin:3px 0;border:1px solid #dbeafe}.matchdayRecommendationLabel{display:inline-block;font-size:11px;font-weight:700;color:#1d4ed8;background:#dbeafe;border-radius:999px;padding:2px 7px;margin-top:4px}.matchdayNominationControl{display:flex;align-items:center;gap:5px;flex:0 0 auto;font-size:12px;color:#475569;white-space:nowrap}.matchdayNominationControl input{width:20px;height:20px;min-height:20px;flex:0 0 auto}.matchdayPlayedToggle{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}.matchdayPlayedToggle button{min-height:32px;padding:5px 8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#475569;font-size:12px;white-space:nowrap}.matchdayPlayedToggle button.active.yes{background:#dcfce7;border-color:#86efac;color:#166534;font-weight:700}.matchdayPlayedToggle button.active.no{background:#fef2f2;border-color:#fecaca;color:#b91c1c;font-weight:700}.matchdayNoteLine.expanded .trainingNoteText{display:block!important;-webkit-line-clamp:unset!important;line-clamp:unset!important}.matchdayNoteLine.expanded .material-symbols-outlined:last-child{transform:rotate(180deg)}
 @media(max-width:600px){.matchdayTrainingPlayerList .trainingPlayerRow{gap:7px}.matchdayNominationControl{font-size:11px}.matchdayPlayedToggle button{font-size:11px;padding:5px 6px}.matchdayOptionsMenu{top:40px}}
-
-/* DEV v22: Aktionsbuttons in Anwesenheit, Einsatz und Teams vereinheitlicht */
-.trainingDetail .trainingBulkAction,
-.matchdayDetail .matchdayActionRow button,
-.matchdayDetail .matchdayBulkSelect button {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 52px;
-  padding: 8px 10px;
-  margin-bottom: 9px;
-  font-size: 13px;
-  line-height: 1.25;
-  text-align: center;
-  white-space: normal;
-}
-.trainingDetail .trainingBulkAction .material-symbols-outlined,
-.matchdayDetail .matchdayActionRow button .material-symbols-outlined,
-.matchdayDetail .matchdayBulkSelect button .material-symbols-outlined {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  margin: 0;
-  font-size: 18px;
-  line-height: 1;
-  vertical-align: middle;
-}
-/* Beide Team-Neubildungsbuttons erhalten dieselbe Höhe wie die übrigen Aktionen. */
-.trainingDetail .trainingBuildTeamsButton.trainingBulkAction,
-.matchdayDetail .trainingBuildTeamsButton.trainingBulkAction {
-  min-height: 52px;
-  padding: 8px 10px;
-  margin: 0 0 9px;
-  font-size: 13px;
-  line-height: 1.25;
-}
-.trainingDetail .trainingBuildTeamsButton.trainingBulkAction .material-symbols-outlined,
-.matchdayDetail .trainingBuildTeamsButton.trainingBulkAction .material-symbols-outlined {
-  font-size: 18px;
-  line-height: 1;
-  margin: 0;
-}
-
 </style>
 <style>
 .iconAddButton{width:40px!important;min-width:40px!important;max-width:40px!important;height:40px!important;min-height:40px!important;max-height:40px!important;flex:0 0 40px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:10px!important;font-size:23px!important;line-height:1!important}
@@ -332,6 +284,16 @@ textarea{font:inherit;width:100%;border:1px solid #cbd5e1;border-radius:9px;padd
 .seriesWeekdayBlock{margin-top:10px}
 @media(max-width:600px){
 }
+
+
+/* Matchday form alignment: scoped styles only; training form remains untouched. */
+.matchdayCreateField{display:block;margin-top:10px}
+.matchdayCreateField>input,.matchdayCreateField>textarea,.matchdayCreateField>select{display:block;width:100%!important;max-width:100%!important;box-sizing:border-box}
+.matchdayCreateField.matchdayDateField>input{width:132px!important;max-width:132px!important;min-height:38px!important;padding:7px!important;font-size:14px!important}
+.matchdayCreateTimeRow{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.matchdayCreateTimeRow>label{display:block;min-width:0}
+.matchdayCreateTimeRow input,.matchdayCreateTimeRow select{display:block;width:100%!important;max-width:100%!important;box-sizing:border-box}
+.matchdayCreateTimeRow #matchdayKickoff,.matchdayCreateTimeRow #editMatchdayKickoff{width:132px!important;max-width:132px!important}
 
 /* E08 visual alignment: matchdays reuse the compact training detail design system */
 .matchdayDetail{padding-top:2px}.matchdayDetail .trainingDetailHeader{margin-bottom:4px}.matchdayDetail .trainingDetailTitle h2{font-size:20px;line-height:1.2}.matchdayDetail .trainingDetailInfo{padding-top:6px}.matchdayDetailTabs{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:2px!important;margin:12px 0 12px!important}.matchdayDetailTabs button{padding:7px 3px!important;font-size:12px!important;white-space:nowrap}.matchdayDetailBody{min-width:0}.matchdaySectionIntro{display:flex;gap:10px;align-items:flex-start;margin:10px 2px 12px}.matchdaySectionIcon{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex:0 0 36px;border-radius:11px;background:#eef2ff;color:#2563eb}.matchdaySectionIcon .material-symbols-outlined{font-size:21px}.matchdaySectionIntro h3{font-size:16px;margin:0 0 3px}.matchdaySectionIntro p{font-size:13px;color:var(--muted);margin:0;line-height:1.4}.matchdayActionStack{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.matchdayActionStack button.trainingBulkAction{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:58px;padding:7px 4px;margin:0;font-size:12px;line-height:1.2;text-align:center;white-space:normal}.matchdayActionStack button.trainingBulkAction .material-symbols-outlined{font-size:19px;flex:0 0 auto;margin:0;line-height:1}.matchdayActionStack button:disabled{opacity:.55}.matchdayActionStack .material-symbols-outlined,.matchdayActionRow .material-symbols-outlined{font-size:18px}.matchdaySnapshotNote{display:flex;align-items:flex-start;gap:5px;margin:10px 2px}.matchdaySnapshotNote .material-symbols-outlined{font-size:17px;flex:0 0 auto}.matchdayActionRow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}.matchdayActionRow button{min-height:40px;padding:8px;font-size:13px}.matchdayDetail .playerRecordMeta{flex:1;min-width:0}.matchdayChoiceButtons{display:flex;gap:5px;align-items:center;flex:0 0 auto}.matchdayChoiceButtons button{min-height:36px;padding:6px 10px;font-size:12px}.matchdayPlayedChoices button{padding:6px 8px}.matchdayNoteBlock{margin:8px 0 3px;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#f8fafc;font-size:13px;line-height:1.5;overflow-wrap:anywhere}.matchdayNoteLabel{display:flex;align-items:center;gap:5px;font-weight:700;color:#475569;margin-bottom:5px}.matchdayNoteLabel .material-symbols-outlined{font-size:17px}.matchdayDetail .trainingDetailActions button{display:inline-flex;align-items:center;gap:5px}.matchdayDetail .trainingDetailActions .material-symbols-outlined{font-size:17px}
@@ -999,10 +961,14 @@ window.setAllMatchdayAttendance=async present=>{const md=state.matchdays.find(x=
 window.setMatchdayPlayed=async(playerId,value)=>{const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md)return;const played=value===true||value==='yes'?true:(value===false||value==='no'?false:null);try{const {error}=await getClient().from('matchday_players').update({played}).eq('matchday_id',md.id).eq('player_id',playerId);if(error)throw error;md.played=md.played||{};md.played[playerId]=played;md.playerRows=(md.playerRows||[]).map(r=>r.player_id===playerId?{...r,played}:r);renderMatchday();}catch(e){showStatus('Einsatzstatus konnte nicht gespeichert werden: '+(e.message||e),'error');}};
 window.saveRecommendedSquadSize=async()=>{if(!adminGuard())return;const input=$('recommendedSquadSizeInput');const n=Number(input?.value);if(!Number.isInteger(n)||n<1||n>60){showStatus('Bitte eine Kader-Zielgröße zwischen 1 und 60 eingeben.','error');return}try{await dbUpdate('teams',{id:team},{recommended_squad_size:n});recommendedSquadSize=n;renderPlayers();$('squadCount').textContent=Math.min(recommendedSquadSize,top16Ranking().length);showStatus('Kader-Zielgröße gespeichert. Die Empfehlungsdarstellung der Spielerliste wurde aktualisiert. Bereits gespeicherte Spieltagsempfehlungen und Nominierungen bleiben unverändert.','ok');}catch(e){showStatus('Kader-Zielgröße konnte nicht gespeichert werden: '+(e.message||e),'error');}};
 function matchdayFormMarkup(md=null){const editing=!!md,prefix=editing?'editMatchday':'matchday';const val=k=>esc(md?.[k]??'');return `<h2>${editing?'Spieltag bearbeiten':'Spieltag anlegen'}</h2>
-  <div class="formrow"><label>Datum<input id="${prefix}Date" type="date" value="${editing?val('date'):todayISO()}" required></label><label>Name (optional)<input id="${prefix}Name" type="text" value="${val('name')}" placeholder="z. B. Spieltag 1"></label></div>
-  <div class="formrow" style="margin-top:10px"><label>Gegner<input id="${prefix}Opponent" type="text" value="${val('opponent')}" placeholder="Gegnerische Mannschaft"></label><label>Spielart<select id="${prefix}GameType"><option value="" ${!md?.gameType?'selected':''}>Bitte auswählen</option>${['Meisterschaft','Freundschaftsspiel','Turnier'].map(x=>`<option value="${x}" ${md?.gameType===x?'selected':''}>${x}</option>`).join('')}</select></label></div>
-  <div class="formrow" style="margin-top:10px"><label>Anstoßzeit<input id="${prefix}Kickoff" type="time" value="${esc(String(md?.kickoffTime||'').slice(0,5))}"></label><label>Spieldauer<select id="${prefix}Duration"><option value="">Keine Angabe</option>${[30,40,45,50,60,70,80,90,100,120].map(n=>`<option value="${n}" ${Number(md?.durationMinutes||0)===n?'selected':''}>${n} Minuten</option>`).join('')}</select></label></div>
-  <div class="formrow" style="margin-top:10px"><label>Status<select id="${prefix}Status">${editing&&!md.status?`<option value="" selected>Automatisch (bisherige Datumsauswertung)</option>`:''}<option value="planned" ${(!editing||md.status==='planned')?'selected':''}>Geplant</option><option value="done" ${md?.status==='done'?'selected':''}>Durchgeführt</option><option value="cancelled" ${md?.status==='cancelled'?'selected':''}>Abgesagt</option></select></label><label>Spielort<input id="${prefix}Location" type="text" value="${val('location')}" placeholder="Spielort"></label></div><label style="display:block;margin-top:10px">Notizen<textarea id="${prefix}Notes" rows="2">${val('notes')}</textarea></label>
+  <label class="matchdayCreateField matchdayDateField">Datum<input id="${prefix}Date" type="date" value="${editing?val('date'):todayISO()}" required></label>
+  <div class="matchdayCreateTimeRow"><label>Anstoßzeit<input id="${prefix}Kickoff" type="time" value="${esc(String(md?.kickoffTime||'').slice(0,5))}"></label><label>Spieldauer<select id="${prefix}Duration"><option value="">Keine Angabe</option>${[30,40,45,50,60,70,80,90,100,120].map(n=>`<option value="${n}" ${Number(md?.durationMinutes||0)===n?'selected':''}>${n} Minuten</option>`).join('')}</select></label></div>
+  <label class="matchdayCreateField">Spielort<input id="${prefix}Location" type="text" value="${val('location')}" placeholder="Spielort"></label>
+  <label class="matchdayCreateField">Gegner<input id="${prefix}Opponent" type="text" value="${val('opponent')}" placeholder="Gegnerische Mannschaft"></label>
+  <label class="matchdayCreateField">Spielart<select id="${prefix}GameType"><option value="" ${!md?.gameType?'selected':''}>Bitte auswählen</option>${['Meisterschaft','Freundschaftsspiel','Turnier'].map(x=>`<option value="${x}" ${md?.gameType===x?'selected':''}>${x}</option>`).join('')}</select></label>
+  <label class="matchdayCreateField">Name (optional)<input id="${prefix}Name" type="text" value="${val('name')}" placeholder="z. B. Spieltag 1"></label>
+  <label class="matchdayCreateField">Status<select id="${prefix}Status">${editing&&!md.status?`<option value="" selected>Automatisch (bisherige Datumsauswertung)</option>`:''}<option value="planned" ${(!editing||md.status==='planned')?'selected':''}>Geplant</option><option value="done" ${md?.status==='done'?'selected':''}>Durchgeführt</option><option value="cancelled" ${md?.status==='cancelled'?'selected':''}>Abgesagt</option></select></label>
+  <label class="matchdayCreateField">Notiz (optional)<textarea id="${prefix}Notes" rows="3" placeholder="Hinweise zum Spieltag">${val('notes')}</textarea></label>
   <div class="toolbar" style="margin-top:14px"><button class="primary" onclick="${editing?`saveMatchdayEdit('${md.id}')`:'saveMatchday()'}">${editing?'Änderungen speichern':'Spieltag speichern'}</button><button type="button" onclick="closeModal()">Abbrechen</button></div>`;}
 window.addMatchday=()=>openModal(matchdayFormMarkup());
 function readMatchdayForm(prefix){const date=$(prefix+'Date').value;if(!date)throw new Error('Bitte ein Datum auswählen.');const duration=$(prefix+'Duration').value;return {match_date:date,name:$(prefix+'Name').value.trim()||null,opponent:$(prefix+'Opponent').value.trim()||null,game_type:$(prefix+'GameType').value||null,kickoff_time:$(prefix+'Kickoff').value||null,duration_minutes:duration?Number(duration):null,status:$(prefix+'Status')?.value||null,location:$(prefix+'Location').value.trim()||null,notes:$(prefix+'Notes').value.trim()||null};}
