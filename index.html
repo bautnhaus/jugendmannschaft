@@ -1289,44 +1289,70 @@ function validateBackup(parsed){
   return true;
 }
 
+function restoreErrorText(e){
+  if(!e)return 'Unbekannter Fehler';
+  const parts=[];
+  for(const key of ['message','code','details','hint'])if(e[key]!==undefined&&e[key]!==null&&String(e[key]).trim())parts.push(key+': '+String(e[key]));
+  if(!parts.length)parts.push(String(e));
+  return parts.join('\n');
+}
+function showRestoreDiagnostic(phase, originalError, rollbackError=null){
+  const old=document.getElementById('restoreDiagnosticPanel');if(old)old.remove();
+  const panel=document.createElement('section');panel.id='restoreDiagnosticPanel';
+  panel.style.cssText='position:relative;z-index:1000;margin:12px;padding:14px;border:2px solid #b91c1c;border-radius:12px;background:#fff7f7;color:#7f1d1d;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.45 monospace;max-height:55vh;overflow:auto;';
+  const title=document.createElement('strong');title.textContent='DEV-Diagnose: Backup-Wiederherstellung fehlgeschlagen';title.style.cssText='display:block;font:600 15px/1.4 system-ui,sans-serif;margin-bottom:8px;';panel.appendChild(title);
+  const body=document.createElement('div');body.textContent='Phase: '+phase+'\n\nUrsprünglicher Fehler:\n'+restoreErrorText(originalError)+(rollbackError?'\n\nFehler bei der Rücksicherung:\n'+restoreErrorText(rollbackError):'\n\nRücksicherung: kein Fehler gemeldet');panel.appendChild(body);
+  const note=document.createElement('p');note.textContent='Bitte Screenshot dieser Diagnose sichern. Keine weiteren Importe starten, bis der Fehler geprüft wurde.';note.style.cssText='font:13px/1.4 system-ui,sans-serif;margin:10px 0 0;';panel.appendChild(note);
+  const anchor=document.getElementById('status');if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(panel,anchor.nextSibling);else document.body.prepend(panel);
+  panel.scrollIntoView({behavior:'smooth',block:'center'});
+}
 window.importJSON=async event=>{
   if(!adminGuard())return;
   const file=event.target.files?.[0];if(!file)return;
   const r=new FileReader();
   r.onload=async()=>{
-    let safety=null, started=false;
+    let safety=null, started=false, phase='Datei lesen';
     try{
       const parsed=JSON.parse(r.result);
+      phase='Backup validieren';
       validateBackup(parsed);
       const legacyWarning=parsed.version<12?'\n\nWichtig: Dieses ältere Backup enthält keine Trainingsserien und keine persistenten Trainingsrückmeldungen. Beim Wiederherstellen werden diese aktuellen Datenbereiche daher geleert.':'';
       const ok=confirm('⚠️ Backup wiederherstellen?\n\nDer aktuelle Datenstand wird durch den Stand aus der Backup-Datei ersetzt.\n\nÄnderungen, die nach Erstellung des Backups vorgenommen wurden, gehen dabei verloren.'+legacyWarning+'\n\nVorher wird automatisch ein Sicherheits-Backup des aktuellen Datenstands heruntergeladen.');
       if(!ok)return;
 
+      phase='Sicherheits-Backup erstellen';
       showStatus('Sicherheits-Backup wird erstellt …');
       safety=await buildBackupSnapshot();
       downloadBackup(safety,'jugendmannschaft-sicherheitsbackup');
       started=true;
 
+      phase='Ziel-Backup einspielen';
       showStatus('Backup wird wiederhergestellt …');
       const c=getClient();
       await replaceTeamDataWithBackup(c,parsed);
+      phase='App-Daten nach Import neu laden';
       await loadApp();
       showStatus('Backup erfolgreich wiederhergestellt.','ok');
     }catch(e){
-      console.error('Backup restore:',e);
+      console.error('Backup restore phase:',phase,'error:',e);
+      let rollbackError=null;
       if(started&&safety){
         try{
+          phase='Automatische Rücksicherung';
           showStatus('Fehler erkannt – ursprünglicher Datenstand wird wiederhergestellt …');
           await replaceTeamDataWithBackup(getClient(),safety);
+          phase='App-Daten nach Rücksicherung neu laden';
           await loadApp();
-          showStatus('Wiederherstellung fehlgeschlagen. Der ursprüngliche Datenstand wurde automatisch zurückgespielt.','error');
-        }catch(rollbackError){
-          console.error('Backup rollback:',rollbackError);
-          showStatus('Wiederherstellung fehlgeschlagen. Auch das automatische Zurückspielen konnte nicht abgeschlossen werden. Das zuvor heruntergeladene Sicherheits-Backup ist verfügbar.','error');
+          showStatus('Import fehlgeschlagen; die automatische Rücksicherung meldet Erfolg. Bitte Diagnose prüfen.','error');
+        }catch(rb){
+          rollbackError=rb;
+          console.error('Backup rollback error:',rb);
+          showStatus('Import und/oder automatische Rücksicherung fehlgeschlagen. Bitte Diagnose prüfen.','error');
         }
       }else{
         showStatus('Backup konnte nicht wiederhergestellt werden: '+(e.message||e),'error');
       }
+      showRestoreDiagnostic(phase,e,rollbackError);
     }finally{event.target.value='';}
   };
   r.readAsText(file);
