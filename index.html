@@ -1182,21 +1182,27 @@ window.removePosition=async encoded=>{if(!adminGuard())return;const pos=decodeUR
 
 async function buildBackupSnapshot(){
   const c=getClient();
-  const [posR,playerR,ppR,trainingR,matchdayR,teamR]=await Promise.all([
+  const [posR,playerR,ppR,trainingR,seriesR,matchdayR,teamR]=await Promise.all([
     c.from('positions').select('id,name,sort_order,color').eq('team_id',team).order('sort_order').order('name'),
     c.from('players').select('id,name,first_name,last_name,birth_year,preferred_foot,level,photo_data,notes,active,created_at').eq('team_id',team),
     c.from('player_positions').select('player_id,position_id'),
-    c.from('trainings').select('id,training_date,name').eq('team_id',team).order('training_date'),
-    c.from('matchdays').select('id,match_date,name,opponent,location,notes,kickoff_time,duration_minutes,game_type').eq('team_id',team).order('match_date'),
+    c.from('trainings').select('id,training_date,name,start_time,duration_minutes,location,status,note,series_id,overrides').eq('team_id',team).order('training_date'),
+    c.from('training_series').select('id,team_id,start_date,end_date,start_time,duration_minutes,weekdays,location,name').eq('team_id',team),
+    c.from('matchdays').select('id,match_date,name,opponent,location,notes,kickoff_time,duration_minutes,game_type,status').eq('team_id',team).order('match_date'),
     c.from('teams').select('recommended_squad_size').eq('id',team).single()
   ]);
-  for(const r of [posR,playerR,ppR,trainingR,matchdayR,teamR])if(r.error)throw r.error;
-  const players=playerR.data||[], trainings=trainingR.data||[], matchdays=matchdayR.data||[];
+  for(const r of [posR,playerR,ppR,trainingR,seriesR,matchdayR,teamR])if(r.error)throw r.error;
+  const players=playerR.data||[], trainings=trainingR.data||[], trainingSeries=seriesR.data||[], matchdays=matchdayR.data||[];
   const playerIds=players.map(x=>x.id), trainingIds=trainings.map(x=>x.id), matchdayIds=matchdays.map(x=>x.id);
-  let attendance=[], trainingPlayers=[], trainingTrainers=[], matchdayPlayers=[], matchdayTrainers=[], matchdayAttendance=[], matchdayRecommendationRuns=[], matchdayRecommendationPlayers=[];
-  if(trainingIds.length){const r=await c.from('attendance').select('training_id,player_id,present').in('training_id',trainingIds);if(r.error)throw r.error;attendance=r.data||[];const tp=await c.from('training_players').select('training_id,player_id,team_number,goalkeeper').in('training_id',trainingIds);if(tp.error)throw tp.error;trainingPlayers=tp.data||[];const tt=await c.from('training_trainers').select('training_id,user_id,present').in('training_id',trainingIds);if(tt.error)throw tt.error;trainingTrainers=tt.data||[];}
+  let attendance=[], trainingPlayers=[], trainingTrainers=[], trainingResponses=[], matchdayPlayers=[], matchdayTrainers=[], matchdayAttendance=[], matchdayRecommendationRuns=[], matchdayRecommendationPlayers=[];
+  if(trainingIds.length){
+    const r=await c.from('attendance').select('training_id,player_id,present').in('training_id',trainingIds);if(r.error)throw r.error;attendance=r.data||[];
+    const tp=await c.from('training_players').select('training_id,player_id,team_number,goalkeeper').in('training_id',trainingIds);if(tp.error)throw tp.error;trainingPlayers=tp.data||[];
+    const tt=await c.from('training_trainers').select('training_id,user_id,present').in('training_id',trainingIds);if(tt.error)throw tt.error;trainingTrainers=tt.data||[];
+    const tr=await c.from('training_responses').select('training_id,player_id,status').in('training_id',trainingIds);if(tr.error)throw tr.error;trainingResponses=tr.data||[];
+  }
   if(matchdayIds.length){const r=await c.from('matchday_players').select('matchday_id,player_id,team_number,goalkeeper,played').in('matchday_id',matchdayIds);if(r.error)throw r.error;matchdayPlayers=r.data|| [];const mt=await c.from('matchday_trainers').select('matchday_id,user_id,present').in('matchday_id',matchdayIds);if(mt.error)throw mt.error;matchdayTrainers=mt.data|| [];const ma=await c.from('matchday_attendance').select('matchday_id,player_id,present').in('matchday_id',matchdayIds);if(ma.error)throw ma.error;matchdayAttendance=ma.data||[];const rr=await c.from('matchday_recommendation_runs').select('id,matchday_id,created_at,created_by').in('matchday_id',matchdayIds);if(rr.error)throw rr.error;matchdayRecommendationRuns=rr.data||[];const runIds=matchdayRecommendationRuns.map(x=>x.id);if(runIds.length){const rp=await c.from('matchday_recommendation_players').select('recommendation_id,player_id,rank').in('recommendation_id',runIds);if(rp.error)throw rp.error;matchdayRecommendationPlayers=rp.data||[];}}
-  return {version:11,exportedAt:new Date().toISOString(),teamId:team,season:season,recommendedSquadSize:teamR.data?.recommended_squad_size||16,positions:posR.data||[],players,playerPositions:(ppR.data||[]).filter(x=>playerIds.includes(x.player_id)),trainings,attendance,trainingPlayers,trainingTrainers,matchdays,matchdayPlayers,matchdayTrainers,matchdayAttendance,matchdayRecommendationRuns,matchdayRecommendationPlayers};
+  return {version:12,exportedAt:new Date().toISOString(),teamId:team,season:season,recommendedSquadSize:teamR.data?.recommended_squad_size||16,positions:posR.data||[],players,playerPositions:(ppR.data||[]).filter(x=>playerIds.includes(x.player_id)),trainings,trainingSeries,attendance,trainingPlayers,trainingTrainers,trainingResponses,matchdays,matchdayPlayers,matchdayTrainers,matchdayAttendance,matchdayRecommendationRuns,matchdayRecommendationPlayers};
 }
 function downloadBackup(backup,prefix='jugendmannschaft-backup'){
   const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
@@ -1212,13 +1218,15 @@ async function replaceTeamDataWithBackup(c, backup){
   const {data:curPlayers,error:cp}=await c.from('players').select('id').eq('team_id',team);if(cp)throw cp;
   const {data:curTrainings,error:ct}=await c.from('trainings').select('id').eq('team_id',team);if(ct)throw ct;
   const {data:curMatchdays,error:cm}=await c.from('matchdays').select('id').eq('team_id',team);if(cm)throw cm;
-  const playerIds=(curPlayers||[]).map(x=>x.id),trainingIds=(curTrainings||[]).map(x=>x.id),matchdayIds=(curMatchdays||[]).map(x=>x.id);
+  const {data:curSeries,error:cs}=await c.from('training_series').select('id').eq('team_id',team);if(cs)throw cs;
+  const playerIds=(curPlayers||[]).map(x=>x.id),trainingIds=(curTrainings||[]).map(x=>x.id),matchdayIds=(curMatchdays||[]).map(x=>x.id),seriesIds=(curSeries||[]).map(x=>x.id);
 
   if(playerIds.length){let x=await c.from('player_positions').delete().in('player_id',playerIds);if(x.error)throw x.error;}
-  if(trainingIds.length){let x=await c.from('attendance').delete().in('training_id',trainingIds);if(x.error)throw x.error;let y=await c.from('training_players').delete().in('training_id',trainingIds);if(y.error)throw y.error;let z=await c.from('training_trainers').delete().in('training_id',trainingIds);if(z.error)throw z.error;}
+  if(trainingIds.length){let x=await c.from('training_responses').delete().in('training_id',trainingIds);if(x.error)throw x.error;let a=await c.from('attendance').delete().in('training_id',trainingIds);if(a.error)throw a.error;let y=await c.from('training_players').delete().in('training_id',trainingIds);if(y.error)throw y.error;let z=await c.from('training_trainers').delete().in('training_id',trainingIds);if(z.error)throw z.error;}
   if(matchdayIds.length){let x=await c.from('matchday_attendance').delete().in('matchday_id',matchdayIds);if(x.error)throw x.error;let rr=await c.from('matchday_recommendation_runs').delete().in('matchday_id',matchdayIds);if(rr.error)throw rr.error;let mp=await c.from('matchday_players').delete().in('matchday_id',matchdayIds);if(mp.error)throw mp.error;}
-  if(matchdayIds.length){let x=await c.from('matchdays').delete().in('id',matchdayIds);if(x.error)throw x.error;}
+  if(matchdayIds.length){let x=await c.from('matchday_trainers').delete().in('matchday_id',matchdayIds);if(x.error)throw x.error;let y=await c.from('matchdays').delete().in('id',matchdayIds);if(y.error)throw y.error;}
   if(trainingIds.length){let x=await c.from('trainings').delete().in('id',trainingIds);if(x.error)throw x.error;}
+  if(seriesIds.length){let x=await c.from('training_series').delete().in('id',seriesIds);if(x.error)throw x.error;}
   if(playerIds.length){let x=await c.from('players').delete().in('id',playerIds);if(x.error)throw x.error;}
 
   const {data:curPositions,error:posErr}=await c.from('positions').select('id').eq('team_id',team);if(posErr)throw posErr;
@@ -1228,11 +1236,13 @@ async function replaceTeamDataWithBackup(c, backup){
   if(backup.positions.length){let x=await c.from('positions').insert(backup.positions.map(p=>({id:p.id,team_id:team,name:p.name,sort_order:p.sort_order,color:p.color||'#6b7280'})));if(x.error)throw x.error;}
   if(backup.players.length){let x=await c.from('players').insert(backup.players.map(p=>({id:p.id,team_id:team,name:p.name,first_name:p.first_name||null,last_name:p.last_name||null,birth_year:p.birth_year??null,preferred_foot:p.preferred_foot||null,level:LEVELS.includes(normalizeLevelValue(p.level))?normalizeLevelValue(p.level):null,photo_data:p.photo_data||null,notes:p.notes||'',active:p.active!==false,created_at:p.created_at||undefined})));if(x.error)throw x.error;}
   if(backup.playerPositions.length){let x=await c.from('player_positions').insert(backup.playerPositions.map(p=>({player_id:p.player_id,position_id:p.position_id})));if(x.error)throw x.error;}
-  if(backup.trainings.length){let x=await c.from('trainings').insert(backup.trainings.map(t=>({id:t.id,team_id:team,training_date:t.training_date,name:t.name||''})));if(x.error)throw x.error;}
+  if((backup.trainingSeries||[]).length){let x=await c.from('training_series').insert(backup.trainingSeries.map(s=>({id:s.id,team_id:team,start_date:s.start_date,end_date:s.end_date,start_time:s.start_time??null,duration_minutes:s.duration_minutes??null,weekdays:s.weekdays,location:s.location??null,name:s.name??null})));if(x.error)throw x.error;}
+  if(backup.trainings.length){let x=await c.from('trainings').insert(backup.trainings.map(t=>({id:t.id,team_id:team,season_id:backup.season?.id||null,training_date:t.training_date,name:t.name||null,start_time:t.start_time??null,duration_minutes:t.duration_minutes??null,location:t.location??null,status:t.status||'planned',note:t.note??null,series_id:t.series_id??null,overrides:t.overrides||{}})));if(x.error)throw x.error;}
   if(backup.attendance.length){let x=await c.from('attendance').insert(backup.attendance.map(a=>({training_id:a.training_id,player_id:a.player_id,present:!!a.present})));if(x.error)throw x.error;}
+  if((backup.trainingResponses||[]).length){let x=await c.from('training_responses').insert(backup.trainingResponses.map(r=>({training_id:r.training_id,player_id:r.player_id,status:r.status})));if(x.error)throw x.error;}
   if(backup.trainingPlayers.length){let x=await c.from('training_players').insert(backup.trainingPlayers.map(t=>({training_id:t.training_id,player_id:t.player_id,team_number:t.team_number,goalkeeper:!!t.goalkeeper})));if(x.error)throw x.error;}
   if((backup.trainingTrainers||[]).length){let x=await c.from('training_trainers').insert(backup.trainingTrainers.map(t=>({training_id:t.training_id,user_id:t.user_id,present:!!t.present})));if(x.error)throw x.error;}
-  if(backup.matchdays.length){let x=await c.from('matchdays').insert(backup.matchdays.map(m=>({id:m.id,team_id:team,season_id:backup.season?.id||null,match_date:m.match_date,name:m.name||null,opponent:m.opponent||null,location:m.location||null,notes:m.notes||null,kickoff_time:m.kickoff_time||null,duration_minutes:m.duration_minutes??null,game_type:m.game_type||null})));if(x.error)throw x.error;}
+  if(backup.matchdays.length){let x=await c.from('matchdays').insert(backup.matchdays.map(m=>({id:m.id,team_id:team,season_id:backup.season?.id||null,match_date:m.match_date,name:m.name||null,opponent:m.opponent||null,location:m.location||null,notes:m.notes||null,kickoff_time:m.kickoff_time||null,duration_minutes:m.duration_minutes??null,game_type:m.game_type||null,status:m.status??null})));if(x.error)throw x.error;}
   if(backup.matchdayPlayers.length){let x=await c.from('matchday_players').insert(backup.matchdayPlayers.map(m=>({matchday_id:m.matchday_id,player_id:m.player_id,team_number:m.team_number,goalkeeper:!!m.goalkeeper,played:m.played??null})));if(x.error)throw x.error;}
   if((backup.matchdayAttendance||[]).length){let x=await c.from('matchday_attendance').insert(backup.matchdayAttendance);if(x.error)throw x.error;}
   if((backup.matchdayRecommendationRuns||[]).length){let x=await c.from('matchday_recommendation_runs').insert(backup.matchdayRecommendationRuns.map(r=>({id:r.id,matchday_id:r.matchday_id,created_at:r.created_at,created_by:currentUser?.id||null})));if(x.error)throw x.error;}
@@ -1243,26 +1253,39 @@ async function replaceTeamDataWithBackup(c, backup){
 
 function normalizeLevelValue(level){return ({schwach:'Einsteiger',mittel:'Fortgeschritten',stark:'Stark',herausragend:'Profi'})[level]||level||null;}
 function validateBackup(parsed){
-  if(!parsed||![5,6,7,8,9,10,11].includes(parsed.version))throw new Error('Nicht unterstützte Backup-Version.');
+  if(!parsed||![5,6,7,8,9,10,11,12].includes(parsed.version))throw new Error('Nicht unterstützte Backup-Version.');
   if(parsed.version===5)parsed.trainingPlayers=[];
   if(parsed.version<=7)parsed.trainingTrainers=[];
   if(parsed.version<=8)parsed.matchdayTrainers=[];
   parsed.matchdayAttendance=parsed.matchdayAttendance||[];parsed.matchdayRecommendationRuns=parsed.matchdayRecommendationRuns||[];parsed.matchdayRecommendationPlayers=parsed.matchdayRecommendationPlayers||[];
+  if(parsed.version<12){parsed.trainingSeries=[];parsed.trainingResponses=[];}
   if(parsed.teamId!==team)throw new Error('Dieses Backup gehört zu einer anderen Mannschaft.');
   for(const key of ['positions','players','playerPositions','trainings','attendance','trainingPlayers','trainingTrainers','matchdays','matchdayPlayers','matchdayTrainers']){
     if(!Array.isArray(parsed[key]))throw new Error('Das Backup ist unvollständig: '+key+'.');
   }
+  if(!Array.isArray(parsed.trainingSeries)||!Array.isArray(parsed.trainingResponses))throw new Error('Das Backup ist unvollständig: Trainingsserien oder Trainingsrückmeldungen.');
+  if(parsed.version>=12&&parsed.trainings.some(x=>!['start_time','duration_minutes','location','status','note','series_id','overrides'].every(k=>Object.prototype.hasOwnProperty.call(x,k))))throw new Error('Das Backup enthält unvollständige erweiterte Trainingsfelder.');
+  if(parsed.version>=12&&parsed.matchdays.some(x=>!Object.prototype.hasOwnProperty.call(x,'status')))throw new Error('Das Backup enthält Spieltage ohne Statusfeld.');
   const ids=(arr,key)=>new Set(arr.map(x=>x[key]).filter(Boolean));
-  const positionIds=ids(parsed.positions,'id'),playerIds=ids(parsed.players,'id'),trainingIds=ids(parsed.trainings,'id'),matchdayIds=ids(parsed.matchdays,'id');
+  const positionIds=ids(parsed.positions,'id'),playerIds=ids(parsed.players,'id'),trainingIds=ids(parsed.trainings,'id'),seriesIds=ids(parsed.trainingSeries,'id'),matchdayIds=ids(parsed.matchdays,'id'),runIds=ids(parsed.matchdayRecommendationRuns,'id');
   if(positionIds.size!==parsed.positions.length)throw new Error('Das Backup enthält doppelte Positions-IDs.');
   if(playerIds.size!==parsed.players.length)throw new Error('Das Backup enthält doppelte Spieler-IDs.');
   if(trainingIds.size!==parsed.trainings.length)throw new Error('Das Backup enthält doppelte Trainings-IDs.');
+  if(seriesIds.size!==parsed.trainingSeries.length)throw new Error('Das Backup enthält doppelte Serien-IDs.');
   if(matchdayIds.size!==parsed.matchdays.length)throw new Error('Das Backup enthält doppelte Spieltags-IDs.');
+  if(runIds.size!==parsed.matchdayRecommendationRuns.length)throw new Error('Das Backup enthält doppelte Empfehlungs-IDs.');
+  if(parsed.trainingSeries.some(x=>!x.id||!x.start_date||!x.end_date||!Array.isArray(x.weekdays)))throw new Error('Das Backup enthält unvollständige Trainingsserien.');
+  if(parsed.trainings.some(x=>x.series_id&&!seriesIds.has(x.series_id)))throw new Error('Das Backup enthält Trainings mit ungültiger Serienzuordnung.');
   if(parsed.playerPositions.some(x=>!playerIds.has(x.player_id)||!positionIds.has(x.position_id)))throw new Error('Das Backup enthält ungültige Spieler-Positions-Zuordnungen.');
   if(parsed.attendance.some(x=>!trainingIds.has(x.training_id)||!playerIds.has(x.player_id)))throw new Error('Das Backup enthält ungültige Anwesenheitsdaten.');
+  if(parsed.trainingResponses.some(x=>!trainingIds.has(x.training_id)||!playerIds.has(x.player_id)||!x.status))throw new Error('Das Backup enthält ungültige Trainingsrückmeldungen.');
   if(parsed.trainingPlayers.some(x=>!trainingIds.has(x.training_id)||!playerIds.has(x.player_id)))throw new Error('Das Backup enthält ungültige Trainingsteam-Daten.');
   if(parsed.trainingTrainers.some(x=>!trainingIds.has(x.training_id)||!x.user_id))throw new Error('Das Backup enthält ungültige Trainer-Anwesenheitsdaten.');
   if(parsed.matchdayPlayers.some(x=>!matchdayIds.has(x.matchday_id)||!playerIds.has(x.player_id)))throw new Error('Das Backup enthält ungültige Spieltagsdaten.');
+  if(parsed.matchdayAttendance.some(x=>!matchdayIds.has(x.matchday_id)||!playerIds.has(x.player_id)))throw new Error('Das Backup enthält ungültige Spieltags-Rückmeldungen.');
+  if(parsed.matchdayRecommendationRuns.some(x=>!matchdayIds.has(x.matchday_id)))throw new Error('Das Backup enthält ungültige Empfehlungs-Läufe.');
+  if(parsed.matchdayRecommendationPlayers.some(x=>!runIds.has(x.recommendation_id)||!playerIds.has(x.player_id)))throw new Error('Das Backup enthält ungültige Empfehlungs-Spieler.');
+  if(parsed.matchdayTrainers.some(x=>!matchdayIds.has(x.matchday_id)||!x.user_id))throw new Error('Das Backup enthält ungültige Spieltags-Trainerdaten.');
   return true;
 }
 
@@ -1275,7 +1298,8 @@ window.importJSON=async event=>{
     try{
       const parsed=JSON.parse(r.result);
       validateBackup(parsed);
-      const ok=confirm('⚠️ Backup wiederherstellen?\n\nDer aktuelle Datenstand wird durch den Stand aus der Backup-Datei ersetzt.\n\nÄnderungen, die nach Erstellung des Backups vorgenommen wurden, gehen dabei verloren.\n\nVorher wird automatisch ein Sicherheits-Backup des aktuellen Datenstands heruntergeladen.');
+      const legacyWarning=parsed.version<12?'\n\nWichtig: Dieses ältere Backup enthält keine Trainingsserien und keine persistenten Trainingsrückmeldungen. Beim Wiederherstellen werden diese aktuellen Datenbereiche daher geleert.':'';
+      const ok=confirm('⚠️ Backup wiederherstellen?\n\nDer aktuelle Datenstand wird durch den Stand aus der Backup-Datei ersetzt.\n\nÄnderungen, die nach Erstellung des Backups vorgenommen wurden, gehen dabei verloren.'+legacyWarning+'\n\nVorher wird automatisch ein Sicherheits-Backup des aktuellen Datenstands heruntergeladen.');
       if(!ok)return;
 
       showStatus('Sicherheits-Backup wird erstellt …');
