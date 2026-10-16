@@ -386,6 +386,9 @@ function showStatus(msg,type=''){const el=$('status');el.textContent=msg;el.clas
 const BACKUP_DIAGNOSTIC_KEY='kaderkompass_backup_diagnostic_v1';
 function renderBackupDiagnostic(){let d=null;try{d=JSON.parse(localStorage.getItem(BACKUP_DIAGNOSTIC_KEY)||'null')}catch(_){}const status=$('backupDiagnosticStatus'),details=$('backupDiagnosticDetails');if(!status||!details)return;if(!d){status.textContent='Diagnose aktiv – bisher wurde kein Importversuch protokolliert.';status.className='notice small';details.textContent='Noch keine Fehlerdetails vorhanden.';return;}status.textContent=(d.time?new Date(d.time).toLocaleString('de-DE')+' · ':'')+(d.status||'Status unbekannt');status.className=(d.error?'notice small':'notice small');details.textContent=[d.phase?'Phase: '+d.phase:'',d.message?'Meldung: '+d.message:'',d.code?'Code: '+d.code:'',d.details?'Details: '+d.details:'',d.rollback?'Zurückspielen: '+d.rollback:''].filter(Boolean).join('\n')||'Keine zusätzlichen Details.';}
 function saveBackupDiagnostic(data){try{localStorage.setItem(BACKUP_DIAGNOSTIC_KEY,JSON.stringify({...data,time:new Date().toISOString()}));}catch(_){}renderBackupDiagnostic();}
+let backupRestoreCurrentPhase='';
+function setBackupRestorePhase(phase){backupRestoreCurrentPhase=phase;saveBackupDiagnostic({status:'Restore läuft',phase,message:'Dieser Arbeitsschritt wurde begonnen.'});}
+function backupRestoreErrorInfo(e){return {name:e?.name?String(e.name):'',message:String(e?.message||e||'Unbekannter Fehler'),code:e?.code!=null?String(e.code):'',details:[e?.details,e?.hint,e?.status!=null?'HTTP-Status: '+e.status:'',e?.cause?.message?'Ursache: '+e.cause.message:''].filter(Boolean).map(String).join(' | ')};}
 window.clearBackupDiagnostic=()=>{try{localStorage.removeItem(BACKUP_DIAGNOSTIC_KEY)}catch(_){}renderBackupDiagnostic();};
 function setLoginMsg(msg,error=false){$('loginMsg').textContent=msg||'';$('loginMsg').style.color=error?'#b91c1c':'';}
 function openModal(html){const content=$('modalContent');playerSubViewStack=[];content.innerHTML=html;content.scrollTop=0;$('modal').classList.add('show');requestAnimationFrame(()=>{content.scrollTop=0;});}
@@ -1220,39 +1223,59 @@ async function exportJSON(){
 }
 window.exportJSON=exportJSON;
 async function replaceTeamDataWithBackup(c, backup){
+  setBackupRestorePhase('Bestehende Datensätze lesen');
   const {data:curPlayers,error:cp}=await c.from('players').select('id').eq('team_id',team);if(cp)throw cp;
   const {data:curTrainings,error:ct}=await c.from('trainings').select('id').eq('team_id',team);if(ct)throw ct;
   const {data:curMatchdays,error:cm}=await c.from('matchdays').select('id').eq('team_id',team);if(cm)throw cm;
   const {data:curSeries,error:cs}=await c.from('training_series').select('id').eq('team_id',team);if(cs)throw cs;
   const playerIds=(curPlayers||[]).map(x=>x.id),trainingIds=(curTrainings||[]).map(x=>x.id),matchdayIds=(curMatchdays||[]).map(x=>x.id),seriesIds=(curSeries||[]).map(x=>x.id);
 
+  setBackupRestorePhase('Bestehende Spieler- und Trainingszuordnungen löschen');
   if(playerIds.length){let x=await c.from('player_positions').delete().in('player_id',playerIds);if(x.error)throw x.error;}
   if(trainingIds.length){let x=await c.from('training_responses').delete().in('training_id',trainingIds);if(x.error)throw x.error;let a=await c.from('attendance').delete().in('training_id',trainingIds);if(a.error)throw a.error;let y=await c.from('training_players').delete().in('training_id',trainingIds);if(y.error)throw y.error;let z=await c.from('training_trainers').delete().in('training_id',trainingIds);if(z.error)throw z.error;}
+  setBackupRestorePhase('Bestehende Spieltagsdaten löschen');
   if(matchdayIds.length){let x=await c.from('matchday_attendance').delete().in('matchday_id',matchdayIds);if(x.error)throw x.error;let rr=await c.from('matchday_recommendation_runs').delete().in('matchday_id',matchdayIds);if(rr.error)throw rr.error;let mp=await c.from('matchday_players').delete().in('matchday_id',matchdayIds);if(mp.error)throw mp.error;}
   if(matchdayIds.length){let x=await c.from('matchday_trainers').delete().in('matchday_id',matchdayIds);if(x.error)throw x.error;let y=await c.from('matchdays').delete().in('id',matchdayIds);if(y.error)throw y.error;}
   if(trainingIds.length){let x=await c.from('trainings').delete().in('id',trainingIds);if(x.error)throw x.error;}
   if(seriesIds.length){let x=await c.from('training_series').delete().in('id',seriesIds);if(x.error)throw x.error;}
   if(playerIds.length){let x=await c.from('players').delete().in('id',playerIds);if(x.error)throw x.error;}
 
+  setBackupRestorePhase('Bestehende Positionen lesen und löschen');
   const {data:curPositions,error:posErr}=await c.from('positions').select('id').eq('team_id',team);if(posErr)throw posErr;
   const positionIds=(curPositions||[]).map(x=>x.id);
   if(positionIds.length){let x=await c.from('player_positions').delete().in('position_id',positionIds);if(x.error)throw x.error;let y=await c.from('positions').delete().in('id',positionIds);if(y.error)throw y.error;}
 
+  setBackupRestorePhase('Positionen schreiben');
   if(backup.positions.length){let x=await c.from('positions').insert(backup.positions.map(p=>({id:p.id,team_id:team,name:p.name,sort_order:p.sort_order,color:p.color||'#6b7280'})));if(x.error)throw x.error;}
+  setBackupRestorePhase('Spieler schreiben');
   if(backup.players.length){let x=await c.from('players').insert(backup.players.map(p=>({id:p.id,team_id:team,name:p.name,first_name:p.first_name||null,last_name:p.last_name||null,birth_year:p.birth_year??null,preferred_foot:p.preferred_foot||null,level:LEVELS.includes(normalizeLevelValue(p.level))?normalizeLevelValue(p.level):null,photo_data:p.photo_data||null,notes:p.notes||'',active:p.active!==false,created_at:p.created_at||undefined})));if(x.error)throw x.error;}
+  setBackupRestorePhase('Spieler-Positions-Zuordnungen schreiben');
   if(backup.playerPositions.length){let x=await c.from('player_positions').insert(backup.playerPositions.map(p=>({player_id:p.player_id,position_id:p.position_id})));if(x.error)throw x.error;}
+  setBackupRestorePhase('Trainingsserien schreiben');
   if((backup.trainingSeries||[]).length){let x=await c.from('training_series').insert(backup.trainingSeries.map(s=>({id:s.id,team_id:team,start_date:s.start_date,end_date:s.end_date,start_time:s.start_time??null,duration_minutes:s.duration_minutes??null,weekdays:s.weekdays,location:s.location??null,name:s.name??null})));if(x.error)throw x.error;}
+  setBackupRestorePhase('Trainings schreiben');
   if(backup.trainings.length){let x=await c.from('trainings').insert(backup.trainings.map(t=>({id:t.id,team_id:team,season_id:backup.season?.id||null,training_date:t.training_date,name:t.name||null,start_time:t.start_time??null,duration_minutes:t.duration_minutes??null,location:t.location??null,status:t.status||'planned',note:t.note??null,series_id:t.series_id??null,overrides:t.overrides||{}})));if(x.error)throw x.error;}
+  setBackupRestorePhase('Trainingsanwesenheit schreiben');
   if(backup.attendance.length){let x=await c.from('attendance').insert(backup.attendance.map(a=>({training_id:a.training_id,player_id:a.player_id,present:!!a.present})));if(x.error)throw x.error;}
+  setBackupRestorePhase('Trainingsrückmeldungen schreiben');
   if((backup.trainingResponses||[]).length){let x=await c.from('training_responses').insert(backup.trainingResponses.map(r=>({training_id:r.training_id,player_id:r.player_id,status:r.status})));if(x.error)throw x.error;}
+  setBackupRestorePhase('Trainingsteams schreiben');
   if(backup.trainingPlayers.length){let x=await c.from('training_players').insert(backup.trainingPlayers.map(t=>({training_id:t.training_id,player_id:t.player_id,team_number:t.team_number,goalkeeper:!!t.goalkeeper})));if(x.error)throw x.error;}
+  setBackupRestorePhase('Trainingstrainer schreiben');
   if((backup.trainingTrainers||[]).length){let x=await c.from('training_trainers').insert(backup.trainingTrainers.map(t=>({training_id:t.training_id,user_id:t.user_id,present:!!t.present})));if(x.error)throw x.error;}
+  setBackupRestorePhase('Spieltage schreiben');
   if(backup.matchdays.length){let x=await c.from('matchdays').insert(backup.matchdays.map(m=>({id:m.id,team_id:team,season_id:backup.season?.id||null,match_date:m.match_date,name:m.name||null,opponent:m.opponent||null,location:m.location||null,notes:m.notes||null,kickoff_time:m.kickoff_time||null,duration_minutes:m.duration_minutes??null,game_type:m.game_type||null,status:m.status??null})));if(x.error)throw x.error;}
+  setBackupRestorePhase('Spieltagsspieler schreiben');
   if(backup.matchdayPlayers.length){let x=await c.from('matchday_players').insert(backup.matchdayPlayers.map(m=>({matchday_id:m.matchday_id,player_id:m.player_id,team_number:m.team_number,goalkeeper:!!m.goalkeeper,played:m.played??null})));if(x.error)throw x.error;}
+  setBackupRestorePhase('Spieltagsrückmeldungen schreiben');
   if((backup.matchdayAttendance||[]).length){let x=await c.from('matchday_attendance').insert(backup.matchdayAttendance);if(x.error)throw x.error;}
+  setBackupRestorePhase('Empfehlungsläufe schreiben');
   if((backup.matchdayRecommendationRuns||[]).length){let x=await c.from('matchday_recommendation_runs').insert(backup.matchdayRecommendationRuns.map(r=>({id:r.id,matchday_id:r.matchday_id,created_at:r.created_at,created_by:currentUser?.id||null})));if(x.error)throw x.error;}
+  setBackupRestorePhase('Empfehlungsspieler schreiben');
   if((backup.matchdayRecommendationPlayers||[]).length){let x=await c.from('matchday_recommendation_players').insert(backup.matchdayRecommendationPlayers);if(x.error)throw x.error;}
+  setBackupRestorePhase('Kader-Zielgröße speichern');
   if(backup.recommendedSquadSize){let x=await c.from('teams').update({recommended_squad_size:backup.recommendedSquadSize}).eq('id',team);if(x.error)throw x.error;}
+  setBackupRestorePhase('Spieltags-Trainer schreiben');
   if((backup.matchdayTrainers||[]).length){let x=await c.from('matchday_trainers').insert(backup.matchdayTrainers.map(m=>({matchday_id:m.matchday_id,user_id:m.user_id,present:!!m.present})));if(x.error)throw x.error;}
 }
 
@@ -1300,6 +1323,7 @@ window.importJSON=async event=>{
   const r=new FileReader();
   r.onload=async()=>{
     let safety=null, started=false, phase='Datei lesen und prüfen';
+    backupRestoreCurrentPhase=phase;
     try{
       const parsed=JSON.parse(r.result);
       validateBackup(parsed);
@@ -1308,27 +1332,33 @@ window.importJSON=async event=>{
       if(!ok){saveBackupDiagnostic({status:'Import abgebrochen',phase:'Bestätigung',message:'Der Import wurde vor Änderungen abgebrochen.'});return;}
 
       phase='Sicherheits-Backup erstellen';
+      setBackupRestorePhase(phase);
       showStatus('Sicherheits-Backup wird erstellt …');
       safety=await buildBackupSnapshot();
       downloadBackup(safety,'jugendmannschaft-sicherheitsbackup');
       started=true;
 
       phase='Backup-Daten schreiben';
+      setBackupRestorePhase(phase);
       showStatus('Backup wird wiederhergestellt …');
       const c=getClient();
       await replaceTeamDataWithBackup(c,parsed);
       phase='App-Daten neu laden';
+      setBackupRestorePhase(phase);
       await loadApp();
       saveBackupDiagnostic({status:'Letzter Import erfolgreich',phase,message:'Backup wurde wiederhergestellt und die App neu geladen.'});
       showStatus('Backup erfolgreich wiederhergestellt.','ok');
     }catch(e){
       console.error('Backup restore:',e);
-      const message=String(e?.message||e||'Unbekannter Fehler');
-      const code=e?.code?String(e.code):'';
-      const details=[e?.details,e?.hint].filter(Boolean).map(String).join(' | ');
+      const errorInfo=backupRestoreErrorInfo(e);
+      const message=errorInfo.message;
+      const code=errorInfo.code;
+      const details=[errorInfo.name?'Typ: '+errorInfo.name:'',errorInfo.details,backupRestoreCurrentPhase?'Letzter Arbeitsschritt: '+backupRestoreCurrentPhase:''].filter(Boolean).join(' | ');
+      phase=backupRestoreCurrentPhase||phase;
       if(started&&safety){
         try{
           phase='Sicherheits-Backup zurückspielen';
+          setBackupRestorePhase(phase);
           saveBackupDiagnostic({status:'Import fehlgeschlagen – Zurückspielen läuft',error:true,phase,message,code,details});
           showStatus('Fehler erkannt – ursprünglicher Datenstand wird wiederhergestellt …');
           await replaceTeamDataWithBackup(getClient(),safety);
@@ -1337,12 +1367,13 @@ window.importJSON=async event=>{
           showStatus('Wiederherstellung fehlgeschlagen. Der ursprüngliche Datenstand wurde automatisch zurückgespielt.','error');
         }catch(rollbackError){
           console.error('Backup rollback:',rollbackError);
-          const rollbackMessage=String(rollbackError?.message||rollbackError||'Unbekannter Fehler');
+          const rollbackInfo=backupRestoreErrorInfo(rollbackError);
+          const rollbackMessage=[rollbackInfo.name?'Typ: '+rollbackInfo.name:'',rollbackInfo.message,rollbackInfo.code?'Code: '+rollbackInfo.code:'',rollbackInfo.details].filter(Boolean).join(' | ');
           saveBackupDiagnostic({status:'KRITISCH: Import und Zurückspielen fehlgeschlagen',error:true,phase:'Sicherheits-Backup zurückspielen',message,code,details,rollback:rollbackMessage});
           showStatus('Wiederherstellung fehlgeschlagen. Auch das automatische Zurückspielen konnte nicht abgeschlossen werden. Das zuvor heruntergeladene Sicherheits-Backup ist verfügbar.','error');
         }
       }else{
-        saveBackupDiagnostic({status:'Import fehlgeschlagen',error:true,phase,message,code,details});
+        saveBackupDiagnostic({status:'Import fehlgeschlagen',error:true,phase:backupRestoreCurrentPhase||phase,message,code,details});
         showStatus('Backup konnte nicht wiederhergestellt werden: '+message,'error');
       }
     }finally{event.target.value='';}
