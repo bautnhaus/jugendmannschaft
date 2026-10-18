@@ -884,7 +884,7 @@ function renderTrainingOverview(){
 }
 function renderNextTrainingCard(t){const c=responseCounts(t);return `<button class="trainingNextCard" type="button" onclick="toggleTrainingOpen('${t.id}')"><div class="trainingCardTop"><div><strong>${trainingDateLabel(t)}</strong>${trainingCustomTitleHtml(t)}<div class="trainingCardTime">${esc(fmtTrainingTime(t)||'Uhrzeit noch offen')}</div></div><span class="trainingStatus planned">Geplant</span></div>${trainingInfoLines(t)}<div class="trainingResponseCard"><div class="trainingResponseHeader"><b>Rückmeldungen</b><span>${state.players.length} Spieler</span></div><div class="trainingResponseCounts"><div><strong class="yesText">${c.yes}</strong><span>Zusagen</span></div><div><strong class="noText">${c.no}</strong><span>Absagen</span></div><div><strong class="openText">${c.open}</strong><span>Offen</span></div></div></div><span class="trainingCardArrow">›</span></button>`;}
 function renderCompactTrainingCard(t){const c=responseCounts(t);return `<button class="trainingCompactCard" type="button" onclick="toggleTrainingOpen('${t.id}')"><div><strong>${trainingDateLabel(t)}</strong>${trainingCustomTitleHtml(t)}<div class="trainingCardTime">${esc(fmtTrainingTime(t)||'Uhrzeit offen')}</div>${t.location?`<div class="muted small">${materialIcon('location_on')} ${esc(t.location)}</div>`:''}</div><div class="trainingCompactSide"><span class="trainingStatus planned">Geplant</span><b class="yesText">${c.yes}/${state.players.length} Zusagen</b></div><span class="trainingCardArrow">›</span></button>`;}
-function renderPastTrainingCard(t){const present=state.players.filter(p=>t.attendance[p.id]).length;return `<button class="trainingCompactCard past" type="button" onclick="toggleTrainingOpen('${t.id}')"><div><strong>${trainingDateLabel(t)}</strong>${trainingCustomTitleHtml(t)}<div class="trainingCardTime">${esc(fmtTrainingTime(t)||'')}</div>${t.location?`<div class="muted small">${materialIcon('location_on')} ${esc(t.location)}</div>`:''}</div><div class="trainingCompactSide"><span class="trainingStatus done">Durchgeführt</span><b>${present}/${state.players.length} anwesend</b></div><span class="trainingCardArrow">›</span></button>`;}
+function renderPastTrainingCard(t){const present=state.players.filter(p=>t.attendance[p.id]).length;const statusClass=trainingStatusClass(t);const statusLabel=trainingStatusLabel(t);const pastHint=t.status==='planned'?'<div class="muted small">Termin liegt in der Vergangenheit</div>':'';return `<button class="trainingCompactCard past" type="button" onclick="toggleTrainingOpen('${t.id}')"><div><strong>${trainingDateLabel(t)}</strong>${trainingCustomTitleHtml(t)}<div class="trainingCardTime">${esc(fmtTrainingTime(t)||'')}</div>${t.location?`<div class="muted small">${materialIcon('location_on')} ${esc(t.location)}</div>`:''}${pastHint}</div><div class="trainingCompactSide"><span class="trainingStatus ${statusClass}">${statusLabel}</span><b>${present}/${state.players.length} anwesend</b></div><span class="trainingCardArrow">›</span></button>`;}
 function renderCancelledTrainingCard(t){return `<button class="trainingCompactCard cancelled" type="button" onclick="toggleTrainingOpen('${t.id}')"><div><strong>${trainingDateLabel(t)}</strong>${trainingCustomTitleHtml(t)}<div class="trainingCardTime">${esc(fmtTrainingTime(t)||'')}</div></div><div class="trainingCompactSide"><span class="trainingStatus cancelled">Abgesagt</span></div><span class="trainingCardArrow">›</span></button>`;}
 function renderTrainingDetail(t){
   const isResponses=trainingDetailMode==='responses';
@@ -1453,6 +1453,12 @@ try{
   }
 }catch(e){console.error(e);document.body.classList.remove('auth-checking');}
 </script>
+
+<style>
+/* DEV-Anpassung: Kaderempfehlung auf der Spielercard ist blau, nicht grün. */
+.playerCardHero .playerCardSquadIcon{background:#dbeafe!important;color:#1d4ed8!important}
+.playerCardHero .playerCardSquadIcon .material-symbols-outlined{color:#1d4ed8!important}
+</style>
 </body></html>
 
 <style>
