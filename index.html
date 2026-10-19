@@ -1810,3 +1810,83 @@ try{
 .matchdayDetail .matchdayTrainingPlayerList .trainingPlayerTags{display:flex;flex-direction:row;align-items:center;gap:4px;flex-wrap:wrap;margin-top:3px}
 .matchdayDetail .trainingPlayerTags .positionBadge{margin:0}
 @media(max-width:380px){.matchdayDetail .matchdayActionRow button,.matchdayDetail .matchdayBulkSelect button{font-size:11px;padding:7px 4px}.playerListRow.matchdaySquadTile{grid-template-columns:44px minmax(0,1fr) auto;gap:7px}}</style>
+
+<style>
+/* E09 Darkmode – Trainingsdetailansicht: gezielte Ergänzungen, Übersicht unverändert */
+@media (prefers-color-scheme: dark) {
+  .trainingDetail .trainingSummary,
+  .trainingDetail .trainingTeamAttendanceSummary {
+    background: var(--surface-2) !important;
+    color: var(--text) !important;
+    border-color: var(--line) !important;
+  }
+  .trainingDetail .trainingSummary > div { border-right-color: var(--line) !important; }
+  .trainingDetail .trainingSummary span,
+  .trainingDetail .trainingTeamAttendanceSummary span { color: var(--muted) !important; }
+  .trainingDetail .trainingSummary .yesText,
+  .trainingDetail .trainingAttendanceSummary .yesText { color: #4ade80 !important; }
+  .trainingDetail .trainingSummary .noText,
+  .trainingDetail .trainingAttendanceSummary .noText { color: #f87171 !important; }
+  .trainingDetail .trainingSummary .openText { color: #e2e8f0 !important; }
+
+  .trainingDetail .trainingTeamTabs {
+    background: var(--surface-2) !important;
+    border: 1px solid var(--line);
+  }
+  .trainingDetail .trainingTeamTab { color: var(--text-soft) !important; }
+  .trainingDetail .trainingTeamTab.active {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border-color: var(--accent) !important;
+  }
+  .trainingDetail .trainingTeamPanel {
+    background: var(--card) !important;
+    color: var(--text) !important;
+    border-color: var(--line) !important;
+  }
+  .trainingDetail .trainingGoalkeeperRow { border-bottom-color: var(--line) !important; }
+  .trainingDetail .trainingGoalkeeperLabel { color: var(--text) !important; }
+  .trainingDetail .trainingGoalkeeperLabel .material-symbols-outlined { color: #93c5fd !important; }
+  .trainingDetail .trainingTeamMoveSelect {
+    background: #1e3a5f !important;
+    border-color: #315781 !important;
+    color: #bfdbfe !important;
+  }
+
+  .trainingDetail .trainingStatusSelect.yes {
+    background: #123524 !important; border-color: #166534 !important; color: #86efac !important;
+  }
+  .trainingDetail .trainingStatusSelect.no {
+    background: #451a1a !important; border-color: #7f1d1d !important; color: #fca5a5 !important;
+  }
+  .trainingDetail .trainingStatusSelect.open {
+    background: var(--surface-2) !important; border-color: var(--line) !important; color: var(--text-soft) !important;
+  }
+  .trainingDetail .trainingBulkAction {
+    background: #1e3a5f !important; border-color: #315781 !important; color: #bfdbfe !important;
+  }
+  .trainingDetail .trainingBulkAction:disabled { opacity: .55; }
+
+  .trainingDetail .trainingNoteLine,
+  .trainingDetail .trainingTrainerRow { color: var(--muted) !important; }
+  .trainingDetail .trainingNoteLine .material-symbols-outlined:last-child { color: #93c5fd !important; }
+  .trainingDetail .trainingNoteFull {
+    background: var(--surface-2) !important; color: var(--text) !important; border-color: var(--line) !important;
+  }
+  .trainingDetail .trainingNoteFullLabel { color: var(--muted) !important; }
+  .trainingDetail .trainingNoteFullText,
+  .trainingDetail .trainingNoteText { color: var(--text) !important; }
+  .trainingDetail .trainingTrainerChip {
+    background: var(--surface-2) !important; border-color: var(--line) !important; color: var(--text-soft) !important;
+  }
+  .trainingDetail .trainingTrainerChip.mine {
+    background: #1e3a5f !important; border-color: #315781 !important; color: #bfdbfe !important;
+  }
+  .trainingDetail .trainingTrainerChip.trainerYes {
+    background: #123524 !important; border-color: #166534 !important; color: #86efac !important;
+  }
+  .trainingDetail .trainingTrainerChip.trainerNo {
+    background: #451a1a !important; border-color: #7f1d1d !important; color: #fca5a5 !important;
+  }
+}
+</style>
