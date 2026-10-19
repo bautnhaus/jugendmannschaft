@@ -478,6 +478,59 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
   }
   .playerListDonut:before { background:var(--card); }
   .playerListDonut span { color:var(--text) !important; }
+
+  /* E09 Darkmode – Trainingsübersicht und Trainingskarten: gezielte Kontrastkorrekturen */
+  .trainingOverviewTabs {
+    background:var(--surface-2);
+    border:1px solid var(--line);
+  }
+  .trainingOverviewTabs button:not(.active),
+  .trainingSegmented button:not(.active) {
+    color:var(--text-soft);
+  }
+  .trainingCardTop strong,
+  .trainingCompactCard strong {
+    color:#93c5fd;
+  }
+  .trainingCardName {
+    color:var(--text) !important;
+  }
+  .trainingInfoLine {
+    color:var(--muted);
+  }
+  .trainingNextCard .trainingResponseCounts span {
+    color:var(--text-soft) !important;
+  }
+  .trainingResponseCard {
+    background:var(--surface-2);
+    border-color:var(--line);
+  }
+  .trainingResponseCounts>div {
+    border-right-color:var(--line);
+  }
+  .trainingCompactCard.past {
+    background:#172033 !important;
+    border-color:#334155;
+  }
+  .trainingCompactCard.cancelled {
+    background:#1b2433 !important;
+    border-color:#475569;
+  }
+  .trainingStatus.planned {
+    background:#422006;
+    color:#fde68a;
+    border-color:#92400e;
+  }
+  .trainingStatus.done {
+    background:#123524;
+    color:#bbf7d0;
+    border-color:#166534;
+  }
+  .trainingStatus.cancelled {
+    background:#451a1a;
+    color:#fecaca;
+    border-color:#7f1d1d;
+  }
   .playerCardSection,
   .playerCardDetails,
   .playerCardStat {
