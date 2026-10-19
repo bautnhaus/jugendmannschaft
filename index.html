@@ -188,6 +188,42 @@ textarea{font:inherit;width:100%;border:1px solid #cbd5e1;border-radius:9px;padd
 .matchdayOptionsWrap{position:relative;flex:0 0 auto}.matchdayOptionsMenu{position:absolute;z-index:50;right:0;top:44px;min-width:170px;padding:5px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px #0f172a1f}.matchdayOptionsMenu button{display:flex;align-items:center;gap:8px;width:100%;border:0;background:#fff;text-align:left;padding:10px;border-radius:8px;min-height:40px}.matchdayOptionsMenu button:hover{background:#f8fafc}.matchdayOptionsMenu .dangerText{color:#dc2626}
 .matchdayTrainingPlayerList{margin-top:8px}.matchdayTrainingPlayerList .trainingPlayerRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #eef2f7;min-width:0}.matchdayTrainingPlayerList .trainingPlayerIdentity{min-width:0;flex:1}.matchdayTrainingPlayerList .trainingPlayerMeta{min-width:0}.matchdayTrainingPlayerList .matchdayAttendanceTags{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:3px}.matchdayTrainingPlayerList .trainingPlayerName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.matchdayRecommendedRow{background:#f0f7ff;border-radius:10px;padding:8px!important;margin:3px 0;border:1px solid #dbeafe}.matchdayRecommendationLabel{display:inline-block;font-size:11px;font-weight:700;color:#1d4ed8;background:#dbeafe;border-radius:999px;padding:2px 7px;margin-top:4px}.matchdayNominationControl{display:flex;align-items:center;gap:5px;flex:0 0 auto;font-size:12px;color:#475569;white-space:nowrap}.matchdayNominationControl input{width:20px;height:20px;min-height:20px;flex:0 0 auto}.matchdayPlayedToggle{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}.matchdayPlayedToggle button{min-height:32px;padding:5px 8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#475569;font-size:12px;white-space:nowrap}.matchdayPlayedToggle button.active.yes{background:#dcfce7;border-color:#86efac;color:#166534;font-weight:700}.matchdayPlayedToggle button.active.no{background:#fef2f2;border-color:#fecaca;color:#b91c1c;font-weight:700}.matchdayNoteLine.expanded .trainingNoteText{display:block!important;-webkit-line-clamp:unset!important;line-clamp:unset!important}.matchdayNoteLine.expanded .material-symbols-outlined:last-child{transform:rotate(180deg)}
 @media(max-width:600px){.matchdayTrainingPlayerList .trainingPlayerRow{gap:7px}.matchdayNominationControl{font-size:11px}.matchdayPlayedToggle button{font-size:11px;padding:5px 6px}.matchdayOptionsMenu{top:40px}}
+
+/* E09 Dashboard: mobile-first, nutzt die bestehenden Trainings- und Spieltagskarten. */
+.dashboardLegacyTabs{display:none!important}
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+.appBottomNav{position:fixed;z-index:50;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));background:var(--card,#fff);border-top:1px solid var(--line,#dbe2ea);box-shadow:0 -5px 18px rgba(15,23,42,.06)}
+.appBottomNav button{appearance:none;border:0;background:transparent;color:var(--muted,#64748b);border-radius:12px;min-width:0;min-height:50px;padding:4px 1px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:650;line-height:1.1}
+.appBottomNav button .material-symbols-outlined{font-size:22px;line-height:1}
+.appBottomNav button.active{color:#1d4ed8;background:#eff6ff}
+.appBottomNav button:focus-visible{outline:2px solid #2563eb;outline-offset:1px}
+.dashboardPage{padding-bottom:4px}
+.dashboardWelcome{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 2px 12px}
+.dashboardWelcome h2{font-size:22px;line-height:1.2;margin:0;font-weight:800;letter-spacing:-.35px}
+.dashboardWelcome p{margin:5px 0 0;font-size:13px;color:var(--muted,#64748b);line-height:1.35}
+.dashboardWelcomeIcon{width:40px;height:40px;flex:0 0 40px;border-radius:13px;display:flex;align-items:center;justify-content:center;color:#2563eb;background:#eff6ff;font-size:24px}
+.dashboardEvents{display:grid;gap:13px}
+.dashboardEventSection{min-width:0}
+.dashboardEventHeading{display:flex;align-items:center;gap:9px;margin:0 2px 7px}
+.dashboardEventIcon{width:34px;height:34px;flex:0 0 34px;display:flex;align-items:center;justify-content:center;border-radius:11px;background:#eff6ff;color:#2563eb}
+.dashboardEventIcon .material-symbols-outlined{font-size:21px}
+.dashboardEventHeading h3{font-size:16px;line-height:1.2;margin:0;font-weight:800}
+.dashboardEventEmpty{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 12px;border:1px solid var(--line,#dbe2ea);border-radius:14px;background:var(--card,#fff)}
+.dashboardEventEmpty p{margin:0;font-size:13px;line-height:1.4;color:var(--muted,#64748b)}
+.dashboardEventEmpty button{flex:0 0 auto;min-height:36px;padding:7px 10px;border:1px solid #bfdbfe;border-radius:10px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:750}
+.dashboardPage .trainingNextCard{width:100%;text-align:left;box-sizing:border-box}
+.dashboardPage .trainingNextCard:focus-visible,.dashboardEventEmpty button:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+@media(min-width:700px){.dashboardEvents{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:14px}.dashboardWelcome h2{font-size:24px}}
+@media(max-width:360px){.appBottomNav{padding-left:4px;padding-right:4px}.appBottomNav button{font-size:9px}.appBottomNav button .material-symbols-outlined{font-size:21px}.dashboardWelcome h2{font-size:20px}.dashboardEventEmpty{align-items:flex-start;flex-direction:column}.dashboardEventEmpty button{width:100%}}
+@media(prefers-color-scheme:dark){
+  .appBottomNav{background:#111827;border-top-color:#334155;box-shadow:0 -5px 18px rgba(0,0,0,.2)}
+  .appBottomNav button.active{color:#bfdbfe;background:#1e3a5f}
+  .dashboardWelcomeIcon,.dashboardEventIcon{color:#bfdbfe;background:#1e3a5f}
+  .dashboardEventEmpty{background:#111827;border-color:#334155}
+  .dashboardEventEmpty button{background:#1e3a5f;border-color:#315781;color:#bfdbfe}
+  .dashboardPage .trainingNextCard{background:#111827;color:#f1f5f9;border-color:#334155}
+  .dashboardPage .trainingNextCard .trainingResponseCard{background:#1f2937;border-color:#374151}
+}
 </style>
 <style>
 .iconAddButton{width:40px!important;min-width:40px!important;max-width:40px!important;height:40px!important;min-height:40px!important;max-height:40px!important;flex:0 0 40px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:10px!important;font-size:23px!important;line-height:1!important}
@@ -327,8 +363,12 @@ textarea{font:inherit;width:100%;border:1px solid #cbd5e1;border-radius:9px;padd
 <div id="appView" class="hidden">
 <header><h1>Jugendmannschaft</h1><small id="headerSub">Kader · Training · Spieltag</small></header>
 <main>
-  <div class="tabs"><button class="active" data-tab="players">Spieler</button><button data-tab="trainings">Training</button><button data-tab="matchday">Spieltag</button><button id="settingsTab" data-tab="settings">Einstellungen</button></div>
-  <section id="players" class="tab"><div class="card"><div class="toolbar"><h2 style="margin:0;flex:1">Spieler</h2><button class="primary iconAddButton" onclick="addPlayer()" aria-label="Spieler hinzufügen" title="Spieler hinzufügen">+</button></div><div class="statsGrid" style="margin-top:10px"><div><div class="muted">Spieler</div><div id="playerCount" class="stat">0</div></div><div><div class="muted">Trainings</div><div id="trainingCount" class="stat">0</div></div><div><div class="muted">Kader</div><div id="squadCount" class="stat">0</div></div></div></div><div class="card"><div id="playerTable"></div></div></section>
+  <div class="tabs dashboardLegacyTabs"><button data-tab="dashboard">Dashboard</button><button data-tab="players">Spieler</button><button data-tab="trainings">Training</button><button data-tab="matchday">Spieltag</button><button id="settingsTab" data-tab="settings">Einstellungen</button></div>
+  <section id="dashboard" class="tab dashboardPage">
+    <div class="dashboardWelcome"><div><h2 id="dashboardGreeting">Hallo, Trainer!</h2><p id="dashboardTeamSeason">Deine Mannschaft im Überblick</p></div><span class="dashboardWelcomeIcon material-symbols-outlined" aria-hidden="true">waving_hand</span></div>
+    <div id="dashboardEvents" class="dashboardEvents"></div>
+  </section>
+  <section id="players" class="tab hidden"><div class="card"><div class="toolbar"><h2 style="margin:0;flex:1">Spieler</h2><button class="primary iconAddButton" onclick="addPlayer()" aria-label="Spieler hinzufügen" title="Spieler hinzufügen">+</button></div><div class="statsGrid" style="margin-top:10px"><div><div class="muted">Spieler</div><div id="playerCount" class="stat">0</div></div><div><div class="muted">Trainings</div><div id="trainingCount" class="stat">0</div></div><div><div class="muted">Kader</div><div id="squadCount" class="stat">0</div></div></div></div><div class="card"><div id="playerTable"></div></div></section>
   <section id="trainings" class="tab hidden"><div class="card trainingPageCard"><div class="toolbar trainingPageHeader"><h2 style="margin:0;flex:1">Trainings</h2><button class="primary iconAddButton" onclick="addTraining()" aria-label="Training hinzufügen" title="Training hinzufügen">+</button></div><div id="trainingList"></div></div></section>
   <section id="matchday" class="tab hidden"><div class="card trainingPageCard"><div class="toolbar trainingPageHeader"><h2 style="margin:0;flex:1">Spieltage</h2><button class="primary iconAddButton" onclick="addMatchday()" aria-label="Spieltag anlegen" title="Spieltag anlegen">+</button></div><div id="matchdayList"></div></div></section>
   <section id="settings" class="tab hidden">
@@ -345,7 +385,14 @@ textarea{font:inherit;width:100%;border:1px solid #cbd5e1;border-radius:9px;padd
     <div class="card" id="backupDiagnosticCard"><h3>Backup-Diagnose</h3><p class="muted small">Diese Anzeige bleibt auch ohne Fehler sichtbar. Sie zeigt den letzten Status eines Backup-Imports auf diesem Gerät.</p><div id="backupDiagnosticStatus" role="status" class="notice small">Diagnose aktiv – bisher wurde kein Importversuch protokolliert.</div><div id="backupDiagnosticDetails" class="small muted" style="margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere">Noch keine Fehlerdetails vorhanden.</div><div class="toolbar" style="margin-top:10px"><button type="button" onclick="clearBackupDiagnostic()">Diagnose zurücksetzen</button></div></div>
   </div>
 </section>
-</main></div>
+</main>
+<nav class="appBottomNav" aria-label="Hauptnavigation">
+  <button type="button" data-tab="dashboard" class="active"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></button>
+  <button type="button" data-tab="players"><span class="material-symbols-outlined">groups</span><span>Spieler</span></button>
+  <button type="button" data-tab="trainings"><span class="material-symbols-outlined">calendar_month</span><span>Training</span></button>
+  <button type="button" data-tab="matchday"><span class="material-symbols-outlined">emoji_events</span><span>Spieltag</span></button>
+  <button type="button" data-tab="settings" id="bottomSettingsTab"><span class="material-symbols-outlined" id="bottomSettingsIcon">person</span><span id="bottomSettingsLabel">Mein Konto</span></button>
+</nav></div>
 <div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox" id="modalContent"></div></div><div id="photoSheet" class="photoSheetBackdrop" onclick="if(event.target===this)closePhotoSheet()"></div><div id="status" class="status"></div>
 
 <script type="module">
@@ -356,7 +403,7 @@ const DEFAULT_POSITIONS=['Torwart','Abwehr','Mittelfeld','Sturm','Trainer'];
 const LEVELS=['Einsteiger','Fortgeschritten','Stark','Profi'];
 const LEVEL_LABELS={Einsteiger:'Einsteiger',Fortgeschritten:'Fortgeschritten',Stark:'Stark',Profi:'Profi'};
 const LEVEL_STARS={Einsteiger:1,Fortgeschritten:2,Stark:3,Profi:4};
-const POSITION_ICONS={Torwart:'sports_handball',Abwehr:'shield',Mittelfeld:'groups',Sturm:'sports_soccer'};
+const POSITION_ICONS={Torwart:'front_hand',Abwehr:'shield',Mittelfeld:'groups',Sturm:'sports_soccer'};
 const PREFERRED_FOOT_ICONS={links:'barefoot',rechts:'barefoot',beidfüßig:'all_inclusive'};
 const POSITION_ORDER=['Torwart','Abwehr','Mittelfeld','Sturm'];
 let playerSort={key:'lastName',dir:'asc'};
@@ -500,7 +547,7 @@ async function loadApp(){
   currentMatchdayId=null;matchdaySelection=new Set();
   if($('recommendedSquadSizeInput'))$('recommendedSquadSizeInput').value=String(recommendedSquadSize);
   $('headerSub').textContent=(teamRow?.name||'Jugendmannschaft')+(season?' · Saison '+season.name:'')+' · '+(role==='admin'?'Admin':'Trainer');
-  $('accountInfo').textContent=currentUser?.email?`Angemeldet als ${currentUser.email} · Rolle: ${role}`:'';if($('accountEmail'))$('accountEmail').value=currentUser?.email||'';if($('settingsMainHeading'))$('settingsMainHeading').textContent=role==='admin'?'Einstellungen':'Mein Konto';if($('settingsTab'))$('settingsTab').textContent=role==='admin'?'Einstellungen':'Mein Konto';if($('settingsMainSub'))$('settingsMainSub').textContent=role==='admin'?'Mannschaft und App verwalten.':'Verwalte hier deinen Zugang zur Mannschafts-App.';
+  $('accountInfo').textContent=currentUser?.email?`Angemeldet als ${currentUser.email} · Rolle: ${role}`:'';if($('accountEmail'))$('accountEmail').value=currentUser?.email||'';if($('settingsMainHeading'))$('settingsMainHeading').textContent=role==='admin'?'Einstellungen':'Mein Konto';if($('settingsTab'))$('settingsTab').textContent=role==='admin'?'Einstellungen':'Mein Konto';if($('settingsMainSub'))$('settingsMainSub').textContent=role==='admin'?'Mannschaft und App verwalten.':'Verwalte hier deinen Zugang zur Mannschafts-App.';if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent=role==='admin'?'Einstellungen':'Mein Konto';if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent=role==='admin'?'settings':'person';
   document.querySelectorAll('.adminOnly').forEach(x=>x.classList.toggle('hidden',role!=='admin'));
   $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');renderAll();
 }
@@ -1075,7 +1122,7 @@ function renderCompactMatchdayCard(m){const selectedCount=(m.selected||[]).lengt
 function renderPastMatchdayCard(m){const selectedCount=(m.selected||[]).length;const status=matchdayCardStatus(m);return `<button class="trainingCompactCard past" type="button" onclick="openMatchday('${m.id}')"><div><strong>${esc(fmtDateLong(m.date))}</strong>${m.name?`<div class="trainingCardName">${esc(m.name)}</div>`:''}<div class="trainingCardTime">${esc(fmtMatchdayTime(m)||'')}</div>${matchdayInfoLines(m)}</div><div class="trainingCompactSide"><span class="trainingStatus ${status.cls}">${status.label}</span><b>${selectedCount} nominiert</b></div><span class="trainingCardArrow">›</span></button>`;}
 function renderCancelledMatchdayCard(m){return `<button class="trainingCompactCard cancelled" type="button" onclick="openMatchday('${m.id}')"><div><strong>${esc(fmtDateLong(m.date))}</strong>${m.name?`<div class="trainingCardName">${esc(m.name)}</div>`:''}<div class="trainingCardTime">${esc(fmtMatchdayTime(m)||'')}</div>${matchdayInfoLines(m)}</div><div class="trainingCompactSide"><span class="trainingStatus cancelled">Abgesagt</span></div><span class="trainingCardArrow">›</span></button>`;}
 function matchdayCardStatus(m){if(matchdayIsCancelled(m))return {cls:'cancelled',label:'Abgesagt'};if(m.status==='done')return {cls:'done',label:'Durchgeführt'};if(m.status==='planned')return {cls:'planned',label:'Geplant'};if(!matchdayIsUpcoming(m))return {cls:'done',label:'Vergangen'};return {cls:'planned',label:'Geplant'};}
-function matchdayInfoLines(m){return `${m.opponent?`<div class="trainingInfoLine">${materialIcon('sports_soccer')}<span>${esc(m.opponent)}</span></div>`:''}${m.gameType?`<div class="trainingInfoLine">${materialIcon('emoji_events')}<span>${esc(m.gameType)}</span></div>`:''}${m.location?`<div class="trainingInfoLine">${materialIcon('location_on')}<span>${esc(m.location)}</span></div>`:''}`;}
+function matchdayInfoLines(m){return `${m.opponent?`<div class="trainingInfoLine">${materialIcon('shield_with_heart')}<span>${esc(m.opponent)}</span></div>`:''}${m.gameType?`<div class="trainingInfoLine">${materialIcon('emoji_events')}<span>${esc(m.gameType)}</span></div>`:''}${m.location?`<div class="trainingInfoLine">${materialIcon('location_on')}<span>${esc(m.location)}</span></div>`:''}`;}
 
 function renderMatchdayTeams(md){
   const teams=sortTeamsForDisplay(teamArrayFromSaved(md));
@@ -1120,7 +1167,7 @@ function renderTeamsHtml(teams,moveFn,kind){
     const teamNo=idx+1;
     const currentGK=(kind==='matchday'?md?.goalkeepers?.[teamNo]:tr?.goalkeepers?.[teamNo])||'';
     const gkOptions=(kind==='matchday'||kind==='training')?`<label class="small muted" style="display:block;margin-top:8px">Torwart<select style="margin-top:4px;min-height:38px" onchange="${kind==='matchday'?'setMatchdayGoalkeeper':'setTrainingGoalkeeper'}(${teamNo},this.value)"><option value="">— auswählen —</option>${[...t].sort((a,b)=>(hasGK(b)?1:0)-(hasGK(a)?1:0)||displayName(a).localeCompare(displayName(b),'de')).map(p=>`<option value="${p.id}" ${currentGK===p.id?'selected':''}>${esc(displayName(p))}</option>`).join('')}</select></label>`:'';
-    return `<div class="matchdayTeam"><div class="matchdayTeamHeader"><div><div class="matchdayTeamTitle">Team ${teamNo} <span class="muted small">· ${t.length} Spieler</span></div><div class="matchdayLevels">${counts||'<span class="matchdayLevelCount">keine Levelangaben</span>'}</div>${gkOptions}</div><div class="matchdayTeamScore">${score} Pkt.</div></div>${t.map(p=>{const pos=orderedPositions(p.positions||[]).map(x=>{const pr=state.positionRows.find(r=>r.name===x);const bg=pr?.color||'#e2e8f0';return `<span class="positionBadge" style="background:${esc(bg)}">${esc(x)}</span>`}).join('');const moves=teams.map((_,target)=>target!==idx?`<button type="button" onclick="${moveFn}('${p.id}',${teamNo},${target+1})">→ Team ${target+1}</button>`:'').join('');const isGK=(kind==='matchday'?md?.goalkeepers?.[teamNo]:tr?.goalkeepers?.[teamNo])===p.id;return `<div class="matchdayPlayer"><div class="matchdayPlayerMain"><div class="matchdayPlayerName" title="${esc(displayName(p))}">${esc(displayName(p))}</div>${pos?`<div class="matchdayPositions">${pos}</div>`:''}<div class="matchdayMoves">${moves}</div></div><div class="matchdayPlayerSide">${isGK?'<span class="badge strong">🥅 Torwart</span>':''}${levelBadge(p.level)}</div></div>`}).join('')}</div>`;
+    return `<div class="matchdayTeam"><div class="matchdayTeamHeader"><div><div class="matchdayTeamTitle">Team ${teamNo} <span class="muted small">· ${t.length} Spieler</span></div><div class="matchdayLevels">${counts||'<span class="matchdayLevelCount">keine Levelangaben</span>'}</div>${gkOptions}</div><div class="matchdayTeamScore">${score} Pkt.</div></div>${t.map(p=>{const pos=orderedPositions(p.positions||[]).map(x=>{const pr=state.positionRows.find(r=>r.name===x);const bg=pr?.color||'#e2e8f0';return `<span class="positionBadge" style="background:${esc(bg)}">${esc(x)}</span>`}).join('');const moves=teams.map((_,target)=>target!==idx?`<button type="button" onclick="${moveFn}('${p.id}',${teamNo},${target+1})">→ Team ${target+1}</button>`:'').join('');const isGK=(kind==='matchday'?md?.goalkeepers?.[teamNo]:tr?.goalkeepers?.[teamNo])===p.id;return `<div class="matchdayPlayer"><div class="matchdayPlayerMain"><div class="matchdayPlayerName" title="${esc(displayName(p))}">${esc(displayName(p))}</div>${pos?`<div class="matchdayPositions">${pos}</div>`:''}<div class="matchdayMoves">${moves}</div></div><div class="matchdayPlayerSide">${isGK?`<span class="trainingGoalkeeperBadge" title="Torwart" aria-label="Torwart">${materialIcon('front_hand')}</span>`:''}${levelBadge(p.level)}</div></div>`}).join('')}</div>`;
   }).join('')}</div>`;
 }
 window.setTrainingGoalkeeper=async(teamNo,playerId)=>{const t=state.trainings.find(x=>x.id===trainingOpenId);if(!t)return;try{await dbDelete('training_players',{training_id:t.id,team_number:teamNo});const ids=t.teams?.[teamNo]||[];const rows=ids.map(pid=>({training_id:t.id,player_id:pid,team_number:teamNo,goalkeeper:pid===playerId}));if(rows.length){const {error}=await getClient().from('training_players').insert(rows);if(error)throw error;}t.goalkeepers=t.goalkeepers||{};if(playerId)t.goalkeepers[teamNo]=playerId;else delete t.goalkeepers[teamNo];renderTrainings();showStatus(playerId?'Torwart gespeichert.':'Torwartauswahl entfernt.','ok');}catch(e){showStatus('Torwart konnte nicht gespeichert werden: '+(e.message||e),'error');}};
@@ -1384,9 +1431,14 @@ window.importJSON=async event=>{
   r.readAsText(file);
 };
 
-window.showTab=id=>{if(playerEventReturn&&!((id==='trainings'&&playerEventReturn.type==='training')||(id==='matchday'&&playerEventReturn.type==='matchday')))playerEventReturn=null;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==id));document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));if(id==='players')renderPlayers();if(id==='trainings')renderTrainings();if(id==='matchday')renderMatchday();if(id==='settings'){renderPositionSettings();renderTrainerList();renderBackupDiagnostic();}};
-document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
-function renderAll(){$('playerCount').textContent=state.players.length;$('trainingCount').textContent=state.trainings.length;$('squadCount').textContent=Math.min(recommendedSquadSize,top16Ranking().length);renderPlayers();renderTrainings();renderPositionSettings();renderTrainerList();renderMatchday();}
+function dashboardGreeting(){const me=state.trainers.find(x=>x.user_id===currentUser?.id);const label=String(me?.admin_label||'').trim();if(label){const first=label.split(/\s+/)[0];return 'Hallo, '+first+'!';}return 'Hallo, Trainer!';}
+function dashboardTrainingStart(t){return new Date(`${t.date}T${fmtTime(t.startTime)||'23:59'}:00`);}
+function dashboardNextTraining(){const now=new Date();return state.trainings.filter(t=>t.status==='planned'&&dashboardTrainingStart(t)>=now).sort((a,b)=>dashboardTrainingStart(a)-dashboardTrainingStart(b))[0]||null;}
+function dashboardNextMatchday(){return state.matchdays.filter(m=>matchdayIsUpcoming(m)).sort((a,b)=>{const da=new Date(`${a.date}T${fmtTime(a.kickoffTime)||'23:59'}:00`),db=new Date(`${b.date}T${fmtTime(b.kickoffTime)||'23:59'}:00`);return da-db;})[0]||null;}
+function renderDashboard(){const greeting=$('dashboardGreeting'),teamSeason=$('dashboardTeamSeason'),events=$('dashboardEvents');if(!greeting||!teamSeason||!events)return;greeting.textContent=dashboardGreeting();const teamName=$('headerSub')?.textContent||'Deine Mannschaft';teamSeason.textContent=teamName.replace(/ · (Admin|Trainer)$/,'');const training=dashboardNextTraining(),matchday=dashboardNextMatchday();const trainingHtml=training?renderNextTrainingCard(training):`<div class="dashboardEventEmpty"><p>Kein kommendes Training geplant.</p><button type="button" onclick="showTab('trainings')">Trainings öffnen</button></div>`;const matchdayHtml=matchday?renderNextMatchdayCard(matchday):`<div class="dashboardEventEmpty"><p>Kein kommender Spieltag geplant.</p><button type="button" onclick="showTab('matchday')">Spieltage öffnen</button></div>`;events.innerHTML=`<section class="dashboardEventSection"><div class="dashboardEventHeading"><span class="dashboardEventIcon">${materialIcon(training?'event_available':'calendar_add_on')}</span><h3>Nächstes Training</h3></div>${trainingHtml}</section><section class="dashboardEventSection"><div class="dashboardEventHeading"><span class="dashboardEventIcon">${materialIcon(matchday?'emoji_events':'calendar_add_on')}</span><h3>Nächster Spieltag</h3></div>${matchdayHtml}</section>`;}
+window.showTab=id=>{if(playerEventReturn&&!((id==='trainings'&&playerEventReturn.type==='training')||(id==='matchday'&&playerEventReturn.type==='matchday')))playerEventReturn=null;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==id));document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));if(id==='dashboard')renderDashboard();if(id==='players')renderPlayers();if(id==='trainings')renderTrainings();if(id==='matchday')renderMatchday();if(id==='settings'){renderPositionSettings();renderTrainerList();renderBackupDiagnostic();}};
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function renderAll(){$('playerCount').textContent=state.players.length;$('trainingCount').textContent=state.trainings.length;$('squadCount').textContent=Math.min(recommendedSquadSize,top16Ranking().length);renderPlayers();renderTrainings();renderPositionSettings();renderTrainerList();renderMatchday();renderDashboard();}
 
 function isInvitationLink(){
   const hash=window.location.hash||'';
