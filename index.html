@@ -582,6 +582,41 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 }
 
 </style>
+
+<style id="training-detail-darkmode-final-adjustments">
+/* E09: Detailansicht – Angleichung an die bereits korrigierte Spielerliste.
+   Nur Darkmode; keine Änderung an Übersicht, JavaScript oder Datenlogik. */
+@media (prefers-color-scheme: dark) {
+  .trainingDetail .matchdayOptionsMenu {
+    background: var(--card) !important; color: var(--text) !important;
+    border-color: var(--line) !important; box-shadow: 0 12px 30px rgba(0,0,0,.4);
+  }
+  .trainingDetail .matchdayOptionsMenu button {
+    background: var(--card) !important; color: var(--text) !important;
+    border-color: var(--line) !important;
+  }
+  .trainingDetail .matchdayOptionsMenu button .material-symbols-outlined { color: var(--muted) !important; }
+  .trainingDetail .matchdayOptionsMenu button.dangerText,
+  .trainingDetail .matchdayOptionsMenu button.dangerText .material-symbols-outlined { color: #f87171 !important; }
+  .trainingDetail .trainingFilterChip {
+    background: var(--surface-2) !important; color: var(--text) !important;
+    border-color: var(--line) !important;
+  }
+  .trainingDetail .trainingFilterChip.active {
+    background: var(--accent) !important; color: #f8fafc !important;
+    border-color: var(--accent) !important; box-shadow: 0 0 0 1px #60a5fa inset;
+  }
+  .trainingDetail .trainingPosition,
+  .trainingDetail .trainingPlayerTags .positionBadge,
+  .trainingDetail .matchdayPositions .positionBadge {
+    background: #263449 !important; color: #e2e8f0 !important;
+    border: 1px solid #475569 !important;
+  }
+  .trainingDetail .trainingPlayerTags .badge.goalkeeperBadge {
+    background: #172554 !important; color: #bfdbfe !important; border-color: #315781 !important;
+  }
+}
+</style>
 </head>
 <body>
 <div id="loginView">
