@@ -1823,6 +1823,62 @@ try{
 .playerCardHero .playerCardSquadIcon{background:#dbeafe!important;color:#1d4ed8!important}
 .playerCardHero .playerCardSquadIcon .material-symbols-outlined{color:#1d4ed8!important}
 </style>
+
+
+<style>
+/* E09 Spieltag-Darkmode: Empfehlung und tatsächliche Kaderauswahl klar trennen.
+   Nur Darstellung; keine Änderung an Nominierungs- oder Einsatzlogik. */
+@media (prefers-color-scheme: dark) {
+  /* Empfehlung: blaue Darstellung wie die Empfehlung in der Spielerliste. */
+  .playerListRow.matchdaySquadTile.isRecommended:not(.isNominated) {
+    background: #14243a !important;
+    border: 2px solid #60a5fa !important;
+    color: #f1f5f9 !important;
+  }
+  .playerListRow.matchdaySquadTile.isRecommended:not(.isNominated) .playerName,
+  .playerListRow.matchdaySquadTile.isRecommended:not(.isNominated) .playerListName,
+  .playerListRow.matchdaySquadTile.isRecommended:not(.isNominated) .playerCardName,
+  .playerListRow.matchdaySquadTile.isRecommended:not(.isNominated) .playerLevel,
+  .playerListRow.matchdaySquadTile.isRecommended:not(.isNominated) .muted {
+    color: #e2e8f0 !important;
+  }
+  .playerListRow.matchdaySquadTile.isRecommended:not(.isNominated) .positionBadge {
+    background: #27384e !important; border-color: #475569 !important; color: #e2e8f0 !important;
+  }
+  /* Nominierung: dunkelgrüne Fläche mit gut lesbarem Text und grünem Kader-Badge. */
+  .playerListRow.matchdaySquadTile.isNominated,
+  .playerListRow.matchdaySquadTile.isRecommended.isNominated {
+    background: #102f24 !important;
+    border: 2px solid #6ee7a0 !important;
+    color: #f1f5f9 !important;
+  }
+  .playerListRow.matchdaySquadTile.isNominated .playerName,
+  .playerListRow.matchdaySquadTile.isNominated .playerListName,
+  .playerListRow.matchdaySquadTile.isNominated .playerCardName,
+  .playerListRow.matchdaySquadTile.isNominated .playerLevel,
+  .playerListRow.matchdaySquadTile.isNominated .muted {
+    color: #e2e8f0 !important;
+  }
+  .playerListRow.matchdaySquadTile.isNominated .positionBadge {
+    background: #27384e !important; border-color: #475569 !important; color: #e2e8f0 !important;
+  }
+  .matchdaySquadTile .playerCardSquadIcon {
+    background: #123524 !important; border-color: #28533d !important; color: #86efac !important;
+  }
+  .matchdaySquadTile .playerCardSquadIcon .material-symbols-outlined { color: #86efac !important; }
+  .matchdaySquadTile .matchdayNominationBadge {
+    background: #14532d !important; color: #bbf7d0 !important; border-color: #166534 !important;
+  }
+  /* Bulk-Aktionen: keine hellen Flächen im Darkmode. */
+  .matchdayDetail .matchdayActionRow button.primary,
+  .matchdayDetail .matchdayBulkSelect button.primary {
+    background: #1e3a5f !important; border: 1px solid #315781 !important; color: #bfdbfe !important;
+  }
+  .matchdayDetail .matchdayActionRow button.primary .material-symbols-outlined,
+  .matchdayDetail .matchdayBulkSelect button.primary .material-symbols-outlined { color: #bfdbfe !important; }
+}
+</style>
+
 </body></html>
 
 <style>
