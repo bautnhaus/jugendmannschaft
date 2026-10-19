@@ -1923,5 +1923,57 @@ try{
   .trainingDetail .trainingTrainerChip.trainerNo {
     background: #451a1a !important; border-color: #7f1d1d !important; color: #fca5a5 !important;
   }
+
+  /* E09 Darkmode – Filter und Segmentsteuerung der Trainingsdetailansicht */
+  .trainingDetail .trainingFilterChips {
+    background: transparent !important;
+    border-color: var(--line) !important;
+  }
+  .trainingDetail .trainingFilterChip {
+    background: var(--surface-2) !important;
+    border-color: var(--line) !important;
+    color: var(--text-soft) !important;
+    box-shadow: none !important;
+  }
+  .trainingDetail .trainingFilterChip.active {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: #fff !important;
+    box-shadow: 0 1px 2px #0004 !important;
+  }
+  .trainingDetail .trainingSegmented {
+    background: var(--surface-2) !important;
+    border: 1px solid var(--line) !important;
+  }
+  .trainingDetail .trainingSegmented > button {
+    background: transparent !important;
+    color: var(--text-soft) !important;
+    border-color: transparent !important;
+  }
+  .trainingDetail .trainingSegmented > button.active {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border-color: var(--accent) !important;
+  }
+  .trainingDetail .playerSearchWrap,
+  .trainingDetail .playerSortWrap {
+    background: var(--card) !important;
+    border-color: var(--line) !important;
+    color: var(--text) !important;
+  }
+  .trainingDetail .playerSearchWrap input,
+  .trainingDetail .playerSortWrap select {
+    background: var(--card) !important;
+    color: var(--text) !important;
+    border-color: var(--line) !important;
+  }
+  .trainingDetail .playerSearchWrap input::placeholder { color: var(--muted) !important; }
+  .trainingDetail .trainingPlayerList { border-top-color: var(--line) !important; }
+  .trainingDetail .trainingPlayerRow { border-bottom-color: var(--line) !important; }
+  .trainingDetail .trainingPlayerTags .positionBadge {
+    background: var(--surface-2) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--text-soft) !important;
+  }
 }
 </style>
