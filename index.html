@@ -617,6 +617,32 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
   }
 }
 </style>
+
+<style id="dev-training-forms-navigation-fix">
+/* DEV-Korrektur: Serien-Toggle im Darkmode und Formulare über der fixierten Navigation */
+@media (prefers-color-scheme: dark) {
+  .trainingSeriesToggle { background:#1e293b !important; border-color:#475569 !important; color:#f1f5f9 !important; }
+  .trainingSeriesToggle .trainingSeriesToggleText { color:#f1f5f9 !important; }
+  .trainingSeriesToggle .trainingSeriesToggleText small { color:#cbd5e1 !important; }
+  .trainingSeriesToggle .seriesSwitch span { background:#475569; }
+  .trainingSeriesToggle .seriesSwitch input:checked + span { background:#3b82f6; }
+  .trainingSeriesToggle .seriesSwitch span:before { background:#f8fafc; }
+}
+/* Modals/Formulare müssen über der fixierten unteren Navigation liegen. */
+.modal { z-index:70 !important; }
+.modal.show { align-items:flex-end; }
+.modalbox {
+  max-height:calc(100vh - 12px);
+  max-height:calc(100dvh - 12px);
+  padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
+  overscroll-behavior-y:contain;
+  scroll-padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
+}
+/* Zusätzlicher Scrollraum für Inline-Formulare und Seiteninhalte hinter der Navigation. */
+body { padding-bottom:calc(112px + env(safe-area-inset-bottom, 0px)) !important; }
+main { padding-bottom:calc(28px + env(safe-area-inset-bottom, 0px)); }
+.modalbox .toolbar:last-child { padding-bottom:4px; }
+</style>
 </head>
 <body>
 <div id="loginView">
