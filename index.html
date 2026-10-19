@@ -2059,3 +2059,48 @@ try{
   }
 }
 </style>
+
+
+<style>
+/* E09 DEV v2: Kaderauswahl kontrastreich; Empfehlung bleibt blau.
+   Ausschließlich Darstellung im Darkmode, keine Änderung der Auswahl-Logik. */
+@media (prefers-color-scheme: dark) {
+  .playerListRow.matchdaySquadTile.isNominated,
+  .playerListRow.matchdaySquadTile.isRecommended.isNominated {
+    background: #102f24 !important;
+    border: 2px solid #6ee7a0 !important;
+    color: #f1f5f9 !important;
+  }
+  .playerListRow.matchdaySquadTile.isNominated .playerName,
+  .playerListRow.matchdaySquadTile.isNominated .playerListName,
+  .playerListRow.matchdaySquadTile.isNominated .playerCardName,
+  .playerListRow.matchdaySquadTile.isNominated .playerLevel,
+  .playerListRow.matchdaySquadTile.isNominated .playerListLevel,
+  .playerListRow.matchdaySquadTile.isNominated .muted,
+  .playerListRow.matchdaySquadTile.isRecommended.isNominated .playerName,
+  .playerListRow.matchdaySquadTile.isRecommended.isNominated .playerListName,
+  .playerListRow.matchdaySquadTile.isRecommended.isNominated .playerCardName,
+  .playerListRow.matchdaySquadTile.isRecommended.isNominated .playerLevel,
+  .playerListRow.matchdaySquadTile.isRecommended.isNominated .playerListLevel,
+  .playerListRow.matchdaySquadTile.isRecommended.isNominated .muted {
+    color: #e2e8f0 !important;
+  }
+  .playerListRow.matchdaySquadTile.isNominated .positionBadge,
+  .playerListRow.matchdaySquadTile.isRecommended.isNominated .positionBadge {
+    background: #27384e !important;
+    border-color: #475569 !important;
+    color: #e2e8f0 !important;
+  }
+  .matchdaySquadTile .playerCardSquadIcon {
+    background: #123524 !important;
+    border-color: #28533d !important;
+    color: #86efac !important;
+  }
+  .matchdaySquadTile .playerCardSquadIcon .material-symbols-outlined { color: #86efac !important; }
+  .matchdaySquadTile .matchdayNominationBadge {
+    background: #14532d !important;
+    color: #bbf7d0 !important;
+    border-color: #166534 !important;
+  }
+}
+</style>
