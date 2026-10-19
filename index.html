@@ -439,6 +439,86 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
   .choiceButton.active { background:#1e3a5f; color:#dbeafe; border-color:#60a5fa; }
   .choiceButton .choiceCheck { background:#3b82f6; color:#fff; }
   .playerCardNotesTile,.trainingNoteFull { background:var(--surface-2); color:var(--text); border-color:var(--line); }
+
+  /* E09 Darkmode – Schritt 1: Spielerliste und Spielercard */
+  .playerListRow,
+  .playerListRow.isRecommended {
+    background:var(--card) !important;
+    color:var(--text) !important;
+    border-color:var(--line) !important;
+  }
+  .playerListRow.isRecommended {
+    border:2px solid #60a5fa !important;
+  }
+  .playerListName,
+  .playerListLevel,
+  .playerCardName,
+  .playerCardIdentity,
+  .playerCardPosition,
+  .playerCardPosition span:not(.material-symbols-outlined),
+  .playerCardStatValue,
+  .playerCardTileTitle,
+  .playerCardTileMetric strong {
+    color:var(--text);
+  }
+  .playerListPosition {
+    background:var(--surface-2) !important;
+    color:var(--text-soft) !important;
+    border-color:var(--line) !important;
+  }
+  .playerListNoPosition,
+  .playerListTrainingLabel,
+  .playerListFooter,
+  .playerCardMeta,
+  .playerCardStatLabel,
+  .playerCardTileCaption,
+  .playerCardTileMetric span,
+  .playerCardDonutTotal {
+    color:var(--muted) !important;
+  }
+  .playerListDonut:before { background:var(--card); }
+  .playerListDonut span { color:var(--text) !important; }
+  .playerCardSection,
+  .playerCardDetails,
+  .playerCardStat {
+    background:var(--surface-2) !important;
+    color:var(--text) !important;
+    border-color:var(--line) !important;
+  }
+  .playerCardPosition {
+    background:var(--surface-2) !important;
+    border-color:var(--line) !important;
+  }
+  .playerCardTile.training {
+    --tile-bg:#14291f;
+    --tile-border:#28533d;
+    --tile-main:#4ade80;
+    --tile-track:#244b37;
+    background:var(--tile-bg);
+    border-color:var(--tile-border);
+    color:var(--text);
+  }
+  .playerCardTile.matchday {
+    --tile-bg:#14243a;
+    --tile-border:#294b75;
+    --tile-main:#60a5fa;
+    --tile-track:#263f5e;
+    background:var(--tile-bg);
+    border-color:var(--tile-border);
+    color:var(--text);
+  }
+  .playerCardDonut:before { background:var(--tile-bg); }
+  .playerCardDonutInner,
+  .playerCardDonutValue,
+  .playerCardTilePercent,
+  .playerCardTileMetric strong { color:var(--text) !important; }
+  .playerCardTileIcon { background:var(--surface-3) !important; color:var(--tile-main) !important; }
+  .playerCardSquadIcon {
+    background:#123524 !important;
+    border-color:var(--card) !important;
+    color:#86efac !important;
+  }
+  .playerCardSquadIcon .material-symbols-outlined { color:#86efac !important; }
   a { color:#93c5fd; }
   :focus-visible { outline-color:#60a5fa; }
 }
