@@ -335,6 +335,115 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .matchdayDetail{padding-top:2px}.matchdayDetail .trainingDetailHeader{margin-bottom:4px}.matchdayDetail .trainingDetailTitle h2{font-size:20px;line-height:1.2}.matchdayDetail .trainingDetailInfo{padding-top:6px}.matchdayDetailTabs{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:2px!important;margin:12px 0 12px!important}.matchdayDetailTabs button{padding:7px 3px!important;font-size:12px!important;white-space:nowrap}.matchdayDetailBody{min-width:0}.matchdaySectionIntro{display:flex;gap:10px;align-items:flex-start;margin:10px 2px 12px}.matchdaySectionIcon{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex:0 0 36px;border-radius:11px;background:#eef2ff;color:#2563eb}.matchdaySectionIcon .material-symbols-outlined{font-size:21px}.matchdaySectionIntro h3{font-size:16px;margin:0 0 3px}.matchdaySectionIntro p{font-size:13px;color:var(--muted);margin:0;line-height:1.4}.matchdayActionStack{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.matchdayActionStack button.trainingBulkAction{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:58px;padding:7px 4px;margin:0;font-size:12px;line-height:1.2;text-align:center;white-space:normal}.matchdayActionStack button.trainingBulkAction .material-symbols-outlined{font-size:19px;flex:0 0 auto;margin:0;line-height:1}.matchdayActionStack button:disabled{opacity:.55}.matchdayActionStack .material-symbols-outlined,.matchdayActionRow .material-symbols-outlined{font-size:18px}.matchdaySnapshotNote{display:flex;align-items:flex-start;gap:5px;margin:10px 2px}.matchdaySnapshotNote .material-symbols-outlined{font-size:17px;flex:0 0 auto}.matchdayActionRow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}.matchdayActionRow button{min-height:40px;padding:8px;font-size:13px}.matchdayDetail .playerRecordMeta{flex:1;min-width:0}.matchdayChoiceButtons{display:flex;gap:5px;align-items:center;flex:0 0 auto}.matchdayChoiceButtons button{min-height:36px;padding:6px 10px;font-size:12px}.matchdayPlayedChoices button{padding:6px 8px}.matchdayNoteBlock{margin:8px 0 3px;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#f8fafc;font-size:13px;line-height:1.5;overflow-wrap:anywhere}.matchdayNoteLabel{display:flex;align-items:center;gap:5px;font-weight:700;color:#475569;margin-bottom:5px}.matchdayNoteLabel .material-symbols-outlined{font-size:17px}.matchdayDetail .trainingDetailActions button{display:inline-flex;align-items:center;gap:5px}.matchdayDetail .trainingDetailActions .material-symbols-outlined{font-size:17px}
 @media(max-width:600px){.matchdayDetailTabs button{font-size:11px!important}.matchdayDetail .playerRecordRow{gap:8px}.matchdayDetail .playerRecordAvatar,.matchdayDetail .playerRecordAvatar .playerPhoto,.matchdayDetail .playerRecordAvatar .playerAvatar{width:40px!important;height:40px!important;flex-basis:40px}.matchdayChoiceButtons button{min-height:34px;padding:5px 8px}.matchdayPlayedChoices{max-width:55%;flex-wrap:wrap;justify-content:flex-end}.matchdayPlayedChoices button{font-size:11px}}
 </style>
+<style>
+/* E09 Darkmode-Harmonisierung: zentrale Farben und komponentenweise Oberflächen */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg:#0b1220;
+    --card:#111827;
+    --text:#f1f5f9;
+    --muted:#a7b3c5;
+    --line:#334155;
+    --accent:#3b82f6;
+    --danger:#f87171;
+    --ok:#4ade80;
+    --surface-2:#1e293b;
+    --surface-3:#263449;
+    --text-soft:#cbd5e1;
+  }
+  body, main, .tabs { background:var(--bg); color:var(--text); }
+  header { background:#0f172a; color:#f8fafc; }
+  h1,h2,h3,h4,h5,h6,label,strong,b,summary,legend { color:var(--text); }
+  p,li,small,span { }
+  .muted,.small.muted,.playerRecordEmpty,.playerCardEyebrow,.playerCardInfoLabel,
+  .playerCardStatSub,.playerHistoryMeta,.dashboardEventEmpty p { color:var(--muted); }
+  .card,.trainingItem,.trainingHeader,.team,.matchdayTeam,.playerCardSection,
+  .playerCardTile,.playerCardNotesTile,.playerCardStatsTiles,.trainingPageCard,
+  .trainingResponseCard,.trainingPlayerSortWrap,.playerSortWrap,.playerSearchWrap,
+  .playerFilterChip,.trainingFilterChip,.matchdayOptionsMenu,.matchdaySquadTile,
+  .matchdaySnapshotNote,.trainingCompactCard,.playerListRow,.playerRecordRow,
+  .playerCardPosition,.playerCardStat,.playerCardTileHead,.playerCardTileBody {
+    background:var(--card); color:var(--text); border-color:var(--line);
+  }
+  .trainingHeader,.trainingItem .trainingHeader { background:var(--card); color:var(--text); }
+  button,.btn,.chip,.tabs button,.trainingDetailTabs button,.matchdayDetailTabs button,
+  .trainingOverviewTabs button,.choiceButton,.photoSheet button,.matchdayMoves button,
+  .teamMoveButtons button,.toolbar button,.toolbar .btn {
+    background:var(--surface-2); color:var(--text); border-color:var(--line);
+  }
+  button.primary,.btn.primary,button.danger,.appBottomNav button.active,
+  .tabs button.active,.trainingFilterChip.active,.playerFilterChip.active,
+  .trainingOverviewTabs button.active,.trainingDetailTabs button.active,
+  .matchdayDetailTabs button.active,.choiceButton.active {
+    color:#f8fafc; background:var(--accent); border-color:var(--accent);
+  }
+  button:disabled { color:#94a3b8; }
+  input:not([type=checkbox]):not([type=radio]):not([type=color]), select, textarea {
+    color:var(--text); background:#0f172a; border-color:#475569;
+    caret-color:var(--text); color-scheme:dark;
+  }
+  input::placeholder,textarea::placeholder { color:#94a3b8; opacity:1; }
+  input[type=checkbox],input[type=radio] { accent-color:var(--accent); }
+  input[type=color] { background:var(--surface-2); border-color:var(--line); }
+  .notice { background:#172554; border-color:#1d4ed8; color:#dbeafe; }
+  .notice.warning,.warning { background:#422006; border-color:#92400e; color:#ffedd5; }
+  .notice.ok,.ok { background:#052e1a; border-color:#166534; color:#dcfce7; }
+  th { background:#1e293b; color:var(--text); }
+  th,td,.attendanceRow,.playerrow,.playerRecordRow,.playerCardHeader,
+  .matchdayTeamHeader,.matchdayPlayer,.trainingDetailInfo { border-color:var(--line); }
+  .attendanceRow,.playerrow,.matchdayPlayer { color:var(--text); }
+  .badge { background:#334155; color:#e2e8f0; }
+  .badge.strong,.top16Attendance,.top16Row { background:#123524; color:#bbf7d0; border-color:#166534; }
+  .badge.medium { background:#422006; color:#fde68a; }
+  .badge.weak { background:#451a1a; color:#fecaca; }
+  .badge.outstanding { background:#3b2760; color:#e9d5ff; }
+  .badge.goalkeeperBadge { background:#172554; color:#bfdbfe; }
+  .positionBadge,.playerListPosition { color:#e2e8f0; border-color:#475569; }
+  .playerAvatar,.playerPhoto,.playerRecordAvatar,.playerCardHero .playerPhoto,
+  .playerCardHero .playerAvatar { background:#1e293b; border-color:#475569; color:#cbd5e1; }
+  .playerAvatar .material-symbols-outlined { color:#cbd5e1; }
+  .playerCardPosition,.choiceButton { background:#172033; color:var(--text); }
+  .playerCardStars,.playerListStars,.trainingLevelStars { color:#fbbf24!important; }
+  .trainingLevel { color:var(--text)!important; }
+  .trainingResponseCounts .openText,.trainingSummary .openText { color:#e2e8f0!important; }
+  .trainingResponseCounts span,.trainingSummary span { color:inherit; }
+  .trainingSummary .yesText,.trainingAttendanceSummary .yesText { color:#4ade80!important; }
+  .trainingSummary .noText,.trainingAttendanceSummary .noText { color:#f87171!important; }
+  .trainingTrainerChip.trainerYes { background:#123524!important; border-color:#166534!important; color:#86efac!important; }
+  .trainingTrainerChip.trainerNo { background:#451a1a!important; border-color:#7f1d1d!important; color:#fca5a5!important; }
+  .trainingLevelCount,.matchdayLevelCount,.matchdayLevels span { background:#263449; color:#cbd5e1; }
+  .trainingPlayerChip,.playerHistoryLink,.matchdayNominationBadge { color:var(--text); }
+  .trainingPlayerSortWrap select,.playerSortWrap select { color:var(--text); }
+  .modalbox,.photoSheetCard { background:var(--card); color:var(--text); border-color:var(--line); }
+  .modal,.photoSheetBackdrop { background:rgba(0,0,0,.68); }
+  .photoSheetTitle { color:var(--text); }
+  .jsonButton { background:var(--surface-2)!important; color:#93c5fd!important; border-color:#3b82f6!important; }
+  .sectionIcon,.trainingSectionHeading .sectionIcon { background:#1e3a5f; color:#bfdbfe; }
+  .playerCardTileIcon { background:#1e3a5f; color:#bfdbfe; }
+  .playerCardDonutInner { background:var(--card); color:var(--text); }
+  .playerCardDonut,.playerListDonut { color:#60a5fa; }
+  .trainingNextCard,.trainingCompactCard,.dashboardEventEmpty { background:var(--card); color:var(--text); border-color:var(--line); }
+  .dashboardPage .trainingNextCard { background:var(--card); color:var(--text); border-color:var(--line); }
+  .dashboardPage .trainingNextCard .trainingResponseCard { background:var(--surface-2); color:var(--text); border-color:#475569; }
+  .dashboardEventEmpty button { background:#1e3a5f; border-color:#315781; color:#bfdbfe; }
+  .appBottomNav { background:#111827; border-top-color:var(--line); }
+  .appBottomNav button { background:transparent; color:#94a3b8; border-color:transparent; }
+  .appBottomNav button.active { color:#bfdbfe; background:#1e3a5f; }
+  .status { background:#1e293b; color:var(--text); border-color:#475569; }
+  .trainingNoteText,.trainingNoteFullText,.playerCardNotes { color:var(--text); }
+  .playerCardTileCaption,.playerCardStatLabel,.playerCardTilePercent { color:var(--muted); }
+  .matchdayPlayedToggle,.matchdayPlayedSelect { color:var(--text); }
+  .matchdayPlayedToggle.active { background:#123524; color:#bbf7d0; border-color:#166534; }
+  .trainingFilterChip.active,.playerFilterChip.active { box-shadow:0 0 0 1px #60a5fa inset; }
+  .choiceButton.active { background:#1e3a5f; color:#dbeafe; border-color:#60a5fa; }
+  .choiceButton .choiceCheck { background:#3b82f6; color:#fff; }
+  .playerCardNotesTile,.trainingNoteFull { background:var(--surface-2); color:var(--text); border-color:var(--line); }
+  a { color:#93c5fd; }
+  :focus-visible { outline-color:#60a5fa; }
+}
+
+</style>
 </head>
 <body>
 <div id="loginView">
