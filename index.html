@@ -1543,6 +1543,76 @@ body { padding-bottom:calc(112px + env(safe-area-inset-bottom, 0px)) !important;
 main { padding-bottom:calc(28px + env(safe-area-inset-bottom, 0px)); }
 .modalbox .toolbar:last-child { padding-bottom:4px; }
 </style>
+
+<style id="training-series-modal-theme-fix">
+/* DEV-Korrektur: Serien-Dialoge folgen dem aktiven Theme, auch bei manueller Theme-Wahl.
+   Ausschließlich Darstellung; keine Termin-, Serien- oder Datenbanklogik geändert. */
+html[data-theme="dark"] .modalbox .seriesFields,
+html[data-theme="dark"] .modalbox .seriesScope,
+html[data-theme="dark"] .modalbox .seriesPreview {
+  background:#17263a !important;
+  border-color:#365579 !important;
+  color:#e2e8f0 !important;
+}
+html[data-theme="dark"] .modalbox .seriesFields > b,
+html[data-theme="dark"] .modalbox .seriesFields label,
+html[data-theme="dark"] .modalbox .seriesScope > b,
+html[data-theme="dark"] .modalbox .seriesScope label,
+html[data-theme="dark"] .modalbox .seriesPreview,
+html[data-theme="dark"] .modalbox .seriesPreview strong {
+  color:#e2e8f0 !important;
+}
+html[data-theme="dark"] .modalbox .weekdayChip {
+  background:#1e293b !important;
+  border-color:#475569 !important;
+  color:#e2e8f0 !important;
+}
+html[data-theme="dark"] .modalbox .weekdayChip.active {
+  background:#1e3a5f !important;
+  border-color:#60a5fa !important;
+  color:#bfdbfe !important;
+}
+html[data-theme="dark"] .modalbox .seriesDateRow input,
+html[data-theme="dark"] .modalbox input[type="date"],
+html[data-theme="dark"] .modalbox input[type="time"],
+html[data-theme="dark"] .modalbox input[type="text"],
+html[data-theme="dark"] .modalbox select,
+html[data-theme="dark"] .modalbox textarea {
+  background:#111c2d !important;
+  color:#f1f5f9 !important;
+  border-color:#475569 !important;
+  color-scheme:dark;
+}
+html[data-theme="dark"] .modalbox input::placeholder,
+html[data-theme="dark"] .modalbox textarea::placeholder { color:#94a3b8 !important; }
+html[data-theme="dark"] .modalbox .seriesScope input[type="radio"] { accent-color:#60a5fa; }
+html[data-theme="dark"] .modalbox .seriesScope .seriesActionRow button:not(.danger),
+html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) .modalbox .seriesFields,
+  html:not([data-theme="light"]) .modalbox .seriesScope,
+  html:not([data-theme="light"]) .modalbox .seriesPreview {
+    background:#17263a !important; border-color:#365579 !important; color:#e2e8f0 !important;
+  }
+  html:not([data-theme="light"]) .modalbox .seriesFields > b,
+  html:not([data-theme="light"]) .modalbox .seriesFields label,
+  html:not([data-theme="light"]) .modalbox .seriesScope > b,
+  html:not([data-theme="light"]) .modalbox .seriesScope label,
+  html:not([data-theme="light"]) .modalbox .seriesPreview,
+  html:not([data-theme="light"]) .modalbox .seriesPreview strong { color:#e2e8f0 !important; }
+  html:not([data-theme="light"]) .modalbox .weekdayChip { background:#1e293b !important; border-color:#475569 !important; color:#e2e8f0 !important; }
+  html:not([data-theme="light"]) .modalbox .weekdayChip.active { background:#1e3a5f !important; border-color:#60a5fa !important; color:#bfdbfe !important; }
+  html:not([data-theme="light"]) .modalbox .seriesDateRow input,
+  html:not([data-theme="light"]) .modalbox input[type="date"],
+  html:not([data-theme="light"]) .modalbox input[type="time"],
+  html:not([data-theme="light"]) .modalbox input[type="text"],
+  html:not([data-theme="light"]) .modalbox select,
+  html:not([data-theme="light"]) .modalbox textarea { background:#111c2d !important; color:#f1f5f9 !important; border-color:#475569 !important; color-scheme:dark; }
+  html:not([data-theme="light"]) .modalbox input::placeholder,
+  html:not([data-theme="light"]) .modalbox textarea::placeholder { color:#94a3b8 !important; }
+}
+</style>
+
 </head>
 <body>
 <div id="loginView">
