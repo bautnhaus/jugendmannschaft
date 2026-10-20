@@ -2655,7 +2655,7 @@ function dashboardGreeting(){const me=state.trainers.find(x=>x.user_id===current
 function dashboardTrainingStart(t){return new Date(`${t.date}T${fmtTime(t.startTime)||'23:59'}:00`);}
 function dashboardNextTraining(){const now=new Date();return state.trainings.filter(t=>t.status==='planned'&&dashboardTrainingStart(t)>=now).sort((a,b)=>dashboardTrainingStart(a)-dashboardTrainingStart(b))[0]||null;}
 function dashboardNextMatchday(){return state.matchdays.filter(m=>matchdayIsUpcoming(m)).sort((a,b)=>{const da=new Date(`${a.date}T${fmtTime(a.kickoffTime)||'23:59'}:00`),db=new Date(`${b.date}T${fmtTime(b.kickoffTime)||'23:59'}:00`);return da-db;})[0]||null;}
-function renderDashboard(){const greeting=$('dashboardGreeting'),teamSeason=$('dashboardTeamSeason'),events=$('dashboardEvents');if(!greeting||!teamSeason||!events)return;greeting.textContent=dashboardGreeting();const teamName=$('headerSub')?.textContent||'Deine Mannschaft';teamSeason.textContent=teamName.replace(/ · (Admin|Trainer)$/,'');$('dashboardPlayerCount').textContent=state.players.length;$('dashboardTrainingCount').textContent=state.trainings.length;$('dashboardMatchdayCount').textContent=state.matchdays.length;const training=dashboardNextTraining(),matchday=dashboardNextMatchday();const trainingHtml=training?renderNextTrainingCard(training):`<div class="dashboardEventEmpty"><p>Kein kommendes Training geplant.</p><button type="button" onclick="showTab('trainings')">Trainings öffnen</button></div>`;const matchdayHtml=matchday?renderNextMatchdayCard(matchday):`<div class="dashboardEventEmpty"><p>Kein kommender Spieltag geplant.</p><button type="button" onclick="showTab('matchday')">Spieltage öffnen</button></div>`;events.innerHTML=`<section class="dashboardEventSection"><div class="dashboardEventHeading"><span class="dashboardEventIcon">${materialIcon(training?'event_available':'calendar_add_on')}</span><h3>Nächstes Training</h3></div>${trainingHtml}</section><section class="dashboardEventSection"><div class="dashboardEventHeading"><span class="dashboardEventIcon">${materialIcon(matchday?'shield_with_heart':'calendar_add_on')}</span><h3>Nächster Spieltag</h3></div>${matchdayHtml}</section>`;}
+function renderDashboard(){const greeting=$('dashboardGreeting'),teamSeason=$('dashboardTeamSeason'),events=$('dashboardEvents');if(!greeting||!teamSeason||!events)return;greeting.textContent=dashboardGreeting();const teamName=$('headerSub')?.textContent||'Deine Mannschaft';teamSeason.textContent=teamName.replace(/ · (Admin|Trainer)$/,'');$('dashboardPlayerCount').textContent=state.players.length;$('dashboardTrainingCount').textContent=state.trainings.length;$('dashboardMatchdayCount').textContent=state.matchdays.length;const training=dashboardNextTraining(),matchday=dashboardNextMatchday();const trainingHtml=training?renderNextTrainingCard(training):`<div class="dashboardEventEmpty"><p>Kein kommendes Training geplant.</p><button type="button" onclick="showTab('trainings')">Trainings öffnen</button></div>`;const matchdayHtml=matchday?renderNextMatchdayCard(matchday):`<div class="dashboardEventEmpty"><p>Kein kommender Spieltag geplant.</p><button type="button" onclick="showTab('matchday')">Spieltage öffnen</button></div>`;events.innerHTML=`<section class="dashboardEventSection"><div class="dashboardEventHeading"><span class="dashboardEventIcon">${materialIcon(training?'event_available':'calendar_add_on')}</span><h3>Nächstes Training</h3></div>${trainingHtml}</section><section class="dashboardEventSection"><div class="dashboardEventHeading"><span class="dashboardEventIcon">${materialIcon(matchday?'trophy':'calendar_add_on')}</span><h3>Nächster Spieltag</h3></div>${matchdayHtml}</section>`;}
 window.showTab=id=>{if(playerEventReturn&&!((id==='trainings'&&playerEventReturn.type==='training')||(id==='matchday'&&playerEventReturn.type==='matchday')))playerEventReturn=null;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==id));document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));if(id==='dashboard')renderDashboard();if(id==='players')renderPlayers();if(id==='trainings')renderTrainings();if(id==='matchday')renderMatchday();if(id==='settings'){renderPositionSettings();renderTrainerList();renderBackupDiagnostic();}};
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 function renderAll(){$('dashboardPlayerCount').textContent=state.players.length;$('dashboardTrainingCount').textContent=state.trainings.length;$('dashboardMatchdayCount').textContent=state.matchdays.length;renderPlayers();renderTrainings();renderPositionSettings();renderTrainerList();renderMatchday();renderDashboard();}
@@ -3501,4 +3501,88 @@ html[data-theme="dark"] .matchdaySquadTile .matchdayNominationBadge {
     border-color: #166534 !important;
   }
 
+</style>
+
+<style>
+/* E09 Fix 2026-10-20: preserve next-event highlight in explicit and system dark themes.
+   Presentation-only overrides; no event or selection logic changes. */
+html[data-theme="dark"] .trainingNextCard,
+html[data-theme="dark"] .dashboardPage .trainingNextCard {
+  background: #172b45 !important;
+  border-color: #3b82f6 !important;
+  color: #e2e8f0 !important;
+}
+html[data-theme="dark"] .trainingNextCard .trainingCardTop strong,
+html[data-theme="dark"] .trainingNextCard .trainingCompactCard strong,
+html[data-theme="dark"] .trainingNextCard .trainingCardArrow {
+  color: #93c5fd !important;
+}
+html[data-theme="dark"] .trainingNextCard .trainingCardName,
+html[data-theme="dark"] .trainingNextCard .trainingInfoLine {
+  color: #cbd5e1 !important;
+}
+html[data-theme="dark"] .trainingNextCard .trainingResponseCard {
+  background: #111c2e !important;
+  border-color: #334155 !important;
+}
+html[data-theme="dark"] .trainingNextCard .trainingResponseHeader,
+html[data-theme="dark"] .trainingNextCard .trainingResponseCounts span {
+  color: #cbd5e1 !important;
+}
+html[data-theme="dark"] .trainingNextCard .trainingResponseCounts > div {
+  border-right-color: #334155 !important;
+}
+html[data-theme="dark"] .dashboardEventIcon {
+  background: #1e3a5f !important;
+  color: #93c5fd !important;
+}
+html[data-theme="dark"] .dashboardEventEmpty {
+  background: #111c2e !important;
+  border-color: #334155 !important;
+}
+html[data-theme="dark"] .dashboardEventEmpty button {
+  background: #1e3a5f !important;
+  border-color: #3b82f6 !important;
+  color: #dbeafe !important;
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingNextCard,
+  html:not([data-theme="light"]):not([data-theme="dark"]) .dashboardPage .trainingNextCard {
+    background: #172b45 !important;
+    border-color: #3b82f6 !important;
+    color: #e2e8f0 !important;
+  }
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingNextCard .trainingCardTop strong,
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingNextCard .trainingCardArrow {
+    color: #93c5fd !important;
+  }
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingNextCard .trainingCardName,
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingNextCard .trainingInfoLine {
+    color: #cbd5e1 !important;
+  }
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingNextCard .trainingResponseCard {
+    background: #111c2e !important;
+    border-color: #334155 !important;
+  }
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingNextCard .trainingResponseHeader,
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingNextCard .trainingResponseCounts span {
+    color: #cbd5e1 !important;
+  }
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingNextCard .trainingResponseCounts > div {
+    border-right-color: #334155 !important;
+  }
+  html:not([data-theme="light"]):not([data-theme="dark"]) .dashboardEventIcon {
+    background: #1e3a5f !important;
+    color: #93c5fd !important;
+  }
+  html:not([data-theme="light"]):not([data-theme="dark"]) .dashboardEventEmpty {
+    background: #111c2e !important;
+    border-color: #334155 !important;
+  }
+  html:not([data-theme="light"]):not([data-theme="dark"]) .dashboardEventEmpty button {
+    background: #1e3a5f !important;
+    border-color: #3b82f6 !important;
+    color: #dbeafe !important;
+  }
+}
 </style>
