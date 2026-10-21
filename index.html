@@ -1919,7 +1919,7 @@ function levelBadge(level){if(!level)return '<span class="badge">kein Level</spa
 window.setPlayerSort=key=>{playerSort={key,dir:'asc'};renderPlayers();};
 function renderPlayers(){
   if(role==='admin'&&playerRosterView==='inactive'){
-    const rows=[...state.inactivePlayers].sort((a,b)=>String(a.last_name||'').localeCompare(String(b.last_name||''),'de',{sensitivity:'base'})||displayName(a).localeCompare(displayName(b),'de')).map(p=>`<button type="button" class="playerListRow inactivePlayerRow" data-player-card="${esc(p.id)}" aria-label="Spielerkarte ${esc(displayName(p))}"><span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span><span class="playerListPositions"><span class="inactiveStatusChip">Inaktiv</span>${orderedPositions(p.positions||[]).map(x=>`<span class="playerListPosition">${esc(x)}</span>`).join('')||'<span class="playerListNoPosition">Keine Position</span>'}</span><span class="muted small">Historie bleibt erhalten</span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>`).join('');
+    const rows=[...state.inactivePlayers].sort((a,b)=>String(a.last_name||'').localeCompare(String(b.last_name||''),'de',{sensitivity:'base'})||displayName(a).localeCompare(displayName(b),'de')).map(p=>{const stars=p.level&&LEVEL_STARS[p.level]?`${'★'.repeat(LEVEL_STARS[p.level])}${'☆'.repeat(4-LEVEL_STARS[p.level])}`:'–';const positions=orderedPositions(p.positions||[]).map(x=>`<span class="playerListPosition">${esc(x)}</span>`).join('');return `<button type="button" class="playerListRow inactivePlayerRow" data-player-card="${esc(p.id)}" aria-label="Spielerkarte ${esc(displayName(p))}"><span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span><span class="playerListPositions">${positions||'<span class="playerListNoPosition">Keine Position</span>'}</span><span class="playerListLevel"><span class="playerListStars">${stars}</span><span>${esc(p.level||'Kein Level')}</span></span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>`;}).join('');
     $('playerTable').innerHTML=`<div class="trainingSegmented rosterViewTabs"><button type="button" onclick="setPlayerRosterView('active')">Aktiver Kader (${state.players.length})</button><button type="button" class="active" onclick="setPlayerRosterView('inactive')">Inaktive Spieler (${state.inactivePlayers.length})</button></div>${rows?`<div class="playerListRows">${rows}</div>`:'<div class="playerRecordEmpty">Keine inaktiven Spieler vorhanden.</div>'}`;return;
   }
   const ranked=top16Ranking();
@@ -2253,8 +2253,8 @@ function trainingTeamPlayerRow(t,p,teamNo,teams){
     <div class="trainingPlayerIdentity">
       ${playerAvatarHtml(p.photo_data||'')}
       <div class="trainingPlayerMeta">
-        <div class="trainingPlayerName">${esc(displayName(p))}${isInactive?` <span class="muted small">(inaktiv · historisch)</span>`:''}</div>
-        <div class="trainingPlayerTags">${positions}${level?`<span class="trainingLevel"><span class="trainingLevelStars">${level}</span> ${esc(p.level||'')}</span>`:''}</div>
+        <div class="trainingPlayerName">${esc(displayName(p))}</div>
+        <div class="trainingPlayerTags">${isInactive?'<span class="inactiveStatusChip trainingInactiveChip">Inaktiv</span>':''}${positions}${level?`<span class="trainingLevel"><span class="trainingLevelStars">${level}</span> ${esc(p.level||'')}</span>`:''}</div>
       </div>
     </div>
     <div class="trainingTeamPlayerAction">
@@ -2891,10 +2891,14 @@ try{
 .playerCardHero .playerCardSquadIcon{background:#dbeafe!important;color:#1d4ed8!important}
 .playerCardHero .playerCardSquadIcon .material-symbols-outlined{color:#1d4ed8!important}
 
-/* DEV UI correction: im hellen Modus entsprechen Positions-Chips in der Teamaufstellung der Spielerliste. */
-html[data-theme="light"] .trainingDetail .trainingPlayerTags .positionBadge,
-html:not([data-theme]) .trainingDetail .trainingPlayerTags .positionBadge {
-  background: #e2e8f0 !important; border: 1px solid #cbd5e1 !important; color: #334155 !important;
+/* DEV UI correction: im hellen Modus erhalten Trainings-Positions-Chips die helle Optik der Spielerliste. */
+html[data-theme="light"] .trainingDetail .trainingPosition,
+html:not([data-theme]) .trainingDetail .trainingPosition {
+  background: #f1f5f9 !important; border: 1px solid #dbe3ed !important; color: #475569 !important;
+}
+html[data-theme="light"] .trainingDetail .trainingInactiveChip,
+html:not([data-theme]) .trainingDetail .trainingInactiveChip {
+  background: #ffedd5 !important; border: 1px solid #fdba74 !important; color: #9a3412 !important;
 }
 /* Inaktiv-Button bleibt rot; Reaktivieren bleibt grün. */
 .playerCardActions button.danger, .modalbox .toolbar button.danger { background: #dc2626 !important; border-color: #dc2626 !important; color: #fff !important; }
