@@ -1818,8 +1818,12 @@ async function loadApp(){
   const {data:seasonRows,error:se}=await c.from('seasons').select('id,name,start_date,end_date,is_active').eq('team_id',team).eq('is_active',true).limit(1);if(se)throw se;season=seasonRows?.[0]||null;
   const {data:pos,error:pe}=await c.from('positions').select('id,name,sort_order,color').eq('team_id',team).order('sort_order').order('name');if(pe)throw pe;
   const {data:players,error:pl}=await c.from('players').select('id,name,first_name,last_name,birth_year,preferred_foot,level,photo_data,notes,active,created_at').eq('team_id',team).eq('active',true);if(pl)throw pl;
-  let inactivePlayers=[];
-  if(role==='admin'){const {data:inactiveRows,error:inactiveError}=await c.from('players').select('id,name,first_name,last_name,birth_year,preferred_foot,level,photo_data,notes,active,created_at').eq('team_id',team).eq('active',false);if(inactiveError)throw inactiveError;inactivePlayers=inactiveRows||[];}
+  // Inaktive Spieler müssen für historische Trainingsansichten geladen werden,
+  // unabhängig davon, ob der aktuelle Nutzer die Kaderverwaltung administrieren darf.
+  // Die separate state.inactivePlayers-Liste hält sie aus der aktiven Planung heraus.
+  const {data:inactiveRows,error:inactiveError}=await c.from('players').select('id,name,first_name,last_name,birth_year,preferred_foot,level,photo_data,notes,active,created_at').eq('team_id',team).eq('active',false);
+  if(inactiveError)throw inactiveError;
+  let inactivePlayers=inactiveRows||[];
   const allPlayerIds=[...(players||[]),...inactivePlayers].map(x=>x.id);
   const {data:pp,error:ppE}=await c.from('player_positions').select('player_id,position_id').in('player_id',allPlayerIds.length?allPlayerIds:['00000000-0000-0000-0000-000000000000']);if(ppE)throw ppE;
   const {data:trainings,error:tr}=await c.from('trainings').select('id,training_date,name,start_time,duration_minutes,location,status,note,series_id,overrides').eq('team_id',team).order('training_date');if(tr)throw tr;
@@ -2174,7 +2178,17 @@ window.setTrainingOverviewFilter=setTrainingOverviewFilter;
 window.setTrainingResponseFilter=v=>{trainingResponseFilter=v;renderTrainings();};
 window.setTrainingAttendanceFilter=v=>{trainingAttendanceFilter=v;renderTrainings();};
 window.setTrainingSearch=v=>{trainingSearchText=v;renderTrainings();const el=$('trainingSearch');if(el){el.focus();el.setSelectionRange(v.length,v.length);}}; window.clearTrainingSearch=e=>{e?.preventDefault();trainingSearchText='';renderTrainings();const next=$('trainingSearch');if(next){next.focus();}}; window.setTrainingPlayerSort=v=>{trainingPlayerSort={key:v,dir:'asc'};renderTrainings();};
-function trainingArrayFromSaved(t){const result=[];for(const n of Object.keys(t.teams||{}).sort((a,b)=>Number(a)-Number(b)))result.push((t.teams[n]||[]).map(id=>state.players.find(p=>p.id===id)).filter(Boolean));return result;}
+function trainingArrayFromSaved(t){
+  const result=[];
+  // For completed training, resolve saved IDs against both rosters so players
+  // who later became inactive remain visible in the historical team snapshot.
+  const historical=String(t?.status||'').toLowerCase()==='done';
+  const lookup=historical?[...(state.players||[]),...(state.inactivePlayers||[]) ]:(state.players||[]);
+  for(const n of Object.keys(t.teams||{}).sort((a,b)=>Number(a)-Number(b))){
+    result.push((t.teams[n]||[]).map(id=>lookup.find(p=>p.id===id)).filter(Boolean));
+  }
+  return result;
+}
 async function getTrainingAssignmentSnapshot(trainingId,teamNumber=null){
   const client=getClient();
   let assignmentQuery=client.from('training_players').select('player_id,team_number,goalkeeper').eq('training_id',trainingId);
@@ -2232,18 +2246,19 @@ function trainingTeamPlayerRow(t,p,teamNo,teams){
   const currentGK=t.goalkeepers?.[teamNo]===p.id;
   const positions=orderedPositions(p.positions||[]).map(x=>`<span class="trainingPosition">${esc(x)}</span>`).join('');
   const level=p.level&&LEVEL_STARS[p.level]?`${'★'.repeat(LEVEL_STARS[p.level])}${'☆'.repeat(4-LEVEL_STARS[p.level])}`:'';
+  const isInactive=p.active===false;
   const moveOptions=teams.map((_,i)=>`<option value="${i+1}" ${i+1===teamNo?'selected':''}>Team ${i+1}</option>`).join('');
-  return `<div class="trainingPlayerRow trainingTeamPlayerRow">
+  return `<div class="trainingPlayerRow trainingTeamPlayerRow ${isInactive?'inactiveHistoricalTrainingPlayer':''}">
     <div class="trainingPlayerIdentity">
       ${playerAvatarHtml(p.photo_data||'')}
       <div class="trainingPlayerMeta">
-        <div class="trainingPlayerName">${esc(displayName(p))}</div>
+        <div class="trainingPlayerName">${esc(displayName(p))}${isInactive?` <span class="muted small">(inaktiv · historisch)</span>`:''}</div>
         <div class="trainingPlayerTags">${positions}${level?`<span class="trainingLevel"><span class="trainingLevelStars">${level}</span> ${esc(p.level||'')}</span>`:''}</div>
       </div>
     </div>
     <div class="trainingTeamPlayerAction">
       ${currentGK?`<span class="trainingGoalkeeperBadge" title="Torwart" aria-label="Torwart">${materialIcon('front_hand')}</span>`:''}
-      <select class="trainingTeamMoveSelect" aria-label="Team für ${esc(displayName(p))}" onchange="setTrainingPlayerTeam('${t.id}','${p.id}',${teamNo},this.value)">${moveOptions}</select>
+      <select class="trainingTeamMoveSelect" aria-label="Team für ${esc(displayName(p))}" ${isInactive?'disabled title="Inaktiver Spieler – historische Zuordnung"':''} onchange="setTrainingPlayerTeam('${t.id}','${p.id}',${teamNo},this.value)">${moveOptions}</select>
     </div>
   </div>`;
 }
