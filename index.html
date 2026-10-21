@@ -266,11 +266,11 @@ html[data-theme="dark"] .dashboardPage .trainingNextCard .trainingResponseCard {
 
 /* Paket A: Admin-only Kaderstatus und Reaktivierung */
 .rosterViewTabs{grid-template-columns:1fr 1fr;margin:0 0 12px}
-.inactivePlayerRow{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin:7px 0;min-width:0}
+.inactivePlayerRow{width:100%;text-align:left;cursor:pointer}
 .inactivePlayerRow .playerListIdentity{flex:1;min-width:0}
 .inactivePlayerRow .playerListName{display:block}
-.reactivatePlayerButton{flex:0 0 auto;max-width:48%;white-space:normal;font-size:12px;line-height:1.25;min-height:40px;background:#15803d!important;border-color:#15803d!important;color:#fff!important;padding:8px 10px!important}
-@media(max-width:420px){.inactivePlayerRow{align-items:flex-start;flex-wrap:wrap}.inactivePlayerRow .playerListIdentity{flex:1 1 calc(100% - 54px)}.inactivePlayerRow .reactivatePlayerButton{margin-left:54px;max-width:calc(100% - 54px)}}
+.inactiveStatusChip{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;margin:2px 5px 2px 0;background:#ffedd5!important;border:1px solid #fdba74;color:#9a3412!important;font-size:12px;font-weight:700;white-space:nowrap}
+.reactivatePlayerButton{background:#15803d!important;border-color:#15803d!important;color:#fff!important}
 html:not([data-theme="light"]) .rosterViewTabs{background:var(--surface-2);border:1px solid var(--line)}
 html:not([data-theme="light"]) .rosterViewTabs button:not(.active){color:var(--text-soft)}
 html[data-theme="dark"] .rosterViewTabs{background:var(--surface-2);border:1px solid var(--line)}
@@ -1919,7 +1919,7 @@ function levelBadge(level){if(!level)return '<span class="badge">kein Level</spa
 window.setPlayerSort=key=>{playerSort={key,dir:'asc'};renderPlayers();};
 function renderPlayers(){
   if(role==='admin'&&playerRosterView==='inactive'){
-    const rows=[...state.inactivePlayers].sort((a,b)=>String(a.last_name||'').localeCompare(String(b.last_name||''),'de',{sensitivity:'base'})||displayName(a).localeCompare(displayName(b),'de')).map(p=>`<div class="playerListRow inactivePlayerRow"><span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span><span class="playerListPositions">${orderedPositions(p.positions||[]).map(x=>`<span class="playerListPosition">${esc(x)}</span>`).join('')||'<span class="playerListNoPosition">Keine Position</span>'}</span><span class="muted small">Inaktiv · Historie bleibt erhalten</span></span><button type="button" class="reactivatePlayerButton" onclick="reactivatePlayer('${p.id}')">Wieder in den aktiven Kader aufnehmen</button></div>`).join('');
+    const rows=[...state.inactivePlayers].sort((a,b)=>String(a.last_name||'').localeCompare(String(b.last_name||''),'de',{sensitivity:'base'})||displayName(a).localeCompare(displayName(b),'de')).map(p=>`<button type="button" class="playerListRow inactivePlayerRow" data-player-card="${esc(p.id)}" aria-label="Spielerkarte ${esc(displayName(p))}"><span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span><span class="playerListPositions"><span class="inactiveStatusChip">Inaktiv</span>${orderedPositions(p.positions||[]).map(x=>`<span class="playerListPosition">${esc(x)}</span>`).join('')||'<span class="playerListNoPosition">Keine Position</span>'}</span><span class="muted small">Historie bleibt erhalten</span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>`).join('');
     $('playerTable').innerHTML=`<div class="trainingSegmented rosterViewTabs"><button type="button" onclick="setPlayerRosterView('active')">Aktiver Kader (${state.players.length})</button><button type="button" class="active" onclick="setPlayerRosterView('inactive')">Inaktive Spieler (${state.inactivePlayers.length})</button></div>${rows?`<div class="playerListRows">${rows}</div>`:'<div class="playerRecordEmpty">Keine inaktiven Spieler vorhanden.</div>'}`;return;
   }
   const ranked=top16Ranking();
@@ -1979,8 +1979,9 @@ window.openExactPlayerMatchday=(playerId,matchdayId)=>openPlayerMatchdayRecord(p
 window.returnToPlayerStatsFromEvent=(playerId,type)=>{playerEventReturn=null;showTab('players');if(type==='training')openPlayerTrainingDetails(playerId);else openPlayerMatchdayDetails(playerId);};
 window.openPlayerNotes=id=>{const p=state.players.find(x=>x.id===id);if(!p)return;openModal(`<div class="detailHeader"><button type="button" class="iconBack" aria-label="Zurück zur Spielerkarte" onclick="openPlayerCard('${id}')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Notizen · ${esc(displayName(p))}</h2></div><div class="playerCardNotes playerCardNotesFull">${esc(p.notes||'Noch keine Notizen hinterlegt.')}</div>`);};
 window.openPlayerCard=id=>{
-  const p=state.players.find(x=>x.id===id);
+  const p=state.players.find(x=>x.id===id)||state.inactivePlayers.find(x=>x.id===id);
   if(!p)return;
+  const isInactive=p.active===false||state.inactivePlayers.some(x=>x.id===id);
   const a=attendanceStats(p);
   const positions=orderedPositions(p.positions||[]);
   const positionHtml=positions.length
@@ -2011,7 +2012,7 @@ window.openPlayerCard=id=>{
           <span>${materialIcon('cake')} ${p.birth_year?esc(p.birth_year):'Jahrgang offen'}</span>
           <span>${p.preferred_foot&&footLabels[p.preferred_foot]?materialIcon(footIcons[p.preferred_foot],p.preferred_foot==='rechts'?'mirrored':'')+' '+footLabels[p.preferred_foot]:'Spielbein offen'}</span>
         </div>
-        <div class="playerCardPositions">${positionHtml}</div>
+        <div class="playerCardPositions">${isInactive?'<span class="inactiveStatusChip">Inaktiv</span>':''}${positionHtml}</div>
         <div class="playerCardLevel"><span class="playerCardStars">${levelStars}</span><span>${esc(p.level||'Nicht angegeben')}</span></div>
       </div>
     </div>
@@ -2035,7 +2036,7 @@ window.openPlayerCard=id=>{
       <span class="playerCardSectionTitle">Notizen <span class="material-symbols-outlined" style="margin-left:auto;color:#64748b">chevron_right</span></span>
       <span class="playerCardNotes">${esc(p.notes||'Noch keine Notizen hinterlegt.')}</span>
     </button>
-    <div class="toolbar playerCardActions"><button class="primary" onclick="closeModal();editPlayer('${id}')">Bearbeiten</button><button onclick="closeModal()">Schließen</button></div>`);
+    <div class="toolbar playerCardActions">${isInactive?`<button type="button" class="reactivatePlayerButton" onclick="reactivatePlayer('${id}')">Wieder in den aktiven Kader aufnehmen</button>`:`<button class="primary" onclick="closeModal();editPlayer('${id}')">Bearbeiten</button>${role==='admin'?`<button type="button" class="danger" onclick="deletePlayer('${id}')">Aus aktivem Kader entfernen</button>`:''}`}<button onclick="closeModal()">Schließen</button></div>`);
 };
 
 function fmtDateLong(d){if(!d)return '';const x=new Date(d+'T00:00:00');return isNaN(x)?d:x.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'long',year:'numeric'});}
@@ -2889,6 +2890,15 @@ try{
 /* DEV-Anpassung: Kaderempfehlung auf der Spielercard ist blau, nicht grün. */
 .playerCardHero .playerCardSquadIcon{background:#dbeafe!important;color:#1d4ed8!important}
 .playerCardHero .playerCardSquadIcon .material-symbols-outlined{color:#1d4ed8!important}
+
+/* DEV UI correction: im hellen Modus entsprechen Positions-Chips in der Teamaufstellung der Spielerliste. */
+html[data-theme="light"] .trainingDetail .trainingPlayerTags .positionBadge,
+html:not([data-theme]) .trainingDetail .trainingPlayerTags .positionBadge {
+  background: #e2e8f0 !important; border: 1px solid #cbd5e1 !important; color: #334155 !important;
+}
+/* Inaktiv-Button bleibt rot; Reaktivieren bleibt grün. */
+.playerCardActions button.danger, .modalbox .toolbar button.danger { background: #dc2626 !important; border-color: #dc2626 !important; color: #fff !important; }
+
 </style>
 
 
