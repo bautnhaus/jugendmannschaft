@@ -70,3 +70,15 @@ Der Nutzer hat am 28.10.2026 in DEV bestätigt:
 Zuletzt bestätigter Frontend-Commit: `9bf1ad8e5fad169e086d0265966b15d23ac85dc2`.
 
 Noch nicht als vollständig abgenommen gelten alle Super-Admin-Schreibfunktionen (insbesondere Anwesenheiten, Spieltag, Aktivieren/Deaktivieren/Löschen von Spielern sowie Vereins- und Mannschaftsrollen). Diese sind gezielt zu testen. PROD wurde nicht verändert.
+
+
+## Praxistest: Spielerstatus und Spieltagsstatus
+
+Der Nutzer bestätigte in DEV:
+- Spieler deaktivieren funktioniert; Bestätigung erscheint und die App kehrt zur Spielerliste zurück.
+- Spieler reaktivieren speicherte den Status, ließ die Spielercard aber offen, sodass die Erfolgsbestätigung erst nach manuellem Schließen sichtbar wurde.
+- Spieltagsstatus konnte im Super-Admin-Kontext geändert werden.
+
+Ursache für das abweichende Reaktivierungsverhalten: Der Erfolgszweig von `reactivatePlayer` aktualisierte Listen und zeigte eine Meldung, schloss aber nicht die geöffnete Spielercard. Das wurde durch `closeModal()` vor dem erneuten Rendern korrigiert.
+
+Frontend-Commit: `174579788a830ef4fc442b4b9555af0b454f6ada`. Noch zu testen: Reaktivierung sollte nach Bestätigung direkt zur aktualisierten Spielerliste zurückkehren und die Erfolgsnachricht unmittelbar anzeigen. PROD unverändert.
