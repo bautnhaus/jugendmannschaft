@@ -274,3 +274,12 @@ PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderun
 - Korrektur: Beim Öffnen der Mannschaft sowie beim Öffnen/zurückkehren aus einer fokussierten Einstellung werden die alten `.settingsSection.adminOnly`-Bereiche ausgeblendet. Die jeweils ausgewählte Card wird nur in der fokussierten Unteransicht gezeigt; bei Zurück wird sie in ihre ursprüngliche Position innerhalb des ausgeblendeten Altbereichs zurückgesetzt.
 - Commit: `7c09f90eb6a0f5b86bdbb026e7206b0473d48aa3`.
 - Status: DEV aktualisiert, Live-Test erforderlich. PROD unverändert.
+
+
+## Nachkorrektur – tatsächlicher Einstieg in die Mannschaftsdetailansicht (28.10.2026)
+
+- Nutzer meldete weiterhin sichtbare Einstellungs-Cards unterhalb der drei Mannschafts-Kacheln.
+- Quelltextprüfung zeigte, dass die ursprüngliche Einstellungssektion `.settingsSection.adminOnly` beim Mannschaftsklick nicht ausgeblendet wurde; die vorherigen Regeln griffen erst beim Öffnen einer einzelnen Einstellung. Deshalb waren die alten Karten bereits beim Einstieg in die Mannschaft sichtbar.
+- Korrektur: Direkt nach erfolgreicher Mannschaftsauswahl und vor Abschluss des Ladens wird `.settingsSection.adminOnly` ausgeblendet. Die bestehenden Karten bleiben im DOM und können bei Klick auf die passende Einstellung in die fokussierte Unteransicht verschoben werden.
+- Commit: `6f923ac2ad786dcf96306ebb42535e5fdc00a6de`.
+- Status: DEV aktualisiert, Live-Test erforderlich. PROD unverändert.
