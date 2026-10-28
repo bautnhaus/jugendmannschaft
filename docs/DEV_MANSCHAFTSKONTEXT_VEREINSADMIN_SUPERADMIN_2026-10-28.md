@@ -235,3 +235,14 @@ PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderun
 - In der fokussierten Unteransicht wird nur der gewählte Bereich angezeigt: Trainerverwaltung, Kadergröße oder Positionen. Eine Zurück-Aktion bringt den Nutzer zur Mannschaftsdetailansicht.
 - Commit: `49bbc92a3e396c493e00c4f50f346e041ff1fce7`.
 - Status: DEV aktualisiert, Live-Test ausstehend. PROD unverändert.
+
+
+## Fehlerkorrektur nach Screenrecording – Teamkontext und leere Einstellungsansicht (28.10.2026)
+
+- Nutzer meldete, dass der Mannschaftsklick den Kontext nicht mehr wie erwartet öffnete und die Einstellungskacheln einen leeren dunklen Bildschirm zeigten.
+- Ursache: Die vorherige Änderung rief `loadApp()` erst beim Öffnen einer einzelnen Einstellung auf und blendete anschließend `appView` aus. Die Einstellungskarten lagen zu diesem Zeitpunkt noch in der normalen App-Ansicht und wurden durch den Navigationszustand nicht zuverlässig sichtbar gehalten.
+- Korrektur:
+  - Beim Öffnen einer Mannschaft wird der ausgewählte Kontext serverseitig gesetzt und `loadApp()` einmal ausgeführt, damit die Daten und bestehenden Einstellungsfunktionen der ausgewählten Mannschaft geladen werden. Danach wird die fokussierte Mannschaftsdetailansicht wiederhergestellt.
+  - Die Einstellungskacheln öffnen anschließend die bereits geladene vorhandene Einstellungs-Card, ohne einen weiteren App-Neuladevorgang auszulösen.
+- Commit: `c95fdabe6c7f86f9f93a6a0304982a79a61b7b98`.
+- Status: DEV aktualisiert, Live-Nachtest erforderlich. PROD unverändert.
