@@ -255,3 +255,13 @@ PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderun
 - Korrektur: `appView` bleibt sichtbar; die Navigation wechselt auf den Einstellungen-Tab und zeigt innerhalb dessen die passende Plattform-/Mannschaftsunteransicht.
 - Commit: `7b108a35ebf09cb80bfbc7eefe2a7fe398737fb0`.
 - Status: DEV aktualisiert, Live-Test steht aus. PROD unverändert.
+
+
+## Performance-Zwischenschritt – Mannschaftsdetail sofort anzeigen (28.10.2026)
+
+- Nutzer bestätigte, dass der Mannschaftskontext wieder geöffnet wird, bemerkte aber eine längere Wartezeit bis zur Anzeige.
+- Ursache: Der Klick wartete auf die vollständige `loadApp()`-Routine, bevor die Mannschaftsdetailansicht sichtbar wurde.
+- Anpassung in `index.html`: Nach erfolgreicher Kontextauswahl wird die Mannschaftsdetailansicht nun vor dem vollständigen Laden der Mannschaftsdaten angezeigt. Die Infozeile signalisiert währenddessen, dass Einstellungen geladen werden. `loadApp()` darf den Plattformverwaltungs-Container während eines aktiven Admin-Kontexts nicht mehr direkt zu Beginn ausblenden.
+- Das ist eine Verbesserung der wahrgenommenen Reaktionszeit; die vollständige Datenladezeit selbst wurde damit noch nicht reduziert. Echtes verzögertes Laden der einzelnen Einstellungsbereiche bleibt Folgearbeit, da dafür die Datenladepfade sicher getrennt werden müssen.
+- Commit: `f94225233d748ea2e920fc9e250980e7a1a172ac`.
+- Status: DEV aktualisiert, Live-Test ausstehend. PROD unverändert.
