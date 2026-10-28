@@ -1848,7 +1848,6 @@ async function loadApp(){
       const clubPanel=$('clubAdminPanel');if(clubPanel)clubPanel.classList.add('hidden');
       $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');
       await loadSuperAdminClubs();
-      await populateAdminContextTeams('superAdminTeamSelect',null);
       window.showTab('settings');
       return;
     }
