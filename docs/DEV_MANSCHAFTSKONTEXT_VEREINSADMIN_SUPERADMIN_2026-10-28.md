@@ -120,3 +120,42 @@ Die Oberfläche muss rollen- und kontextabhängig nur die Aktionen anbieten, die
 
 ### Umsetzung
 Nicht jetzt umsetzen. Als eigenständigen UX-/Frontend-Backlogpunkt für eine spätere Überarbeitung aufnehmen und dabei alle Bereiche des Vereinsadmin-Nur-Lese-Kontexts systematisch prüfen. Super Admins mit ausdrücklich ausgewähltem Mannschaftskontext sind davon nicht betroffen, soweit sie dort die entsprechenden Schreibrechte besitzen.
+
+
+## Bestandsaufnahme vor UI-Überführung – 28.10.2026
+
+Branch: `develop`  
+Supabase: DEV (`pzazqvvoruqnqhcorbwx`)  
+PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderungen vorgenommen.
+
+### Vorhandene UI-Bausteine zur Wiederverwendung
+
+- **Listenzeilen:** Die Spielerliste verwendet `.playerListRow` mit Avatar, Identität/Metadaten und Chevron. Diese Komponente bzw. ihr Markup/CSS ist der erste Ausgangspunkt für Vereins- und Mannschaftskacheln/-listen; keine separate Designwelt einführen.
+- **Karten und Aktionen:** Die bestehenden `.card`, `.btn`, `.primary`, `.notice`, `.formrow` und Modal-Komponenten können für Verwaltungsübersichten, Aktionen und Eingabemasken wiederverwendet werden.
+- **Navigation:** Der vorhandene „Mehr“-Bereich und die bestehende Bottom-Navigation bleiben bestehen. Vereins-/Mannschaftsverwaltung soll dort rollenabhängig einsortiert werden, statt eine zweite Navigation einzuführen.
+- **Spieler-/Personendetails:** Vorhandene Spielercard und Personen-/Mitgliederlisten sind Referenz für Detailansichten und Rollenbadges.
+
+### Bereits vorhandene Datenbank- und RPC-Grundlagen (DEV)
+
+- Tabellen `clubs`, `teams`, `club_members`, `club_member_roles`, `team_members`, `team_member_roles` und `user_team_context` sind vorhanden.
+- `select_team_context(p_team_id)` speichert einen ausgewählten Mannschaftskontext und prüft serverseitig Super-Admin- oder Vereinsadmin-Berechtigung.
+- `admin_create_team(p_club_id, p_name, p_recommended_squad_size)` legt eine Mannschaft an, erstellt für den aufrufenden Benutzer Mannschaftsadmin-Zuordnungen und liefert die neue Team-ID zurück.
+- `admin_add_club_member_by_email(...)` und `admin_add_club_member(...)` sind vorhanden.
+- Es wurde in der Bestandsaufnahme **keine passende `admin_create_club`-RPC** gefunden. Ein neuer Verein darf deshalb nicht einfach per Frontend-INSERT angelegt werden; dafür braucht es einen bewusst entworfenen, serverseitig abgesicherten Weg.
+- Die aktuelle `index.html` enthält Vereinsauswahl über `#superAdminClubSelect` und Mannschaftsauswahl über `#superAdminTeamSelect` bzw. `#clubAdminTeamSelect`. Diese Dropdowns entsprechen nicht dem bestätigten UI-Konzept und sollen durch Kachellisten ersetzt werden.
+
+### Vor der Implementierung zu beachten
+
+1. **Kachel-Auswahl:** Vereine und Mannschaften mit bestehenden Listen-/Kartenmustern darstellen. Ein Klick auf die Kachel bestätigt die Auswahl und führt in den gewählten Kontext; keine Dropdown-Frage als Zwischenschritt.
+2. **Neue Mannschaft:** Das bestehende `admin_create_team` ist die bevorzugte Grundlage. Nach erfolgreichem Speichern die Mannschaftsliste aktualisieren und die neue Mannschaft als Kachel anzeigen; Klick darauf öffnet den Kontext.
+3. **Neuer Verein:** Erst eine dedizierte, serverseitig abgesicherte Erstellfunktion und deren Berechtigungsmodell festlegen. Für Super Admins muss die Aktion zum explizit gewählten Plattform-/Verwaltungskontext passen. Keine ungeschützten direkten Schreibzugriffe aus dem Frontend hinzufügen.
+4. **Super-Admin-Kontext bei Team-Erstellung:** Die vorhandene `admin_create_team` prüft aktuell `is_club_admin(p_club_id)`; diese Hilfsfunktion erkennt Super Admin global. Vor Verwendung für den neuen Kachel-Flow ist zu prüfen bzw. anzupassen, dass die Erstellaktion dem bestätigten Kontextprinzip entspricht und nicht beliebige Vereine außerhalb des bewusst ausgewählten Kontexts adressiert.
+5. **Testkonstellation:** Eine neue Mannschaft kann für Paket 3 als zweite Testmannschaft dienen. Das Anlegen eines neuen Vereins ist ein separater Schritt und soll nicht automatisch Testmitgliedschaften oder Testrollen erzeugen.
+
+### Nächster Umsetzungsschnitt
+
+- Zuerst die vorhandene Super-Admin-Vereinsauswahl von Dropdown/Bestätigungsbutton auf Kacheln umstellen und den Klick als bewusste Auswahl verwenden.
+- Danach Mannschaftsauswahl im gewählten Verein auf Kacheln umstellen und die vorhandene Kontext-RPC weiterverwenden.
+- Anschließend die Mannschaftserstellung an das bestehende Eingabe-/Button-Muster anschließen, einschließlich Kontextprüfung und unmittelbarer Aktualisierung der Liste.
+- Die Vereins-Erstellung erst nach Bereitstellung einer sicheren Erstell-RPC ergänzen.
+- Nach jedem Schnitt in DEV testen; PROD bleibt unangetastet.
