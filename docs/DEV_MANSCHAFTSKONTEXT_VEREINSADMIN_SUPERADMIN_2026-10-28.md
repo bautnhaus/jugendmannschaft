@@ -265,3 +265,12 @@ PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderun
 - Das ist eine Verbesserung der wahrgenommenen Reaktionszeit; die vollständige Datenladezeit selbst wurde damit noch nicht reduziert. Echtes verzögertes Laden der einzelnen Einstellungsbereiche bleibt Folgearbeit, da dafür die Datenladepfade sicher getrennt werden müssen.
 - Commit: `f94225233d748ea2e920fc9e250980e7a1a172ac`.
 - Status: DEV aktualisiert, Live-Test ausstehend. PROD unverändert.
+
+
+## UI-Korrektur – Einstellungsbereiche nicht dauerhaft unter den Mannschaftskacheln zeigen (28.10.2026)
+
+- Nutzer meldete, dass beim Öffnen der Mannschaft die drei Einstellungsbereiche bereits unter den Kacheln erschienen und sich nach einem Kachelklick optisch verschachtelt aufbauten.
+- Ursache: Die bestehenden Einstellungs-Cards verblieben zusätzlich in ihrer ursprünglichen `.settingsSection.adminOnly` im regulären Einstellungen-Tab, während die ausgewählte Card in die neue Unteransicht verschoben wurde. Der umgebende alte Einstellungsbereich blieb sichtbar.
+- Korrektur: Beim Öffnen der Mannschaft sowie beim Öffnen/zurückkehren aus einer fokussierten Einstellung werden die alten `.settingsSection.adminOnly`-Bereiche ausgeblendet. Die jeweils ausgewählte Card wird nur in der fokussierten Unteransicht gezeigt; bei Zurück wird sie in ihre ursprüngliche Position innerhalb des ausgeblendeten Altbereichs zurückgesetzt.
+- Commit: `7c09f90eb6a0f5b86bdbb026e7206b0473d48aa3`.
+- Status: DEV aktualisiert, Live-Test erforderlich. PROD unverändert.
