@@ -34,3 +34,14 @@ Es wurden keine authentifizierten End-to-End-Tests mit den drei realen Kontotype
 5. Trainer/Mannschaftsadmin: reguläre Navigation und bisherige Schreibrechte unverändert testen.
 
 Keine Mitgliedschaften, Rollen oder Spielerdaten wurden zu Testzwecken geändert.
+
+
+## Nachbesserung nach Video-Praxistest
+
+Nach dem ersten Praxistest zeigte sich, dass der Frontend-Start im ausgewählten Kontext wegen einer unveränderlichen Variablendeklaration abbrach, wenn die Teammitgliedschaften leer waren. Die Deklaration wurde auf `let` umgestellt, damit die serverseitig geprüfte Kontextmannschaft in den Ladepfad übernommen werden kann.
+
+Zusätzlich:
+- Die SELECT-Policies für `training_trainers` und `matchday_trainers` wurden für den ausdrücklich ausgewählten, berechtigten Kontext ergänzt.
+- Die Mannschaftsauswahl in Einstellungen wird nach dem Laden der Kontextmannschaft erneut befüllt und auf den aktuell ausgewählten Verein/die Mannschaft gesetzt, damit ein Wechsel möglich bleibt.
+- DEV-Frontend-Commit: `29d303b66d66f59fdd530bda2f1892044668c1a4`.
+- Die Korrekturen wurden strukturell im gespeicherten HTML und in den DEV-Policies geprüft. Ein erneuter Live-Praxistest durch den Nutzer steht noch aus.
