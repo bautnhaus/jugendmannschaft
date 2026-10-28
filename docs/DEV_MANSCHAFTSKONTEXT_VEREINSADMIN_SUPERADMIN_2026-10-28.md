@@ -184,3 +184,13 @@ PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderun
 - Verifiziert: die neue Detailansicht, beide Einstiegskacheln, Teamlistenabfrage, Mitglieder-RPC und Rücknavigation sind im Branch vorhanden. Live-Praxistest steht noch aus.
 - Commit: `a3e0f33e2621d5c072a6df4024cd54dba2a0cb1b`.
 - PROD wurde nicht verändert.
+
+
+## Nachtest – Teamkontext nicht mit Vereinsverwaltung vermischen (28.10.2026)
+
+- Nutzerrückmeldung: Nach dem Öffnen einer Mannschaft wurde zusätzlich der alte Vereinsverwaltungsbereich mit Mannschafts-Kontextauswahl, Vereinsmitgliedern und „Spieler nach Mannschaft“ eingeblendet. Das widerspricht der neuen Trennung von Verein → Mannschaften / Vereinsmitglieder.
+- Korrektur in `index.html`: Der Bereich `clubAdminPanel` wird im ausgewählten Mannschaftskontext jetzt ausgeblendet (`contextReadOnly` aktiv). Damit bleibt die Vereinsverwaltung in der Vereinsansicht und wird nicht zusätzlich in die Mannschafts-App eingeblendet.
+- Commit: `5f06612f97e1a8f02d4a92752f99a618244ef3d2`.
+- Noch durch den Nutzer zu prüfen: Mannschaft aus der Vereinskachel öffnen und kontrollieren, dass die alte Vereinsverwaltung, die zweite Kontextauswahl und „Spieler nach Mannschaft“ nicht mehr erscheinen.
+- Bekannter UI-Punkt: Zurück-Navigation der neuen Detailansichten entspricht noch nicht vollständig dem Standard der übrigen App; wird als eigener Konsistenzschritt nach dem Funktionscheck angepasst.
+- PROD wurde nicht verändert.
