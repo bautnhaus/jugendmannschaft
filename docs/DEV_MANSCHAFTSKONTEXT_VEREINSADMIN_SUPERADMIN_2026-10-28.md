@@ -246,3 +246,12 @@ PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderun
   - Die Einstellungskacheln öffnen anschließend die bereits geladene vorhandene Einstellungs-Card, ohne einen weiteren App-Neuladevorgang auszulösen.
 - Commit: `c95fdabe6c7f86f9f93a6a0304982a79a61b7b98`.
 - Status: DEV aktualisiert, Live-Nachtest erforderlich. PROD unverändert.
+
+
+## Sofortkorrektur – schwarzer Bildschirm durch ausgeblendeten App-Container (28.10.2026)
+
+- Nutzer meldete nach dem letzten Fix einen schwarzen Bildschirm bereits beim Öffnen einer Mannschaft.
+- Ursache im DOM: `superAdminPanel` liegt innerhalb von `appView`. Die Navigation blendete `appView` aus und versuchte anschließend, nur das darin enthaltene Panel wieder einzublenden. Ein Kind-Element kann jedoch nicht sichtbar sein, solange sein Elterncontainer ausgeblendet bleibt.
+- Korrektur: `appView` bleibt sichtbar; die Navigation wechselt auf den Einstellungen-Tab und zeigt innerhalb dessen die passende Plattform-/Mannschaftsunteransicht.
+- Commit: `7b108a35ebf09cb80bfbc7eefe2a7fe398737fb0`.
+- Status: DEV aktualisiert, Live-Test steht aus. PROD unverändert.
