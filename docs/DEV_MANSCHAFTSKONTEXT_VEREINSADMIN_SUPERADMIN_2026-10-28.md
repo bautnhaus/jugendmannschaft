@@ -171,3 +171,16 @@ PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderun
 - Verifiziert: Dropdown-Element `superAdminClubSelect` ist entfernt; `superAdminClubCards`, Kachel-Klick und nachgelagerter Mannschaftskontext sind vorhanden.
 - Commit: `eaedff90b19b3825bebea03fe8718eb4a0a745f7`.
 - Status: Code auf DEV aktualisiert; Live-Praxistest durch den Nutzer steht noch aus. PROD wurde nicht verändert.
+
+
+## UI-Umsetzung – Vereinsdetailansicht und Einstiegskacheln (28.10.2026)
+
+- In `index.html` auf `develop` wurde die Super-Admin-Vereinsauswahl um eine eigene Vereinsdetailansicht erweitert.
+- Klick auf eine Vereinskachel öffnet nun die Detailansicht mit Vereinsname, allgemeinem Informationsbereich und zwei Einstiegskacheln: **Mannschaften** und **Vereinsmitglieder**.
+- Die Detailansicht besitzt eine Rücknavigation zur Vereinsliste. Die vorherige eingeblendete Mannschaftsauswahl und das separate Vereinsverwaltungs-Panel werden beim Öffnen eines Vereins ausgeblendet, um doppelte Wege zu vermeiden.
+- Die Mannschaftskachel lädt die Mannschaften des ausgewählten Vereins als Liste mit den vorhandenen `.playerListRow`-Komponenten. Klick auf eine Mannschaft nutzt die vorhandene RPC `select_team_context` und wechselt in den Mannschaftskontext.
+- Die Mitgliederkachel lädt die vorhandenen Vereinsmitgliedsdaten über `get_club_members_v2` und zeigt Filter für Alle, Vereinsadmins und Trainer. Es wurden keine neuen Spieler-Login-Rollen erfunden; weitere Filter wie „Spieler“ werden anhand der vorhandenen Datenstruktur in einem späteren Schritt präzisiert.
+- Vereinsstammdaten sind aktuell bewusst nur ein Platzhaltertext, bis die Felder für die Vereinsanlage definiert sind.
+- Verifiziert: die neue Detailansicht, beide Einstiegskacheln, Teamlistenabfrage, Mitglieder-RPC und Rücknavigation sind im Branch vorhanden. Live-Praxistest steht noch aus.
+- Commit: `a3e0f33e2621d5c072a6df4024cd54dba2a0cb1b`.
+- PROD wurde nicht verändert.
