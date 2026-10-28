@@ -1825,7 +1825,7 @@ async function loadApp(){
     if(clearError)console.warn('Vorheriger Mannschaftskontext konnte nicht zurückgesetzt werden:',clearError.message);
     members=[];
   }
-  if(!members?.length&&(!isSuperAdmin||openingAdminContext)){
+  if(!members?.length&&(!isSuperAdmin||openingAdminContext||adminContextActive)){
     const {data:selectedContext,error:selectedContextError}=await c.rpc('get_selected_team_context');
     if(selectedContextError)throw selectedContextError;
     if(selectedContext?.length){
