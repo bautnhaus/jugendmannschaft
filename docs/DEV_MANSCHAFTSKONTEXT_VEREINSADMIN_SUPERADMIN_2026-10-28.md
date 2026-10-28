@@ -82,3 +82,8 @@ Der Nutzer bestätigte in DEV:
 Ursache für das abweichende Reaktivierungsverhalten: Der Erfolgszweig von `reactivatePlayer` aktualisierte Listen und zeigte eine Meldung, schloss aber nicht die geöffnete Spielercard. Das wurde durch `closeModal()` vor dem erneuten Rendern korrigiert.
 
 Frontend-Commit: `174579788a830ef4fc442b4b9555af0b454f6ada`. Noch zu testen: Reaktivierung sollte nach Bestätigung direkt zur aktualisierten Spielerliste zurückkehren und die Erfolgsnachricht unmittelbar anzeigen. PROD unverändert.
+
+
+### Nachtest bestanden: Spielerreaktivierung
+
+Der Nutzer hat bestätigt, dass die korrigierte Reaktivierung jetzt funktioniert. Die Spielercard schließt sich nach erfolgreicher Reaktivierung, die Spielerliste wird aktualisiert und die Bestätigung erscheint direkt. Damit ist der UI-Ablauf für Deaktivierung/Reaktivierung im DEV-Praxistest bestätigt. PROD unverändert.
