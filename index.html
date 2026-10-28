@@ -1805,9 +1805,12 @@ window.logout=async()=>{if(supabase)await supabase.auth.signOut();currentUser=nu
 
 async function loadApp(){
   const c=getClient();
-  // Wichtig beim Kontowechsel: Admin-Panels aus der vorherigen Sitzung nie übernehmen.
+  // Wichtig beim Kontowechsel: keine UI-Berechtigungen aus der vorherigen Sitzung übernehmen.
+  // Plattform-/Vereinsstarts blenden Navigationseinträge aus; bei einem anschließenden
+  // Team-Login müssen diese wieder sichtbar sein.
   const platformPanelAtStart=$('superAdminPanel');if(platformPanelAtStart)platformPanelAtStart.classList.add('hidden');
   const clubPanelAtStart=$('clubAdminPanel');if(clubPanelAtStart)clubPanelAtStart.classList.add('hidden');
+  document.querySelectorAll('[data-tab]').forEach(b=>b.classList.remove('hidden'));
   clubOnlyMode=false;isSuperAdmin=false;currentClubId=null;canManageClub=false;
   const {data:globalRoles,error:globalRoleError}=await c.from('global_user_roles').select('role').eq('user_id',currentUser.id);
   if(globalRoleError)throw globalRoleError;
