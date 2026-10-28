@@ -1815,7 +1815,7 @@ async function loadApp(){
   const {data:globalRoles,error:globalRoleError}=await c.from('global_user_roles').select('role').eq('user_id',currentUser.id);
   if(globalRoleError)throw globalRoleError;
   isSuperAdmin=(globalRoles||[]).some(x=>x.role==='super_admin');
-  const {data:members,error:me}=await c.from('team_member_roles').select('team_id,user_id,role').eq('user_id',currentUser.id);
+  let {data:members,error:me}=await c.from('team_member_roles').select('team_id,user_id,role').eq('user_id',currentUser.id);
   if(me)throw me;
   contextReadOnly=false;
   if(!members?.length){
