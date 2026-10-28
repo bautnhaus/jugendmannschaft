@@ -159,3 +159,15 @@ PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderun
 - Anschließend die Mannschaftserstellung an das bestehende Eingabe-/Button-Muster anschließen, einschließlich Kontextprüfung und unmittelbarer Aktualisierung der Liste.
 - Die Vereins-Erstellung erst nach Bereitstellung einer sicheren Erstell-RPC ergänzen.
 - Nach jedem Schnitt in DEV testen; PROD bleibt unangetastet.
+
+
+## UI-Umsetzung – Super-Admin-Vereinsauswahl als Kacheln (28.10.2026)
+
+- In `index.html` auf `develop` wurde die bisherige Dropdown-Auswahl des Super Admins durch anklickbare Vereinskacheln ersetzt.
+- Die Darstellung verwendet vorhandene Spielerliste-Komponenten und -Klassen (`.playerListRows`, `.playerListRow`, Avatar-/Identitätsbereich und Chevron), damit das UI konsistent bleibt.
+- Das Antippen einer Kachel ruft die bestehende Auswahl-/Berechtigungslogik für den Verein auf. Der ausgewählte Verein wird visuell hervorgehoben.
+- Die Mannschaftsauswahl wird erst nach Auswahl eines Vereins eingeblendet.
+- Die vorhandene serverseitige Berechtigungsprüfung über `is_club_admin` und die bestehende Vereinsdatenanzeige bleiben bestehen.
+- Verifiziert: Dropdown-Element `superAdminClubSelect` ist entfernt; `superAdminClubCards`, Kachel-Klick und nachgelagerter Mannschaftskontext sind vorhanden.
+- Commit: `eaedff90b19b3825bebea03fe8718eb4a0a745f7`.
+- Status: Code auf DEV aktualisiert; Live-Praxistest durch den Nutzer steht noch aus. PROD wurde nicht verändert.
