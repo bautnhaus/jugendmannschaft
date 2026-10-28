@@ -1823,7 +1823,7 @@ async function loadApp(){
     if(selectedContextError)throw selectedContextError;
     if(selectedContext?.length){
       contextReadOnly=true;
-      members=[{team_id:selectedContext[0].team_id,role:'trainer'}];
+      members=[{team_id:selectedContext[0].team_id,role:isSuperAdmin?'admin':'trainer'}];
       currentClubId=selectedContext[0].club_id;
     }
   }
