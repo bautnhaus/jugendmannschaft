@@ -87,3 +87,36 @@ Frontend-Commit: `174579788a830ef4fc442b4b9555af0b454f6ada`. Noch zu testen: Rea
 ### Nachtest bestanden: Spielerreaktivierung
 
 Der Nutzer hat bestätigt, dass die korrigierte Reaktivierung jetzt funktioniert. Die Spielercard schließt sich nach erfolgreicher Reaktivierung, die Spielerliste wird aktualisiert und die Bestätigung erscheint direkt. Damit ist der UI-Ablauf für Deaktivierung/Reaktivierung im DEV-Praxistest bestätigt. PROD unverändert.
+
+
+## Paket-Testabschluss – Stand 28.10.2026
+
+Der Nutzer hat den folgenden Praxistest in DEV bestätigt:
+
+- **Paket 1 – Anwesenheit und Rückmeldungen im Super-Admin-Mannschaftskontext: bestanden.** Die vorgesehenen Funktionen wurden erfolgreich getestet.
+- **Paket 2 – Rollenverwaltung: derzeit nicht testbar.** Es fehlt ein geeigneter zusätzlicher Testaccount. Das ist als offene Testeinschränkung zu dokumentieren, blockiert die weitere Umsetzung aber nicht. Sobald ein passender Testaccount verfügbar ist, soll der Test nachgeholt werden.
+- **Paket 3 – Vereinsadmin und Abgrenzung zwischen Mannschaften: teilweise nicht testbar.** Es gibt aktuell keine zweite Mannschaft, mit der sich der Kontextwechsel bzw. die Abgrenzung praktisch prüfen ließe. Der Vereinsadmin bleibt bis zu einer späteren fachlichen/technischen Änderung im Nur-Lese-Modus. Die fehlende zweite Mannschaft blockiert die weitere Umsetzung nicht; der Test ist nachzuholen, sobald eine geeignete Testkonstellation vorhanden ist.
+
+PROD wurde nicht verändert.
+
+## UX-Backlog: Schreibfunktionen für Nur-Lese-Rollen ausblenden
+
+**Status:** Für spätere Umsetzung vorgemerkt – nicht Bestandteil des aktuellen Testabschlusses.
+
+### Problem
+Im Nur-Lese-Kontext werden Nutzern derzeit teilweise Bedienelemente angezeigt, die wie ausführbare Schreibfunktionen wirken. Teilweise lassen sie sich sogar öffnen oder betätigen, bevor die Aktion mit einer Berechtigungsfehlermeldung abgewiesen wird. Das ist irreführend: Die Oberfläche sollte die tatsächlich verfügbaren Rechte direkt widerspiegeln und Nutzer nicht erst nach einer Aktion über fehlende Schreibrechte informieren.
+
+### Vorgesehene UX-Anpassungen
+Für Rollen/Kontexte ohne Schreibrechte sollen nicht verfügbare Aktionen **gar nicht erst angezeigt** werden. Stattdessen sollen Informationen in einer Darstellung erscheinen, die optisch der bisherigen Anzeige entspricht, aber keine Bearbeitung suggeriert. Beispiele:
+
+- Spielercard: Bearbeiten-Aktion und editierbare Eingabefelder ausblenden bzw. als reine Anzeige darstellen.
+- Rückmeldungen und Anwesenheit: Dropdowns durch reine Status-/Wertanzeigen in derselben visuellen Gestaltung ersetzen.
+- Aktionen wie „Alle Zusagen als anwesend markieren“ ausblenden.
+- Aktionen wie „Team bilden“ ausblenden, wenn die jeweilige Rolle sie nicht ausführen darf.
+- Weitere Schreibaktionen im Nur-Lese-Kontext systematisch prüfen und ausblenden, statt erst beim Ausführen einen Berechtigungsfehler zu zeigen.
+
+### Leitlinie
+Die Oberfläche muss rollen- und kontextabhängig nur die Aktionen anbieten, die der Nutzer tatsächlich ausführen darf. Serverseitige Berechtigungsprüfungen bleiben trotzdem zwingend erforderlich; das Ausblenden von UI-Elementen ersetzt keine RLS-Policies oder RPC-Prüfungen.
+
+### Umsetzung
+Nicht jetzt umsetzen. Als eigenständigen UX-/Frontend-Backlogpunkt für eine spätere Überarbeitung aufnehmen und dabei alle Bereiche des Vereinsadmin-Nur-Lese-Kontexts systematisch prüfen. Super Admins mit ausdrücklich ausgewähltem Mannschaftskontext sind davon nicht betroffen, soweit sie dort die entsprechenden Schreibrechte besitzen.
