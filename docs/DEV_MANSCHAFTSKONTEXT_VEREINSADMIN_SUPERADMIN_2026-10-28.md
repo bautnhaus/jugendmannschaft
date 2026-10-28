@@ -225,3 +225,13 @@ PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderun
 - Rücknavigation: Mannschaftsdetail → Mannschaftsliste → Vereinsdetail.
 - Commits: `d02e197181216e18a3b7e811f9eca8606413b0f4`, `c68f8a7eefc0388ffe444ce2f70805c4660450af`.
 - Status: Code auf DEV aktualisiert; Live-Praxistest steht aus. Noch offene UX-Verdichtung: Die bestehenden Settings-Abschnitte selbst können anschließend kompakter gemacht werden, insbesondere Trainer- und Positionszeilen mit Optionsmenü. PROD unverändert.
+
+
+## Korrektur nach Nutzertest – echte Unteransichten für Mannschaftseinstellungen (28.10.2026)
+
+- Nutzer bestätigte, dass Mannschaftsdetailansicht und Rücknavigation grundsätzlich funktionieren, bemängelte aber, dass die drei Einstellungskacheln lediglich zur vollständigen bisherigen Einstellungsseite scrollten.
+- Der Button „Mannschaft öffnen“ wurde aus der Mannschaftsdetailansicht entfernt. Die Mannschaftsliste und deren Zurücknavigation sind der Weg zum Wechseln der Mannschaft; der normale Arbeitsbereich bleibt über die Hauptnavigation erreichbar.
+- Die Einstellungskacheln öffnen nun eine fokussierte Unteransicht innerhalb der Plattformverwaltung. Dafür wird jeweils die bestehende Einstellungs-Card in die Unteransicht verschoben (keine neue parallele Formularimplementierung); die zugehörigen bestehenden IDs und Aktionen bleiben erhalten.
+- In der fokussierten Unteransicht wird nur der gewählte Bereich angezeigt: Trainerverwaltung, Kadergröße oder Positionen. Eine Zurück-Aktion bringt den Nutzer zur Mannschaftsdetailansicht.
+- Commit: `49bbc92a3e396c493e00c4f50f346e041ff1fce7`.
+- Status: DEV aktualisiert, Live-Test ausstehend. PROD unverändert.
