@@ -58,3 +58,15 @@ Nach verbindlicher Klarstellung der Support-Rolle wurden in DEV zusätzliche Ber
 - Die Frontend-Guards erlauben Schreibaktionen für Super Admins im ausgewählten Kontext, während Vereinsadmins weiterhin schreibgeschützt bleiben.
 
 Die Funktionsdefinitionen wurden nach Anwendung der DEV-Migrationen geprüft. Authentifizierte End-to-End-Tests für sämtliche Schreibfunktionen sind noch ausstehend. PROD wurde nicht geändert.
+
+
+## Aktueller Praxistest – Super-Admin-Kontext bleibt nach Speichern aktiv
+
+Der Nutzer hat am 28.10.2026 in DEV bestätigt:
+- Nach dem Bearbeiten und Speichern eines Spielernamens bleibt die App in der ausgewählten Mannschaft.
+- Nach dem Ändern und Speichern von Trainingsdaten bleibt die App ebenfalls im ausgewählten Mannschaftskontext.
+- Der aktive Kontext muss weiterhin bis zum bewussten Wechsel oder Verlassen erhalten bleiben.
+
+Zuletzt bestätigter Frontend-Commit: `9bf1ad8e5fad169e086d0265966b15d23ac85dc2`.
+
+Noch nicht als vollständig abgenommen gelten alle Super-Admin-Schreibfunktionen (insbesondere Anwesenheiten, Spieltag, Aktivieren/Deaktivieren/Löschen von Spielern sowie Vereins- und Mannschaftsrollen). Diese sind gezielt zu testen. PROD wurde nicht verändert.
