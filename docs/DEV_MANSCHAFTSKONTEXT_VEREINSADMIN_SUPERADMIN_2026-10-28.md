@@ -194,3 +194,13 @@ PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderun
 - Noch durch den Nutzer zu prüfen: Mannschaft aus der Vereinskachel öffnen und kontrollieren, dass die alte Vereinsverwaltung, die zweite Kontextauswahl und „Spieler nach Mannschaft“ nicht mehr erscheinen.
 - Bekannter UI-Punkt: Zurück-Navigation der neuen Detailansichten entspricht noch nicht vollständig dem Standard der übrigen App; wird als eigener Konsistenzschritt nach dem Funktionscheck angepasst.
 - PROD wurde nicht verändert.
+
+
+## Nachkorrektur nach Nutzerprüfung – Kontextanzeige und sichtbares „\\n“ (28.10.2026)
+
+- Nutzer meldete, dass die vorherige Korrektur im Live-Test nicht sichtbar war und die Vereinsverwaltung weiterhin im Mannschaftskontext erschien.
+- Ursache im Frontend: `loadApp()` setzte `contextReadOnly` bei jedem Laden wieder auf `false`. Das übersteuerte den gesetzten Kontextzustand, wenn der Super Admin bereits eine Mannschaftsrollen-Zuordnung hatte. Korrektur: Im bewusst geöffneten Super-Admin-Kontext bleibt `contextReadOnly` jetzt aktiv, auch wenn eine eigene Rollen-Zuordnung existiert. Damit kann die Sichtbarkeitsregel `!canManageClub || contextReadOnly` den separaten Vereinsverwaltungsbereich ausblenden.
+- Zusätzlich wurde ein versehentlich als Text gerendertes literales `\\n` aus dem HTML-Markup entfernt.
+- Commit: `e5f536a533cdf3d51abc098f34cb1428110b62e0`.
+- Weitere UX-Anforderung für den Umbau festgehalten: Mitgliederkacheln müssen bei vorhandenen Bearbeitungsrechten anklickbar sein und eine Personendetailansicht mit den erlaubten Aktionen öffnen. Die aktuelle Mitgliederliste enthält nicht interaktive Zeilen; dies darf beim Umbau nicht unverändert übernommen werden.
+- Status: Code auf DEV aktualisiert; erneuter Live-Praxistest steht aus. PROD unverändert.
