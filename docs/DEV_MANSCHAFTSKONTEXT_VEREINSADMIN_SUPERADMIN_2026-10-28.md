@@ -45,3 +45,16 @@ Zusätzlich:
 - Die Mannschaftsauswahl in Einstellungen wird nach dem Laden der Kontextmannschaft erneut befüllt und auf den aktuell ausgewählten Verein/die Mannschaft gesetzt, damit ein Wechsel möglich bleibt.
 - DEV-Frontend-Commit: `29d303b66d66f59fdd530bda2f1892044668c1a4`.
 - Die Korrekturen wurden strukturell im gespeicherten HTML und in den DEV-Policies geprüft. Ein erneuter Live-Praxistest durch den Nutzer steht noch aus.
+
+
+## Nachbesserung: volle Super-Admin-Schreibrechte im ausgewählten Kontext
+
+Nach verbindlicher Klarstellung der Support-Rolle wurden in DEV zusätzliche Berechtigungen ergänzt:
+
+- Super Admin kann im ausdrücklich ausgewählten Mannschaftskontext die bisherigen Team-Schreibaktionen verwenden, die durch vorhandene `*_super_admin_context_*` RLS-Policies abgedeckt werden.
+- Der Trigger `protect_player_active_status` erlaubt Statusänderungen nun auch für Super Admins, aber nur bei passendem ausgewähltem Mannschaftskontext.
+- `admin_add_team_role` und `admin_remove_team_role` akzeptieren Super Admins nur bei passendem ausgewähltem Mannschaftskontext; Schutz des letzten Mannschaftsadmins bleibt bestehen.
+- `admin_add_club_member` und `admin_remove_club_member` akzeptieren Super Admins nur, wenn der ausgewählte Mannschaftskontext zu diesem Verein gehört; Ein-Verein-pro-Benutzer-Regel und Schutz des letzten Vereinsadmins bleiben bestehen.
+- Die Frontend-Guards erlauben Schreibaktionen für Super Admins im ausgewählten Kontext, während Vereinsadmins weiterhin schreibgeschützt bleiben.
+
+Die Funktionsdefinitionen wurden nach Anwendung der DEV-Migrationen geprüft. Authentifizierte End-to-End-Tests für sämtliche Schreibfunktionen sind noch ausstehend. PROD wurde nicht geändert.
