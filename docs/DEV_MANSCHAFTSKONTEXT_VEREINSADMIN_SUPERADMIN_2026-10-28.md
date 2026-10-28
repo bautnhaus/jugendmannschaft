@@ -204,3 +204,13 @@ PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderun
 - Commit: `e5f536a533cdf3d51abc098f34cb1428110b62e0`.
 - Weitere UX-Anforderung für den Umbau festgehalten: Mitgliederkacheln müssen bei vorhandenen Bearbeitungsrechten anklickbar sein und eine Personendetailansicht mit den erlaubten Aktionen öffnen. Die aktuelle Mitgliederliste enthält nicht interaktive Zeilen; dies darf beim Umbau nicht unverändert übernommen werden.
 - Status: Code auf DEV aktualisiert; erneuter Live-Praxistest steht aus. PROD unverändert.
+
+
+## Zweite Korrektur – nachgewiesene spätere Wiedereinblendung des alten Panels (28.10.2026)
+
+- Nutzer meldete: `\\n` entfernt, aber der alte Verwaltungsbereich blieb sichtbar.
+- Erneute Quelltextprüfung ergab zwei weitere Stellen, die `clubAdminPanel` nach der vorherigen Sichtbarkeitsprüfung erneut einblendeten: den Abschluss von `loadApp()` und den `showTab('settings')`-Pfad. Diese Überschreibungen ignorierten `contextReadOnly`.
+- Beide Stellen wurden angepasst, sodass das alte Vereinsverwaltungs-Panel auch dort verborgen bleibt, wenn ein Super Admin im explizit ausgewählten Mannschaftskontext arbeitet.
+- Commit: `cd11e8556fe46b40b7139459b3488f23d6f8727a`.
+- Der Hinweis zu nicht anklickbaren Mitgliederkacheln bleibt als Folgearbeit festgehalten: Mitgliederzeilen müssen bei zulässigen Rechten zur bearbeitbaren Personendetailansicht führen.
+- Status: erneuter Live-Test ausstehend. PROD unverändert.
