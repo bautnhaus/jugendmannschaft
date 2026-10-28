@@ -214,3 +214,14 @@ PROD: unverändert. Diese Bestandsaufnahme hat keine App- oder Datenbankänderun
 - Commit: `cd11e8556fe46b40b7139459b3488f23d6f8727a`.
 - Der Hinweis zu nicht anklickbaren Mitgliederkacheln bleibt als Folgearbeit festgehalten: Mitgliederzeilen müssen bei zulässigen Rechten zur bearbeitbaren Personendetailansicht führen.
 - Status: erneuter Live-Test ausstehend. PROD unverändert.
+
+
+## UI-Folgearbeit – Mannschaftsdetail statt Sprung in die bisherige App (28.10.2026)
+
+- Nutzerfeedback: Nach Auswahl einer Mannschaft sprang die Ansicht kurz zur Kaderplanung und anschließend zurück. Erwartet wird – analog zur Vereinsauswahl – eine eigene Detailansicht für genau die ausgewählte Mannschaft, ohne die vorherige Liste daneben.
+- In `index.html` wurde der Mannschaftsklick geändert: Er setzt den ausgewählten Teamkontext per bestehender RPC, öffnet aber nicht mehr sofort `loadApp()`. Dadurch bleibt der Nutzer in der Verwaltungsnavigation und der unerwünschte Scrollsprung entfällt.
+- Neue Mannschaftsdetailansicht mit Mannschaftsname, kompakter Infozeile und drei wiederverwendeten Listen-/Kachel-Einstiegen: Trainerverwaltung, Kadergröße und Positionen. Zusätzlich gibt es eine explizite Aktion „Mannschaft öffnen“ für den eigentlichen Arbeitsbereich.
+- Die Einstiege zu Trainerverwaltung, Kadergröße und Positionen öffnen weiterhin die vorhandenen Settings-Komponenten und scrollen direkt zum jeweiligen Abschnitt. Dafür wurden IDs an die bestehenden Einstellungs-Cards ergänzt; keine parallelen Bearbeitungsformulare wurden neu erfunden.
+- Rücknavigation: Mannschaftsdetail → Mannschaftsliste → Vereinsdetail.
+- Commits: `d02e197181216e18a3b7e811f9eca8606413b0f4`, `c68f8a7eefc0388ffe444ce2f70805c4660450af`.
+- Status: Code auf DEV aktualisiert; Live-Praxistest steht aus. Noch offene UX-Verdichtung: Die bestehenden Settings-Abschnitte selbst können anschließend kompakter gemacht werden, insbesondere Trainer- und Positionszeilen mit Optionsmenü. PROD unverändert.
