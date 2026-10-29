@@ -95,3 +95,21 @@ Vorgesehene SQL-Bausteine:
 - Nachtrag: Vereinswappen werden nach dem Upload auch in der Vereinsliste und im Vereinsdetail angezeigt; PNG-Transparenz wird durch `object-fit: contain` und transparenten Hintergrund erhalten.
 - Die Inline-JavaScript-Syntaxprüfung ist bestanden. Der interaktive Praxistest im Browser steht noch aus.
 - **PROD bleibt unverändert.**
+
+
+## 7. Nachtrag – verpflichtende Admin-Zuweisung (2026-10-29)
+
+**Entscheidung:** Bei der Vereinsanlage alle bestehenden geeigneten Konten anbieten; bei der Mannschaftsanlage ausschließlich Mitglieder des ausgewählten Vereins. Ein Super Admin bleibt neutral.
+
+**Umgesetzt in DEV:**
+- Migration `20261029051752_add_admin_selection_to_club_and_team_creation` angewendet.
+- Neue geschützte RPCs `admin_list_club_admin_candidates()` und `admin_list_team_admin_candidates(p_club_id)`.
+- `admin_create_club` verlangt nun `p_club_admin_user_id` und legt Verein, Vereinsmitgliedschaft und Vereinsadmin-Rolle atomar an.
+- `admin_create_team` verlangt nun `p_team_admin_user_id` und legt Mannschaft sowie beide Teamadmin-Rollen atomar an.
+- Frontend in `index.html` auf Branch `develop` ergänzt: Pflichtauswahl in beiden Formularen; Kandidaten werden über die abgesicherten RPCs geladen.
+- Benutzer, die bereits einem Verein zugeordnet sind, werden bei der Vereinsanlage nicht als Kandidaten angeboten. Super Admins können nicht als Vereins- oder Mannschaftsadmin zugewiesen werden.
+- JavaScript-Syntaxprüfung bestanden.
+
+**Noch erforderlich:** Praxistest in DEV. Insbesondere gültige Zuweisungen, falsche Vereinszugehörigkeit, fehlende Auswahl und Neutralität des Super Admins testen.
+
+**PROD:** Nicht geändert; kein PROD-Deployment.
