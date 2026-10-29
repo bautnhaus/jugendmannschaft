@@ -341,3 +341,33 @@ Beide Einträge wurden in `supabase_migrations.schema_migrations` nachgewiesen. 
 ### PROD-Rollout
 
 Nicht übertragen. Für PROD ist eine separate, geprüfte Release-Migration erforderlich. Die zwei DEV-Migrationseinträge sind vor einem PROD-Cutover nicht blind auszuführen; das Ziel-Schema und Funktionssignaturen müssen zuerst geprüft werden.
+
+
+## DB-DEV-006 – Admin-Auswahl bei Vereins- und Mannschaftsanlage (2026-10-29)
+
+**Umgebung:** Supabase DEV, Projekt `pzazqvvoruqnqhcorbwx`  
+**Migration:** `20261029051752_add_admin_selection_to_club_and_team_creation`  
+**Status:** Migration ausgeführt; RPC-Signaturen und Frontend-Syntax geprüft. Praxistest im Browser steht noch aus.  
+**PROD:** Unverändert.
+
+### Datenbankänderungen
+
+- `admin_list_club_admin_candidates()`: Nur für angemeldete Super Admins; liefert bestehende Konten, die noch keinem Verein zugeordnet sind und keine Super-Admin-Rolle haben.
+- `admin_list_team_admin_candidates(p_club_id)`: Liefert nur Mitglieder des angegebenen Vereins; der Zugriff ist auf Super Admins mit ausgewähltem Vereinskontext oder echte Vereinsadmins dieses Vereins begrenzt.
+- `admin_create_club(..., p_club_admin_user_id)`: verlangt einen gültigen, noch keinem Verein zugeordneten Benutzer und legt Verein, Vereinsmitgliedschaft sowie Rolle `club_admin` atomar an.
+- `admin_create_team(..., p_team_admin_user_id)`: verlangt ein Mitglied des ausgewählten Vereins und legt Mannschaft sowie `admin`-Rollen in `team_members` und `team_member_roles` atomar an.
+- Super Admins bleiben neutral und können nicht als Vereins- oder Mannschaftsadmin zugewiesen werden.
+- Ausführungsrechte der neuen/angepassten RPCs: `authenticated`; `anon` und `PUBLIC` sind explizit ausgeschlossen.
+
+### Frontend
+
+- Vereinsformular: Pflichtauswahl „Vereinsadmin“, dynamisch aus der geschützten RPC geladen.
+- Mannschaftsformular: Pflichtauswahl „Mannschaftsadmin“, dynamisch aus Mitgliedern des ausgewählten Vereins geladen.
+- Beide Anlagefunktionen senden die ausgewählte Benutzer-ID mit; die Datenbank validiert sie erneut unabhängig vom Frontend.
+- Syntaxprüfung der Inline-Skripte: bestanden.
+- Security Advisor erneut ausgeführt. Bestehende Hinweise zu SECURITY DEFINER-Funktionen und den bewusst ohne direkte Policies betriebenen Kontexttabellen bleiben bestehen; keine pauschalen Sicherheitsänderungen vorgenommen.
+
+### Noch offen
+
+- DEV-Praxistest: gültige Vereinsadmin-Zuweisung, gültige Mannschaftsadmin-Zuweisung, Ablehnung eines Kontos aus einem anderen Verein, Ablehnung fehlender Admin-Auswahl und Neutralität des Super Admins.
+- Keine Änderung an PROD.
