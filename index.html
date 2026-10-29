@@ -3315,6 +3315,43 @@ html[data-theme="dark"] .trainingPosition {
   document.addEventListener('DOMContentLoaded',function(){applyPreference(readPreference());});
 })();
 </script>
+
+
+<style id="dev-club-crest-transparent">
+/* DEV: Vereinswappen in Kachel und Detail direkt auf dem App-Hintergrund.
+   Bewusst nur .clubCrestAvatar; allgemeine Spieler-Avatare bleiben unverändert. */
+.playerListAvatar.clubCrestAvatar,
+.clubCrestAvatar .playerCardAvatarWrap,
+.clubCrestAvatar .playerAvatar {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+.clubCrestAvatar .playerAvatar {
+  overflow: visible !important;
+}
+.clubCrestAvatar .playerAvatar img {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  object-fit: contain !important;
+}
+/* Auch bei explizitem Darkmode und systemgesteuertem Darkmode transparent halten. */
+html[data-theme="dark"] .playerListAvatar.clubCrestAvatar,
+html[data-theme="dark"] .clubCrestAvatar .playerCardAvatarWrap,
+html[data-theme="dark"] .clubCrestAvatar .playerAvatar,
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) .playerListAvatar.clubCrestAvatar,
+  html:not([data-theme="light"]) .clubCrestAvatar .playerCardAvatarWrap,
+  html:not([data-theme="light"]) .clubCrestAvatar .playerAvatar {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+}
+</style>
+
 </body></html>
 
 <style>
