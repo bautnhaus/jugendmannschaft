@@ -1625,7 +1625,45 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
 }
 </style>
 
-\n<style id="admin-creation-dialog-design">\n.modalbox .adminCreationForm{display:flex;flex-direction:column;gap:12px;width:100%;box-sizing:border-box;background:transparent;border:0;padding:0;margin:0;box-shadow:none}\n.modalbox .adminCreationForm h2{margin:0 0 4px;font-size:1.35rem;line-height:1.25}\n.modalbox .adminCreationForm label{display:flex;flex-direction:column;gap:6px;width:100%;min-width:0;margin:0!important;font-size:1rem}\n.modalbox .adminCreationForm input:not([type=checkbox]),.modalbox .adminCreationForm select,.modalbox .adminCreationForm textarea{width:100%;max-width:100%;min-width:0;box-sizing:border-box}\n.modalbox .adminCreationForm .formrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin:0!important}\n.modalbox .adminCreationForm .formrow label{min-width:0}\n.modalbox .adminCreationForm .formrow button{width:100%;min-width:0}\n.modalbox .adminCreationForm #newClubTrainingDiffers{width:auto;flex:0 0 auto}\n@media(max-width:600px){.modalbox .adminCreationForm .formrow{grid-template-columns:1fr}.modalbox .adminCreationForm .formrow button{min-height:48px}}\n</style>\n</head>
+\n<style id="admin-creation-dialog-design">
+.modalbox .adminCreationForm{
+  display:flex;flex-direction:column;align-items:stretch;gap:14px;
+  width:100%;max-width:100%;min-width:0;box-sizing:border-box;
+  background:transparent;border:0;padding:0;margin:0;box-shadow:none;
+}
+.modalbox .adminCreationForm h2{margin:0 0 4px;font-size:1.35rem;line-height:1.25}
+.modalbox .adminCreationForm h4{margin:8px 0 0!important;padding-top:12px;border-top:1px solid var(--line);font-size:1.05rem}
+.modalbox .adminCreationForm label{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  gap:6px;width:100%;min-width:0;box-sizing:border-box;margin:0!important;
+  font-size:1rem;line-height:1.35;
+}
+.modalbox .adminCreationForm input:not([type=checkbox]):not([type=file]),
+.modalbox .adminCreationForm select,.modalbox .adminCreationForm textarea{
+  display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;margin:0!important;
+}
+.modalbox .adminCreationForm input[type=file]{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;margin:0!important;font-size:14px}
+.modalbox .adminCreationForm .formrow{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;
+  gap:12px;width:100%;min-width:0;margin:0!important;
+}
+.modalbox .adminCreationForm .formrow label{min-width:0}
+.modalbox .adminCreationForm .formrow button{width:100%;min-width:0;min-height:48px}
+.modalbox .adminCreationForm p{margin:0;line-height:1.45;overflow-wrap:anywhere}
+.modalbox .adminCreationForm #newClubTrainingDiffers{
+  display:inline-block!important;width:20px!important;min-width:20px;min-height:20px;
+  margin:2px 0 0!important;flex:0 0 auto;
+}
+.modalbox .adminCreationForm label:has(#newClubTrainingDiffers){
+  display:flex!important;flex-direction:row!important;align-items:flex-start!important;
+  gap:10px;line-height:1.4;
+}
+.modalbox .adminCreationForm #newClubCrestPreview{max-width:120px;max-height:120px;object-fit:contain}
+@media(max-width:600px){
+  .modalbox .adminCreationForm .formrow{grid-template-columns:minmax(0,1fr)}
+  .modalbox .adminCreationForm .formrow button{min-height:48px}
+}
+</style>\n</head>
 <body>
 <div id="loginView">
   <div id="loginCard" class="card">
