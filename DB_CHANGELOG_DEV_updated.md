@@ -283,3 +283,59 @@ Nicht übertragen. Vor PROD sind die vorhandenen Spalten/Constraints separat zu 
 | ID | Änderung | Umgebung | Status | PROD |
 |---|---|---|---|---|
 | DB-DEV-004 | E07: Serienname und JSONB-Overrides für individuelle Terminwerte | DEV | SQL-Ausführung und anschließender fachlicher DEV-Test bestätigt | Nicht übertragen |
+
+
+## DB-DEV-005 – Vereins- und Mannschaftsanlage (2026-10-29)
+
+**Umgebung:** Supabase DEV, Projekt `pzazqvvoruqnqhcorbwx`  
+**Status:** Migration ausgeführt; Schema-/Rechteprüfung bestätigt.  
+**PROD:** Nicht übertragen.
+
+### Ausgeführte Migrationen
+
+- `20261029045927_club_team_creation_and_club_context_20261029`
+- `20261029050011_club_team_creation_20261029`
+
+Beide Einträge wurden in `supabase_migrations.schema_migrations` nachgewiesen. Die zweite Ausführung war idempotent ausgelegt und bestätigte denselben Zielzustand.
+
+### Schemaänderungen
+
+**`public.clubs`**
+- `short_name`, `crest_path`
+- Heimspielstätte: `home_venue_name`, `home_venue_street`, `home_venue_postal_code`, `home_venue_city`, `home_venue_country`
+- `training_location_differs`
+- Abweichender Trainingsort: `training_venue_name`, `training_venue_street`, `training_venue_postal_code`, `training_venue_city`, `training_venue_country`
+- Check-Constraint: bei abweichendem Trainingsort müssen alle Adressfelder vollständig sein.
+
+**`public.teams`**
+- `birth_cohorts`
+- `abbreviation`
+
+**Kontext und RPCs**
+- Neue Tabelle `public.user_club_context`, RLS aktiviert, kein direkter Zugriff für `anon` oder `authenticated`.
+- Neue Funktionen: `can_manage_club_context`, `select_club_context`, `get_selected_club_context`, `clear_club_context`, `admin_create_club`, `admin_update_club_crest`.
+- `admin_create_team` erweitert um Jahrgänge, Kürzel und optionale Saison. Ein Super Admin wird dabei nicht automatisch als Vereins- oder Mannschaftsmitglied eingetragen; die Erstellung ist auf den ausdrücklich ausgewählten Vereinskontext begrenzt.
+- Bei einer angegebenen Saison wird diese als aktive Saison der neuen Mannschaft angelegt.
+
+**Storage**
+- Bucket `club-assets`, öffentliches Lesen der Wappen, Dateigrößenlimit 2 MiB, erlaubte MIME-Typen PNG/JPEG/WebP.
+- Upload, Lesen durch authentifizierte Nutzer, Aktualisierung und Löschen sind über Policies auf berechtigte Vereinsadmins bzw. den ausgewählten Super-Admin-Vereinskontext begrenzt.
+
+### Nachprüfung
+
+- Spalten in `clubs` und `teams` vorhanden.
+- `user_club_context` vorhanden und RLS aktiviert.
+- Neue administrative RPCs: EXECUTE für `authenticated`, nicht für `anon` oder `PUBLIC`; Berechtigungsprüfungen sind in den Funktionen enthalten.
+- Storage-Bucket und vier Policies für SELECT/INSERT/UPDATE/DELETE vorhanden.
+- Keine Vereins- oder Mannschaftsdatensätze wurden durch die Migration angelegt.
+- Security Advisor meldet unter anderem den erwarteten Hinweis, dass `user_club_context` RLS ohne direkte Policies hat (Zugriff erfolgt absichtlich nur über SECURITY DEFINER-RPCs). Außerdem gibt es bereits bestehende Hinweise zu SECURITY DEFINER-Funktionen und mehrfach permissiven Policies; diese sind separat zu bewerten und wurden nicht pauschal geändert.
+
+### Frontend
+
+- DEV-Branch `develop`: Vereinsanlage und Mannschaftsanlage ergänzt.
+- Syntaxprüfung der beiden Inline-Skripte: bestanden (das externe ES-Modul wurde für die lokale Parserprüfung ausgeklammert).
+- Browser-/Praxistest noch ausstehend; insbesondere Formularablauf, Wappen-Upload, Saisonverknüpfung und Rollenverhalten müssen in DEV getestet werden.
+
+### PROD-Rollout
+
+Nicht übertragen. Für PROD ist eine separate, geprüfte Release-Migration erforderlich. Die zwei DEV-Migrationseinträge sind vor einem PROD-Cutover nicht blind auszuführen; das Ziel-Schema und Funktionssignaturen müssen zuerst geprüft werden.
