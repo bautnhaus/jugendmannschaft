@@ -3337,10 +3337,6 @@ html[data-theme="dark"] .trainingPosition {
   box-shadow: none !important;
   object-fit: contain !important;
 }
-/* Auch bei explizitem Darkmode und systemgesteuertem Darkmode transparent halten. */
-html[data-theme="dark"] .playerListAvatar.clubCrestAvatar,
-html[data-theme="dark"] .clubCrestAvatar .playerCardAvatarWrap,
-html[data-theme="dark"] .clubCrestAvatar .playerAvatar,
 @media (prefers-color-scheme: dark) {
   html:not([data-theme="light"]) .playerListAvatar.clubCrestAvatar,
   html:not([data-theme="light"]) .clubCrestAvatar .playerCardAvatarWrap,
@@ -3349,6 +3345,13 @@ html[data-theme="dark"] .clubCrestAvatar .playerAvatar,
     border: 0 !important;
     box-shadow: none !important;
   }
+}
+html[data-theme="dark"] .playerListAvatar.clubCrestAvatar,
+html[data-theme="dark"] .clubCrestAvatar .playerCardAvatarWrap,
+html[data-theme="dark"] .clubCrestAvatar .playerAvatar {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 </style>
 
