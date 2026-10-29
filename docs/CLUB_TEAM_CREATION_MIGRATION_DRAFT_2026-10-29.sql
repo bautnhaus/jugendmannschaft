@@ -354,7 +354,7 @@ using (
 -- version. Super Admins must have selected this exact club; they remain neutral.
 drop function if exists public.admin_create_team(uuid, text, integer);
 
-create function public.admin_create_team(
+create or replace function public.admin_create_team(
   p_club_id uuid,
   p_name text,
   p_recommended_squad_size integer default 16,
