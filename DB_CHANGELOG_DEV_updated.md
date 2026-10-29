@@ -224,6 +224,8 @@ Für `training_series.updated_at` ist weiterhin nicht abschließend verifiziert,
 
 Die Migration ist erfolgreich ausgeführt. Die Constraint-Erstellung ist nicht als beliebig wiederholbare Migration zu behandeln; vor einer erneuten Ausführung muss der tatsächliche DEV-Stand berücksichtigt werden.
 
+- Nachtrag 29.10.2026: Das Vereinswappen wird nun nach erfolgreichem Upload sowohl in der Vereinsliste als auch im Vereinsdetail angezeigt. Die Darstellung verwendet `object-fit: contain` und einen transparenten Hintergrund, damit transparente PNGs nicht zugeschnitten oder mit einer deckenden Fläche überlagert werden. Commit: `0e1ca64e89ff4f56973ff6755b3e3ec01b847ecf` (Anzeige), danach wurden die Formular-Handler im selben Frontend wiederhergestellt und die Inline-JavaScript-Syntax erneut geprüft; Commit `158072225c9aecd071c515fb55eab95b943dc3b6`.
+
 ### PROD-Rollout
 
 Keine Änderung an PROD. Vor einer PROD-Übernahme sind die exakten ausgeführten SQL-Anweisungen, der DEV-Teststatus und der PROD-Bestand getrennt abzugleichen.
