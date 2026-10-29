@@ -91,5 +91,7 @@ Vorgesehene SQL-Bausteine:
 - Die DEV-Migrationen `20261029045927_club_team_creation_and_club_context_20261029` und `20261029050011_club_team_creation_20261029` wurden in der Supabase-Migrationshistorie bestätigt.
 - Die Schema- und Rechte-Nachprüfung ist abgeschlossen; Details stehen in `DB_CHANGELOG_DEV_updated.md` unter DB-DEV-005.
 - `index.html` in `develop` enthält jetzt ein Formular zur Vereinsanlage einschließlich Adressen, optionalem Wappen und bedingtem Trainingsort sowie ein Formular zur Mannschaftsanlage mit Jahrgängen, Saison, Kürzel und Kadergröße.
+
+- Nachtrag: Vereinswappen werden nach dem Upload auch in der Vereinsliste und im Vereinsdetail angezeigt; PNG-Transparenz wird durch `object-fit: contain` und transparenten Hintergrund erhalten.
 - Die Inline-JavaScript-Syntaxprüfung ist bestanden. Der interaktive Praxistest im Browser steht noch aus.
 - **PROD bleibt unverändert.**
