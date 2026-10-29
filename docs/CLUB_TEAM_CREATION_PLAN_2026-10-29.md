@@ -4,7 +4,7 @@
 **Arbeitsbranch:** `develop` im Repository `bautnhaus/jugendmannschaft`  
 **Supabase:** ausschließlich DEV, Projekt `pzazqvvoruqnqhcorbwx`  
 **PROD:** unverändert  
-**Status:** Bestandsaufnahme abgeschlossen; SQL-Entwurf dokumentiert; Ausführung wartet auf ausdrückliche Freigabe
+**Status:** SQL-Migration in DEV ausgeführt; Frontendformulare ergänzt; Praxistest ausstehend
 
 ## 1. Bestehende Dokumentation als Grundlage
 
@@ -86,15 +86,10 @@ Vorgesehene SQL-Bausteine:
 7. Dieses Dokument sowie den bestehenden DB-Changelog/SQL-Release-Katalog mit Migration-ID, Prüfergebnissen und offenem PROD-Cutover aktualisieren.
 8. PROD bleibt bis zu einer separaten Freigabe unverändert.
 
-## 6. SQL-Entwurf und Status
+## 6. Ausführung und aktueller Status
 
-- SQL-Entwurf: [CLUB_TEAM_CREATION_MIGRATION_DRAFT_2026-10-29.sql](CLUB_TEAM_CREATION_MIGRATION_DRAFT_2026-10-29.sql).
-- Der Entwurf ist ein Review-Dokument und wurde noch nicht als Supabase-Migration ausgeführt.
-- Vor der Ausführung sind die Funktionsabhängigkeiten und die vollständigen Postflight-Prüfungen nochmals zu prüfen.
-- Die aktuelle DB-Änderungsdatei `DB_CHANGELOG_DEV_updated.md` wird erst nach bestätigter DEV-Ausführung um einen tatsächlich angewendeten Eintrag ergänzt; so wird ein Entwurf nicht fälschlich als ausgeführte Änderung dokumentiert.
-
-**Bestandsaufnahme:** abgeschlossen (read-only).  
-**SQL-Entwurf:** dokumentiert, Freigabe ausstehend.  
-**Migration:** noch nicht ausgeführt.  
-**Frontend:** noch nicht geändert.  
-**PROD:** unverändert.
+- Die DEV-Migrationen `20261029045927_club_team_creation_and_club_context_20261029` und `20261029050011_club_team_creation_20261029` wurden in der Supabase-Migrationshistorie bestätigt.
+- Die Schema- und Rechte-Nachprüfung ist abgeschlossen; Details stehen in `DB_CHANGELOG_DEV_updated.md` unter DB-DEV-005.
+- `index.html` in `develop` enthält jetzt ein Formular zur Vereinsanlage einschließlich Adressen, optionalem Wappen und bedingtem Trainingsort sowie ein Formular zur Mannschaftsanlage mit Jahrgängen, Saison, Kürzel und Kadergröße.
+- Die Inline-JavaScript-Syntaxprüfung ist bestanden. Der interaktive Praxistest im Browser steht noch aus.
+- **PROD bleibt unverändert.**
