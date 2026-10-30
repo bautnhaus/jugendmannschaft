@@ -3041,7 +3041,7 @@ window.addClubMemberFromSettings=async()=>{if(!canManageClub||!currentClubId){sh
 window.mehrCurrentPage='home';
 window.backMehrPage=()=>{
   const page=window.mehrCurrentPage||'home';
-  const parents={management:'home',club:'home',personal:'home',data:'home',members:'management',teams:'management',squad:'teams',positions:'teams',trainers:'teams'};
+  const parents={management:'home',club:'home',personal:'home',data:'home',members:'management',teams:'management',squad:'teams',positions:'teams',trainers:'members'};
   window.openMehrPage(parents[page]||'home');
 };
 window.openMehrPage=(page)=>{
@@ -3142,9 +3142,20 @@ window.openMehrPage=(page)=>{
   }
   else if(page==='management'){
     legacy.classList.add('hidden');
-    menu.innerHTML=(hasClubOrPlatformAdmin?row('Mitglieder und Rollen','Vereins- und Mannschaftsrollen verwalten','group','members'):'')+row('Mannschaften','Mannschaftseinstellungen und Trainerverwaltung','groups','teams');
+    menu.innerHTML=((isTeamAdmin||hasClubOrPlatformAdmin)?row('Mitglieder und Rollen','Mitglieder, Trainer und Mannschaftsrollen verwalten','group','members'):'')+row('Mannschaften','Mannschaftseinstellungen verwalten','groups','teams');
   } else if(page==='members'){
-    if(isSuperAdmin&&contextReadOnly&&team){
+    if(isTeamAdmin){
+      showSection(admin);
+      adminCards.forEach(x=>x.style.display='none');
+      if(trainers)trainers.style.display='';
+      if(data)data.style.display='none';
+      if(backup)backup.style.display='none';
+      const trainerHeading=trainers?.querySelector('h3');
+      if(trainerHeading)trainerHeading.textContent='Mitglieder und Rollen der Mannschaft';
+      const trainerIntro=trainers?.querySelector('p.muted');
+      if(trainerIntro)trainerIntro.textContent='Füge Trainer hinzu und verwalte ihre Mannschaftsrolle direkt in der Mitglieder- und Rollenverwaltung.';
+    }
+    else if(isSuperAdmin&&contextReadOnly&&team){
       hideAll();pageView.classList.remove('hidden');legacy.classList.add('hidden');menu.classList.add('hidden');content.classList.remove('hidden');content.innerHTML='<div class="card"><p class="muted small">Mitglieder und Rollen werden geladen …</p></div>';
       (async()=>{try{const {data:teamRow,error:teamError}=await getClient().from('teams').select('id,name,club_id').eq('id',team).single();if(teamError)throw teamError;const clubId=currentClubId||teamRow.club_id;const {data,error}=await getClient().rpc('get_club_members_v2',{p_club_id:clubId});if(error)throw error;const rows=(data||[]).filter(m=>(m.teams||[]).some(t=>t.team_id===teamRow.id));content.innerHTML='<div class="card"><h3>'+esc(teamRow.name||'Mannschaft')+'</h3><p class="muted small">Mitglieder und ihre Rollen in dieser Mannschaft.</p><div class="playerListRows">'+(rows.length?rows.map(m=>'<div class="playerListRow" style="cursor:default"><span class="playerListAvatar"><span class="playerAvatar"><span class="material-symbols-outlined">person</span></span></span><span class="playerListIdentity"><span class="playerListName">'+esc(m.email||'Konto ohne E-Mail')+'</span><span class="muted small">'+esc(((m.teams||[]).find(t=>t.team_id===teamRow.id)?.roles||[]).join(', ')||'Mitglied')+'</span></span></div>').join(''):'<p class="muted small">Für diese Mannschaft wurden keine Mitglieder gefunden.</p>')+'</div></div>';}catch(e){console.error(e);content.innerHTML='<div class="card"><p class="muted">Mitglieder und Rollen konnten nicht geladen werden.</p></div>';}})();
     }
@@ -3166,8 +3177,7 @@ window.openMehrPage=(page)=>{
       menu.classList.remove('hidden');
       content.classList.add('hidden');
       menu.innerHTML=row('Kadergröße','Kader-Zielgröße einstellen','groups','squad')
-        +row('Positionen','Spielpositionen verwalten','sports_soccer','positions')
-        +row('Trainerverwaltung','Trainer und Rollen verwalten','manage_accounts','trainers');
+        +row('Positionen','Spielpositionen verwalten','sports_soccer','positions');
     }
   } else if(['squad','positions','trainers'].includes(page)){
     showSection(admin);adminCards.forEach(x=>x.style.display='none');const target=page==='squad'?squad:page==='positions'?positions:trainers;if(target)target.style.display='';if(data)data.style.display='none';if(backup)backup.style.display='none';menu.classList.add('hidden');content.classList.remove('hidden');/* Die bestehende Karte bleibt an ihrem DOM-Platz; nur die Darstellung wird gefiltert. */
