@@ -3077,9 +3077,9 @@ window.openMehrPage=(page)=>{
     if(isPlatform){showSection(club);menu.classList.add('hidden');content.classList.remove('hidden');}
     else {showSection(admin);if(squad)squad.style.display='none';if(positions)positions.style.display='none';if(trainers)trainers.style.display='none';if(data)data.style.display='none';if(backup)backup.style.display='none';menu.innerHTML=row('Kadergröße','Kader-Zielgröße einstellen','groups','squad')+row('Positionen','Spielpositionen verwalten','sports_soccer','positions')+row('Trainerverwaltung','Trainer und Rollen verwalten','manage_accounts','trainers');}
   } else if(['squad','positions','trainers'].includes(page)){
-    showSection(admin);adminCards.forEach(x=>x.style.display='none');const target=page==='squad'?squad:page==='positions'?positions:trainers;if(target)target.style.display='';if(data)data.style.display='none';if(backup)backup.style.display='none';menu.classList.add('hidden');content.classList.remove('hidden');if(target)content.appendChild(target);
+    showSection(admin);adminCards.forEach(x=>x.style.display='none');const target=page==='squad'?squad:page==='positions'?positions:trainers;if(target)target.style.display='';if(data)data.style.display='none';if(backup)backup.style.display='none';menu.classList.add('hidden');content.classList.remove('hidden');/* Die bestehende Karte bleibt an ihrem DOM-Platz; nur die Darstellung wird gefiltert. */
   } else if(page==='data'){
-    showSection(admin);adminCards.forEach(x=>x.style.display='none');if(data)data.style.display='';if(backup)backup.style.display='';menu.classList.add('hidden');content.classList.remove('hidden');if(data)content.appendChild(data);if(backup)content.appendChild(backup);
+    showSection(admin);adminCards.forEach(x=>x.style.display='none');if(data)data.style.display='';if(backup)backup.style.display='';menu.classList.add('hidden');content.classList.remove('hidden');/* Backup-Karten bleiben im bestehenden Verwaltungsbereich; keine DOM-Verschiebung. */
   }
   window.mehrCurrentPage=page;
   const context=$('mehrActiveContext');if(context){const text=$('headerSub')?.textContent||'';const show=page==='home'&&text&&text!=='Kader · Training · Spieltag';context.textContent=show?'Aktueller Kontext: '+text:'';context.classList.toggle('hidden',!show);}
