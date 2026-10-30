@@ -3048,7 +3048,7 @@ window.openMehrPage=(page)=>{
   const squad=$('teamSquadSettingsCard'),positions=$('teamPositionSettingsCard'),trainers=$('teamTrainerSettingsCard'),backup=$('backupDiagnosticCard'),data=$('dataBackupCard');
   const hideAll=()=>{sections.forEach(x=>x.classList.add('hidden'));home.classList.add('hidden');pageView.classList.add('hidden');};
   const row=(title,desc,icon,next)=>'<button type="button" class="playerListRow" onclick="window.openMehrPage(\''+next+'\')"><span class="playerListAvatar"><span class="playerAvatar"><span class="material-symbols-outlined">'+icon+'</span></span></span><span class="playerListIdentity"><span class="playerListName">'+title+'</span><span class="muted small">'+desc+'</span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>';
-  const showSection=(section)=>{hideAll();if(section)section.classList.remove('hidden');pageView.classList.remove('hidden');menu.classList.add('hidden');content.classList.add('hidden');};
+  const showSection=(section)=>{hideAll();legacy.classList.remove('hidden');if(section)section.classList.remove('hidden');pageView.classList.remove('hidden');menu.classList.add('hidden');content.classList.add('hidden');};
   sections.forEach(x=>x.classList.remove('hidden'));
   adminCards.forEach(x=>x.style.display='');
   if(squad)squad.style.display='';if(positions)positions.style.display='';if(trainers)trainers.style.display='';if(backup)backup.style.display='';if(data)data.style.display='';
@@ -3066,11 +3066,11 @@ window.openMehrPage=(page)=>{
     data:['Daten & Sicherung','Sichere oder stelle Daten wieder her.']
   };
   const c=config[page]||config.home;$('mehrPageTitle').textContent=c[0];$('mehrPageSubtitle').textContent=c[1];
-  if(page==='home'){pageView.classList.add('hidden');home.classList.remove('hidden');}
+  if(page==='home'){legacy.classList.add('hidden');pageView.classList.add('hidden');home.classList.remove('hidden');}
   else if(page==='personal'){showSection(personal);}
   else if(page==='club'){showSection(club);}
   else if(page==='management'){
-    menu.innerHTML=row('Mitglieder und Rollen','Vereins- und Mannschaftsrollen verwalten','group','members')+row('Mannschaften','Mannschaften und ihre Einstellungen','groups','teams');
+    legacy.classList.add('hidden');menu.innerHTML=row('Mitglieder und Rollen','Vereins- und Mannschaftsrollen verwalten','group','members')+row('Mannschaften','Mannschaften und ihre Einstellungen','groups','teams');
   } else if(page==='members'){showSection(club);}
   else if(page==='teams'){
     const isPlatform=!!$('superAdminPanel')&&!$('superAdminPanel').classList.contains('hidden');
