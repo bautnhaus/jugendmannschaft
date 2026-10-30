@@ -2693,7 +2693,7 @@ function renderTeams(teams,warning=''){return renderTeamsHtml(teams,'movePlayer'
 function renderTrainerList(){
   const box=$('trainerList');
   if(!box)return;
-  if(role!=='admin'){box.innerHTML='';return;}
+  if(role!=='admin'&&!(contextReadOnly&&isSuperAdmin)){box.innerHTML='';return;}
   if(!state.trainers.length){box.innerHTML='<p class="muted">Keine Trainer gefunden.</p>';return;}
   box.innerHTML=state.trainers.map(t=>{
     const isMe=t.user_id===currentUser?.id;
@@ -3156,8 +3156,17 @@ window.openMehrPage=(page)=>{
       if(trainerIntro)trainerIntro.textContent='Füge Trainer hinzu und verwalte ihre Mannschaftsrolle direkt in der Mitglieder- und Rollenverwaltung.';
     }
     else if(isSuperAdmin&&contextReadOnly&&team){
-      hideAll();pageView.classList.remove('hidden');legacy.classList.add('hidden');menu.classList.add('hidden');content.classList.remove('hidden');content.innerHTML='<div class="card"><p class="muted small">Mitglieder und Rollen werden geladen …</p></div>';
-      (async()=>{try{const {data:teamRow,error:teamError}=await getClient().from('teams').select('id,name,club_id').eq('id',team).single();if(teamError)throw teamError;const clubId=currentClubId||teamRow.club_id;const {data,error}=await getClient().rpc('get_club_members_v2',{p_club_id:clubId});if(error)throw error;const rows=(data||[]).filter(m=>(m.teams||[]).some(t=>t.team_id===teamRow.id));content.innerHTML='<div class="card"><h3>'+esc(teamRow.name||'Mannschaft')+'</h3><p class="muted small">Mitglieder und ihre Rollen in dieser Mannschaft.</p><div class="playerListRows">'+(rows.length?rows.map(m=>'<div class="playerListRow" style="cursor:default"><span class="playerListAvatar"><span class="playerAvatar"><span class="material-symbols-outlined">person</span></span></span><span class="playerListIdentity"><span class="playerListName">'+esc(m.email||'Konto ohne E-Mail')+'</span><span class="muted small">'+esc(((m.teams||[]).find(t=>t.team_id===teamRow.id)?.roles||[]).join(', ')||'Mitglied')+'</span></span></div>').join(''):'<p class="muted small">Für diese Mannschaft wurden keine Mitglieder gefunden.</p>')+'</div></div>';}catch(e){console.error(e);content.innerHTML='<div class="card"><p class="muted">Mitglieder und Rollen konnten nicht geladen werden.</p></div>';}})();
+      // Superadmins dürfen im ausdrücklich gewählten Mannschaftskontext Rollen für Supportzwecke verwalten.
+      // Die bestehenden Admin-Guards und serverseitigen RPC-Berechtigungen bleiben maßgeblich.
+      showSection(admin);
+      adminCards.forEach(x=>x.style.display='none');
+      if(trainers)trainers.style.display='';
+      if(data)data.style.display='none';
+      if(backup)backup.style.display='none';
+      const trainerHeading=trainers?.querySelector('h3');
+      if(trainerHeading)trainerHeading.textContent='Mitglieder und Rollen der Mannschaft';
+      const trainerIntro=trainers?.querySelector('p.muted');
+      if(trainerIntro)trainerIntro.textContent='Mitglieder, Trainer und Mannschaftsrollen im ausgewählten Kontext verwalten.';
     }
     else if(isSuperAdmin&&clubOnlyMode){window.superAdminNavigationMode='management';window.superAdminNextSection='members';showSection(club);$('superAdminClubListView')?.classList.remove('hidden');$('superAdminClubDetailView')?.classList.add('hidden');$('superAdminClubSubView')?.classList.add('hidden');$('superAdminTeamDetailView')?.classList.add('hidden');$('superAdminTeamSettingView')?.classList.add('hidden');}
     else if(hasClubOrPlatformAdmin){showSection(club);}
