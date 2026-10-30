@@ -3085,9 +3085,43 @@ window.openMehrPage=(page)=>{
   else if(page==='club'){
     if(isTeamWorkspace){
       hideAll();pageView.classList.remove('hidden');menu.classList.add('hidden');content.classList.remove('hidden');
-      const heading=esc(( $('headerSub')?.textContent||'Mannschaft' ).split(' · ')[0]);
-      const seasonLabel=season?.name?'<p class="muted small">Aktive Saison: '+esc(season.name)+'</p>':'<p class="muted small">Für diese Mannschaft ist keine aktive Saison hinterlegt.</p>';
-      content.innerHTML='<div class="card"><h3>Deine Mannschaft</h3><p>'+heading+'</p>'+seasonLabel+'<p class="muted small">Die angezeigten Funktionen richten sich nach deiner Mannschaftsrolle.</p></div>';
+      content.innerHTML='<div class="card"><p class="muted small">Mannschaftsinformationen werden geladen …</p></div>';
+      (async()=>{
+        try{
+          const client=getClient();
+          const {data:teamInfo,error:teamInfoError}=await client.from('teams')
+            .select('id,name,club_id,recommended_squad_size,abbreviation')
+            .eq('id',team).single();
+          if(teamInfoError)throw teamInfoError;
+          let clubInfo=null;
+          if(teamInfo.club_id){
+            const {data,error}=await client.from('clubs').select('id,name,short_name')
+              .eq('id',teamInfo.club_id).maybeSingle();
+            if(error)throw error;
+            clubInfo=data;
+          }
+          const {data:activeSeasons,error:seasonError}=await client.from('seasons')
+            .select('id,name,start_date,end_date,is_active')
+            .eq('team_id',teamInfo.id).eq('is_active',true).limit(1);
+          if(seasonError)throw seasonError;
+          const activeSeason=activeSeasons?.[0]||null;
+          const details=[
+            '<div class="card"><h3>Deine Mannschaft</h3>',
+            '<p><strong>Mannschaftsname</strong><br>'+esc(teamInfo.name||'—')+'</p>',
+            '<p><strong>Verein</strong><br>'+esc(clubInfo?.name||clubInfo?.short_name||'Kein Verein zugeordnet')+'</p>',
+            '<p><strong>Kader-Zielgröße</strong><br>'+esc(String(teamInfo.recommended_squad_size??'—'))+'</p>',
+            activeSeason
+              ? '<p><strong>Aktive Saison</strong><br>'+esc(activeSeason.name||'—')+'</p>'
+              : '<p class="muted small">Für diese Mannschaft ist keine aktive Saison hinterlegt.</p>',
+            '<p class="muted small">Deine Rolle: '+esc(currentTeamRoles.includes('admin')?'Mannschaftsadmin':'Trainer')+'. Die angezeigten Informationen richten sich nach deinem ausgewählten Mannschaftskontext.</p>',
+            '</div>'
+          ].join('');
+          if(window.mehrCurrentPage==='club')content.innerHTML=details;
+        }catch(error){
+          console.error('Mannschaftsinformationen konnten nicht geladen werden:',error);
+          if(window.mehrCurrentPage==='club')content.innerHTML='<div class="card"><h3>Deine Mannschaft</h3><p class="muted">Die aktuellen Mannschaftsinformationen konnten nicht geladen werden.</p><p class="small muted">'+esc(error?.message||'Unbekannter Fehler')+'</p></div>';
+        }
+      })();
     }else{showSection(club);}
   }
   else if(page==='management'){
