@@ -3095,7 +3095,20 @@ window.openMehrPage=(page)=>{
   else if(page==='teams'){
     const isPlatform=!!$('superAdminPanel')&&!$('superAdminPanel').classList.contains('hidden');
     if(isPlatform){showSection(club);menu.classList.add('hidden');content.classList.remove('hidden');}
-    else {showSection(admin);if(squad)squad.style.display='none';if(positions)positions.style.display='none';if(trainers)trainers.style.display='none';if(data)data.style.display='none';if(backup)backup.style.display='none';menu.innerHTML=row('Kadergröße','Kader-Zielgröße einstellen','groups','squad')+row('Positionen','Spielpositionen verwalten','sports_soccer','positions')+row('Trainerverwaltung','Trainer und Rollen verwalten','manage_accounts','trainers');}
+    else {
+      // Die Unterpunkte müssen im neuen Mehr-Seitenlayout sichtbar bleiben.
+      // showSection(admin) blendet das Menü aus und zeigt die alte Überschrift
+      // „Einstellungen“ – deshalb hier die Seite direkt aufbauen.
+      hideAll();
+      pageView.classList.remove('hidden');
+      legacy.classList.add('hidden');
+      home.classList.add('hidden');
+      menu.classList.remove('hidden');
+      content.classList.add('hidden');
+      menu.innerHTML=row('Kadergröße','Kader-Zielgröße einstellen','groups','squad')
+        +row('Positionen','Spielpositionen verwalten','sports_soccer','positions')
+        +row('Trainerverwaltung','Trainer und Rollen verwalten','manage_accounts','trainers');
+    }
   } else if(['squad','positions','trainers'].includes(page)){
     showSection(admin);adminCards.forEach(x=>x.style.display='none');const target=page==='squad'?squad:page==='positions'?positions:trainers;if(target)target.style.display='';if(data)data.style.display='none';if(backup)backup.style.display='none';menu.classList.add('hidden');content.classList.remove('hidden');/* Die bestehende Karte bleibt an ihrem DOM-Platz; nur die Darstellung wird gefiltert. */
   } else if(page==='data'){
