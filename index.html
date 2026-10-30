@@ -1649,6 +1649,11 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
 .modalbox .adminCreationForm .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
 .modalbox .adminCreationForm .toolbar button{flex:1 1 100%;width:100%;min-width:0;min-height:44px;white-space:normal}
 </style>
+
+<style>
+/* Phase 2.1: Mehr-Navigation mit eigenständigen Seiten statt aufgeklappten Kacheln. */
+.mehrView{min-width:0}.mehrContext{margin:0 0 12px;padding:8px 2px}.mehrMenu{display:flex;flex-direction:column;gap:8px}.mehrPageHeader{margin:4px 0 16px;align-items:center}.mehrPageHeader h2{font-size:20px}.mehrMenu .playerListRow{width:100%;text-align:left;cursor:pointer}.mehrMenu .playerListIdentity{min-width:0}.mehrMenu .playerListName{display:block}
+</style>
 </head>
 <body>
 <div id="loginView">
@@ -1677,7 +1682,7 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
 <div id="appView" class="hidden">
 <header><h1>Jugendmannschaft</h1><small id="headerSub">Kader · Training · Spieltag</small></header>
 <main>
-  <div class="tabs dashboardLegacyTabs"><button data-tab="dashboard">Dashboard</button><button data-tab="players">Spieler</button><button data-tab="trainings">Training</button><button data-tab="matchday">Spieltag</button><button id="settingsTab" data-tab="settings">Einstellungen</button></div>
+  <div class="tabs dashboardLegacyTabs"><button data-tab="dashboard">Dashboard</button><button data-tab="players">Spieler</button><button data-tab="trainings">Training</button><button data-tab="matchday">Spieltag</button><button id="settingsTab" data-tab="settings">Mehr</button></div>
   <section id="dashboard" class="tab dashboardPage">
     <div class="dashboardWelcome"><div><h2 id="dashboardGreeting">Hallo, Trainer!</h2><p id="dashboardTeamSeason">Deine Mannschaft im Überblick</p></div><span class="dashboardWelcomeIcon material-symbols-outlined" aria-hidden="true">waving_hand</span></div>
     <div class="card"><div class="statsGrid" style="margin-top:0"><div><div class="muted">Spieler</div><div id="dashboardPlayerCount" class="stat">0</div></div><div><div class="muted">Trainings</div><div id="dashboardTrainingCount" class="stat">0</div></div><div><div class="muted">Spieltage</div><div id="dashboardMatchdayCount" class="stat">0</div></div></div></div>
@@ -1687,6 +1692,22 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
   <section id="trainings" class="tab hidden"><div class="card trainingPageCard"><div class="toolbar trainingPageHeader"><h2 style="margin:0;flex:1">Trainings</h2><button class="primary iconAddButton" onclick="addTraining()" aria-label="Training hinzufügen" title="Training hinzufügen">+</button></div><div id="trainingList"></div></div></section>
   <section id="matchday" class="tab hidden"><div class="card trainingPageCard"><div class="toolbar trainingPageHeader"><h2 style="margin:0;flex:1">Spieltage</h2><button class="primary iconAddButton" onclick="addMatchday()" aria-label="Spieltag anlegen" title="Spieltag anlegen">+</button></div><div id="matchdayList"></div></div></section>
   <section id="settings" class="tab hidden">
+  <div id="mehrHomeView" class="mehrView">
+    <div class="sectionHeading"><div class="sectionIcon"><span class="material-symbols-outlined">more_horiz</span></div><div><h2>Mehr</h2><p class="muted">Konto, Verein und weitere Einstellungen.</p></div></div>
+    <div id="mehrActiveContext" class="mehrContext muted small hidden"></div>
+    <div class="playerListRows mehrMenu">
+      <button type="button" class="playerListRow" onclick="window.openMehrPage('personal')"><span class="playerListAvatar"><span class="playerAvatar"><span class="material-symbols-outlined">person</span></span></span><span class="playerListIdentity"><span class="playerListName">Dein Bereich</span><span class="muted small">Konto und Darstellung</span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>
+      <button type="button" class="playerListRow" onclick="window.openMehrPage('club')"><span class="playerListAvatar"><span class="playerAvatar"><span class="material-symbols-outlined">groups</span></span></span><span class="playerListIdentity"><span class="playerListName">Verein / Mannschaft</span><span class="muted small">Informationen und Arbeitskontext</span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>
+      <button type="button" class="playerListRow" onclick="window.openMehrPage('management')"><span class="playerListAvatar"><span class="playerAvatar"><span class="material-symbols-outlined">settings</span></span></span><span class="playerListIdentity"><span class="playerListName">Verwaltung</span><span class="muted small">Mitglieder, Rollen und Mannschaftseinstellungen</span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>
+      <button type="button" class="playerListRow" onclick="window.openMehrPage('data')"><span class="playerListAvatar"><span class="playerAvatar"><span class="material-symbols-outlined">database</span></span></span><span class="playerListIdentity"><span class="playerListName">Daten &amp; Sicherung</span><span class="muted small">Daten exportieren, wiederherstellen und prüfen</span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>
+    </div>
+  </div>
+  <div id="mehrPageView" class="mehrView hidden">
+    <div class="detailHeader mehrPageHeader"><button type="button" class="iconBack" aria-label="Zurück zu Mehr" onclick="window.openMehrPage('home')"><span class="material-symbols-outlined">arrow_back</span></button><div><h2 id="mehrPageTitle" style="margin:0">Einstellungen</h2><p id="mehrPageSubtitle" class="muted small" style="margin:4px 0 0">Wähle einen Bereich.</p></div></div>
+    <div id="mehrPageMenu" class="playerListRows mehrMenu"></div>
+    <div id="mehrPageContent"></div>
+  </div>
+  <div id="mehrLegacyContent" class="hidden">
   <div class="settingsSection">
     <div class="sectionHeading"><div class="sectionIcon">👤</div><div><h2>Mein Konto</h2><p class="muted">Dein persönlicher Zugang zur Mannschafts-App.</p></div></div>
     <div class="card accountCard"><p id="accountInfo" class="small muted"></p><div class="formrow"><label>E-Mail-Adresse<input id="accountEmail" type="email" autocomplete="email"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changeEmail()">E-Mail ändern</button></div></div><div class="formrow" style="margin-top:10px"><label>Neues Passwort<input id="newPassword" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changePassword()">Passwort ändern</button></div></div><div class="notice small" style="margin-top:12px">Nach der Eingabe deiner neuen E-Mail-Adresse erhältst du eine E-Mail zur Bestätigung.</div><div class="toolbar" style="margin-top:10px"><button onclick="logout()">Abmelden</button><button class="danger" onclick="deleteMyAccount()">Mein Konto löschen</button></div></div>
@@ -1711,8 +1732,9 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
     <div class="card" id="teamSquadSettingsCard"><h3>Kaderplanung</h3><p class="muted">Lege fest, wie viele Spieler standardmäßig in der Kaderempfehlung berücksichtigt werden. Die Einstellung gilt für die Empfehlungsdarstellung in der Spielerliste und für neu berechnete Spieltagsempfehlungen. Bereits gespeicherte Spieltagsempfehlungen bleiben unverändert.</p><div class="formrow"><label>Kader-Zielgröße (1-60)<input id="recommendedSquadSizeInput" type="number" min="1" max="60" value="16" inputmode="numeric"></label><div style="display:flex;align-items:end"><button type="button" class="primary" style="width:100%" onclick="saveRecommendedSquadSize()">Kader-Zielgröße speichern</button></div></div></div>
     <div class="card" id="teamPositionSettingsCard"><h3>Positionen</h3><div id="positionSettings"></div></div>
     <div class="card" id="teamTrainerSettingsCard"><h3>Trainer verwalten</h3><p class="muted">Trainer hinzufügen, Rollen verwalten und Anzeigenamen festlegen.</p><div class="formrow"><label>Eindeutiger Trainername<input id="trainerLabelAdd" type="text" placeholder="z. B. Max Mustermann" autocomplete="off"></label><label>E-Mail des Trainers<input id="trainerEmailAdd" type="email" placeholder="trainer@example.de"></label></div><label style="display:block;margin-top:10px">Rolle<select id="trainerRoleAdd"><option value="trainer">Trainer</option><option value="admin">Admin</option></select></label><button class="primary" style="margin-top:10px" onclick="addTrainerToTeam()">Trainer zur Mannschaft hinzufügen</button><div class="notice small" style="margin-top:10px">Aus Sicherheitsgründen kann die App keine Passwörter anderer Trainer sehen oder ändern. Jeder Trainer verwaltet sein eigenes Konto.</div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><h3>Trainer der Mannschaft</h3><div id="trainerList"></div></div>
-    <div class="card"><h3>Daten</h3><p class="muted">Backup der Mannschaftsdaten sichern oder wiederherstellen.</p><div class="toolbar"><button class="jsonButton" onclick="exportJSON()">JSON sichern</button><label class="btn jsonButton" for="importFile">JSON wiederherstellen</label><input id="importFile" type="file" accept="application/json,.json" onchange="importJSON(event)" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;"></div></div>
+    <div class="card" id="dataBackupCard"><h3>Daten</h3><p class="muted">Backup der Mannschaftsdaten sichern oder wiederherstellen.</p><div class="toolbar"><button class="jsonButton" onclick="exportJSON()">JSON sichern</button><label class="btn jsonButton" for="importFile">JSON wiederherstellen</label><input id="importFile" type="file" accept="application/json,.json" onchange="importJSON(event)" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;"></div></div>
     <div class="card" id="backupDiagnosticCard"><h3>Backup-Diagnose</h3><p class="muted small">Diese Anzeige bleibt auch ohne Fehler sichtbar. Sie zeigt den letzten Status eines Backup-Imports auf diesem Gerät.</p><div id="backupDiagnosticStatus" role="status" class="notice small">Diagnose aktiv – bisher wurde kein Importversuch protokolliert.</div><div id="backupDiagnosticDetails" class="small muted" style="margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere">Noch keine Fehlerdetails vorhanden.</div><div class="toolbar" style="margin-top:10px"><button type="button" onclick="clearBackupDiagnostic()">Diagnose zurücksetzen</button></div></div>
+  </div>
   </div>
 </section>
 </main>
@@ -3016,7 +3038,53 @@ window.renderClubMembers=async()=>{const box=$('clubMemberList');if(!box)return;
 window.saveClubMemberRole=async userId=>{if(!canManageClub||!currentClubId){showStatus('Keine Berechtigung zur Vereinsverwaltung.','error');return;}const role=$('club-role-'+userId)?.value;if(!role)return;try{const {error}=await getClient().rpc('admin_set_club_member_role',{p_club_id:currentClubId,p_user_id:userId,p_role:role});if(error)throw error;showStatus('Vereinsrolle gespeichert.','success');await window.renderClubMembers();}catch(e){console.error(e);showStatus(e?.message||'Vereinsrolle konnte nicht gespeichert werden.','error');}};
 window.removeClubMember=async userId=>{if(!canManageClub||!currentClubId){showStatus('Keine Berechtigung zur Vereinsverwaltung.','error');return;}const member=clubMembersCache.find(m=>m.user_id===userId);if(!member)return;if(!confirm('Soll '+(member.email||'dieses Mitglied')+' wirklich aus dem Verein entfernt werden? Mannschaftsrollen müssen vorher in der jeweiligen Mannschaft entfernt werden.'))return;try{const {error}=await getClient().rpc('admin_remove_club_member',{p_club_id:currentClubId,p_user_id:userId});if(error)throw error;showStatus('Mitglied aus dem Verein entfernt.','success');await window.renderClubMembers();}catch(e){console.error(e);showStatus(e?.message||'Mitglied konnte nicht entfernt werden.','error');}};
 window.addClubMemberFromSettings=async()=>{if(!canManageClub||!currentClubId){showStatus('Keine Berechtigung zur Vereinsverwaltung.','error');return;}const email=$('clubMemberEmail').value.trim();const clubRole=$('clubMemberRole').value;const status=$('clubMemberStatus');if(!email){showStatus('Bitte eine E-Mail-Adresse eingeben.','error');return;}try{const {error}=await getClient().rpc('admin_add_club_member_by_email',{p_club_id:currentClubId,p_email:email,p_role:clubRole});if(error)throw error;status.textContent='Vereinsmitgliedschaft gespeichert.';status.classList.remove('hidden');$('clubMemberEmail').value='';await window.renderClubMembers();showStatus('Vereinsmitgliedschaft gespeichert.','success');}catch(e){console.error(e);showStatus(e?.message||'Vereinsmitgliedschaft konnte nicht gespeichert werden.','error');}};
-window.showTab=id=>{if(contextReadOnly&&['trainings','matchday','players'].includes(id)){/* selected admin context is read-only */}if(playerEventReturn&&!((id==='trainings'&&playerEventReturn.type==='training')||(id==='matchday'&&playerEventReturn.type==='matchday')))playerEventReturn=null;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==id));document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));if(id==='dashboard')renderDashboard();if(id==='players')renderPlayers();if(id==='trainings')renderTrainings();if(id==='matchday')renderMatchday();if(id==='settings'){if(clubOnlyMode){const panel=$('clubAdminPanel');if(panel)panel.classList.toggle('hidden',!currentClubId||!canManageClub||contextReadOnly);if(isSuperAdmin){const platformPanel=$('superAdminPanel');if(platformPanel)platformPanel.classList.remove('hidden');}if(currentClubId&&canManageClub)window.renderClubMembers();}else{renderPositionSettings();renderTrainerList();renderBackupDiagnostic();if(canManageClub)window.renderClubMembers();}}};
+window.mehrCurrentPage='home';
+window.openMehrPage=(page)=>{
+  const home=$('mehrHomeView'),pageView=$('mehrPageView'),legacy=$('mehrLegacyContent'),menu=$('mehrPageMenu'),content=$('mehrPageContent');
+  if(!home||!pageView||!legacy)return;
+  const sections=[...legacy.querySelectorAll(':scope > .settingsSection')];
+  const personal=sections[0],club=sections[1],admin=sections[2];
+  const adminCards=admin?[...admin.querySelectorAll(':scope > .card')]:[];
+  const squad=$('teamSquadSettingsCard'),positions=$('teamPositionSettingsCard'),trainers=$('teamTrainerSettingsCard'),backup=$('backupDiagnosticCard'),data=$('dataBackupCard');
+  const hideAll=()=>{sections.forEach(x=>x.classList.add('hidden'));home.classList.add('hidden');pageView.classList.add('hidden');};
+  const row=(title,desc,icon,next)=>'<button type="button" class="playerListRow" onclick="window.openMehrPage(\''+next+'\')"><span class="playerListAvatar"><span class="playerAvatar"><span class="material-symbols-outlined">'+icon+'</span></span></span><span class="playerListIdentity"><span class="playerListName">'+title+'</span><span class="muted small">'+desc+'</span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>';
+  const showSection=(section)=>{hideAll();if(section)section.classList.remove('hidden');pageView.classList.remove('hidden');menu.classList.add('hidden');content.classList.add('hidden');};
+  sections.forEach(x=>x.classList.remove('hidden'));
+  adminCards.forEach(x=>x.style.display='');
+  if(squad)squad.style.display='';if(positions)positions.style.display='';if(trainers)trainers.style.display='';if(backup)backup.style.display='';if(data)data.style.display='';
+  home.classList.add('hidden');pageView.classList.remove('hidden');menu.classList.remove('hidden');content.classList.add('hidden');menu.innerHTML='';content.innerHTML='';
+  const config={
+    home:['Mehr','Konto, Verein und weitere Einstellungen.'],
+    personal:['Dein Bereich','Verwalte dein Konto und die Darstellung.'],
+    club:['Verein / Mannschaft','Vereinsinformationen und Arbeitskontext.'],
+    management:['Verwaltung','Wähle einen Verwaltungsbereich.'],
+    members:['Mitglieder und Rollen','Mitgliedschaften und Rollen im ausgewählten Kontext.'],
+    teams:['Mannschaften','Mannschaft und zugehörige Einstellungen.'],
+    squad:['Kadergröße','Lege die Zielgröße der Kaderempfehlung fest.'],
+    positions:['Positionen','Verwalte die verfügbaren Spielpositionen.'],
+    trainers:['Trainerverwaltung','Verwalte Trainer und ihre Rollen.'],
+    data:['Daten & Sicherung','Sichere oder stelle Daten wieder her.']
+  };
+  const c=config[page]||config.home;$('mehrPageTitle').textContent=c[0];$('mehrPageSubtitle').textContent=c[1];
+  if(page==='home'){pageView.classList.add('hidden');home.classList.remove('hidden');}
+  else if(page==='personal'){showSection(personal);}
+  else if(page==='club'){showSection(club);}
+  else if(page==='management'){
+    menu.innerHTML=row('Mitglieder und Rollen','Vereins- und Mannschaftsrollen verwalten','group','members')+row('Mannschaften','Mannschaften und ihre Einstellungen','groups','teams');
+  } else if(page==='members'){showSection(club);}
+  else if(page==='teams'){
+    const isPlatform=!!$('superAdminPanel')&&!$('superAdminPanel').classList.contains('hidden');
+    if(isPlatform){showSection(club);menu.classList.add('hidden');content.classList.remove('hidden');}
+    else {showSection(admin);if(squad)squad.style.display='none';if(positions)positions.style.display='none';if(trainers)trainers.style.display='none';if(data)data.style.display='none';if(backup)backup.style.display='none';menu.innerHTML=row('Kadergröße','Kader-Zielgröße einstellen','groups','squad')+row('Positionen','Spielpositionen verwalten','sports_soccer','positions')+row('Trainerverwaltung','Trainer und Rollen verwalten','manage_accounts','trainers');}
+  } else if(['squad','positions','trainers'].includes(page)){
+    showSection(admin);adminCards.forEach(x=>x.style.display='none');const target=page==='squad'?squad:page==='positions'?positions:trainers;if(target)target.style.display='';if(data)data.style.display='none';if(backup)backup.style.display='none';menu.classList.add('hidden');content.classList.remove('hidden');if(target)content.appendChild(target);
+  } else if(page==='data'){
+    showSection(admin);adminCards.forEach(x=>x.style.display='none');if(data)data.style.display='';if(backup)backup.style.display='';menu.classList.add('hidden');content.classList.remove('hidden');if(data)content.appendChild(data);if(backup)content.appendChild(backup);
+  }
+  window.mehrCurrentPage=page;
+  const context=$('mehrActiveContext');if(context){const text=$('headerSub')?.textContent||'';const show=page==='home'&&text&&text!=='Kader · Training · Spieltag';context.textContent=show?'Aktueller Kontext: '+text:'';context.classList.toggle('hidden',!show);}
+};
+window.showTab=id=>{if(contextReadOnly&&['trainings','matchday','players'].includes(id)){/* selected admin context is read-only */}if(playerEventReturn&&!((id==='trainings'&&playerEventReturn.type==='training')||(id==='matchday'&&playerEventReturn.type==='matchday')))playerEventReturn=null;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==id));document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));if(id==='dashboard')renderDashboard();if(id==='players')renderPlayers();if(id==='trainings')renderTrainings();if(id==='matchday')renderMatchday();if(id==='settings'){window.openMehrPage(window.mehrCurrentPage||'home');if(clubOnlyMode){const panel=$('clubAdminPanel');if(panel)panel.classList.toggle('hidden',!currentClubId||!canManageClub||contextReadOnly);if(isSuperAdmin){const platformPanel=$('superAdminPanel');if(platformPanel)platformPanel.classList.remove('hidden');}if(currentClubId&&canManageClub)window.renderClubMembers();}else{renderPositionSettings();renderTrainerList();renderBackupDiagnostic();if(canManageClub)window.renderClubMembers();}}};
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 function renderAll(){$('dashboardPlayerCount').textContent=state.players.length;$('dashboardTrainingCount').textContent=state.trainings.length;$('dashboardMatchdayCount').textContent=state.matchdays.length;renderPlayers();renderTrainings();renderPositionSettings();renderTrainerList();renderMatchday();renderDashboard();}
 
