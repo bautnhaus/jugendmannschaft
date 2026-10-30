@@ -1900,7 +1900,7 @@ async function loadApp(){
       if($('settingsTab'))$('settingsTab').textContent='Mehr';
       if($('settingsMainSub'))$('settingsMainSub').textContent='Wähle ausdrücklich einen Verein, bevor du dessen Mitglieder verwaltest.';
       if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent='Mehr';
-      if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent='admin_panel_settings';
+      if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent='more_horiz';
       document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('hidden',b.dataset.tab!=='settings'));
       document.querySelectorAll('.adminOnly').forEach(x=>x.classList.add('hidden'));
       const platformPanel=$('superAdminPanel');if(platformPanel)platformPanel.classList.remove('hidden');
@@ -1929,7 +1929,7 @@ async function loadApp(){
       if($('settingsTab'))$('settingsTab').textContent='Mehr';
       if($('settingsMainSub'))$('settingsMainSub').textContent='Verwalte Vereinsmitglieder und Vereinsrollen.';
       if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent='Mehr';
-      if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent='groups';
+      if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent='more_horiz';
       document.querySelectorAll('[data-tab]').forEach(b=>{const allowed=b.dataset.tab==='settings';b.classList.toggle('hidden',!allowed);});
       document.querySelectorAll('.adminOnly').forEach(x=>x.classList.add('hidden'));
       const panel=$('clubAdminPanel');if(panel)panel.classList.remove('hidden');
@@ -1994,9 +1994,9 @@ async function loadApp(){
   currentMatchdayId=null;matchdaySelection=new Set();
   if($('recommendedSquadSizeInput'))$('recommendedSquadSizeInput').value=String(recommendedSquadSize);
   $('headerSub').textContent=(teamRow?.name||'Jugendmannschaft')+(season?' · Saison '+season.name:'')+(contextReadOnly?' · Nur Ansicht ('+(isSuperAdmin?'Superadmin':'Vereinsadmin')+')':' · '+(role==='admin'?'Admin':'Trainer'));
-  $('accountInfo').textContent=currentUser?.email?`Angemeldet als ${currentUser.email} · Rolle: ${currentRoleLabel}`:'';if($('accountEmail'))$('accountEmail').value=currentUser?.email||'';if($('settingsMainHeading'))$('settingsMainHeading').textContent=role==='admin'?'Einstellungen':'Mein Konto';if($('settingsTab'))$('settingsTab').textContent='Mehr';if($('settingsMainSub'))$('settingsMainSub').textContent=role==='admin'?'Mannschaft und App verwalten.':'Verwalte hier deinen Zugang zur Mannschafts-App.';if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent='Mehr';if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent=role==='admin'?'settings':'person';
+  $('accountInfo').textContent=currentUser?.email?`Angemeldet als ${currentUser.email} · Rolle: ${currentRoleLabel}`:'';if($('accountEmail'))$('accountEmail').value=currentUser?.email||'';if($('settingsMainHeading'))$('settingsMainHeading').textContent=role==='admin'?'Einstellungen':'Mein Konto';if($('settingsTab'))$('settingsTab').textContent='Mehr';if($('settingsMainSub'))$('settingsMainSub').textContent=role==='admin'?'Mannschaft und App verwalten.':'Verwalte hier deinen Zugang zur Mannschafts-App.';if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent='Mehr';if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent='more_horiz';
   document.querySelectorAll('.adminOnly').forEach(x=>x.classList.toggle('hidden',role!=='admin'||(contextReadOnly&&!isSuperAdmin)));
-  if(contextReadOnly){if($('settingsMainHeading'))$('settingsMainHeading').textContent='Verein / Plattform';if($('settingsTab'))$('settingsTab').textContent='Mehr';if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent='Mehr';if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent=isSuperAdmin?'admin_panel_settings':'groups';if(isSuperAdmin){await loadSuperAdminClubs();const clubSelect=$('superAdminClubSelect');if(clubSelect&&currentClubId)clubSelect.value=currentClubId;await populateAdminContextTeams('superAdminTeamSelect',currentClubId);}else{await populateAdminContextTeams('clubAdminTeamSelect',currentClubId);}const teamSelect=$(isSuperAdmin?'superAdminTeamSelect':'clubAdminTeamSelect');if(teamSelect&&team)teamSelect.value=team;const panel=$('clubAdminPanel');if(panel)panel.classList.toggle('hidden',!canManageClub||contextReadOnly);const platform=$('superAdminPanel');if(platform&&isSuperAdmin)platform.classList.remove('hidden');}
+  if(contextReadOnly){if($('settingsMainHeading'))$('settingsMainHeading').textContent='Verein / Plattform';if($('settingsTab'))$('settingsTab').textContent='Mehr';if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent='Mehr';if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent='more_horiz';if(isSuperAdmin){await loadSuperAdminClubs();const clubSelect=$('superAdminClubSelect');if(clubSelect&&currentClubId)clubSelect.value=currentClubId;await populateAdminContextTeams('superAdminTeamSelect',currentClubId);}else{await populateAdminContextTeams('clubAdminTeamSelect',currentClubId);}const teamSelect=$(isSuperAdmin?'superAdminTeamSelect':'clubAdminTeamSelect');if(teamSelect&&team)teamSelect.value=team;const panel=$('clubAdminPanel');if(panel)panel.classList.toggle('hidden',!canManageClub||contextReadOnly);const platform=$('superAdminPanel');if(platform&&isSuperAdmin)platform.classList.remove('hidden');}
   $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');renderAll();
 }
 
@@ -3095,7 +3095,8 @@ window.openMehrPage=(page)=>{
           if(teamInfoError)throw teamInfoError;
           let clubInfo=null;
           if(teamInfo.club_id){
-            const {data,error}=await client.from('clubs').select('id,name,short_name')
+            const {data,error}=await client.from('clubs')
+              .select('id,name,short_name,crest_path,home_venue_name,home_venue_street,home_venue_postal_code,home_venue_city,home_venue_country,training_location_differs,training_venue_name,training_venue_street,training_venue_postal_code,training_venue_city,training_venue_country')
               .eq('id',teamInfo.club_id).maybeSingle();
             if(error)throw error;
             clubInfo=data;
@@ -3105,15 +3106,29 @@ window.openMehrPage=(page)=>{
             .eq('team_id',teamInfo.id).eq('is_active',true).limit(1);
           if(seasonError)throw seasonError;
           const activeSeason=activeSeasons?.[0]||null;
+          const crestUrl=clubInfo?.crest_path?client.storage.from('club-assets').getPublicUrl(clubInfo.crest_path).data.publicUrl:'';
+          const venue=[clubInfo?.home_venue_name,clubInfo?.home_venue_street,[clubInfo?.home_venue_postal_code,clubInfo?.home_venue_city].filter(Boolean).join(' '),clubInfo?.home_venue_country].filter(Boolean).join(', ');
+          const trainingVenue=[clubInfo?.training_venue_name,clubInfo?.training_venue_street,[clubInfo?.training_venue_postal_code,clubInfo?.training_venue_city].filter(Boolean).join(' '),clubInfo?.training_venue_country].filter(Boolean).join(', ');
           const details=[
-            '<div class="card"><h3>Deine Mannschaft</h3>',
-            '<p><strong>Mannschaftsname</strong><br>'+esc(teamInfo.name||'—')+'</p>',
-            '<p><strong>Verein</strong><br>'+esc(clubInfo?.name||clubInfo?.short_name||'Kein Verein zugeordnet')+'</p>',
-            '<p><strong>Kader-Zielgröße</strong><br>'+esc(String(teamInfo.recommended_squad_size??'—'))+'</p>',
-            activeSeason
-              ? '<p><strong>Aktive Saison</strong><br>'+esc(activeSeason.name||'—')+'</p>'
-              : '<p class="muted small">Für diese Mannschaft ist keine aktive Saison hinterlegt.</p>',
-            '<p class="muted small">Deine Rolle: '+esc(currentTeamRoles.includes('admin')?'Mannschaftsadmin':'Trainer')+'. Die angezeigten Informationen richten sich nach deinem ausgewählten Mannschaftskontext.</p>',
+            '<div class="card" style="padding:20px">',
+            '<h2 style="font-size:28px;line-height:1.15;margin:0 0 22px">'+esc(teamInfo.name||'Mannschaft')+'</h2>',
+            '<div style="display:flex;align-items:center;gap:16px;margin-bottom:22px">',
+            crestUrl?'<img src="'+esc(crestUrl)+'" alt="Vereinswappen" style="width:76px;height:76px;object-fit:contain;flex:0 0 76px">':'<div style="width:76px;height:76px;flex:0 0 76px;border-radius:16px;background:#eef2ff;display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="font-size:40px;color:#64748b">groups</span></div>',
+            '<div style="min-width:0"><h3 style="font-size:21px;margin:0 0 5px">'+esc(clubInfo?.name||'Kein Verein zugeordnet')+'</h3>',
+            clubInfo?.short_name?'<p class="muted" style="margin:0">Kurzname: '+esc(clubInfo.short_name)+'</p>':'',
+            '</div></div>',
+            '<div style="border-top:1px solid var(--line);padding-top:14px">',
+            '<h4 style="margin:0 0 8px">Vereinsinformationen</h4>',
+            venue.length?'<p style="margin:6px 0"><strong>Heimspielstätte</strong><br>'+esc(venue.join(', '))+'</p>':'',
+            clubInfo?.training_location_differs&&trainingVenue.length?'<p style="margin:6px 0"><strong>Trainingsort</strong><br>'+esc(trainingVenue.join(', '))+'</p>':'',
+            !venue.length&&!trainingVenue.length?'<p class="muted small">Für den Verein sind keine weiteren Standortinformationen hinterlegt.</p>':'',
+            '</div>',
+            '<div style="border-top:1px solid var(--line);margin-top:16px;padding-top:14px">',
+            '<h4 style="margin:0 0 4px">Kader-Zielgröße</h4>',
+            '<p style="font-size:24px;font-weight:700;margin:0">'+esc(String(teamInfo.recommended_squad_size??'—'))+'</p>',
+            '</div>',
+            activeSeason?'<p class="muted small" style="margin-top:16px">Aktive Saison: '+esc(activeSeason.name||'—')+'</p>':'<p class="muted small" style="margin-top:16px">Für diese Mannschaft ist keine aktive Saison hinterlegt.</p>',
+            '<p class="muted small">Deine Rolle: '+esc(currentTeamRoles.includes('admin')?'Mannschaftsadmin':'Trainer')+'.</p>',
             '</div>'
           ].join('');
           if(window.mehrCurrentPage==='club')content.innerHTML=details;
