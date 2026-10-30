@@ -1897,9 +1897,9 @@ async function loadApp(){
       $('accountInfo').textContent=currentUser?.email?'Angemeldet als '+currentUser.email+' · Rolle: Superadmin':'Superadmin';
       if($('accountEmail'))$('accountEmail').value=currentUser?.email||'';
       if($('settingsMainHeading'))$('settingsMainHeading').textContent='Plattformverwaltung';
-      if($('settingsTab'))$('settingsTab').textContent='Plattform';
+      if($('settingsTab'))$('settingsTab').textContent='Mehr';
       if($('settingsMainSub'))$('settingsMainSub').textContent='Wähle ausdrücklich einen Verein, bevor du dessen Mitglieder verwaltest.';
-      if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent='Plattform';
+      if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent='Mehr';
       if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent='admin_panel_settings';
       document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('hidden',b.dataset.tab!=='settings'));
       document.querySelectorAll('.adminOnly').forEach(x=>x.classList.add('hidden'));
@@ -1926,9 +1926,9 @@ async function loadApp(){
       $('accountInfo').textContent=currentUser?.email?'Angemeldet als '+currentUser.email+' · Rolle: Vereinsadmin':'';
       if($('accountEmail'))$('accountEmail').value=currentUser?.email||'';
       if($('settingsMainHeading'))$('settingsMainHeading').textContent='Vereinsverwaltung';
-      if($('settingsTab'))$('settingsTab').textContent='Verein';
+      if($('settingsTab'))$('settingsTab').textContent='Mehr';
       if($('settingsMainSub'))$('settingsMainSub').textContent='Verwalte Vereinsmitglieder und Vereinsrollen.';
-      if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent='Verein';
+      if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent='Mehr';
       if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent='groups';
       document.querySelectorAll('[data-tab]').forEach(b=>{const allowed=b.dataset.tab==='settings';b.classList.toggle('hidden',!allowed);});
       document.querySelectorAll('.adminOnly').forEach(x=>x.classList.add('hidden'));
@@ -1994,9 +1994,9 @@ async function loadApp(){
   currentMatchdayId=null;matchdaySelection=new Set();
   if($('recommendedSquadSizeInput'))$('recommendedSquadSizeInput').value=String(recommendedSquadSize);
   $('headerSub').textContent=(teamRow?.name||'Jugendmannschaft')+(season?' · Saison '+season.name:'')+(contextReadOnly?' · Nur Ansicht ('+(isSuperAdmin?'Superadmin':'Vereinsadmin')+')':' · '+(role==='admin'?'Admin':'Trainer'));
-  $('accountInfo').textContent=currentUser?.email?`Angemeldet als ${currentUser.email} · Rolle: ${currentRoleLabel}`:'';if($('accountEmail'))$('accountEmail').value=currentUser?.email||'';if($('settingsMainHeading'))$('settingsMainHeading').textContent=role==='admin'?'Einstellungen':'Mein Konto';if($('settingsTab'))$('settingsTab').textContent=role==='admin'?'Einstellungen':'Mein Konto';if($('settingsMainSub'))$('settingsMainSub').textContent=role==='admin'?'Mannschaft und App verwalten.':'Verwalte hier deinen Zugang zur Mannschafts-App.';if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent=role==='admin'?'Einstellungen':'Mein Konto';if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent=role==='admin'?'settings':'person';
+  $('accountInfo').textContent=currentUser?.email?`Angemeldet als ${currentUser.email} · Rolle: ${currentRoleLabel}`:'';if($('accountEmail'))$('accountEmail').value=currentUser?.email||'';if($('settingsMainHeading'))$('settingsMainHeading').textContent=role==='admin'?'Einstellungen':'Mein Konto';if($('settingsTab'))$('settingsTab').textContent='Mehr';if($('settingsMainSub'))$('settingsMainSub').textContent=role==='admin'?'Mannschaft und App verwalten.':'Verwalte hier deinen Zugang zur Mannschafts-App.';if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent='Mehr';if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent=role==='admin'?'settings':'person';
   document.querySelectorAll('.adminOnly').forEach(x=>x.classList.toggle('hidden',role!=='admin'||(contextReadOnly&&!isSuperAdmin)));
-  if(contextReadOnly){if($('settingsMainHeading'))$('settingsMainHeading').textContent='Verein / Plattform';if($('settingsTab'))$('settingsTab').textContent=isSuperAdmin?'Plattform':'Verein';if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent=isSuperAdmin?'Plattform':'Verein';if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent=isSuperAdmin?'admin_panel_settings':'groups';if(isSuperAdmin){await loadSuperAdminClubs();const clubSelect=$('superAdminClubSelect');if(clubSelect&&currentClubId)clubSelect.value=currentClubId;await populateAdminContextTeams('superAdminTeamSelect',currentClubId);}else{await populateAdminContextTeams('clubAdminTeamSelect',currentClubId);}const teamSelect=$(isSuperAdmin?'superAdminTeamSelect':'clubAdminTeamSelect');if(teamSelect&&team)teamSelect.value=team;const panel=$('clubAdminPanel');if(panel)panel.classList.toggle('hidden',!canManageClub||contextReadOnly);const platform=$('superAdminPanel');if(platform&&isSuperAdmin)platform.classList.remove('hidden');}
+  if(contextReadOnly){if($('settingsMainHeading'))$('settingsMainHeading').textContent='Verein / Plattform';if($('settingsTab'))$('settingsTab').textContent='Mehr';if($('bottomSettingsLabel'))$('bottomSettingsLabel').textContent='Mehr';if($('bottomSettingsIcon'))$('bottomSettingsIcon').textContent=isSuperAdmin?'admin_panel_settings':'groups';if(isSuperAdmin){await loadSuperAdminClubs();const clubSelect=$('superAdminClubSelect');if(clubSelect&&currentClubId)clubSelect.value=currentClubId;await populateAdminContextTeams('superAdminTeamSelect',currentClubId);}else{await populateAdminContextTeams('clubAdminTeamSelect',currentClubId);}const teamSelect=$(isSuperAdmin?'superAdminTeamSelect':'clubAdminTeamSelect');if(teamSelect&&team)teamSelect.value=team;const panel=$('clubAdminPanel');if(panel)panel.classList.toggle('hidden',!canManageClub||contextReadOnly);const platform=$('superAdminPanel');if(platform&&isSuperAdmin)platform.classList.remove('hidden');}
   $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');renderAll();
 }
 
