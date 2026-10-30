@@ -3042,6 +3042,15 @@ window.mehrCurrentPage='home';
 window.openMehrPage=(page)=>{
   const home=$('mehrHomeView'),pageView=$('mehrPageView'),legacy=$('mehrLegacyContent'),menu=$('mehrPageMenu'),content=$('mehrPageContent');
   if(!home||!pageView||!legacy)return;
+  const isTeamWorkspace=!clubOnlyMode&&!contextReadOnly&&!!team;
+  const isTeamAdmin=isTeamWorkspace&&role==='admin';
+  const hasClubOrPlatformAdmin=!!(canManageClub||isSuperAdmin||clubOnlyMode);
+  // Die Mehr-Startseite zeigt nur Bereiche, die zur aktuellen Rolle passen.
+  const homeRows=[...home.querySelectorAll('.mehrMenu > .playerListRow')];
+  if(homeRows[2])homeRows[2].style.display=(isTeamAdmin||hasClubOrPlatformAdmin)?'':'none';
+  if(homeRows[3])homeRows[3].style.display=isTeamAdmin?'':'none';
+  const restrictedTeamPages=['management','members','teams','squad','positions','trainers','data'];
+  if(restrictedTeamPages.includes(page)&&!isTeamAdmin&&!hasClubOrPlatformAdmin){page='home';}
   const sections=[...legacy.querySelectorAll(':scope > .settingsSection')];
   const personal=sections[0],club=sections[1],admin=sections[2];
   const adminCards=admin?[...admin.querySelectorAll(':scope > .card')]:[];
@@ -3068,10 +3077,21 @@ window.openMehrPage=(page)=>{
   const c=config[page]||config.home;$('mehrPageTitle').textContent=c[0];$('mehrPageSubtitle').textContent=c[1];
   if(page==='home'){legacy.classList.add('hidden');pageView.classList.add('hidden');home.classList.remove('hidden');}
   else if(page==='personal'){showSection(personal);}
-  else if(page==='club'){showSection(club);}
+  else if(page==='club'){
+    if(isTeamWorkspace){
+      hideAll();pageView.classList.remove('hidden');menu.classList.add('hidden');content.classList.remove('hidden');
+      const heading=esc(( $('headerSub')?.textContent||'Mannschaft' ).split(' · ')[0]);
+      const seasonLabel=season?.name?'<p class="muted small">Aktive Saison: '+esc(season.name)+'</p>':'<p class="muted small">Für diese Mannschaft ist keine aktive Saison hinterlegt.</p>';
+      content.innerHTML='<div class="card"><h3>Deine Mannschaft</h3><p>'+heading+'</p>'+seasonLabel+'<p class="muted small">Die angezeigten Funktionen richten sich nach deiner Mannschaftsrolle.</p></div>';
+    }else{showSection(club);}
+  }
   else if(page==='management'){
-    legacy.classList.add('hidden');menu.innerHTML=row('Mitglieder und Rollen','Vereins- und Mannschaftsrollen verwalten','group','members')+row('Mannschaften','Mannschaften und ihre Einstellungen','groups','teams');
-  } else if(page==='members'){showSection(club);}
+    legacy.classList.add('hidden');
+    menu.innerHTML=(hasClubOrPlatformAdmin?row('Mitglieder und Rollen','Vereins- und Mannschaftsrollen verwalten','group','members'):'')+row('Mannschaften','Mannschaftseinstellungen und Trainerverwaltung','groups','teams');
+  } else if(page==='members'){
+    if(hasClubOrPlatformAdmin){showSection(club);}
+    else{window.openMehrPage('trainers');return;}
+  }
   else if(page==='teams'){
     const isPlatform=!!$('superAdminPanel')&&!$('superAdminPanel').classList.contains('hidden');
     if(isPlatform){showSection(club);menu.classList.add('hidden');content.classList.remove('hidden');}
