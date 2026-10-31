@@ -2029,8 +2029,10 @@ function resizeClubCrest(file){return new Promise((resolve,reject)=>{if(!file.ty
 async function uploadProfileAvatar(userId,dataUrl){
   const response=await fetch(dataUrl);const blob=await response.blob();
   const ext=blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg';
-  const path=userId+'/avatar.'+ext;
-  const {error}=await getClient().storage.from('profile-avatars').upload(path,blob,{upsert:true,contentType:blob.type||'image/jpeg'});
+  const path=userId+'/avatar-'+Date.now()+'.'+ext;
+  // Each upload gets a new object path. This avoids the extra SELECT/UPDATE RLS
+  // requirements that Storage upsert needs for an existing object.
+  const {error}=await getClient().storage.from('profile-avatars').upload(path,blob,{upsert:false,contentType:blob.type||'image/jpeg'});
   if(error)throw error;
   return getClient().storage.from('profile-avatars').getPublicUrl(path).data.publicUrl;
 }
