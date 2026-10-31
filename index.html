@@ -1731,7 +1731,7 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
     <div class="sectionHeading"><div class="sectionIcon"><span class="material-symbols-outlined" aria-hidden="true">settings</span></div><div><h2 id="settingsMainHeading">Einstellungen</h2><p id="settingsMainSub" class="muted">Mannschaft und App verwalten. Dieser Bereich ist nur für Admins sichtbar.</p></div></div>
     <div class="card" id="teamSquadSettingsCard"><h3>Kaderplanung</h3><p class="muted">Lege fest, wie viele Spieler standardmäßig in der Kaderempfehlung berücksichtigt werden. Die Einstellung gilt für die Empfehlungsdarstellung in der Spielerliste und für neu berechnete Spieltagsempfehlungen. Bereits gespeicherte Spieltagsempfehlungen bleiben unverändert.</p><div class="formrow"><label>Kader-Zielgröße (1-60)<input id="recommendedSquadSizeInput" type="number" min="1" max="60" value="16" inputmode="numeric"></label><div style="display:flex;align-items:end"><button type="button" class="primary" style="width:100%" onclick="saveRecommendedSquadSize()">Kader-Zielgröße speichern</button></div></div></div>
     <div class="card" id="teamPositionSettingsCard"><h3>Positionen</h3><div id="positionSettings"></div></div>
-    <div class="card" id="teamTrainerSettingsCard"><h3>Trainer verwalten</h3><p class="muted">Trainer hinzufügen, Rollen verwalten und Anzeigenamen festlegen.</p><div class="formrow"><label>Eindeutiger Trainername<input id="trainerLabelAdd" type="text" placeholder="z. B. Max Mustermann" autocomplete="off"></label><label>E-Mail des Trainers<input id="trainerEmailAdd" type="email" placeholder="trainer@example.de"></label></div><label style="display:block;margin-top:10px">Rolle<select id="trainerRoleAdd"><option value="trainer">Trainer</option><option value="admin">Admin</option></select></label><button class="primary" style="margin-top:10px" onclick="addTrainerToTeam()">Trainer zur Mannschaft hinzufügen</button><div class="notice small" style="margin-top:10px">Aus Sicherheitsgründen kann die App keine Passwörter anderer Trainer sehen oder ändern. Jeder Trainer verwaltet sein eigenes Konto.</div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><h3>Trainer der Mannschaft</h3><div id="trainerList"></div></div>
+    <div class="card" id="teamTrainerSettingsCard"><div class="toolbar trainingPageHeader"><h3 id="teamMembersHeading" style="margin:0;flex:1">Mitglieder und Rollen</h3><button type="button" class="primary iconAddButton" onclick="openTeamMemberInvite()" aria-label="Mitglied einladen" title="Mitglied einladen">+</button></div><p class="muted small">Mitglieder der Mannschaft anzeigen und ihre Rollen verwalten.</p><div id="teamMemberRoleFilters" class="playerFilterChips"></div><div id="trainerList" class="playerListRows"></div><div id="teamMemberListFooter" class="playerListFooter"></div><div id="legacyTrainerInviteForm" class="hidden"><div class="formrow"><label>Eindeutiger Trainername<input id="trainerLabelAdd" type="text" autocomplete="off"></label><label>E-Mail des Trainers<input id="trainerEmailAdd" type="email"></label></div><label>Rolle<select id="trainerRoleAdd"><option value="trainer">Trainer</option><option value="admin">Admin</option></select></label><button onclick="addTrainerToTeam()">Trainer hinzufügen</button></div></div>
     <div class="card" id="dataBackupCard"><h3>Daten</h3><p class="muted">Backup der Mannschaftsdaten sichern oder wiederherstellen.</p><div class="toolbar"><button class="jsonButton" onclick="exportJSON()">JSON sichern</button><label class="btn jsonButton" for="importFile">JSON wiederherstellen</label><input id="importFile" type="file" accept="application/json,.json" onchange="importJSON(event)" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;"></div></div>
     <div class="card" id="backupDiagnosticCard"><h3>Backup-Diagnose</h3><p class="muted small">Diese Anzeige bleibt auch ohne Fehler sichtbar. Sie zeigt den letzten Status eines Backup-Imports auf diesem Gerät.</p><div id="backupDiagnosticStatus" role="status" class="notice small">Diagnose aktiv – bisher wurde kein Importversuch protokolliert.</div><div id="backupDiagnosticDetails" class="small muted" style="margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere">Noch keine Fehlerdetails vorhanden.</div><div class="toolbar" style="margin-top:10px"><button type="button" onclick="clearBackupDiagnostic()">Diagnose zurücksetzen</button></div></div>
   </div>
@@ -2690,16 +2690,108 @@ window.setTrainingGoalkeeper=async(teamNo,playerId)=>{const t=state.trainings.fi
 window.setMatchdayGoalkeeper=async(teamNo,playerId)=>{const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md)return;try{await dbUpdate('matchday_players',{matchday_id:md.id,team_number:teamNo},{goalkeeper:false});if(playerId){await dbUpdate('matchday_players',{matchday_id:md.id,player_id:playerId,team_number:teamNo},{goalkeeper:true});}md.goalkeepers=md.goalkeepers||{};if(playerId)md.goalkeepers[teamNo]=playerId;else delete md.goalkeepers[teamNo];renderMatchday();showStatus(playerId?'Torwart gespeichert.':'Torwartauswahl entfernt.','ok');}catch(e){showStatus('Torwart konnte nicht gespeichert werden: '+(e.message||e),'error');}};
 function renderTeams(teams,warning=''){return renderTeamsHtml(teams,'movePlayer','matchday');}
 
+let teamMemberRoleFilter='Alle';
+window.openTeamMemberInvite=()=>{
+  if(!adminGuard())return;
+  openModal(`<div class="modalHeader"><h2>Mitglied einladen</h2><button type="button" class="iconButton" onclick="closeModal()" aria-label="Schließen">${materialIcon('close')}</button></div>
+  <label>Eindeutiger Anzeigename<input id="teamInviteLabel" type="text" placeholder="z. B. Max Mustermann" autocomplete="name"></label>
+  <label style="display:block;margin-top:12px">E-Mail-Adresse<input id="teamInviteEmail" type="email" placeholder="trainer@beispiel.de" autocomplete="email"></label>
+  <div style="margin-top:14px"><b>Rollen in dieser Mannschaft</b>
+  <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="teamInviteRoleAdmin"> <span><b>Mannschaftsadmin</b><br><span class="muted small">Verwaltung der Mannschaft</span></span></label>
+  <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="teamInviteRoleTrainer" checked> <span><b>Trainer</b><br><span class="muted small">Trainings und Spieltage verwalten</span></span></label></div>
+  <button type="button" class="primary" style="width:100%;margin-top:16px" onclick="submitTeamMemberInvite()">Einladung senden</button>
+  <button type="button" style="width:100%;margin-top:8px" onclick="closeModal()">Abbrechen</button>`);
+};
+window.submitTeamMemberInvite=async()=>{
+  if(!adminGuard())return;
+  const label=$('teamInviteLabel')?.value.trim();
+  const email=$('teamInviteEmail')?.value.trim().toLowerCase();
+  const roles=[];
+  if($('teamInviteRoleAdmin')?.checked)roles.push('admin');
+  if($('teamInviteRoleTrainer')?.checked)roles.push('trainer');
+  if(!label){showStatus('Bitte einen Anzeigenamen eingeben.','error');return;}
+  if(!email){showStatus('Bitte eine E-Mail-Adresse eingeben.','error');return;}
+  if(!roles.length){showStatus('Bitte mindestens eine Rolle auswählen.','error');return;}
+  if(state.trainers.some(t=>(t.admin_label||'').trim().toLocaleLowerCase('de')===label.toLocaleLowerCase('de'))){showStatus('Dieser Anzeigename ist bereits vergeben.','error');return;}
+  let invitationCompleted=false;
+  try{
+    showStatus('Einladung wird verschickt …');
+    const {data,error}=await getClient().functions.invoke('invite-trainer',{body:{email,role:roles[0],team_id:team}});
+    if(error)throw error;
+    if(data?.error)throw new Error(data.error);
+    invitationCompleted=true;
+    for(const r of roles.slice(1)){
+      const {error:roleError}=await getClient().rpc('admin_add_team_role',{p_team_id:team,p_user_id:data?.user_id,p_role:r});
+      if(roleError)throw roleError;
+    }
+    const {error:labelError}=await getClient().rpc('admin_set_trainer_label',{p_team_id:team,p_email:email,p_label:label});
+    closeModal();
+    await loadApp();
+    renderTrainerList();
+    if(labelError)showStatus('Einladung wurde versendet, aber der Anzeigename konnte nicht gespeichert werden. Bitte später prüfen.','error');
+    else showStatus(data?.message||'Einladung wurde versendet.','ok');
+  }catch(e){
+    let message=e?.message||String(e);
+    if(e?.context){try{const body=await e.context.json();if(body?.error)message=body.error;}catch{}}
+    showStatus(invitationCompleted?'Einladung wurde versendet; ein nachfolgender Schritt ist fehlgeschlagen: '+message:'Mitglied konnte nicht eingeladen werden: '+message,'error');
+  }
+};
+window.openTeamMemberRoleEditor=userId=>{
+  if(!adminGuard())return;
+  const target=state.trainers.find(x=>x.user_id===userId);if(!target)return;
+  const roles=target.roles||[target.role||'trainer'];
+  openModal(`<div class="modalHeader"><h2>Rolle bearbeiten</h2><button type="button" class="iconButton" onclick="closeModal()" aria-label="Schließen">${materialIcon('close')}</button></div>
+  <div class="playerListRow" style="margin:10px 0"><span class="playerListAvatar"><span class="playerAvatar">${materialIcon('account_circle')}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(target.admin_label||'Mitglied')}</span><span class="muted small">${esc(target.email||'E-Mail nicht verfügbar')}</span></span></div>
+  <b>Rollen in dieser Mannschaft</b>
+  <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="editTeamRoleAdmin" ${roles.includes('admin')?'checked':''}> <span><b>Mannschaftsadmin</b><br><span class="muted small">Verwaltung der Mannschaft</span></span></label>
+  <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="editTeamRoleTrainer" ${roles.includes('trainer')?'checked':''}> <span><b>Trainer</b><br><span class="muted small">Trainings und Spieltage verwalten</span></span></label>
+  <button type="button" class="primary" style="width:100%;margin-top:16px" onclick="saveTeamMemberRoles('${esc(userId)}')">Speichern</button>
+  <button type="button" style="width:100%;margin-top:8px" onclick="closeModal()">Abbrechen</button>`);
+};
+window.saveTeamMemberRoles=async userId=>{
+  if(!adminGuard())return;
+  const target=state.trainers.find(x=>x.user_id===userId);if(!target)return;
+  const current=target.roles||[target.role||'trainer'];
+  const desired=[];
+  if($('editTeamRoleAdmin')?.checked)desired.push('admin');
+  if($('editTeamRoleTrainer')?.checked)desired.push('trainer');
+  if(!desired.length){showStatus('Mindestens eine Rolle muss ausgewählt bleiben.','error');return;}
+  const adminCount=state.trainers.filter(x=>(x.roles||[x.role]).includes('admin')).length;
+  if(current.includes('admin')&&!desired.includes('admin')&&adminCount<=1){showStatus('Mindestens ein Mannschaftsadmin muss erhalten bleiben.','error');return;}
+  try{
+    for(const r of ['admin','trainer']){
+      const had=current.includes(r), wants=desired.includes(r);
+      if(had===wants)continue;
+      const {error}=await getClient().rpc(wants?'admin_add_team_role':'admin_remove_team_role',{p_team_id:team,p_user_id:userId,p_role:r});
+      if(error)throw error;
+    }
+    closeModal();await loadApp();renderTrainerList();showStatus('Rollen gespeichert.','ok');
+  }catch(e){showStatus('Rollen konnten nicht vollständig gespeichert werden: '+(e.message||e),'error');try{await loadApp();renderTrainerList();}catch{}}
+};
+window.openTeamMemberOptions=userId=>{
+  const target=state.trainers.find(x=>x.user_id===userId);if(!target)return;
+  const isMe=userId===currentUser?.id;
+  openModal(`<div class="modalHeader"><h2>Mitglied verwalten</h2><button type="button" class="iconButton" onclick="closeModal()" aria-label="Schließen">${materialIcon('close')}</button></div>
+  <p><b>${esc(target.admin_label||'Mitglied')}</b><br><span class="muted small">${esc(target.email||'E-Mail nicht verfügbar')}</span></p>
+  <button type="button" class="playerListRow" onclick="openTeamMemberRoleEditor('${esc(userId)}')">${materialIcon('manage_accounts')}<span class="playerListIdentity">Rollen bearbeiten</span></button>
+  ${isMe?'<p class="muted small">Das eigene Konto kann nicht aus der Mannschaft entfernt werden.</p>':`<button type="button" class="playerListRow" style="margin-top:8px" onclick="closeModal();removeTrainer('${esc(userId)}')">${materialIcon('person_remove')}<span class="playerListIdentity">Aus Mannschaft entfernen</span></button>`}`);
+};
+window.setTeamMemberRoleFilter=filter=>{teamMemberRoleFilter=filter;renderTrainerList();};
 function renderTrainerList(){
-  const box=$('trainerList');
-  if(!box)return;
+  const box=$('trainerList');if(!box)return;
   if(role!=='admin'&&!(contextReadOnly&&isSuperAdmin)){box.innerHTML='';return;}
-  if(!state.trainers.length){box.innerHTML='<p class="muted">Keine Trainer gefunden.</p>';return;}
-  box.innerHTML=state.trainers.map(t=>{
-    const isMe=t.user_id===currentUser?.id;
-    const label=t.admin_label||'Noch kein Admin-Name';
-    return `<div class="card" style="margin:8px 0;padding:10px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><div><b>${esc(label)}</b><br><span class="small">${esc(t.email||'E-Mail nicht verfügbar')}</span><br><span class="muted small">${isMe?'Du · ':''}${(t.roles||[t.role]).map(r=>r==='admin'?'Admin':'Trainer').join(' + ')}</span></div><div class="toolbar">${isMe?'<span class="small muted">Eigenes Konto</span>':`<button type="button" onclick="changeTrainerRole('${t.user_id}','admin')">${(t.roles||[]).includes('admin')?'Admin entfernen':'Admin hinzufügen'}</button><button type="button" onclick="changeTrainerRole('${t.user_id}','trainer')">${(t.roles||[]).includes('trainer')?'Trainer entfernen':'Trainer hinzufügen'}</button><button type="button" onclick="editTrainerLabel('${t.user_id}')">Name ändern</button><button class="danger" type="button" onclick="removeTrainer('${t.user_id}')">Entfernen</button>`}</div></div></div>`;
+  const filters=$('teamMemberRoleFilters');
+  const all=[...state.trainers].sort((a,b)=>String(a.admin_label||a.email||'').localeCompare(String(b.admin_label||b.email||''),'de',{sensitivity:'base'}));
+  const counts={Alle:all.length,Trainer:all.filter(t=>(t.roles||[t.role||'trainer']).includes('trainer')).length,Admin:all.filter(t=>(t.roles||[t.role||'trainer']).includes('admin')).length};
+  if(filters)filters.innerHTML=['Alle','Trainer','Admin'].map(f=>`<button type="button" class="playerFilterChip ${teamMemberRoleFilter===f?'active':''}" onclick="setTeamMemberRoleFilter('${f}')">${f}${f==='Alle'?' ('+counts[f]+')':''}</button>`).join('');
+  const filtered=all.filter(t=>teamMemberRoleFilter==='Alle'||(t.roles||[t.role||'trainer']).includes(teamMemberRoleFilter==='Admin'?'admin':'trainer'));
+  if(!filtered.length){box.innerHTML='<p class="muted">'+(all.length?'Keine Mitglieder für diesen Filter.':'Noch keine Mitglieder in dieser Mannschaft.')+'</p>';}
+  else box.innerHTML=filtered.map(t=>{
+    const roles=t.roles||[t.role||'trainer'];const label=t.admin_label||t.email||'Mitglied';
+    const badges=roles.map(r=>`<span class="playerListPosition">${r==='admin'?'Mannschaftsadmin':'Trainer'}</span>`).join('');
+    return `<div class="playerListRow"><span class="playerListAvatar"><span class="playerAvatar">${materialIcon('account_circle')}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(label)}</span><span class="muted small">${esc(t.email||'E-Mail nicht verfügbar')}</span><span class="playerListPositions">${badges}</span></span><button type="button" class="iconAddButton" style="background:transparent!important;color:var(--text);box-shadow:none" onclick="openTeamMemberOptions('${esc(t.user_id)}')" aria-label="Optionen für ${esc(label)}" title="Optionen">${materialIcon('more_vert')}</button></div>`;
   }).join('');
+  const footer=$('teamMemberListFooter');if(footer)footer.innerHTML=`<span>${filtered.length} von ${all.length} Mitgliedern</span><span>${teamMemberRoleFilter==='Alle'?'Alle Rollen':teamMemberRoleFilter}</span>`;
 }
 window.editTrainerLabel=async userId=>{
   if(!adminGuard())return;
