@@ -39,3 +39,21 @@ Die zweite Datei ist zwingend nach der ersten auszuführen.
 - Mitgliederkarte: Name/Bild aus `profiles`, Bearbeiten und Rollen-Checkboxen, sichere E-Mail-Änderung über Edge Function.
 - Optionsmenü nach Vorbild Training/Spieltag; eigener Rollenbereich nicht bearbeitbar.
 - Tests mit Mannschaftsadmin, Trainer und Superadmin im ausgewählten Mannschaftskontext.
+
+
+## Frontend-Integration – DEV / develop
+
+- Commit `39b11d3788598bd586ff9ed483486963bfc57ca1`: Profilname und Profilbild in der Mitgliederliste, Profilbearbeitung in der Mitgliedermaske sowie Profilbereich unter „Mein Konto“ ergänzt.
+- Commit `5161f8e7dd672d59eb7b66c84ce42b3525d68791`: Speichern des eigenen Profils auf vorhandene Profilzeilen begrenzt und Rollen-/Letzter-Admin-Validierung vor dem Speichern der Mitgliederdaten ausgeführt.
+- Datei: `index.html` im Branch `develop`.
+- Mitgliederliste: Name und Profilbild werden aus `profiles.display_name` und `profiles.avatar_url` geladen; E-Mail und mannschaftsbezogene Rollen bleiben separat.
+- Mitglied bearbeiten: Name, Profilbild und Checkboxen für Mannschaftsadmin/Trainer. E-Mail bleibt in dieser Maske unverändert und wird nicht durch eine ungesicherte direkte Änderung von Auth-Daten ersetzt.
+- Eigenes Profil: Name und Profilbild sind unter „Mein Konto“ bearbeitbar. Rollencheckboxen sind für das eigene Konto deaktiviert; die Datenbankfunktionen schützen zusätzlich vor direkter Selbständerung.
+- Profilbilder werden auf Clientseite skaliert und im Bucket `profile-avatars` abgelegt. Name und Bild werden global im persönlichen Profil gespeichert, Rollen weiterhin pro Mannschaft.
+
+### Verbleibende Prüfung / bekannte Grenzen
+
+- Die Frontend-Änderungen sind in GitHub `develop` committed, aber ein interaktiver iPhone-Praxistest wurde noch nicht durchgeführt.
+- E-Mail-Änderungen anderer Mitglieder sind absichtlich nicht Bestandteil dieser UI-Integration. Dafür ist eine separat autorisierte serverseitige Auth-Admin-Funktion nötig.
+- Zu prüfen: Laden und Speichern von Profilen, Bild-Upload mit bestehenden Storage-Policies, Filter und Rollen-Badges, Abbrechen/Speichern der Mitgliedermaske sowie Selbstrollen-Schutz für Trainer und Admins.
+- PROD bleibt unverändert. Diese Frontend-Commits und die DEV-Migrationen sind noch kein PROD-Release.
