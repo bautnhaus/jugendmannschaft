@@ -58,3 +58,22 @@ Die zweite Datei ist zwingend nach der ersten auszuführen.
 - Noch zu prüfen: E-Mail-Änderung mit Bestätigung (sobald eine geeignete Testadresse verfügbar ist), Passwortfeld-Validierung am Gerät, kombinierte Änderungen und Teilfehlerbehandlung, ungültige Dateitypen/Dateigrößen, Abbrechen sowie vollständige Rollen-/Mitglieder-Regressionsprüfungen. Die Mitgliederbearbeitung wird erst nach Abschluss dieser Tests vereinheitlicht.
 - Automatischer statischer Syntaxcheck der beiden Inline-JavaScript-Blöcke in `index.html` auf `develop`: erfolgreich (Modul-Import für den Parser entfernt; Quelltext selbst nicht verändert). Der Check beweist keine Laufzeit- oder Auth-Funktionalität.
 - PROD bleibt unverändert. Diese Frontend-Commits und die DEV-Migrationen sind noch kein PROD-Release.
+
+
+## Vereinsmitglied-Maske – Implementierung 31.10.2026 (DEV)
+
+- Die Vereinsverwaltung verwendet nun einen gemeinsamen Dialog für **Mitglied hinzufügen** und **Mitglied bearbeiten**.
+- Der Dialog umfasst Name, Profilbild, E-Mail-Adresse, Vereinsrolle sowie Mannschaftsadmin-/Trainerrollen für die Mannschaften des ausgewählten Vereins.
+- Beim Hinzufügen wird ein bestehendes Konto über die E-Mail-Adresse zugeordnet. Ein neues Auth-Konto wird nicht durch diese Maske angelegt; dafür ist weiterhin der Einladungsablauf vorgesehen.
+- Profilname und Profilbild werden über `admin_update_club_member_profile` im Vereinskontext gespeichert. Die Funktion prüft serverseitig `can_manage_club_context(p_club_id)` und verlangt eine bestehende Mitgliedschaft des Zielkontos im selben Verein.
+- Die Storage-Policies für `profile-avatars` erlauben Admin-Uploads/Änderungen/Löschungen nur, wenn das Zielkonto zu einem Verein gehört, dessen Kontext der aktuelle Nutzer verwalten darf. Der eigene Avatar bleibt weiterhin erlaubt.
+- Rollen-RPCs `admin_add_team_role` und `admin_remove_team_role` erlauben jetzt zusätzlich Vereinsadmins und Superadmins mit ausgewähltem Vereinskontext, begrenzt auf Mannschaften dieses Vereins. Selbständerungen bleiben gesperrt; der Schutz des letzten Mannschaftsadmins bleibt erhalten.
+- `admin_add_club_member_by_email` und `admin_set_club_member_role` verlangen nun `can_manage_club_context(p_club_id)`; Superadmins ohne passenden ausgewählten Vereinskontext werden serverseitig abgewiesen. Eigene Vereinsrollen können nicht geändert werden. Der Schutz des letzten Vereinsadmins bleibt erhalten.
+- DEV-Migrationen:
+  - `20261031020000_ap04_club_member_editor_profile_and_avatar_scope_dev.sql`
+  - `20261031030000_ap04_club_context_team_role_editing_dev.sql`
+  - `20261031040000_ap04_enforce_selected_club_context_for_member_roles_dev.sql`
+- Alle drei Migrationen wurden auf Supabase DEV erfolgreich angewendet. Die Datenbankprüfung bestätigt, dass die sechs betroffenen RPCs als `SECURITY DEFINER` bestehen und `authenticated` Ausführungsrechte besitzt; die drei Avatar-Policies für INSERT/UPDATE/DELETE sind vorhanden.
+- Statischer JavaScript-Syntaxcheck für den aktualisierten `index.html` auf `develop`: erfolgreich. Der Quelltext des DEV-Deploy-Repositories entspricht bytegenau der aktualisierten Datei (gleiche Blob-SHA).
+- **Noch offen:** manueller Praxistest der Vereinsmitglied-Maske auf dem iPhone mit Vereinsadmin und Superadmin, einschließlich Name/Bild, Vereinsrolle, Teamrollen, eigenem Rollen-Schutz, letztem Vereins-/Mannschaftsadmin und falschem/fehlendem Kontext. Syntax- und Schema-Prüfungen ersetzen diese Laufzeittests nicht.
+- **PROD bleibt unverändert.** Diese Umsetzung und die drei Migrationen gelten ausschließlich für DEV.
