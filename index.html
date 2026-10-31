@@ -55,7 +55,7 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 #loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}#loginCard{width:min(520px,100%)}.small{font-size:13px}.status{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;padding:12px;border-radius:12px;background:#172033;color:white;display:none;box-shadow:0 8px 30px #0003}.status.show{display:block}.status.error{background:#991b1b}.status.ok{background:#166534}
 
 /* Unified design system */
-.sectionHeading{display:flex;align-items:flex-start;gap:10px;margin:18px 2px 8px}.sectionHeading h2{margin:0 0 2px;font-size:20px}.sectionHeading p{margin:0;font-size:13px}.sectionIcon{width:34px;height:34px;border-radius:10px;background:#eaf2ff;display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 34px}.settingsSection+.settingsSection{margin-top:18px}.accountCard{margin-top:8px}.sortHeaderBtn{width:100%;min-width:0;display:flex;align-items:center;justify-content:flex-start;gap:2px;padding:6px 5px!important;min-height:34px!important;overflow:hidden}.sortHeaderLabel{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sortHeaderArrow{flex:0 0 auto;white-space:nowrap}.playerTableRow.top16Row{background:#f0fdf4}.playerTableRow.top16Row td:first-child{box-shadow:inset 3px 0 0 #86efac}.playerTableRow td{height:54px}.ellipsisCell{min-width:0;max-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.attendanceCell{white-space:nowrap;font-weight:600}.statsGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.statsGrid>div{text-align:center}.participationBadge{display:inline-flex;align-items:center;justify-content:center;height:30px;min-height:30px!important;min-width:92px;white-space:nowrap;box-sizing:border-box;line-height:1;padding:4px 8px}.recommendedTeamBadge{color:#111827!important;background:#dcfce7!important;border-color:#bbf7d0!important}.recommendedTeamOption .muted{color:white!important}
+.sectionHeading{display:flex;align-items:flex-start;gap:10px;margin:18px 2px 8px}.sectionHeading h2{margin:0 0 2px;font-size:20px}.sectionHeading p{margin:0;font-size:13px}.sectionIcon{width:34px;height:34px;border-radius:10px;background:#eaf2ff;display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 34px}.settingsSection+.settingsSection{margin-top:18px}.accountCard{margin-top:8px}.accountProfileEditor{display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px;align-items:center;margin-bottom:16px}.accountProfileEditor label{grid-column:1/-1}.accountProfileEditor button.primary{grid-column:1/-1;width:100%}.profileAvatarPreview{width:76px;height:76px;border-radius:50%;overflow:hidden;border:1px solid var(--line);background:var(--surface-2,var(--bg));display:flex;align-items:center;justify-content:center}.profileAvatarPreview img{width:100%;height:100%;object-fit:cover}.profileAvatarPreview .material-symbols-outlined{font-size:42px;color:var(--muted)}.sortHeaderBtn{width:100%;min-width:0;display:flex;align-items:center;justify-content:flex-start;gap:2px;padding:6px 5px!important;min-height:34px!important;overflow:hidden}.sortHeaderLabel{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sortHeaderArrow{flex:0 0 auto;white-space:nowrap}.playerTableRow.top16Row{background:#f0fdf4}.playerTableRow.top16Row td:first-child{box-shadow:inset 3px 0 0 #86efac}.playerTableRow td{height:54px}.ellipsisCell{min-width:0;max-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.attendanceCell{white-space:nowrap;font-weight:600}.statsGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.statsGrid>div{text-align:center}.participationBadge{display:inline-flex;align-items:center;justify-content:center;height:30px;min-height:30px!important;min-width:92px;white-space:nowrap;box-sizing:border-box;line-height:1;padding:4px 8px}.recommendedTeamBadge{color:#111827!important;background:#dcfce7!important;border-color:#bbf7d0!important}.recommendedTeamOption .muted{color:white!important}
 .tablewrap th:nth-child(1){width:7%;text-align:right}.tablewrap th:nth-child(2){width:12%}.tablewrap th:nth-child(3){width:26%}.tablewrap th:nth-child(4){width:22%}.tablewrap th:nth-child(5){width:33%}.tablewrap th{overflow:hidden}.tablewrap td:nth-child(2) img,.tablewrap td:nth-child(2)>div{width:38px!important;height:38px!important}.trainingItem,.matchdayTeam,.card{box-shadow:0 1px 2px #00000008}
 .eventBody{padding:0 10px 10px}.eventTeams{margin-top:4px}.eventBody>.notice{margin-top:0}.eventBody .sectionHeading h2{font-size:18px}.eventBody .sectionHeading p{font-size:12px}
 @media(max-width:600px){.sectionHeading{margin-top:14px}.sectionHeading h2{font-size:18px}.sectionHeading p{font-size:12px}.tablewrap th,.tablewrap td{font-size:13px}.statsGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.statsGrid>div{text-align:center}.participationBadge{display:inline-flex;align-items:center;justify-content:center;height:30px;min-height:30px!important;min-width:92px;white-space:nowrap;box-sizing:border-box;line-height:1;padding:4px 8px}.recommendedTeamBadge{color:#111827!important;background:#dcfce7!important;border-color:#bbf7d0!important}.recommendedTeamOption .muted{color:white!important}
@@ -1710,7 +1710,7 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
   <div id="mehrLegacyContent" class="hidden">
   <div class="settingsSection">
     <div class="sectionHeading"><div class="sectionIcon"><span class="material-symbols-outlined" aria-hidden="true">person</span></div><div><h2>Mein Konto</h2><p class="muted">Dein persönlicher Zugang zur Mannschafts-App.</p></div></div>
-    <div class="card accountCard"><p id="accountInfo" class="small muted"></p><div class="formrow"><label>E-Mail-Adresse<input id="accountEmail" type="email" autocomplete="email"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changeEmail()">E-Mail ändern</button></div></div><div class="formrow" style="margin-top:10px"><label>Neues Passwort<input id="newPassword" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changePassword()">Passwort ändern</button></div></div><div class="notice small" style="margin-top:12px">Nach der Eingabe deiner neuen E-Mail-Adresse erhältst du eine E-Mail zur Bestätigung.</div><div class="toolbar" style="margin-top:10px"><button onclick="logout()">Abmelden</button><button class="danger" onclick="deleteMyAccount()">Mein Konto löschen</button></div></div>
+    <div class="card accountCard"><p id="accountInfo" class="small muted"></p><div class="accountProfileEditor"><div class="profileAvatarPreview" id="myProfilePhotoPreview"><span class="material-symbols-outlined">account_circle</span></div><input id="myProfilePhotoInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden"><button type="button" onclick="$('myProfilePhotoInput').click()">Profilbild auswählen</button><label>Name<input id="myProfileName" type="text" autocomplete="name" placeholder="Dein Name"></label><button type="button" class="primary" onclick="saveMyProfile()">Profil speichern</button></div><div class="formrow"><label>E-Mail-Adresse<input id="accountEmail" type="email" autocomplete="email"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changeEmail()">E-Mail ändern</button></div></div><div class="formrow" style="margin-top:10px"><label>Neues Passwort<input id="newPassword" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changePassword()">Passwort ändern</button></div></div><div class="notice small" style="margin-top:12px">Nach der Eingabe deiner neuen E-Mail-Adresse erhältst du eine E-Mail zur Bestätigung.</div><div class="toolbar" style="margin-top:10px"><button onclick="logout()">Abmelden</button><button class="danger" onclick="deleteMyAccount()">Mein Konto löschen</button></div></div>
     <div class="card themePreferenceCard" style="margin-top:12px">
       <h3>Darstellung</h3>
       <p class="muted small">Wähle, ob Kaderkompass der Systemeinstellung folgt oder dauerhaft hell bzw. dunkel angezeigt wird. Die Auswahl gilt auf diesem Gerät und in diesem Browser.</p>
@@ -1855,6 +1855,7 @@ window.logout=async()=>{if(supabase&&contextReadOnly){try{await getClient().rpc(
 
 async function loadApp(){
   const c=getClient();
+  await loadMyProfile().catch(e=>console.warn('Eigenes Profil konnte nicht geladen werden:',e));
   // Wichtig beim Kontowechsel: keine UI-Berechtigungen aus der vorherigen Sitzung übernehmen.
   // Plattform-/Vereinsstarts blenden Navigationseinträge aus; bei einem anschließenden
   // Team-Login müssen diese wieder sichtbar sein.
@@ -1948,7 +1949,7 @@ async function loadApp(){
       console.warn('Trainerdaten konnten nicht vollständig geladen werden:',trainerError.message);
       throw new Error('Die Rollenliste konnte nicht sicher geladen werden. Bitte Seite neu laden oder Admin kontaktieren.');
     }
-    state.trainers=(trainerRows||[]).map(m=>({user_id:m.user_id,roles:Array.isArray(m.roles)?m.roles:[m.role||'trainer'],role:(Array.isArray(m.roles)?m.roles:[m.role||'trainer']).includes('admin')?'admin':'trainer',admin_label:m.admin_label||'',email:m.email||''}));
+    const trainerIds=(trainerRows||[]).map(m=>m.user_id);let profileRows=[];if(trainerIds.length){const {data:profilesData,error:profilesError}=await c.from('profiles').select('id,display_name,avatar_url').in('id',trainerIds);if(profilesError)console.warn('Mitgliederprofile konnten nicht vollständig geladen werden:',profilesError.message);else profileRows=profilesData||[];}const profilesById=new Map(profileRows.map(p=>[p.id,p]));state.trainers=(trainerRows||[]).map(m=>{const p=profilesById.get(m.user_id)||{};return {user_id:m.user_id,roles:Array.isArray(m.roles)?m.roles:[m.role||'trainer'],role:(Array.isArray(m.roles)?m.roles:[m.role||'trainer']).includes('admin')?'admin':'trainer',admin_label:m.admin_label||'',display_name:p.display_name||m.admin_label||'',avatar_url:p.avatar_url||'',email:m.email||''};});
   }
   const {data:teamRow,error:te}=await c.from('teams').select('id,name,club_id,recommended_squad_size').eq('id',team).single();if(te)throw te;currentClubId=teamRow?.club_id||null;recommendedSquadSize=Number(teamRow?.recommended_squad_size)||16;canManageClub=false;if(currentClubId){const {data:clubAdminFlag,error:clubAdminError}=await c.rpc('is_club_admin',{p_club_id:currentClubId});if(clubAdminError)console.warn('Vereinsverwaltung konnte nicht geprüft werden:',clubAdminError.message);else canManageClub=clubAdminFlag===true;}const clubPanel=$('clubAdminPanel');if(clubPanel)clubPanel.classList.toggle('hidden',!canManageClub||contextReadOnly);
   const {data:seasonRows,error:se}=await c.from('seasons').select('id,name,start_date,end_date,is_active').eq('team_id',team).eq('is_active',true).limit(1);if(se)throw se;season=seasonRows?.[0]||null;
@@ -2019,6 +2020,56 @@ function photoPreviewHtml(photo){return playerAvatarHtml(photo);}
 function updatePhotoActionButton(prefix){const preview=$(prefix+'PhotoPreview'),btn=preview?.parentElement?.querySelector('.photoActionButton');if(!preview||!btn)return;const hasPhoto=!!preview.dataset.photo;btn.innerHTML=materialIcon(hasPhoto?'photo_camera':'add_a_photo')+`<span>${prefix==='club'?(hasPhoto?'Wappen bearbeiten':'Wappen hinzufügen'):(hasPhoto?'Foto bearbeiten':'Foto hinzufügen')}</span>`;}
 function bindPhotoInput(inputId,previewId,prefix){const input=$(inputId),preview=$(previewId);if(!input||input.dataset.photoBound==='true')return;input.dataset.photoBound='true';input.addEventListener('change',async()=>{const file=input.files?.[0];if(!file)return;try{const data=prefix==='club'?await resizeClubCrest(file):await resizePhoto(file);preview.innerHTML=prefix==='club'?'<img src="'+data+'" alt="Vorschau Vereinswappen">':playerAvatarHtml(data);preview.dataset.photo=data;updatePhotoActionButton(prefix);closePhotoSheet();}catch(e){showStatus(e.message||String(e),'error');}finally{input.value='';}});}
 function resizeClubCrest(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/')){reject(new Error('Bitte ein Bild auswählen.'));return}const img=new Image();const reader=new FileReader();reader.onload=()=>{img.onload=()=>{const max=600;const scale=Math.min(1,max/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/png'));};img.onerror=()=>reject(new Error('Wappen konnte nicht gelesen werden.'));img.src=reader.result;};reader.onerror=()=>reject(new Error('Wappen konnte nicht gelesen werden.'));reader.readAsDataURL(file);});}
+async function uploadProfileAvatar(userId,dataUrl){
+  const response=await fetch(dataUrl);const blob=await response.blob();
+  const ext=blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg';
+  const path=userId+'/avatar.'+ext;
+  const {error}=await getClient().storage.from('profile-avatars').upload(path,blob,{upsert:true,contentType:blob.type||'image/jpeg'});
+  if(error)throw error;
+  return getClient().storage.from('profile-avatars').getPublicUrl(path).data.publicUrl;
+}
+async function loadMyProfile(){
+  if(!currentUser)return;
+  const {data,error}=await getClient().from('profiles').select('id,display_name,avatar_url').eq('id',currentUser.id).maybeSingle();
+  if(error)throw error;
+  const p=data||{};if($('myProfileName'))$('myProfileName').value=p.display_name||'';
+  const photo=$('myProfilePhotoPreview');if(photo){photo.dataset.photo=p.avatar_url||'';photo.innerHTML=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="Profilbild">':'<span class="material-symbols-outlined">account_circle</span>';}
+}
+window.saveMyProfile=async()=>{
+  if(!currentUser)return;
+  const name=$('myProfileName')?.value.trim();if(!name){showStatus('Bitte einen Namen eingeben.','error');return;}
+  const photo=$('myProfilePhotoPreview');let avatar=photo?.dataset.photo||null;
+  try{
+    if(avatar?.startsWith('data:'))avatar=await uploadProfileAvatar(currentUser.id,avatar);
+    const {error}=await getClient().from('profiles').upsert({id:currentUser.id,display_name:name,avatar_url:avatar},{onConflict:'id'});if(error)throw error;
+    await loadApp();showStatus('Profil gespeichert.','ok');
+  }catch(e){showStatus('Profil konnte nicht gespeichert werden: '+(e.message||e),'error');}
+};
+window.saveTeamMemberProfile=async userId=>{
+  if(!adminGuard())return;
+  const target=state.trainers.find(x=>x.user_id===userId);if(!target)return;
+  const name=$('memberProfileName')?.value.trim();if(!name){showStatus('Bitte einen Namen eingeben.','error');return;}
+  const photo=$('memberProfilePhotoPreview');let avatar=photo?.dataset.photo||null;
+  try{
+    if(avatar?.startsWith('data:'))avatar=await uploadProfileAvatar(userId,avatar);
+    const {error}=await getClient().rpc('admin_update_member_profile',{p_team_id:team,p_user_id:userId,p_display_name:name,p_avatar_url:avatar});if(error)throw error;
+    if(userId!==currentUser?.id){
+      const current=target.roles||[target.role||'trainer'];const desired=[];
+      if($('editTeamRoleAdmin')?.checked)desired.push('admin');if($('editTeamRoleTrainer')?.checked)desired.push('trainer');
+      if(!desired.length)throw new Error('Mindestens eine Mannschaftsrolle muss ausgewählt bleiben.');
+      const adminCount=state.trainers.filter(x=>(x.roles||[x.role]).includes('admin')).length;
+      if(current.includes('admin')&&!desired.includes('admin')&&adminCount<=1)throw new Error('Mindestens ein Mannschaftsadmin muss erhalten bleiben.');
+      for(const r of ['admin','trainer']){const had=current.includes(r),wants=desired.includes(r);if(had===wants)continue;const {error:roleError}=await getClient().rpc(wants?'admin_add_team_role':'admin_remove_team_role',{p_team_id:team,p_user_id:userId,p_role:r});if(roleError)throw roleError;}
+    }
+    closeModal();await loadApp();showStatus('Mitglied gespeichert.','ok');
+  }catch(e){showStatus('Mitglied konnte nicht vollständig gespeichert werden: '+(e.message||e),'error');try{await loadApp();}catch{}}
+};
+document.addEventListener('change',async ev=>{
+  if(ev.target?.id!=='myProfilePhotoInput')return;const file=ev.target.files?.[0];if(!file)return;
+  try{const data=await resizePhoto(file);const p=$('myProfilePhotoPreview');p.dataset.photo=data;p.innerHTML='<img src="'+data+'" alt="Vorschau Profilbild">';}
+  catch(e){showStatus(e.message||String(e),'error');}finally{ev.target.value='';}
+});
+
 function resizePhoto(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/')){reject(new Error('Bitte ein Bild auswählen.'));return}const img=new Image();const reader=new FileReader();reader.onload=()=>{img.onload=()=>{const max=600;const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext('2d');ctx.drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',.78));};img.onerror=()=>reject(new Error('Bild konnte nicht gelesen werden.'));img.src=reader.result;};reader.onerror=()=>reject(new Error('Bild konnte nicht gelesen werden.'));reader.readAsDataURL(file);});}
 function openPhotoSheet(mode){const prefix=mode==='edit'?'edit':mode==='club'?'club':'new';const preview=$(prefix+'PhotoPreview');if(!preview?.dataset.photo){triggerPhotoInput(prefix==='club'?'clubPhotoInput':prefix+'PhotoInput');return;}const sheet=$('photoSheet');if(!sheet)return;const isClub=prefix==='club';sheet.innerHTML=`<div class="photoSheetCard"><div class="photoSheetTitle">${isClub?'Wappen bearbeiten':'Foto bearbeiten'}</div><div class="photoSheet"><button type="button" onclick="triggerPhotoInput('${prefix==='club'?'clubPhotoInput':prefix+'PhotoInput'}')">${materialIcon('photo_camera')}<span>${isClub?'Wappen ändern':'Foto ändern'}</span></button><button type="button" class="danger" onclick="${isClub?'clearClubCrest()':'clearPlayerPhoto()'};closePhotoSheet()">${materialIcon('delete')}<span>${isClub?'Wappen löschen':'Foto löschen'}</span></button><button type="button" class="photoSheetCancel" onclick="closePhotoSheet()">Abbrechen</button></div></div>`;sheet.classList.add('show');}
 window.openPhotoSheet=openPhotoSheet;window.closePhotoSheet=()=>{$('photoSheet')?.classList.remove('show');};window.triggerPhotoInput=id=>{closePhotoSheet();$(id)?.click();};
@@ -2736,13 +2787,16 @@ window.openTeamMemberRoleEditor=userId=>{
   if(!adminGuard())return;
   const target=state.trainers.find(x=>x.user_id===userId);if(!target)return;
   const roles=target.roles||[target.role||'trainer'];
-  openModal(`<div class="modalHeader"><h2>Rolle bearbeiten</h2><button type="button" class="iconButton" onclick="closeModal()" aria-label="Schließen">${materialIcon('close')}</button></div>
-  <div class="playerListRow" style="margin:10px 0"><span class="playerListAvatar"><span class="playerAvatar">${materialIcon('account_circle')}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(target.admin_label||'Mitglied')}</span><span class="muted small">${esc(target.email||'E-Mail nicht verfügbar')}</span></span></div>
+  openModal(`<div class="modalHeader"><h2>Mitglied bearbeiten</h2><button type="button" class="iconButton" onclick="closeModal()" aria-label="Schließen">${materialIcon('close')}</button></div>
+  <div class="playerListRow" style="margin:10px 0"><span class="playerListAvatar">${target.avatar_url?`<img src="${esc(target.avatar_url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`<span class="playerAvatar">${materialIcon('account_circle')}</span>`}</span><span class="playerListIdentity"><span class="playerListName">${esc(target.display_name||target.admin_label||'Mitglied')}</span><span class="muted small">${esc(target.email||'E-Mail nicht verfügbar')}</span></span></div>
+  <div class="accountProfileEditor"><div class="profileAvatarPreview" id="memberProfilePhotoPreview" data-photo="${esc(target.avatar_url||'')}">${target.avatar_url?`<img src="${esc(target.avatar_url)}" alt="Profilbild">`:`<span class="material-symbols-outlined">account_circle</span>`}</div><div><input id="memberProfilePhotoInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden"><button type="button" onclick="$('memberProfilePhotoInput').click()">Profilbild auswählen</button></div><label>Name<input id="memberProfileName" type="text" value="${esc(target.display_name||target.admin_label||'')}" autocomplete="name"></label></div>
   <b>Rollen in dieser Mannschaft</b>
-  <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="editTeamRoleAdmin" ${roles.includes('admin')?'checked':''}> <span><b>Mannschaftsadmin</b><br><span class="muted small">Verwaltung der Mannschaft</span></span></label>
-  <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="editTeamRoleTrainer" ${roles.includes('trainer')?'checked':''}> <span><b>Trainer</b><br><span class="muted small">Trainings und Spieltage verwalten</span></span></label>
-  <button type="button" class="primary" style="width:100%;margin-top:16px" onclick="saveTeamMemberRoles('${esc(userId)}')">Speichern</button>
+  <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="editTeamRoleAdmin" ${roles.includes('admin')?'checked':''} ${userId===currentUser?.id?'disabled':''}> <span><b>Mannschaftsadmin</b><br><span class="muted small">Verwaltung der Mannschaft</span></span></label>
+  <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="editTeamRoleTrainer" ${roles.includes('trainer')?'checked':''} ${userId===currentUser?.id?'disabled':''}> <span><b>Trainer</b><br><span class="muted small">Trainings und Spieltage verwalten</span></span></label>
+  ${userId===currentUser?.id?'<p class="muted small">Du kannst deine eigenen Mannschaftsrollen nicht ändern.</p>':''}
+  <button type="button" class="primary" style="width:100%;margin-top:16px" onclick="saveTeamMemberProfile('${esc(userId)}')">Speichern</button>
   <button type="button" style="width:100%;margin-top:8px" onclick="closeModal()">Abbrechen</button>`);
+  $('memberProfilePhotoInput')?.addEventListener('change',async ev=>{const file=ev.target.files?.[0];if(!file)return;try{const data=await resizePhoto(file);const p=$('memberProfilePhotoPreview');p.dataset.photo=data;p.innerHTML='<img src="'+data+'" alt="Vorschau Profilbild">';}catch(e){showStatus(e.message||String(e),'error')}finally{ev.target.value='';}});
 };
 window.saveTeamMemberRoles=async userId=>{
   if(!adminGuard())return;
@@ -2768,8 +2822,8 @@ window.openTeamMemberOptions=userId=>{
   const target=state.trainers.find(x=>x.user_id===userId);if(!target)return;
   const isMe=userId===currentUser?.id;
   openModal(`<div class="modalHeader"><h2>Mitglied verwalten</h2><button type="button" class="iconButton" onclick="closeModal()" aria-label="Schließen">${materialIcon('close')}</button></div>
-  <p><b>${esc(target.admin_label||'Mitglied')}</b><br><span class="muted small">${esc(target.email||'E-Mail nicht verfügbar')}</span></p>
-  <button type="button" class="playerListRow" onclick="openTeamMemberRoleEditor('${esc(userId)}')">${materialIcon('manage_accounts')}<span class="playerListIdentity">Rollen bearbeiten</span></button>
+  <p><b>${esc(target.display_name||target.admin_label||'Mitglied')}</b><br><span class="muted small">${esc(target.email||'E-Mail nicht verfügbar')}</span></p>
+  <button type="button" class="playerListRow" onclick="openTeamMemberRoleEditor('${esc(userId)}')">${materialIcon('manage_accounts')}<span class="playerListIdentity">Bearbeiten</span></button>
   ${isMe?'<p class="muted small">Das eigene Konto kann nicht aus der Mannschaft entfernt werden.</p>':`<button type="button" class="playerListRow" style="margin-top:8px" onclick="closeModal();removeTrainer('${esc(userId)}')">${materialIcon('person_remove')}<span class="playerListIdentity">Aus Mannschaft entfernen</span></button>`}`);
 };
 window.setTeamMemberRoleFilter=filter=>{teamMemberRoleFilter=filter;renderTrainerList();};
@@ -2777,15 +2831,15 @@ function renderTrainerList(){
   const box=$('trainerList');if(!box)return;
   if(role!=='admin'&&!(contextReadOnly&&isSuperAdmin)){box.innerHTML='';return;}
   const filters=$('teamMemberRoleFilters');
-  const all=[...state.trainers].sort((a,b)=>String(a.admin_label||a.email||'').localeCompare(String(b.admin_label||b.email||''),'de',{sensitivity:'base'}));
+  const all=[...state.trainers].sort((a,b)=>String(a.display_name||a.admin_label||a.email||'').localeCompare(String(b.display_name||b.admin_label||b.email||''),'de',{sensitivity:'base'}));
   const counts={Alle:all.length,Trainer:all.filter(t=>(t.roles||[t.role||'trainer']).includes('trainer')).length,Admin:all.filter(t=>(t.roles||[t.role||'trainer']).includes('admin')).length};
   if(filters)filters.innerHTML=['Alle','Trainer','Admin'].map(f=>`<button type="button" class="playerFilterChip ${teamMemberRoleFilter===f?'active':''}" onclick="setTeamMemberRoleFilter('${f}')">${f}${f==='Alle'?' ('+counts[f]+')':''}</button>`).join('');
   const filtered=all.filter(t=>teamMemberRoleFilter==='Alle'||(t.roles||[t.role||'trainer']).includes(teamMemberRoleFilter==='Admin'?'admin':'trainer'));
   if(!filtered.length){box.innerHTML='<p class="muted">'+(all.length?'Keine Mitglieder für diesen Filter.':'Noch keine Mitglieder in dieser Mannschaft.')+'</p>';}
   else box.innerHTML=filtered.map(t=>{
-    const roles=t.roles||[t.role||'trainer'];const label=t.admin_label||t.email||'Mitglied';
+    const roles=t.roles||[t.role||'trainer'];const label=t.display_name||t.admin_label||t.email||'Mitglied';
     const badges=roles.map(r=>`<span class="playerListPosition">${r==='admin'?'Mannschaftsadmin':'Trainer'}</span>`).join('');
-    return `<div class="playerListRow"><span class="playerListAvatar"><span class="playerAvatar">${materialIcon('account_circle')}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(label)}</span><span class="muted small">${esc(t.email||'E-Mail nicht verfügbar')}</span><span class="playerListPositions">${badges}</span></span><button type="button" class="iconAddButton" style="background:transparent!important;color:var(--text);box-shadow:none" onclick="openTeamMemberOptions('${esc(t.user_id)}')" aria-label="Optionen für ${esc(label)}" title="Optionen">${materialIcon('more_vert')}</button></div>`;
+    return `<div class="playerListRow"><span class="playerListAvatar">${t.avatar_url?`<img src="${esc(t.avatar_url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`<span class="playerAvatar">${materialIcon('account_circle')}</span>`}</span><span class="playerListIdentity"><span class="playerListName">${esc(label)}</span><span class="muted small">${esc(t.email||'E-Mail nicht verfügbar')}</span><span class="playerListPositions">${badges}</span></span><button type="button" class="iconAddButton" style="background:transparent!important;color:var(--text);box-shadow:none" onclick="openTeamMemberOptions('${esc(t.user_id)}')" aria-label="Optionen für ${esc(label)}" title="Optionen">${materialIcon('more_vert')}</button></div>`;
   }).join('');
   const footer=$('teamMemberListFooter');if(footer)footer.innerHTML=`<span>${filtered.length} von ${all.length} Mitgliedern</span><span>${teamMemberRoleFilter==='Alle'?'Alle Rollen':teamMemberRoleFilter}</span>`;
 }
