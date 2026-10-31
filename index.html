@@ -2697,8 +2697,8 @@ window.openTeamMemberInvite=()=>{
   <label>Eindeutiger Anzeigename<input id="teamInviteLabel" type="text" placeholder="z. B. Max Mustermann" autocomplete="name"></label>
   <label style="display:block;margin-top:12px">E-Mail-Adresse<input id="teamInviteEmail" type="email" placeholder="trainer@beispiel.de" autocomplete="email"></label>
   <div style="margin-top:14px"><b>Rollen in dieser Mannschaft</b>
-  <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="teamInviteRoleAdmin"> <span><b>Mannschaftsadmin</b><br><span class="muted small">Verwaltung der Mannschaft</span></span></label>
-  <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="teamInviteRoleTrainer" checked> <span><b>Trainer</b><br><span class="muted small">Trainings und Spieltage verwalten</span></span></label></div>
+  <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="radio" name="teamInviteRole" id="teamInviteRoleAdmin" value="admin"> <span><b>Mannschaftsadmin</b><br><span class="muted small">Verwaltung der Mannschaft</span></span></label>
+  <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="radio" name="teamInviteRole" id="teamInviteRoleTrainer" value="trainer" checked> <span><b>Trainer</b><br><span class="muted small">Trainings und Spieltage verwalten</span></span></label></div>
   <button type="button" class="primary" style="width:100%;margin-top:16px" onclick="submitTeamMemberInvite()">Einladung senden</button>
   <button type="button" style="width:100%;margin-top:8px" onclick="closeModal()">Abbrechen</button>`);
 };
@@ -2711,7 +2711,7 @@ window.submitTeamMemberInvite=async()=>{
   if($('teamInviteRoleTrainer')?.checked)roles.push('trainer');
   if(!label){showStatus('Bitte einen Anzeigenamen eingeben.','error');return;}
   if(!email){showStatus('Bitte eine E-Mail-Adresse eingeben.','error');return;}
-  if(!roles.length){showStatus('Bitte mindestens eine Rolle auswählen.','error');return;}
+  if(!roles.length){showStatus('Bitte eine Rolle auswählen. Weitere Rollen können nach der Einladung über das Optionsmenü ergänzt werden.','error');return;}
   if(state.trainers.some(t=>(t.admin_label||'').trim().toLocaleLowerCase('de')===label.toLocaleLowerCase('de'))){showStatus('Dieser Anzeigename ist bereits vergeben.','error');return;}
   let invitationCompleted=false;
   try{
@@ -2720,10 +2720,6 @@ window.submitTeamMemberInvite=async()=>{
     if(error)throw error;
     if(data?.error)throw new Error(data.error);
     invitationCompleted=true;
-    for(const r of roles.slice(1)){
-      const {error:roleError}=await getClient().rpc('admin_add_team_role',{p_team_id:team,p_user_id:data?.user_id,p_role:r});
-      if(roleError)throw roleError;
-    }
     const {error:labelError}=await getClient().rpc('admin_set_trainer_label',{p_team_id:team,p_email:email,p_label:label});
     closeModal();
     await loadApp();
