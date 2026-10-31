@@ -74,6 +74,6 @@ Die zweite Datei ist zwingend nach der ersten auszuführen.
   - `20261031030000_ap04_club_context_team_role_editing_dev.sql`
   - `20261031040000_ap04_enforce_selected_club_context_for_member_roles_dev.sql`
 - Alle drei Migrationen wurden auf Supabase DEV erfolgreich angewendet. Die Datenbankprüfung bestätigt, dass die sechs betroffenen RPCs als `SECURITY DEFINER` bestehen und `authenticated` Ausführungsrechte besitzt; die drei Avatar-Policies für INSERT/UPDATE/DELETE sind vorhanden.
-- Statischer JavaScript-Syntaxcheck für den aktualisierten `index.html` auf `develop`: erfolgreich. Der Quelltext des DEV-Deploy-Repositories entspricht bytegenau der aktualisierten Datei (gleiche Blob-SHA).
+- Statischer JavaScript-Syntaxcheck für den aktualisierten `index.html` auf `develop`: erfolgreich. Die Datei wurde anschließend in `bautnhaus/jugendmannschaft-dev` auf `main` übertragen; der Deploy-Commit ist `a4bed23de0554e871dbc62d68714e00cafe10842`.
 - **Noch offen:** manueller Praxistest der Vereinsmitglied-Maske auf dem iPhone mit Vereinsadmin und Superadmin, einschließlich Name/Bild, Vereinsrolle, Teamrollen, eigenem Rollen-Schutz, letztem Vereins-/Mannschaftsadmin und falschem/fehlendem Kontext. Syntax- und Schema-Prüfungen ersetzen diese Laufzeittests nicht.
 - **PROD bleibt unverändert.** Diese Umsetzung und die drei Migrationen gelten ausschließlich für DEV.
