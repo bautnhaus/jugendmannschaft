@@ -1,6 +1,6 @@
 # AP04 – Gemeinsame Profile und geschützte Rollenänderungen
 
-Status: DEV-Integration aktiv; Namensspeicherung und Profilbild-Upload wurden vom Nutzer erfolgreich manuell getestet. E-Mail-/Passwortänderungen sowie kombinierte Speichervorgänge und weitere Regressionstests stehen noch aus. PROD wurde nicht verändert.
+Status: DEV-Integration aktiv. Name und Profilbild (einzeln und gemeinsam), erneutes Laden sowie Passwortänderung wurden vom Nutzer manuell erfolgreich getestet. E-Mail-Änderung ist mangels freier Testadresse noch nicht manuell verifiziert. Statische JavaScript-Syntaxprüfung erfolgreich; PROD wurde nicht verändert.
 
 ## Fachliche Entscheidungen
 - Name und Profilbild sind gemeinsame persönliche Profildaten und gelten in allen Bereichen und Mannschaftskontexten.
@@ -53,7 +53,8 @@ Die zweite Datei ist zwingend nach der ersten auszuführen.
 
 ### Verbleibende Prüfung / bekannte Grenzen
 
-- Manuelle DEV-Prüfung auf iPhone: Name allein speichern – erfolgreich; Profilbild auswählen, speichern und nach erneutem Laden sehen – erfolgreich; Name und Profilbild gemeinsam speichern und nach erneutem Laden prüfen – erfolgreich; Passwortänderung – Nutzer bestätigt erfolgreiche Änderung. Noch nicht verifiziert: E-Mail-Änderung (Test aktuell nicht möglich, da keine freie E-Mail-Adresse verfügbar ist), ungültige Dateitypen/Dateigrößen sowie Abbrechen. Kombinationen mit Auth-Änderungen und Teilfehlerbehandlung sind ebenfalls noch nicht vollständig getestet.
+- Manuelle DEV-Prüfung auf iPhone: Name allein speichern – erfolgreich; Profilbild auswählen, speichern und nach erneutem Laden sehen – erfolgreich; Name und Profilbild gemeinsam speichern und nach erneutem Laden prüfen – erfolgreich; Passwortänderung – Nutzer bestätigt erfolgreiche Änderung. Noch nicht verifiziert: E-Mail-Änderung (Test aktuell nicht möglich, da keine freie E-Mail-Adresse verfügbar ist), ungültige Dateitypen/Dateigrößen sowie Abbrechen. Kombinationen mit Auth-Änderungen und Teilfehlerbehandlung sind ebenfalls noch nicht vollständig getestet. Die E-Mail-Eingabe wird clientseitig zusätzlich auf ein gültiges E-Mail-Format geprüft; diese Validierung wurde statisch geprüft, aber noch nicht manuell auf dem iPhone getestet.
 - E-Mail-Änderungen anderer Mitglieder sind absichtlich nicht Bestandteil dieser UI-Integration. Dafür ist eine separat autorisierte serverseitige Auth-Admin-Funktion nötig.
-- Noch zu prüfen: E-Mail-Änderung mit Bestätigung (sobald eine geeignete Testadresse verfügbar ist), Passwortfeld-Validierung, kombinierte Änderungen und Teilfehlerbehandlung, ungültige Dateitypen/Dateigrößen, Abbrechen sowie vollständige Rollen-/Mitglieder-Regressionsprüfungen. Die Mitgliederbearbeitung wird erst nach Abschluss dieser Tests vereinheitlicht.
+- Noch zu prüfen: E-Mail-Änderung mit Bestätigung (sobald eine geeignete Testadresse verfügbar ist), Passwortfeld-Validierung am Gerät, kombinierte Änderungen und Teilfehlerbehandlung, ungültige Dateitypen/Dateigrößen, Abbrechen sowie vollständige Rollen-/Mitglieder-Regressionsprüfungen. Die Mitgliederbearbeitung wird erst nach Abschluss dieser Tests vereinheitlicht.
+- Automatischer statischer Syntaxcheck der beiden Inline-JavaScript-Blöcke in `index.html` auf `develop`: erfolgreich (Modul-Import für den Parser entfernt; Quelltext selbst nicht verändert). Der Check beweist keine Laufzeit- oder Auth-Funktionalität.
 - PROD bleibt unverändert. Diese Frontend-Commits und die DEV-Migrationen sind noch kein PROD-Release.
