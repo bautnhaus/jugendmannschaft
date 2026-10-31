@@ -283,6 +283,9 @@ html[data-theme="dark"] .rosterViewTabs button:not(.active){color:var(--text-sof
 
 /* AP04: Profilbearbeitung an die mobile Spielercard anlehnen */
 .personalProfileEditor{display:flex;flex-direction:column;gap:14px;margin-bottom:16px}.personalProfilePhotoBlock{display:flex;flex-direction:column;align-items:center;gap:10px}.personalProfileAvatar{width:104px;height:104px;border-radius:50%;flex:0 0 auto}.personalProfileAvatar img{width:100%;height:100%;object-fit:cover}.personalProfilePhotoButton{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;min-height:48px;color:var(--accent);background:var(--card)}.personalProfileSaveButton{width:100%}@media(max-width:520px){.personalProfileAvatar{width:88px;height:88px}}
+
+/* AP04: Profil wie Spielercard in einem gemeinsamen Bearbeitungsdialog */
+.personalProfileSummary{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;align-items:center;margin-bottom:16px}.personalProfileSummary .personalProfileAvatar{width:76px;height:76px}.personalProfileSummaryText{display:flex;flex-direction:column;gap:4px;min-width:0}.personalProfilePhotoButton{grid-column:1/-1;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;min-height:46px;color:var(--accent);background:var(--card)}.profileEditPhotoBlock{display:flex;flex-direction:column;align-items:center;gap:10px;margin:8px 0 18px}.profileEditPhotoBlock .profileAvatarPreview{width:112px;height:112px}.profileEditPhotoBlock .photoActionButton{width:100%}
 </style>
 <style>
 .iconAddButton{width:40px!important;min-width:40px!important;max-width:40px!important;height:40px!important;min-height:40px!important;max-height:40px!important;flex:0 0 40px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:10px!important;font-size:23px!important;line-height:1!important}
@@ -1713,7 +1716,7 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
   <div id="mehrLegacyContent" class="hidden">
   <div class="settingsSection">
     <div class="sectionHeading"><div class="sectionIcon"><span class="material-symbols-outlined" aria-hidden="true">person</span></div><div><h2>Mein Konto</h2><p class="muted">Dein persönlicher Zugang zur Mannschafts-App.</p></div></div>
-    <div class="card accountCard"><p id="accountInfo" class="small muted"></p><div class="personalProfileEditor"><div class="personalProfilePhotoBlock"><div class="profileAvatarPreview personalProfileAvatar" id="myProfilePhotoPreview"><span class="material-symbols-outlined">account_circle</span></div><input id="myProfilePhotoInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden"><button type="button" class="personalProfilePhotoButton" onclick="$('myProfilePhotoInput').click()"><span class="material-symbols-outlined" aria-hidden="true">photo_camera</span> Foto ändern</button></div><label>Name<input id="myProfileName" type="text" autocomplete="name" placeholder="Dein Name"></label><button type="button" class="primary personalProfileSaveButton" onclick="saveMyProfile()">Profil speichern</button></div><div class="formrow"><label>E-Mail-Adresse<input id="accountEmail" type="email" autocomplete="email"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changeEmail()">E-Mail ändern</button></div></div><div class="formrow" style="margin-top:10px"><label>Neues Passwort<input id="newPassword" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changePassword()">Passwort ändern</button></div></div><div class="notice small" style="margin-top:12px">Nach der Eingabe deiner neuen E-Mail-Adresse erhältst du eine E-Mail zur Bestätigung.</div><div class="toolbar" style="margin-top:10px"><button onclick="logout()">Abmelden</button><button class="danger" onclick="deleteMyAccount()">Mein Konto löschen</button></div></div>
+    <div class="card accountCard"><p id="accountInfo" class="small muted"></p><div class="personalProfileSummary"><div class="profileAvatarPreview personalProfileAvatar" id="myProfilePhotoPreview"><span class="material-symbols-outlined">account_circle</span></div><div class="personalProfileSummaryText"><b id="myProfileNameDisplay">Profil</b><span class="muted small">Dein persönlicher Name und dein Profilbild</span></div><button type="button" class="personalProfilePhotoButton" onclick="openMyProfileEditor()"><span class="material-symbols-outlined" aria-hidden="true">edit</span> Profil bearbeiten</button></div><div class="formrow"><label>E-Mail-Adresse<input id="accountEmail" type="email" autocomplete="email"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changeEmail()">E-Mail ändern</button></div></div><div class="formrow" style="margin-top:10px"><label>Neues Passwort<input id="newPassword" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="changePassword()">Passwort ändern</button></div></div><div class="notice small" style="margin-top:12px">Nach der Eingabe deiner neuen E-Mail-Adresse erhältst du eine E-Mail zur Bestätigung.</div><div class="toolbar" style="margin-top:10px"><button onclick="logout()">Abmelden</button><button class="danger" onclick="deleteMyAccount()">Mein Konto löschen</button></div></div>
     <div class="card themePreferenceCard" style="margin-top:12px">
       <h3>Darstellung</h3>
       <p class="muted small">Wähle, ob Kaderkompass der Systemeinstellung folgt oder dauerhaft hell bzw. dunkel angezeigt wird. Die Auswahl gilt auf diesem Gerät und in diesem Browser.</p>
@@ -2037,16 +2040,23 @@ async function loadMyProfile(){
   if(error)throw error;
   const p=data||{};if($('myProfileName'))$('myProfileName').value=p.display_name||'';
   const photo=$('myProfilePhotoPreview');if(photo){photo.dataset.photo=p.avatar_url||'';photo.innerHTML=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="Profilbild">':'<span class="material-symbols-outlined">account_circle</span>';}
-  const input=$('myProfilePhotoInput');if(input)input.onchange=async ev=>{const file=ev.target.files?.[0];if(!file)return;try{const data=await resizePhoto(file);const preview=$('myProfilePhotoPreview');preview.dataset.photo=data;preview.innerHTML='<img src="'+data+'" alt="Vorschau Profilbild">';}catch(e){showStatus(e.message||String(e),'error')}finally{input.value='';}};
+  if($('myProfileNameDisplay'))$('myProfileNameDisplay').textContent=p.display_name||'Profil';
+
 }
+window.openMyProfileEditor=()=>{
+  if(!currentUser)return;
+  const name=$('myProfileNameDisplay')?.textContent||'';const avatar=$('myProfilePhotoPreview')?.dataset.photo||'';
+  openModal('<h2>Profil bearbeiten</h2><div class="profileEditPhotoBlock"><div class="profileAvatarPreview" id="profileEditPhotoPreview" data-photo="'+esc(avatar)+'">'+(avatar?'<img src="'+esc(avatar)+'" alt="Profilbild">':'<span class="material-symbols-outlined">account_circle</span>')+'</div><input id="profileEditPhotoInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden"><button type="button" class="photoActionButton" onclick="document.getElementById(\'profileEditPhotoInput\').click()"><span class="material-symbols-outlined" aria-hidden="true">photo_camera</span><span>Foto ändern</span></button></div><label>Name<input id="profileEditName" type="text" autocomplete="name" value="'+esc(name)+'" placeholder="Dein Name"></label><div class="toolbar" style="margin-top:16px"><button type="button" class="primary" onclick="saveMyProfile()">Speichern</button><button type="button" onclick="closeModal()">Abbrechen</button></div>');
+  $('profileEditPhotoInput')?.addEventListener('change',async ev=>{const file=ev.target.files?.[0];if(!file)return;try{const data=await resizePhoto(file);const preview=$('profileEditPhotoPreview');preview.dataset.photo=data;preview.innerHTML='<img src="'+data+'" alt="Vorschau Profilbild">';}catch(e){showStatus(e.message||String(e),'error')}finally{ev.target.value='';}});
+};
 window.saveMyProfile=async()=>{
   if(!currentUser)return;
-  const name=$('myProfileName')?.value.trim();if(!name){showStatus('Bitte einen Namen eingeben.','error');return;}
-  const photo=$('myProfilePhotoPreview');let avatar=photo?.dataset.photo||null;
+  const name=$('profileEditName')?.value.trim();if(!name){showStatus('Bitte einen Namen eingeben.','error');return;}
+  const photo=$('profileEditPhotoPreview');let avatar=photo?.dataset.photo||null;
   try{
     if(avatar?.startsWith('data:'))avatar=await uploadProfileAvatar(currentUser.id,avatar);
     const {data,error}=await getClient().from('profiles').update({display_name:name,avatar_url:avatar}).eq('id',currentUser.id).select('id').maybeSingle();if(error)throw error;if(!data)throw new Error('Dein Profil konnte nicht gefunden werden. Bitte melde dich ab und erneut an.');
-    await loadApp();showStatus('Profil gespeichert.','ok');
+    closeModal();await loadApp();showStatus('Profil gespeichert.','ok');
   }catch(e){showStatus('Profil konnte nicht gespeichert werden: '+(e.message||e),'error');}
 };
 window.saveTeamMemberProfile=async userId=>{
