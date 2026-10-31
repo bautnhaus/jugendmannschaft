@@ -17,7 +17,14 @@ Status: Migration in Supabase DEV ausgeführt; Frontend-Integration und vollstä
   - `public.admin_update_member_profile(uuid, uuid, text, text)`
   - `public.admin_add_team_role(uuid, uuid, text)` und `public.admin_remove_team_role(uuid, uuid, text)`: explizite Sperre für Selbständerung; bisherige Team-/Vereinsprüfungen und Schutz des letzten Admins beibehalten
 - Ausführung: Supabase DEV meldete `success: true`.
+- Folge-Migration: `ap04_harden_profile_avatar_storage_policy_uuid_casts_dev` (DEV, erfolgreich). Alle UUID-Casts in Storage-Policies sind nun durch UUID-Formatprüfung abgesichert, damit beliebige Objektpfade in anderen Buckets keine Cast-Fehler auslösen.
 - Noch nicht nachgewiesen: vollständige Post-Migration-Sicherheitsprüfung, Storage-Upload/Änderung/Löschung, Admin-Profiländerung, Selbst-Rollenänderung und Regressionstests.
+
+## Migrationen im Repository
+- `supabase/migrations/20261031000000_ap04_shared_member_profiles_avatar_and_protect_self_role_changes_dev.sql`
+- `supabase/migrations/20261031010000_ap04_harden_profile_avatar_storage_policy_uuid_casts_dev.sql`
+
+Die zweite Datei ist zwingend nach der ersten auszuführen.
 
 ## PROD-Cutover
 1. DEV-Testfreigabe abwarten.
