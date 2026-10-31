@@ -1,6 +1,6 @@
 # AP04 – Gemeinsame Profile und geschützte Rollenänderungen
 
-Status: Migration in Supabase DEV ausgeführt; Frontend-Integration und vollständige Tests noch offen. PROD wurde nicht verändert.
+Status: DEV-Integration aktiv; Namensspeicherung und Profilbild-Upload wurden vom Nutzer erfolgreich manuell getestet. E-Mail-/Passwortänderungen sowie kombinierte Speichervorgänge und weitere Regressionstests stehen noch aus. PROD wurde nicht verändert.
 
 ## Fachliche Entscheidungen
 - Name und Profilbild sind gemeinsame persönliche Profildaten und gelten in allen Bereichen und Mannschaftskontexten.
@@ -48,12 +48,12 @@ Die zweite Datei ist zwingend nach der ersten auszuführen.
 - Datei: `index.html` im Branch `develop`.
 - Mitgliederliste: Name und Profilbild werden aus `profiles.display_name` und `profiles.avatar_url` geladen; E-Mail und mannschaftsbezogene Rollen bleiben separat.
 - Mitglied bearbeiten: Name, Profilbild und Checkboxen für Mannschaftsadmin/Trainer. E-Mail bleibt in dieser Maske unverändert und wird nicht durch eine ungesicherte direkte Änderung von Auth-Daten ersetzt.
-- Eigenes Profil: Name und Profilbild sind unter „Mein Konto“ bearbeitbar. Rollencheckboxen sind für das eigene Konto deaktiviert; die Datenbankfunktionen schützen zusätzlich vor direkter Selbständerung.
-- Profilbilder werden auf Clientseite skaliert und im Bucket `profile-avatars` abgelegt. Name und Bild werden global im persönlichen Profil gespeichert, Rollen weiterhin pro Mannschaft.
+- Eigenes Profil: Ein gemeinsamer Dialog „Konto bearbeiten“ enthält Name, Profilbild, E-Mail-Adresse und optionale neue Passwortfelder mit Bestätigung. Name/Bild werden im persönlichen Profil gespeichert; E-Mail/Passwort laufen über Supabase Auth. Rollencheckboxen sind für das eigene Konto deaktiviert; die Datenbankfunktionen schützen zusätzlich vor direkter Selbständerung.
+- Profilbilder werden auf Clientseite skaliert und im Bucket `profile-avatars` abgelegt. Jedes Bild erhält einen eindeutigen Pfad (`<user-id>/avatar-<timestamp>.<ext>`) und wird ohne `upsert` hochgeladen, um den zusätzlichen UPDATE/SELECT-Berechtigungsweg beim Überschreiben zu vermeiden. Name und Bild werden global im persönlichen Profil gespeichert, Rollen weiterhin pro Mannschaft.
 
 ### Verbleibende Prüfung / bekannte Grenzen
 
-- Die Frontend-Änderungen sind in GitHub `develop` committed, aber ein interaktiver iPhone-Praxistest wurde noch nicht durchgeführt.
+- Manuelle DEV-Prüfung auf iPhone: Name allein speichern – erfolgreich; Profilbild auswählen, speichern und nach erneutem Laden sehen – Nutzer hat den Upload als erfolgreich bestätigt. Noch nicht verifiziert: E-Mail-Änderung, Passwortänderung, Name+Bild zusammen, Kombination mit Auth-Änderung, ungültige Dateitypen/Dateigrößen sowie Abbrechen.
 - E-Mail-Änderungen anderer Mitglieder sind absichtlich nicht Bestandteil dieser UI-Integration. Dafür ist eine separat autorisierte serverseitige Auth-Admin-Funktion nötig.
-- Zu prüfen: Laden und Speichern von Profilen, Bild-Upload mit bestehenden Storage-Policies, Filter und Rollen-Badges, Abbrechen/Speichern der Mitgliedermaske sowie Selbstrollen-Schutz für Trainer und Admins.
+- Noch zu prüfen: E-Mail-Änderung mit Bestätigung, Passwortänderung und Passwortbestätigung, kombinierte Änderungen und Teilfehlerbehandlung, ungültige Dateitypen/Dateigrößen, Abbrechen, sowie vollständige Rollen-/Mitglieder-Regressionsprüfungen. Die Mitgliederbearbeitung wird erst nach Abschluss dieser Tests vereinheitlicht.
 - PROD bleibt unverändert. Diese Frontend-Commits und die DEV-Migrationen sind noch kein PROD-Release.
