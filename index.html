@@ -2056,6 +2056,7 @@ window.saveMyProfile=async()=>{
   const name=$('profileEditName')?.value.trim();if(!name){showStatus('Bitte einen Namen eingeben.','error');return;}
   const email=$('profileEditEmail')?.value.trim().toLowerCase()||'';const password=$('profileEditPassword')?.value||'';const confirm=$('profileEditPasswordConfirm')?.value||'';
   if(!email){showStatus('Bitte eine E-Mail-Adresse eingeben.','error');return;}
+  const emailInput=$('profileEditEmail');if(emailInput&&!emailInput.checkValidity()){showStatus('Bitte eine gültige E-Mail-Adresse eingeben.','error');return;}
   if(password||confirm){if(password.length<6){showStatus('Das neue Passwort muss mindestens 6 Zeichen lang sein.','error');return;}if(password!==confirm){showStatus('Die beiden Passwortfelder stimmen nicht überein.','error');return;}}
   const photo=$('profileEditPhotoPreview');let avatar=photo?.dataset.photo||null;let emailChanged=false,passwordChanged=false;
   try{
