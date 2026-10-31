@@ -2041,7 +2041,7 @@ window.saveMyProfile=async()=>{
   const photo=$('myProfilePhotoPreview');let avatar=photo?.dataset.photo||null;
   try{
     if(avatar?.startsWith('data:'))avatar=await uploadProfileAvatar(currentUser.id,avatar);
-    const {error}=await getClient().from('profiles').upsert({id:currentUser.id,display_name:name,avatar_url:avatar},{onConflict:'id'});if(error)throw error;
+    const {data,error}=await getClient().from('profiles').update({display_name:name,avatar_url:avatar}).eq('id',currentUser.id).select('id').maybeSingle();if(error)throw error;if(!data)throw new Error('Dein Profil konnte nicht gefunden werden. Bitte melde dich ab und erneut an.');
     await loadApp();showStatus('Profil gespeichert.','ok');
   }catch(e){showStatus('Profil konnte nicht gespeichert werden: '+(e.message||e),'error');}
 };
@@ -2051,14 +2051,16 @@ window.saveTeamMemberProfile=async userId=>{
   const name=$('memberProfileName')?.value.trim();if(!name){showStatus('Bitte einen Namen eingeben.','error');return;}
   const photo=$('memberProfilePhotoPreview');let avatar=photo?.dataset.photo||null;
   try{
-    if(avatar?.startsWith('data:'))avatar=await uploadProfileAvatar(userId,avatar);
-    const {error}=await getClient().rpc('admin_update_member_profile',{p_team_id:team,p_user_id:userId,p_display_name:name,p_avatar_url:avatar});if(error)throw error;
+    let desired=[],current=target.roles||[target.role||'trainer'];
     if(userId!==currentUser?.id){
-      const current=target.roles||[target.role||'trainer'];const desired=[];
       if($('editTeamRoleAdmin')?.checked)desired.push('admin');if($('editTeamRoleTrainer')?.checked)desired.push('trainer');
       if(!desired.length)throw new Error('Mindestens eine Mannschaftsrolle muss ausgewählt bleiben.');
       const adminCount=state.trainers.filter(x=>(x.roles||[x.role]).includes('admin')).length;
       if(current.includes('admin')&&!desired.includes('admin')&&adminCount<=1)throw new Error('Mindestens ein Mannschaftsadmin muss erhalten bleiben.');
+    }
+    if(avatar?.startsWith('data:'))avatar=await uploadProfileAvatar(userId,avatar);
+    const {error}=await getClient().rpc('admin_update_member_profile',{p_team_id:team,p_user_id:userId,p_display_name:name,p_avatar_url:avatar});if(error)throw error;
+    if(userId!==currentUser?.id){
       for(const r of ['admin','trainer']){const had=current.includes(r),wants=desired.includes(r);if(had===wants)continue;const {error:roleError}=await getClient().rpc(wants?'admin_add_team_role':'admin_remove_team_role',{p_team_id:team,p_user_id:userId,p_role:r});if(roleError)throw roleError;}
     }
     closeModal();await loadApp();showStatus('Mitglied gespeichert.','ok');
