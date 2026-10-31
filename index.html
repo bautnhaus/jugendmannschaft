@@ -2811,15 +2811,20 @@ window.openTeamMemberRoleEditor=userId=>{
   if(!adminGuard())return;
   const target=state.trainers.find(x=>x.user_id===userId);if(!target)return;
   const roles=target.roles||[target.role||'trainer'];
-  openModal(`<div class="modalHeader"><h2>Mitglied bearbeiten</h2><button type="button" class="iconButton" onclick="closeModal()" aria-label="Schließen">${materialIcon('close')}</button></div>
-  <div class="playerListRow" style="margin:10px 0"><span class="playerListAvatar">${target.avatar_url?`<img src="${esc(target.avatar_url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`<span class="playerAvatar">${materialIcon('account_circle')}</span>`}</span><span class="playerListIdentity"><span class="playerListName">${esc(target.display_name||target.admin_label||'Mitglied')}</span><span class="muted small">${esc(target.email||'E-Mail nicht verfügbar')}</span></span></div>
-  <div class="accountProfileEditor"><div class="profileAvatarPreview" id="memberProfilePhotoPreview" data-photo="${esc(target.avatar_url||'')}">${target.avatar_url?`<img src="${esc(target.avatar_url)}" alt="Profilbild">`:`<span class="material-symbols-outlined">account_circle</span>`}</div><div><input id="memberProfilePhotoInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden"><button type="button" onclick="$('memberProfilePhotoInput').click()">Profilbild auswählen</button></div><label>Name<input id="memberProfileName" type="text" value="${esc(target.display_name||target.admin_label||'')}" autocomplete="name"></label></div>
-  <b>Rollen in dieser Mannschaft</b>
+  const avatar=target.avatar_url||'';
+  openModal(`<h2>Mitglied bearbeiten</h2>
+  <div class="profileEditPhotoBlock">
+    <div class="profileAvatarPreview" id="memberProfilePhotoPreview" data-photo="${esc(avatar)}">${avatar?`<img src="${esc(avatar)}" alt="Profilbild">`:`<span class="material-symbols-outlined">account_circle</span>`}</div>
+    <input id="memberProfilePhotoInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden">
+    <button type="button" class="photoActionButton" onclick="document.getElementById('memberProfilePhotoInput').click()"><span class="material-symbols-outlined" aria-hidden="true">photo_camera</span><span>Foto ändern</span></button>
+  </div>
+  <label>Persönlicher Name<input id="memberProfileName" type="text" value="${esc(target.display_name||'')}" autocomplete="name" placeholder="Dein Name"></label>
+  <div class="sportSection" style="margin-top:16px"><div class="sportLabel">Anmeldedaten</div><label>E-Mail-Adresse<input type="email" value="${esc(target.email||'')}" readonly></label><p class="muted small">Die E-Mail-Adresse kann hier nicht geändert werden.</p></div>
+  <div class="sportSection" style="margin-top:16px"><div class="sportLabel">Rollen in dieser Mannschaft</div>
   <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="editTeamRoleAdmin" ${roles.includes('admin')?'checked':''} ${userId===currentUser?.id?'disabled':''}> <span><b>Mannschaftsadmin</b><br><span class="muted small">Verwaltung der Mannschaft</span></span></label>
   <label class="choiceButton" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="editTeamRoleTrainer" ${roles.includes('trainer')?'checked':''} ${userId===currentUser?.id?'disabled':''}> <span><b>Trainer</b><br><span class="muted small">Trainings und Spieltage verwalten</span></span></label>
-  ${userId===currentUser?.id?'<p class="muted small">Du kannst deine eigenen Mannschaftsrollen nicht ändern.</p>':''}
-  <button type="button" class="primary" style="width:100%;margin-top:16px" onclick="saveTeamMemberProfile('${esc(userId)}')">Speichern</button>
-  <button type="button" style="width:100%;margin-top:8px" onclick="closeModal()">Abbrechen</button>`);
+  ${userId===currentUser?.id?'<p class="muted small">Du kannst deine eigenen Mannschaftsrollen nicht ändern.</p>':''}</div>
+  <div class="toolbar" style="margin-top:16px"><button type="button" class="primary" onclick="saveTeamMemberProfile('${esc(userId)}')">Änderungen speichern</button><button type="button" onclick="closeModal()">Abbrechen</button></div>`);
   $('memberProfilePhotoInput')?.addEventListener('change',async ev=>{const file=ev.target.files?.[0];if(!file)return;try{const data=await resizePhoto(file);const p=$('memberProfilePhotoPreview');p.dataset.photo=data;p.innerHTML='<img src="'+data+'" alt="Vorschau Profilbild">';}catch(e){showStatus(e.message||String(e),'error')}finally{ev.target.value='';}});
 };
 window.saveTeamMemberRoles=async userId=>{
