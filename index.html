@@ -3283,10 +3283,12 @@ window.openMehrPage=(page)=>{
   else if(page==='personal'){showSection(personal);}
   else if(page==='club'){
     if(isSuperAdmin&&clubOnlyMode){window.superAdminNavigationMode='context';window.superAdminNextSection=null;showSection(club);$('superAdminClubListView')?.classList.remove('hidden');$('superAdminClubDetailView')?.classList.add('hidden');$('superAdminClubSubView')?.classList.add('hidden');$('superAdminTeamDetailView')?.classList.add('hidden');$('superAdminTeamSettingView')?.classList.add('hidden');}
-    else if(clubOnlyMode&&canManageClub&&currentClubId&&!isSuperAdmin){
-      // Vereinsadmins haben ihren Vereinskontext bereits beim Login. Deshalb dieselbe
-      // Vereinsdetailansicht wie beim Super Admin verwenden, aber ohne Plattformnavigation.
+    else if(canManageClub&&currentClubId&&!isSuperAdmin){
+      // Vereinsadmins verwenden dieselbe Vereinsdetailansicht wie Super Admins.
+      // Das alte clubAdminPanel bleibt verborgen, damit keine zweite Oberfläche erscheint.
       showSection(club);
+      $('clubAdminPanel')?.classList.add('hidden');
+      $('superAdminPanel')?.classList.remove('hidden');
       $('superAdminClubListView')?.classList.add('hidden');
       $('superAdminClubSubView')?.classList.add('hidden');
       $('superAdminTeamDetailView')?.classList.add('hidden');
@@ -3406,8 +3408,11 @@ window.openMehrPage=(page)=>{
       if(trainerIntro)trainerIntro.textContent='Mitglieder, Trainer und Mannschaftsrollen im ausgewählten Kontext verwalten.';
     }
     else if(isSuperAdmin&&clubOnlyMode){window.superAdminNavigationMode='management';window.superAdminNextSection='members';showSection(club);$('superAdminClubListView')?.classList.remove('hidden');$('superAdminClubDetailView')?.classList.add('hidden');$('superAdminClubSubView')?.classList.add('hidden');$('superAdminTeamDetailView')?.classList.add('hidden');$('superAdminTeamSettingView')?.classList.add('hidden');}
-    else if(clubOnlyMode&&canManageClub&&currentClubId){
+    else if(canManageClub&&currentClubId&&!isSuperAdmin){
+      // Mitglieder und Rollen direkt in der wiederverwendeten Vereinsverwaltung öffnen.
       window.superAdminNavigationMode='management';showSection(club);
+      $('clubAdminPanel')?.classList.add('hidden');
+      $('superAdminPanel')?.classList.remove('hidden');
       $('superAdminClubListView')?.classList.add('hidden');
       $('superAdminClubDetailView')?.classList.add('hidden');
       $('superAdminClubSubView')?.classList.remove('hidden');
