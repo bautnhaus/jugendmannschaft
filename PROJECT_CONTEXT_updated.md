@@ -45,6 +45,30 @@ Der Dateiinhalt in `jugendmannschaft/develop` wurde mit der `index.html` des Ref
 
 Der Nutzer hat am 01.11.2026 bestätigt: **Das Optionsmenü auf der Mannschaftsdetailseite funktioniert wie erwartet.** Dieser konkrete UI-Prüfpunkt ist damit abgenommen und darf nicht mehr als offen geführt werden, sofern keine neue Regression auftritt.
 
+### Vereinsadmin: Wiederverwendung der Super-Admin-Ansichten – 01.11.2026
+
+**Status: in DEV umgesetzt und vom Nutzer funktional bestätigt; PROD unverändert.**
+
+Ziel war, die zuletzt verbesserte Verwaltungsführung des Super Admins auf die Perspektive des Vereinsadmins zu übertragen. Die vorhandenen Ansichten und Komponenten sollen direkt wiederverwendet werden, statt ähnliche Seiten neu nachzubauen.
+
+Umgesetzt in `index.html` auf `develop`:
+
+- Der Einstieg **Mehr → Verein / Mannschaft** für einen Vereinsadmin mit bestehender Vereinszuordnung öffnet die bestehende Vereinsdetailansicht aus dem Super-Admin-Bereich.
+- Der Einstieg **Mehr → Mitglieder und Rollen** verwendet ebenfalls den bestehenden Verwaltungsbereich, statt das bisherige eigenständige Vereinsadmin-Panel mit Formularen und Mannschaftsauswahl anzuzeigen.
+- Die Vereinsauswahl bzw. plattformweite Anlage von Vereinen wird für diesen Vereinsadmin-Einstieg nicht als Aktion angeboten.
+- Die Rücknavigation aus der Vereinsdetailansicht führt für den Vereinsadmin zurück zu „Mehr“; sie soll keine Super-Admin-Kontextwechsel-Aktion auslösen.
+- Die Daten werden im vorhandenen Vereinskontext geladen. Es wurde keine Datenbankmigration ausgeführt und keine Änderung an PROD vorgenommen.
+
+**Technischer Nachweis:**
+- Commit: `8edc390bf339f32cc5bc8b0b2172a447cac06f1b`
+- [GitHub-Commit](https://github.com/bautnhaus/jugendmannschaft/commit/8edc390bf339f32cc5bc8b0b2172a447cac06f1b)
+- [DEV-Deploy-Workflow erfolgreich](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41282027117)
+- [Preview-/Pages-Build erfolgreich](https://github.com/bautnhaus/jugendmannschaft-dev/actions/runs/41282034554)
+
+**Praxistest:** Der Nutzer hat am 01.11.2026 bestätigt, dass die Vereinsansicht auf den ersten Blick korrekt erscheint und anschließend gemeldet, dass auch die Mitglieder-/Rollenansicht sowie die Navigation reibungslos zu funktionieren scheinen. Dies ist eine positive Nutzerbestätigung des DEV-Verhaltens, aber kein vollständiger automatisierter Berechtigungs- oder Sicherheitstest.
+
+**Noch verbindlich:** Rollen- und Aktionsrechte müssen weiterhin durch die vorhandenen serverseitigen Berechtigungsprüfungen erzwungen werden. Die optische Wiederverwendung darf keine zusätzlichen Rechte verleihen. Vor einem späteren PROD-Release sind Änderungen und Rollengrenzen erneut gezielt zu prüfen; keine PROD-Übernahme ohne gesonderte ausdrückliche Freigabe.
+
 ### Repository-Referenzen
 
 - PROD-/DEV-Hauptrepository: https://github.com/bautnhaus/jugendmannschaft
