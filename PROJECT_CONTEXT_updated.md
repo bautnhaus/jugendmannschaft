@@ -1,8 +1,8 @@
 # Kaderkompass -- Projektkontext
 
 **Dokumenttyp:** Zentrale Projektdokumentation / Übergabekontext\
-**Stand:** 09.10.2026\
-**Status:** Aktualisierte Arbeitsdokumentation auf Basis der E07-DEV-Tests vom 09.10.2026; vor dem Einchecken in GitHub weiterhin mit Repository-/Branchstand abgleichen
+**Stand:** 01.11.2026\
+**Status:** Aktualisiert nach Abgleich mit den aktuellen GitHub-Repositorys und der Nutzerbestätigung zum Deployment-Ablauf; ältere Abschnitte sind teilweise historische Momentaufnahmen
 
 > Zweck: Dieses Dokument hält Architektur, bestätigten Projektstand,
 > offene Prüfungen, Sicherheitsbefunde und Backlog-Kontext fest. Es soll
@@ -12,7 +12,34 @@
 
 ------------------------------------------------------------------------
 
-## Aktueller Stand – 09.10.2026
+## Aktueller Stand – 01.11.2026 (maßgeblich)
+
+### Bestätigter Deployment- und Branch-Ablauf
+
+Die folgenden Zuordnungen wurden am 01.11.2026 vom Projektverantwortlichen bestätigt und sind für die weitere Arbeit verbindlich:
+
+- **Repository `bautnhaus/jugendmannschaft`, Branch `main`:** Produktionsstand (PROD). Dieser Branch darf im normalen DEV-Arbeitsablauf nicht geändert werden.
+- **Repository `bautnhaus/jugendmannschaft`, Branch `develop`:** Entwicklungsstand. Änderungen an der App werden zuerst hier vorgenommen und in DEV geprüft.
+- **Repository `bautnhaus/jugendmannschaft-dev`, Branch `main`:** Browser-/Preview-Stand für DEV. Der Deploy-Prozess überträgt den Stand von `jugendmannschaft/develop` automatisch auf diese `main`-Branch.
+
+**Verbindliche Konsequenz:** Für eine normale Frontend-Änderung reicht es, die freigegebene `index.html` im Branch `develop` des Repositorys `bautnhaus/jugendmannschaft` zu aktualisieren. Der bestehende Deploy-Prozess aktualisiert anschließend automatisch die `main`-Branch von `bautnhaus/jugendmannschaft-dev`, die im Browser den DEV-Stand bereitstellt. Eine separate manuelle Aktualisierung der `main`-Branch von `jugendmannschaft-dev` ist dafür nicht erforderlich.
+
+Die Produktions-Branch `main` im Repository `bautnhaus/jugendmannschaft` bleibt davon unberührt. Eine PROD-Änderung erfolgt nur in einem gesonderten Release-Schritt nach erfolgreichem DEV-Test und ausdrücklicher Freigabe.
+
+### Letzter UI-Prüfpunkt
+
+Der Nutzer hat am 01.11.2026 bestätigt: **Das Optionsmenü auf der Mannschaftsdetailseite funktioniert wie erwartet.** Dieser konkrete UI-Prüfpunkt ist damit abgenommen und darf nicht mehr als offen geführt werden, sofern keine neue Regression auftritt.
+
+### Repository-Referenzen
+
+- PROD-/DEV-Hauptrepository: https://github.com/bautnhaus/jugendmannschaft
+- DEV-Browser-/Preview-Repository: https://github.com/bautnhaus/jugendmannschaft-dev
+- Zu bearbeitender Branch für reguläre DEV-Frontendänderungen: `develop` in `bautnhaus/jugendmannschaft`
+- Automatisch aktualisierter Preview-Branch: `main` in `bautnhaus/jugendmannschaft-dev`
+
+**Hinweis zur Beleglage:** Die Repositorys und Branches sind direkt erreichbar. Die genaue Automatisierung des Deployments und die Branch-Zuordnung oben entsprechen der ausdrücklichen Bestätigung des Projektverantwortlichen; dieser Dokumentationsschritt hat keinen Deploy ausgelöst und keine Anwendung geändert.
+
+## Historischer Stand – 09.10.2026 (Momentaufnahme, nicht der aktuelle Deployment-Status)
 
 - **E07 Training/Trainingsserien:** Die zentrale Funktionalität wurde in DEV getestet. Die aktuelle zuletzt geprüfte Frontenddatei ist `index01(2)_e07_training_title_fix_v10_DEV.html`.
 - **Erfolgreich getestete E07-Bereiche:** Serienerstellung und Vorschau; individuelle Terminänderungen und Override-Erhalt; Änderung künftiger Serienwerte; Änderungen an Wochentagen und Serienzeitraum; Löschen nachfolgender Termine bei Erhalt der verbleibenden Serienzugehörigkeit; Rückmeldungen und tatsächliche Anwesenheit; Trainerteilnahme; korrekte Statistikbehandlung abgesagter/geplanter Termine; Anzeige des Trainingsnamens.
@@ -63,15 +90,14 @@ berücksichtigen.
                                       Import/Restore vorhanden
   -----------------------------------------------------------------------
 
-**Arbeitsregel:** Änderungen zuerst in DEV entwickeln und testen. PROD
-wird erst nach Prüfung und ausdrücklicher Freigabe aktualisiert. Keine
-ungeprüften SQL- oder Frontend-Änderungen direkt in PROD vornehmen.
+**Verbindlicher Deployment-Ablauf (Stand 01.11.2026):**
 
-**Noch abzugleichen:** Die konkreten Repository-URLs, GitHub-Pages-URLs,
-Supabase-Projektkennungen, Branch-Zuordnung und aktuellen
-Deploy-Workflows sollten bei der finalen Ablage aus der aktuellen
-GitHub-/Supabase-Konfiguration ergänzt werden. Zugangsdaten, Tokens,
-Passwörter und Service-Role-Keys gehören nicht in diese Datei.
+1. Frontend-Änderungen in `bautnhaus/jugendmannschaft` auf Branch `develop` vornehmen.
+2. Den DEV-Stand über die bestehende automatische Bereitstellung im Browser prüfen. Der Deploy-Prozess aktualisiert dafür `bautnhaus/jugendmannschaft-dev` auf Branch `main`.
+3. Akzeptanzkriterien und relevante Regressionen prüfen und das Ergebnis dokumentieren.
+4. Erst nach erfolgreichem DEV-Test und ausdrücklicher Freigabe einen separaten PROD-Release durchführen. Die `main`-Branch von `bautnhaus/jugendmannschaft` ist PROD und wird nicht durch normale DEV-Arbeiten verändert.
+
+Die Deployment-Zuordnung ist vom Projektverantwortlichen bestätigt. Änderungen an Datenbank, Migrationen oder Berechtigungen benötigen weiterhin eine eigene Prüfung und Freigabe; eine Aktualisierung der Frontend-`index.html` ersetzt diese nicht. Zugangsdaten, Tokens, Passwörter und Service-Role-Keys gehören nicht in diese Datei.
 
 ## 3. Funktionsumfang
 
@@ -439,12 +465,11 @@ dokumentieren - keine PROD-Übernahme ohne ausdrückliche Freigabe
 
 ## 10. Offene Dokumentations- und Abgleichaufgaben
 
--   [ ] Den getesteten Frontendstand `index01(2)_e07_training_title_fix_v10_DEV.html` in `develop` als aktuelle DEV-`index.html` übernehmen und den tatsächlichen Git-Commit ergänzen.
+-   [ ] Bei der nächsten tatsächlichen DEV-Frontendänderung den aktualisierten Commit von `jugendmannschaft/develop` und die automatische Aktualisierung von `jugendmannschaft-dev/main` dokumentieren.
 -   [ ] Aktuelle DEV-Datenbankstruktur und Policies mit diesem Überblick
     abgleichen.
--   [ ] GitHub-Repository, Branches, Pages-URLs und Deploy-Workflows
-    ergänzen (keine Geheimnisse dokumentieren).
--   [ ] Backlog-Status der übrigen Epics anhand der zuletzt gepflegten Liste aktualisieren; E07 ist in DEV weitgehend umgesetzt/getestet, Optionsmenü und PROD-Rollout offen.
+-   [x] GitHub-Repositorys und Branch-Zuordnung für PROD, DEV und Browser-Preview dokumentieren (01.11.2026).
+-   [ ] Backlog-Status der übrigen Epics anhand der zuletzt gepflegten Liste aktualisieren; das zuletzt geprüfte Optionsmenü der Mannschaftsdetailseite ist am 01.11.2026 vom Nutzer bestätigt worden. PROD-Rollout bleibt separat.
 -   [ ] Sicherheitsbefunde als „bestätigt", „Verdacht/Prüfpunkt" oder
     „erledigt" markieren.
 -   [ ] Dokumentation in `develop` ablegen und Änderungen dort reviewen.
