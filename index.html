@@ -3283,6 +3283,36 @@ window.openMehrPage=(page)=>{
   else if(page==='personal'){showSection(personal);}
   else if(page==='club'){
     if(isSuperAdmin&&clubOnlyMode){window.superAdminNavigationMode='context';window.superAdminNextSection=null;showSection(club);$('superAdminClubListView')?.classList.remove('hidden');$('superAdminClubDetailView')?.classList.add('hidden');$('superAdminClubSubView')?.classList.add('hidden');$('superAdminTeamDetailView')?.classList.add('hidden');$('superAdminTeamSettingView')?.classList.add('hidden');}
+    else if(clubOnlyMode&&canManageClub&&currentClubId){
+      // Vereinsadmins haben ihren Vereinskontext bereits beim Login. Deshalb dieselbe
+      // Vereinsdetailansicht wie beim Super Admin verwenden, aber ohne Vereinsauswahl.
+      showSection(club);
+      $('superAdminClubListView')?.classList.add('hidden');
+      $('superAdminClubSubView')?.classList.add('hidden');
+      $('superAdminTeamDetailView')?.classList.add('hidden');
+      $('superAdminTeamSettingView')?.classList.add('hidden');
+      $('superAdminClubDetailView')?.classList.remove('hidden');
+      (async()=>{
+        try{
+          const {data:clubRow,error}=await getClient().from('clubs')
+            .select('id,name,short_name,crest_path,home_venue_name,home_venue_street,home_venue_postal_code,home_venue_city,home_venue_country,training_location_differs,training_venue_name,training_venue_street,training_venue_postal_code,training_venue_city,training_venue_country')
+            .eq('id',currentClubId).single();
+          if(error)throw error;
+          window.activeSuperAdminClub=clubRow;
+          const crestUrl=clubRow.crest_path?getClient().storage.from('club-assets').getPublicUrl(clubRow.crest_path).data.publicUrl:'';
+          const crest=$('superAdminClubDetailCrest'),fallback=$('superAdminClubDetailCrestFallback');
+          if(crest){crest.src=crestUrl;crest.classList.toggle('hidden',!crestUrl);}
+          if(fallback)fallback.classList.toggle('hidden',Boolean(crestUrl));
+          $('superAdminClubDetailName').textContent=clubRow.name||'Verein';
+          const venue=[clubRow.home_venue_name,clubRow.home_venue_street,[clubRow.home_venue_postal_code,clubRow.home_venue_city].filter(Boolean).join(' '),clubRow.home_venue_country].filter(v=>v!=null&&String(v).trim()!=='').map(String).join(', ');
+          const training=clubRow.training_location_differs?[clubRow.training_venue_name,clubRow.training_venue_street,[clubRow.training_venue_postal_code,clubRow.training_venue_city].filter(Boolean).join(' '),clubRow.training_venue_country].filter(v=>v!=null&&String(v).trim()!=='').map(String).join(', '):'Wie Heimspielstätte';
+          $('superAdminClubDetailInfo').textContent=[clubRow.short_name?'Kurzname: '+clubRow.short_name:'',venue?'Heimspielstätte: '+venue:'Heimspielstätte nicht hinterlegt','Trainingsort: '+training].filter(Boolean).join(' · ');
+          const editButton=$('superAdminClubDetailView')?.querySelector('button[onclick="window.openEditClubForm()"]');
+          if(editButton)editButton.textContent='Verein bearbeiten';
+          await window.renderSuperAdminClubTeamContextList(currentClubId);
+        }catch(error){console.error('Vereinsinformationen konnten nicht geladen werden:',error);showStatus('Vereinsinformationen konnten nicht geladen werden.','error');}
+      })();
+    }
     else if(isTeamWorkspace){
       hideAll();pageView.classList.remove('hidden');menu.classList.add('hidden');content.classList.remove('hidden');
       content.innerHTML='<div class="card"><p class="muted small">Mannschaftsinformationen werden geladen …</p></div>';
@@ -3368,6 +3398,15 @@ window.openMehrPage=(page)=>{
       if(trainerIntro)trainerIntro.textContent='Mitglieder, Trainer und Mannschaftsrollen im ausgewählten Kontext verwalten.';
     }
     else if(isSuperAdmin&&clubOnlyMode){window.superAdminNavigationMode='management';window.superAdminNextSection='members';showSection(club);$('superAdminClubListView')?.classList.remove('hidden');$('superAdminClubDetailView')?.classList.add('hidden');$('superAdminClubSubView')?.classList.add('hidden');$('superAdminTeamDetailView')?.classList.add('hidden');$('superAdminTeamSettingView')?.classList.add('hidden');}
+    else if(clubOnlyMode&&canManageClub&&currentClubId){
+      window.superAdminNavigationMode='management';showSection(club);
+      $('superAdminClubListView')?.classList.add('hidden');
+      $('superAdminClubDetailView')?.classList.add('hidden');
+      $('superAdminClubSubView')?.classList.remove('hidden');
+      $('superAdminTeamDetailView')?.classList.add('hidden');
+      $('superAdminTeamSettingView')?.classList.add('hidden');
+      window.openSuperAdminClubSection('members');
+    }
     else if(hasClubOrPlatformAdmin){showSection(club);}
     else{window.openMehrPage('trainers');return;}
   }
