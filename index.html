@@ -3283,15 +3283,23 @@ window.openMehrPage=(page)=>{
   else if(page==='personal'){showSection(personal);}
   else if(page==='club'){
     if(isSuperAdmin&&clubOnlyMode){window.superAdminNavigationMode='context';window.superAdminNextSection=null;showSection(club);$('superAdminClubListView')?.classList.remove('hidden');$('superAdminClubDetailView')?.classList.add('hidden');$('superAdminClubSubView')?.classList.add('hidden');$('superAdminTeamDetailView')?.classList.add('hidden');$('superAdminTeamSettingView')?.classList.add('hidden');}
-    else if(clubOnlyMode&&canManageClub&&currentClubId){
+    else if(clubOnlyMode&&canManageClub&&currentClubId&&!isSuperAdmin){
       // Vereinsadmins haben ihren Vereinskontext bereits beim Login. Deshalb dieselbe
-      // Vereinsdetailansicht wie beim Super Admin verwenden, aber ohne Vereinsauswahl.
+      // Vereinsdetailansicht wie beim Super Admin verwenden, aber ohne Plattformnavigation.
       showSection(club);
       $('superAdminClubListView')?.classList.add('hidden');
       $('superAdminClubSubView')?.classList.add('hidden');
       $('superAdminTeamDetailView')?.classList.add('hidden');
       $('superAdminTeamSettingView')?.classList.add('hidden');
       $('superAdminClubDetailView')?.classList.remove('hidden');
+      // Die Zurücknavigation führt Vereinsadmins zurück zu „Mehr“ und darf nicht
+      // die Super-Admin-Funktion zum Verlassen des Vereinskontexts auslösen.
+      const clubBack=$('superAdminClubDetailView')?.querySelector('.detailHeader .iconBack');
+      if(clubBack){clubBack.setAttribute('aria-label','Zurück zu Mehr');clubBack.onclick=()=>window.openMehrPage('home');}
+      // Plattformaktionen bleiben in dieser Ansicht verborgen; Vereinsdaten selbst
+      // werden über die bestehende Vereinsmaske bearbeitet.
+      const platformCreate=$('superAdminClubListView')?.querySelector('button[onclick="window.toggleClubCreateForm()"]');
+      if(platformCreate)platformCreate.classList.add('hidden');
       (async()=>{
         try{
           const {data:clubRow,error}=await getClient().from('clubs')
