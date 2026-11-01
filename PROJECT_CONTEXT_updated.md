@@ -671,3 +671,24 @@ Vor Änderungen aktuelle DEV-Datei und relevante Datenbankstruktur identifiziere
 Diese Datei zusammen mit der aktuellen DEV-`index.html` als Ausgangsbasis verwenden. Zuerst gewünschtes Epic und tatsächlichen Stand betroffener Dateien/Datenbank klären. Frühere Codeausschnitte und temporäre Dateien nicht ungeprüft als aktuell behandeln. Bei Abweichungen gilt der verifizierte DEV-Stand; Dokumentation anschließend aktualisieren.
 
 **Pflegehinweis:** Nach wesentlichen Änderungen an Architektur, Datenmodell, Sicherheit, Deployment oder Epic-Status diese Datei aktualisieren.
+
+## 13. AP0-Restprüfung und Multi-Verein-Release-Katalog – 01.11.2026
+
+AP0 wird nicht neu begonnen. Die vorhandene Dokumentation zu Architektur, Rollen, Deployment und AP02/AP03 bleibt die Grundlage. Eine aktuelle read-only Prüfung von Supabase DEV/PROD hat nur die noch offenen Release-Basispunkte ergänzt.
+
+**Aktuell verifiziert:**
+- Supabase DEV: 27 Tabellen im Schema `public`, 42 Einträge in der Migrationsliste.
+- Supabase PROD: 19 Tabellen im Schema `public`, 3 Einträge in der Migrationsliste.
+- Acht Tabellen sind derzeit nur in DEV vorhanden: `clubs`, `club_members`, `global_user_roles`, `club_member_roles`, `team_member_roles`, `team_role_change_log`, `user_team_context`, `user_club_context`.
+- Zusätzliche DEV-Spalten: `teams.club_id`, `teams.birth_cohorts`, `teams.abbreviation`, `profiles.avatar_url`.
+- Im aktiven Repository `develop` liegen derzeit fünf versionierte Dateien unter `supabase/migrations/`, alle mit AP04-Präfix. Die exakten SQL-Quellen für die in DEV angewendeten AP01–AP03-Migrationen sind im aktiven Repository noch nicht vollständig reproduzierbar abgelegt.
+- Der dokumentierte Rollen-/Berechtigungsprüfbericht und der Mannschaftskontextbericht halten authentifizierte End-to-End-Tests weiterhin teilweise als offen fest.
+- Der DEV-Security-Advisor meldet unter anderem eine SECURITY DEFINER-Funktion `admin_update_club_member_profile(...)`, die laut Advisor auch von `anon` ausführbar ist. Vor einem Release muss die Absicht geprüft und bei unzulässigem Grant in DEV korrigiert und verifiziert werden. Die übrigen Advisor-Befunde sind einzeln zu klassifizieren.
+- Backup-/Restore-Nachweis für den konkreten PROD-Release ist in dieser Prüfung nicht erneut bestätigt worden; das ist vor der Freigabe nachzuweisen. Ein JSON-Export ist kein Ersatz für ein getestetes Datenbank-Restore-Verfahren.
+
+**Nächster Arbeitsstand:** Release-Katalog AP1–AP3 als Arbeitsentwurf angelegt:
+`docs/AP01-03_RELEASE_KATALOG_2026-11-01.md`.
+
+Der Katalog schlägt vor, AP1 und AP2 mit den notwendigen Teilen von AP3 als zusammenhängende Multi-Verein-Grundlage zu veröffentlichen, falls die konkrete SQL-Abhängigkeitsprüfung keine sichere Trennung erlaubt. AP4-Profil-/Avatar-Funktionen, historische Spielerzugehörigkeiten, umfassende Saisonhistorie und zusätzliche Mannschaftsauswahl werden nicht automatisch in den ersten Release aufgenommen. Die genaue Scope-Grenze wird nach dem Frontend-/RPC-Abhängigkeitsreview festgelegt.
+
+**Keine Änderungen vorgenommen:** keine Datenbankmigrationen ausgeführt, keine Daten verändert, keine Frontenddatei geändert, PROD nicht verändert. Diese Prüfung und der Katalog sind Dokumentationsarbeit und ein Bestandsnachweis, keine Release-Freigabe.
