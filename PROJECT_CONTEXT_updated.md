@@ -26,6 +26,21 @@ Die folgenden Zuordnungen wurden am 01.11.2026 vom Projektverantwortlichen best�
 
 Die Produktions-Branch `main` im Repository `bautnhaus/jugendmannschaft` bleibt davon unberührt. Eine PROD-Änderung erfolgt nur in einem gesonderten Release-Schritt nach erfolgreichem DEV-Test und ausdrücklicher Freigabe.
 
+### Verbindliche Frontend-Ausgangsbasis
+
+Der Projektverantwortliche hat am 01.11.2026 bestätigt, dass die DEV-Seite wieder den erwarteten Stand zeigt und dass die `index.html` aus dem folgenden Commit ab sofort die verbindliche Ausgangsbasis für die weitere Entwicklung ist:
+
+- **Referenz-Commit:** `ebfb04a55b2d3bd683e7d82e1399a28a9bcd4eef`
+- **Quelle:** `bautnhaus/jugendmannschaft-dev`, Commit `ebfb04a55b2d3bd683e7d82e1399a28a9bcd4eef`
+- **Datei:** `index.html`
+- **Aktueller DEV-Branch:** `bautnhaus/jugendmannschaft` / `develop`
+- **Aktueller Dateiblob in develop und Preview:** `693726c0eb60f62c3f300da3111da4a33e1c107c`
+- **Wiederherstellungs-Commit in develop:** `3ad42c411fe55d5c91d6b370173753817db0a540`
+
+Der Dateiinhalt in `jugendmannschaft/develop` wurde mit der `index.html` des Referenz-Commits verglichen: Beide haben denselben Git-Blob-SHA und dieselbe Dateigröße. Auch `jugendmannschaft-dev/main` enthält denselben Datei-Blob. Der Nutzer hat bestätigt, dass die App im Browser wieder korrekt angezeigt wird.
+
+**Arbeitsregel:** Weitere Frontend-Änderungen müssen von diesem bestätigten Stand ausgehen. Keine ältere lokale Datei oder ältere Commit-Version als Basis verwenden, solange der Projektverantwortliche keinen anderen Stand ausdrücklich bestimmt. Änderungen weiterhin zuerst in `jugendmannschaft/develop`, dann DEV-Test; `jugendmannschaft/main` (PROD) bleibt unverändert bis zur separaten Release-Freigabe.
+
 ### Letzter UI-Prüfpunkt
 
 Der Nutzer hat am 01.11.2026 bestätigt: **Das Optionsmenü auf der Mannschaftsdetailseite funktioniert wie erwartet.** Dieser konkrete UI-Prüfpunkt ist damit abgenommen und darf nicht mehr als offen geführt werden, sofern keine neue Regression auftritt.
