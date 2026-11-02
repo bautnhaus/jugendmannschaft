@@ -3179,7 +3179,7 @@ window.saveEditClubForm=async()=>{
  }catch(e){console.error(e);showStatus(e?.message||'Vereinsdaten konnten nicht gespeichert werden.','error');}finally{if(button)button.disabled=false;}
 };
 window.openEditTeamForm=async(teamId)=>{
- if(!currentClubId||!canManageClub||(!isSuperAdmin&&role!=='club_admin')){showStatus('Keine Berechtigung, diese Mannschaft zu bearbeiten.','error');return;}
+ if(!currentClubId||(!isSuperAdmin&&!canManageClub)){showStatus('Keine Berechtigung, diese Mannschaft zu bearbeiten.','error');return;}
  try{const {data:t,error}=await getClient().from('teams').select('id,name,club_id,recommended_squad_size,birth_cohorts,abbreviation').eq('id',teamId).eq('club_id',currentClubId).single();if(error)throw error;const {data:ss,error:se}=await getClient().from('seasons').select('name').eq('team_id',teamId).eq('is_active',true).limit(1);if(se)throw se;const escVal=v=>clubEsc(v||'');
  $('modalContent').innerHTML=`<form class="adminCreationForm" onsubmit="event.preventDefault();window.saveEditTeamForm('${clubEsc(teamId)}')"><h2>Mannschaft bearbeiten</h2>
  <label class="matchdayCreateField">Mannschaftsname<input id="editTeamName" required maxlength="120" value="${escVal(t.name)}"></label>
