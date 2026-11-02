@@ -50,3 +50,17 @@ Die Mitglieder-/Trainer-Einladung ist nicht Teil dieses Releases. DEV-Einladungs
 4. Mannschaftsdetails und eine harmlose berechtigte Bearbeitung funktionieren.
 5. Spieler, Training und Spieltage sind erreichbar.
 Keine Testdaten in PROD erzeugen.
+
+
+## Ergänzende SQL-Änderungen aus dem dokumentierten Verlauf
+
+Die folgenden ACL-Anweisungen wurden laut Projektverlauf in PROD ausgeführt:
+
+```sql
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.log_team_role_change() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.prevent_last_team_admin_removal() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
+```
+
+Laut damaliger Verifikation war EXECUTE für diese Funktionen für `PUBLIC`, `anon` und `authenticated` entzogen. Trigger-Runtime-Tests sind nicht als vollständig abgeschlossen dokumentiert. Für Migration 15 ist die bekannte DDL-Ergänzung `teams.active boolean NOT NULL DEFAULT true`; die vollständige Originaldefinition von `remove_team(p_team_id uuid)` muss direkt aus Supabase gelesen werden. Die genauen Original-SQL-Inhalte der historischen Pakete 1–14 sind nicht vollständig in dieser Release-Notiz rekonstruiert.
