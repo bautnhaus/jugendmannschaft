@@ -725,3 +725,42 @@ Im nächsten Chat zunächst read-only Frontend-Aufruf, Edge Function `invite-tra
 
 ## Arbeitsregeln
 DEV zuerst; aktuelle `develop/index.html` vor Änderungen frisch abrufen; keine SQL-Migration oder schreibende SQL-Ausführung ohne ausdrückliche Zustimmung; keine PROD-Änderungen ohne separate Freigabe; keine Testdaten in PROD; Originaldefinitionen nicht rekonstruieren; den vereinbarten Auftrag fokussiert bearbeiten.
+
+
+---
+
+## Aktueller Stand – 02.11.2026: Release 1.5.2 nach PROD deployed
+
+Der Projektverantwortliche hat bestätigt, dass der PROD-Deploy erfolgt ist. Der unabhängige Live-Smoke-Test und der Post-Deploy-Commit-SHA sind in dieser Aktualisierung nicht unabhängig bestätigt.
+
+### Release 1.5.2 – dokumentierte Änderungen
+
+- Datenbankfeld `public.teams.active boolean NOT NULL DEFAULT true` zur Soft-Deaktivierung von Mannschaften.
+- Funktion `public.remove_team(p_team_id uuid)` für die Soft-Deaktivierung; vollständige Originaldefinition vor späteren Änderungen direkt aus Supabase lesen.
+- Frontend filtert aktive Mannschaften anhand `active = true`.
+- Deaktivierungshinweis/-bestätigung angepasst.
+- `openEditTeamForm`-Guard korrigiert: gültiger Vereinskontext und passende Berechtigung erforderlich.
+- Bekannte Commits aus der Vorarbeit: `ce75777434fb0ef119b53204ab7767b86bb0f551`, `e5bbcf0b233f3c166c09f91c8d72f4684e5afef7`.
+- Vor Deployment bekannter SHA von `develop/index.html`: `4a07dd8221669e2919e77317bca3ebec6c1b2a9c`. Dies ist kein bestätigter Post-Deploy-SHA.
+
+### Datenbank-/ACL-Hinweis
+
+Laut Projektverlauf wurden in PROD EXECUTE-Rechte für `PUBLIC`, `anon` und `authenticated` auf `handle_new_user()`, `log_team_role_change()`, `prevent_last_team_admin_removal()` und `rls_auto_enable()` entzogen. Runtime-Tests der betroffenen Trigger sind nicht als vollständig abgeschlossen dokumentiert. Die Einzelheiten stehen im aktualisierten `DB_CHANGELOG_DEV_updated.md` und den Release Notes.
+
+### Nächster Arbeitsauftrag: Mitglieder-/Trainer-Einladung
+
+Dieser Fehler bleibt bewusst offen und ist der nächste fokussierte Auftrag:
+1. Einladung aus DEV öffnet PROD bzw. den normalen Login statt des Passwort-Erstellungsflusses.
+2. Name wurde offenbar nicht gespeichert, obwohl die UI Versand-Erfolg meldete.
+3. Ein Trainer konnte sich bei Zuordnung zu mehreren Mannschaften nicht anmelden; nach Entfernen der zweiten Zuordnung funktionierte es.
+4. Vor Einladung bestehende Auth-Benutzer und Mannschaftszuordnungen prüfen.
+
+Zuerst read-only Frontend-Aufruf/Payload, Originalcode der Edge Function `invite-trainer`, DEV Auth Site URL/Redirect-Allowlist, E-Mail-Template und Speicherung von Name/Rolle/Mannschaft untersuchen. Keine Änderungen vor Analyse und Freigabe.
+
+### Unverändert geltende Regeln
+
+- `develop` ist DEV-Quellstand; `main` ist PROD.
+- Aktuelle `develop/index.html` vor Codeänderungen frisch abrufen.
+- DEV zuerst; keine PROD-Änderungen oder Deploys ohne separate ausdrückliche Freigabe.
+- Keine SQL-Migration, schreibende SQL-Ausführung oder Auth-/Edge-Konfigurationsänderung ohne ausdrückliche Freigabe.
+- Originaldefinitionen auslesen, nicht rekonstruieren; Fokus auf den aktuellen Auftrag.
