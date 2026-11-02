@@ -371,3 +371,43 @@ Nicht übertragen. Für PROD ist eine separate, geprüfte Release-Migration erfo
 
 - DEV-Praxistest: gültige Vereinsadmin-Zuweisung, gültige Mannschaftsadmin-Zuweisung, Ablehnung eines Kontos aus einem anderen Verein, Ablehnung fehlender Admin-Auswahl und Neutralität des Super Admins.
 - Keine Änderung an PROD.
+
+
+---
+
+## Fortschreibung zum Stand 02.11.2026 – Release 1.5.2 / PROD
+
+Diese Ergänzung aktualisiert den bisherigen Verlauf. Frühere Abschnitte bleiben als historische Dokumentation erhalten; Statusangaben aus früheren Prüfrunden sind nicht automatisch ein Live-Nachweis für den heutigen Stand.
+
+### Migration 15 – Soft-Deaktivierung von Mannschaften
+Laut Projektverlauf wurde die Änderung in DEV und PROD ausgeführt und verifiziert.
+
+```sql
+ALTER TABLE public.teams
+  ADD COLUMN IF NOT EXISTS active boolean NOT NULL DEFAULT true;
+```
+
+Zusätzlich wurde `public.remove_team(p_team_id uuid)` für die Soft-Deaktivierung von Mannschaften eingeführt/verwendet. Die vollständige Originaldefinition ist in diesem Changelog-Auszug nicht enthalten; vor Änderungen ist sie direkt aus Supabase zu lesen. Das Frontend filtert aktive Mannschaften über `active = true`.
+
+### ACL-Bereinigung interner Funktionen in PROD
+Laut Projektverlauf ausgeführt und geprüft:
+
+```sql
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.log_team_role_change() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.prevent_last_team_admin_removal() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
+```
+
+Laut damaliger Verifikation ist EXECUTE für `PUBLIC`, `anon` und `authenticated` entzogen. Ein vollständiger Runtime-Test sämtlicher betroffener Trigger ist nicht als abgeschlossen dokumentiert.
+
+### Weitere Berechtigungsprüfungen
+- `public.admin_update_club_member_profile(uuid,uuid,text,text)`: in DEV und PROD geprüft; `anon` ohne EXECUTE, `authenticated` mit EXECUTE.
+- `save_player_with_positions`: PROD-Definition wurde geprüft und als passend beurteilt.
+- 25 im Frontend verwendete RPCs, relevante RLS-Policies sowie Storage-Buckets `club-assets` und `profile-avatars` wurden laut früherer Prüfung zwischen DEV und PROD verglichen.
+
+### Historische Migrationspakete 1–14
+Laut Projektverlauf wurden die Pakete 1–9 sowie 10–14 manuell in PROD angewendet; Migration 14 wurde als ausgeführt/verifiziert gemeldet. Die vollständigen SQL-Quellen und exakten Migrationsnamen müssen anhand der tatsächlichen Supabase-Migrationshistorie ergänzt werden. Keine Originaldefinition aus dem Gedächtnis rekonstruieren.
+
+### Verbindlicher nächster Schritt
+Vor der nächsten DB-Änderung die aktuellen Migrationseinträge, Tabellen/Spalten, Constraints, Indizes, Funktionen, Trigger, RLS-Policies, Grants und Storage-Policies read-only in DEV und PROD auslesen und vergleichen. Keine Migration oder schreibendes SQL ohne ausdrückliche Zustimmung.
