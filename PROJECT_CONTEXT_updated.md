@@ -692,3 +692,36 @@ AP0 wird nicht neu begonnen. Die vorhandene Dokumentation zu Architektur, Rollen
 Der Katalog schlägt vor, AP1 und AP2 mit den notwendigen Teilen von AP3 als zusammenhängende Multi-Verein-Grundlage zu veröffentlichen, falls die konkrete SQL-Abhängigkeitsprüfung keine sichere Trennung erlaubt. AP4-Profil-/Avatar-Funktionen, historische Spielerzugehörigkeiten, umfassende Saisonhistorie und zusätzliche Mannschaftsauswahl werden nicht automatisch in den ersten Release aufgenommen. Die genaue Scope-Grenze wird nach dem Frontend-/RPC-Abhängigkeitsreview festgelegt.
 
 **Keine Änderungen vorgenommen:** keine Datenbankmigrationen ausgeführt, keine Daten verändert, keine Frontenddatei geändert, PROD nicht verändert. Diese Prüfung und der Katalog sind Dokumentationsarbeit und ein Bestandsnachweis, keine Release-Freigabe.
+
+
+---
+
+# Aktualisierung zum 02.11.2026 – Release 1.5.2 deployed
+
+Der Nutzer hat am 02.11.2026 bestätigt: **„Prod deploy erfolgt.“** Release 1.5.2 gilt damit laut Nutzer als deployed. Ein unabhängiger Post-Deploy-Smoke-Test und der aktuelle PROD-Commit-SHA sind in dieser Fortschreibung nicht bestätigt.
+
+## Release 1.5.2 – zuletzt bekannter Umfang
+- Soft-Deaktivierung von Mannschaften über `teams.active` und `remove_team(p_team_id uuid)`.
+- Frontend filtert nur aktive Mannschaften (`active = true`).
+- Bestätigungs-/Hinweistext zur Deaktivierung angepasst.
+- Guard in `openEditTeamForm` korrigiert: gültiger Vereinskontext und passende Berechtigung erforderlich.
+- Bekannte Commits aus der Vorarbeit: `ce75777434fb0ef119b53204ab7767b86bb0f551`, `e5bbcf0b233f3c166c09f91c8d72f4684e5afef7`.
+- Vor Deployment bekannter `develop/index.html`-SHA: `4a07dd8221669e2919e77317bca3ebec6c1b2a9c`; nicht als Post-Deploy-SHA verstehen.
+
+## Datenbank-/Berechtigungsstatus aus der Vorarbeit
+- Migration 15: `teams.active boolean NOT NULL DEFAULT true` und Soft-Deaktivierungsfunktion `remove_team(p_team_id uuid)`, laut Verlauf in DEV und PROD ausgeführt/verifiziert.
+- PROD ACL-Bereinigung für `handle_new_user()`, `log_team_role_change()`, `prevent_last_team_admin_removal()` und `rls_auto_enable()`: EXECUTE für `PUBLIC`, `anon`, `authenticated` entzogen.
+- `admin_update_club_member_profile(uuid,uuid,text,text)` wurde in DEV/PROD geprüft; `anon` kein EXECUTE, `authenticated` EXECUTE.
+- `save_player_with_positions` wurde in PROD überprüft.
+- Der frühere Abgleich umfasste 25 Frontend-RPCs, relevante RLS-Policies und die Storage-Buckets `club-assets` und `profile-avatars`.
+- Die Migrationspakete 1–14 wurden laut Verlauf in PROD angewendet; vollständige Original-SQL-Quellen müssen bei Bedarf aus Supabase/Repo geprüft werden.
+
+## Nächster Fokus: Mitglieder-/Trainer-Einladung
+Die Einladung bleibt bewusst außerhalb von Release 1.5.2. Bekannte Probleme:
+1. Eine Einladung aus DEV leitete auf PROD bzw. den normalen Login statt auf den erwarteten Passwort-Erstellungsfluss.
+2. Der Name wurde offenbar nicht gespeichert, obwohl die UI den Versand als erfolgreich meldete.
+3. Mehrfachzuordnungen zu Mannschaften führten in einem Fall zu Loginproblemen.
+Im nächsten Chat zunächst read-only Frontend-Aufruf, Edge Function `invite-trainer`, DEV Auth-URL/Redirect-Allowlist, E-Mail-Template und Speicherlogik untersuchen. Keine Änderungen ohne vorherige Freigabe.
+
+## Arbeitsregeln
+DEV zuerst; aktuelle `develop/index.html` vor Änderungen frisch abrufen; keine SQL-Migration oder schreibende SQL-Ausführung ohne ausdrückliche Zustimmung; keine PROD-Änderungen ohne separate Freigabe; keine Testdaten in PROD; Originaldefinitionen nicht rekonstruieren; den vereinbarten Auftrag fokussiert bearbeiten.
