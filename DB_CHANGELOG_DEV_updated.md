@@ -411,3 +411,54 @@ Laut Projektverlauf wurden die Pakete 1–9 sowie 10–14 manuell in PROD angewe
 
 ### Verbindlicher nächster Schritt
 Vor der nächsten DB-Änderung die aktuellen Migrationseinträge, Tabellen/Spalten, Constraints, Indizes, Funktionen, Trigger, RLS-Policies, Grants und Storage-Policies read-only in DEV und PROD auslesen und vergleichen. Keine Migration oder schreibendes SQL ohne ausdrückliche Zustimmung.
+
+
+---
+
+## Aktualisierung 02.11.2026 – Release 1.5.2 / aktueller PROD-Abgleich
+
+**Statushinweis:** Der Nutzer hat bestätigt, dass Release 1.5.2 nach PROD deployed wurde. Diese Aussage dokumentiert den Deploy-Status aus Nutzerbestätigung; ein unabhängiger Post-Deploy-Smoke-Test ist nicht hinterlegt.
+
+### DB-DEV/PROD-015 – Mannschaften soft deaktivieren
+
+Laut Projektverlauf in DEV und PROD ausgeführt und verifiziert.
+
+```sql
+ALTER TABLE public.teams
+  ADD COLUMN IF NOT EXISTS active boolean NOT NULL DEFAULT true;
+```
+
+Zusätzlich wurde `public.remove_team(p_team_id uuid)` zur Soft-Deaktivierung von Mannschaften eingeführt/verwendet. **Die vollständige Originaldefinition der Funktion muss vor einer künftigen Änderung aus der Zielumgebung mit `pg_get_functiondef()` gelesen werden.** Dieser Eintrag ist kein Ersatz für die Originalmigration.
+
+Frontend-Verhalten: aktive Mannschaften werden über `active = true` gefiltert; der Bestätigungstext zur Deaktivierung wurde angepasst.
+
+### DB-ACL-2026-11-02 – interne Funktionen
+
+Laut Projektverlauf wurde folgende Berechtigungsbereinigung in PROD ausgeführt:
+
+```sql
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.log_team_role_change() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.prevent_last_team_admin_removal() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
+```
+
+Laut damaliger Prüfung war `EXECUTE` für `PUBLIC`, `anon` und `authenticated` entzogen. Ein vollständiger Laufzeittest aller zugehörigen Trigger ist nicht als abgeschlossen dokumentiert. Bei künftiger Prüfung Triggerfunktion und Triggerausführung getrennt bewerten; interne Triggerfunktionen nicht direkt aus der App aufrufen.
+
+### Weitere im Verlauf geprüfte Berechtigungen und Objekte
+
+- `public.admin_update_club_member_profile(uuid,uuid,text,text)`: laut Prüfung in DEV und PROD kein `EXECUTE` für `anon`, `EXECUTE` für `authenticated`.
+- `save_player_with_positions`: PROD-Definition geprüft und als passend beurteilt.
+- 25 vom Frontend verwendete RPCs: laut früherem Abgleich in beiden Umgebungen vorhanden; Signaturen und Security-Definer-Merkmale wurden verglichen.
+- Relevante RLS-Policies sowie Storage-Buckets `club-assets` und `profile-avatars`: laut früherem Abgleich zwischen DEV und PROD geprüft.
+
+### Historische Pakete 1–14
+
+Laut Projektverlauf wurden Pakete 1–9 sowie 10–14 manuell in PROD angewendet; Migration 14 wurde als ausgeführt/verifiziert gemeldet. Die vollständigen Original-SQL-Dateien und exakten Migrationsnamen sind in diesem Eintrag nicht enthalten und müssen aus Supabase-Migrationshistorie/Repository nachgetragen werden. Keine SQL-Definition aus dem Gedächtnis rekonstruieren.
+
+### Pflicht vor der nächsten DB-Änderung
+
+1. Migrationseinträge in DEV und PROD read-only abfragen.
+2. Tabellen/Spalten, Constraints, Indizes, Funktionen, Trigger, Grants, RLS-Policies und Storage-Policies vergleichen.
+3. Originaldefinition und Abhängigkeiten jeder betroffenen Funktion sichern.
+4. Erst nach ausdrücklicher Freigabe SQL ändern; keine implizite Freigabe aus dieser Dokumentation ableiten.
