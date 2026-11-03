@@ -1739,7 +1739,7 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
     <div class="sectionHeading"><div class="sectionIcon"><span class="material-symbols-outlined" aria-hidden="true">settings</span></div><div><h2 id="settingsMainHeading">Einstellungen</h2><p id="settingsMainSub" class="muted">Mannschaft und App verwalten. Dieser Bereich ist nur für Admins sichtbar.</p></div></div>
     <div class="card" id="teamSquadSettingsCard"><h3>Kaderplanung</h3><p class="muted">Lege fest, wie viele Spieler standardmäßig in der Kaderempfehlung berücksichtigt werden. Die Einstellung gilt für die Empfehlungsdarstellung in der Spielerliste und für neu berechnete Spieltagsempfehlungen. Bereits gespeicherte Spieltagsempfehlungen bleiben unverändert.</p><div class="formrow"><label>Kader-Zielgröße (1-60)<input id="recommendedSquadSizeInput" type="number" min="1" max="60" value="16" inputmode="numeric"></label><div style="display:flex;align-items:end"><button type="button" class="primary" style="width:100%" onclick="saveRecommendedSquadSize()">Kader-Zielgröße speichern</button></div></div></div>
     <div class="card" id="teamPositionSettingsCard"><h3>Positionen</h3><div id="positionSettings"></div></div>
-    <div class="card" id="teamTrainerSettingsCard"><div class="toolbar trainingPageHeader"><h3 id="teamMembersHeading" style="margin:0;flex:1">Mitglieder und Rollen</h3><button type="button" class="primary iconAddButton" onclick="openTeamMemberInvite()" aria-label="Mitglied einladen" title="Mitglied einladen">+</button></div><p class="muted small">Mitglieder der Mannschaft anzeigen und ihre Rollen verwalten.</p><div id="teamMemberRoleFilters" class="playerFilterChips"></div><div id="trainerList" class="playerListRows"></div><div id="teamMemberListFooter" class="playerListFooter"></div><div id="legacyTrainerInviteForm" class="hidden"><div class="formrow"><label>Eindeutiger Trainername<input id="trainerLabelAdd" type="text" autocomplete="off"></label><label>E-Mail des Trainers<input id="trainerEmailAdd" type="email"></label></div><label>Rolle<select id="trainerRoleAdd"><option value="trainer">Trainer</option><option value="admin">Admin</option></select></label><button onclick="addTrainerToTeam()">Trainer hinzufügen</button></div></div>
+    <div class="card" id="teamTrainerSettingsCard"><div class="toolbar trainingPageHeader"><h3 id="teamMembersHeading" style="margin:0;flex:1">Mitglieder und Rollen</h3><button type="button" class="primary iconAddButton" onclick="openTeamMemberInvite()" aria-label="Mitglied einladen" title="Mitglied einladen">+</button></div><p class="muted small">Mitglieder der Mannschaft anzeigen und ihre Rollen verwalten.</p><div id="teamMemberRoleFilters" class="playerFilterChips"></div><div id="trainerList" class="playerListRows"></div><div id="teamMemberListFooter" class="playerListFooter"></div><div id="legacyTrainerInviteForm" class="hidden"><div class="formrow"><label>Persönlicher Name<input id="trainerLabelAdd" type="text" autocomplete="off"></label><label>E-Mail des Trainers<input id="trainerEmailAdd" type="email"></label></div><label>Rolle<select id="trainerRoleAdd"><option value="trainer">Trainer</option><option value="admin">Admin</option></select></label><button onclick="addTrainerToTeam()">Trainer hinzufügen</button></div></div>
     <div class="card" id="dataBackupCard"><h3>Daten</h3><p class="muted">Backup der Mannschaftsdaten sichern oder wiederherstellen.</p><div class="toolbar"><button class="jsonButton" onclick="exportJSON()">JSON sichern</button><label class="btn jsonButton" for="importFile">JSON wiederherstellen</label><input id="importFile" type="file" accept="application/json,.json" onchange="importJSON(event)" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;"></div></div>
     <div class="card" id="backupDiagnosticCard"><h3>Backup-Diagnose</h3><p class="muted small">Diese Anzeige bleibt auch ohne Fehler sichtbar. Sie zeigt den letzten Status eines Backup-Imports auf diesem Gerät.</p><div id="backupDiagnosticStatus" role="status" class="notice small">Diagnose aktiv – bisher wurde kein Importversuch protokolliert.</div><div id="backupDiagnosticDetails" class="small muted" style="margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere">Noch keine Fehlerdetails vorhanden.</div><div class="toolbar" style="margin-top:10px"><button type="button" onclick="clearBackupDiagnostic()">Diagnose zurücksetzen</button></div></div>
   </div>
@@ -2771,7 +2771,7 @@ let teamMemberRoleFilter='Alle';
 window.openTeamMemberInvite=()=>{
   if(!adminGuard())return;
   openModal(`<div class="modalHeader"><h2>Mitglied einladen</h2></div>
-  <label>Eindeutiger Anzeigename<input id="teamInviteLabel" type="text" placeholder="z. B. Max Mustermann" autocomplete="name"></label>
+  <label>Persönlicher Name<input id="teamInviteLabel" type="text" placeholder="z. B. Max Mustermann" autocomplete="name"></label>
   <label style="display:block;margin-top:12px">E-Mail-Adresse<input id="teamInviteEmail" type="email" placeholder="trainer@beispiel.de" autocomplete="email"></label>
   <div id="teamInviteStatus" class="status" role="status" aria-live="polite" style="margin-top:12px"></div>
   <div style="margin-top:14px"><b>Rollen in dieser Mannschaft</b>
@@ -3222,31 +3222,38 @@ window.openClubMemberEditor=async userId=>{
     finally{ev.target.value='';}
   });
 };
-window.openClubMemberInvite=()=>{
+window.openClubMemberInvite=async()=>{
   if(!canManageClub||!currentClubId){showStatus('Bitte zuerst einen berechtigten Vereinskontext öffnen.','error');return;}
-  const teamOptions=clubTeamsCache.map(t=>'<option value="'+clubEsc(t.id)+'">'+clubEsc(t.name)+'</option>').join('');
-  openModal(`<h2>Mitglied einladen</h2>
-  <label>Persönlicher Name<input id="clubInviteName" type="text" autocomplete="name" maxlength="120" placeholder="Vor- und Nachname" required></label>
-  <label style="display:block;margin-top:12px">E-Mail-Adresse<input id="clubInviteEmail" type="email" autocomplete="email" placeholder="name@beispiel.de" required></label>
-  <label style="display:block;margin-top:12px">Einzuladende Rolle
-    <select id="clubInviteRole" onchange="toggleClubInviteTeamField()">
-      <option value="member">Vereinsmitglied</option>
-      <option value="club_admin">Vereinsadmin</option>
-      <option value="team_admin">Mannschaftsadmin</option>
-      <option value="trainer">Trainer</option>
-    </select>
-  </label>
-  <div id="clubInviteTeamGroup" class="hidden" style="margin-top:12px">
-    <label>Mannschaft
-      <select id="clubInviteTeam"><option value="">Bitte Mannschaft auswählen</option>${teamOptions}</select>
+  try{
+    const {data:teams,error}=await getClient().from('teams').select('id,name').eq('club_id',currentClubId).eq('active',true).order('name');
+    if(error)throw error;
+    clubTeamsCache=(teams||[]).map(t=>({id:t.id,name:t.name}));
+    const teamOptions=clubTeamsCache.map(t=>'<option value="'+clubEsc(t.id)+'">'+clubEsc(t.name)+'</option>').join('');
+    openModal(`<h2>Mitglied einladen</h2>
+    <label>Persönlicher Name<input id="clubInviteName" type="text" autocomplete="name" maxlength="120" placeholder="Vor- und Nachname" required></label>
+    <label style="display:block;margin-top:12px">E-Mail-Adresse<input id="clubInviteEmail" type="email" autocomplete="email" placeholder="name@beispiel.de" required></label>
+    <label style="display:block;margin-top:12px">Einzuladende Rolle
+      <select id="clubInviteRole" onchange="toggleClubInviteTeamField()">
+        <option value="member">Vereinsmitglied</option>
+        <option value="club_admin">Vereinsadmin</option>
+        <option value="team_admin">Mannschaftsadmin</option>
+        <option value="trainer">Trainer</option>
+      </select>
     </label>
-    <p class="muted small">Eine Person kann derzeit nur einer Mannschaft zugeordnet werden.</p>
-  </div>
-  <div id="clubInviteStatus" class="status" role="status" aria-live="polite" style="margin-top:12px"></div>
-  <div class="toolbar" style="margin-top:16px">
-    <button type="button" class="primary" style="flex:1" onclick="submitClubMemberInvite()">Einladung senden</button>
-    <button type="button" onclick="closeModal()">Abbrechen</button>
-  </div>`);
+    <div id="clubInviteTeamGroup" class="hidden" style="margin-top:12px">
+      <label>Mannschaft
+        <select id="clubInviteTeam"><option value="">Bitte Mannschaft auswählen</option>${teamOptions}</select>
+      </label>
+      <p class="muted small">Eine Person kann derzeit nur einer Mannschaft zugeordnet werden.</p>
+    </div>
+    <div id="clubInviteStatus" class="status" role="status" aria-live="polite" style="margin-top:12px"></div>
+    <div class="toolbar" style="margin-top:16px">
+      <button type="button" class="primary" style="flex:1" onclick="submitClubMemberInvite()">Einladung senden</button>
+      <button type="button" onclick="closeModal()">Abbrechen</button>
+    </div>`);
+  }catch(e){
+    showStatus('Die Mannschaftsauswahl konnte nicht geladen werden: '+(e?.message||e),'error');
+  }
 };
 window.toggleClubInviteTeamField=()=>{
   const role=$('clubInviteRole')?.value||'member';
