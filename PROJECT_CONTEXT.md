@@ -1,8 +1,8 @@
 # Jugendmannschaft – Projektkontext
 
-**Dokumenttyp:** Zentrale Projektdokumentation / Übergabekontext\
-**Stand:** 01.11.2026\
-**Status:** Aktualisiert nach Abgleich mit den aktuellen GitHub-Repositorys und der Nutzerbestätigung zum Deployment-Ablauf; ältere Abschnitte sind teilweise historische Momentaufnahmen
+**Dokumenttyp:** Zentrale Projektdokumentation
+**Stand:** 03.11.2026
+**Status:** Führende Arbeitsdokumentation in `develop`; historische Abschnitte bleiben als solche gekennzeichnet. Für `main` ist eine zum veröffentlichten Stand passende Fassung vorgesehen.
 
 > Zweck: Dieses Dokument hält Architektur, bestätigten Projektstand,
 > offene Prüfungen, Sicherheitsbefunde und Backlog-Kontext fest. Es soll
