@@ -91,14 +91,18 @@ Die ausführlichen Rollen-/Berechtigungsprüfberichte sind unter `docs/archive/`
 ### Release 1.5.2
 Am 02.11.2026 laut Nutzerbestätigung nach PROD deployed. Die Release Notes dokumentieren den bekannten Umfang und die Grenzen der Nachweise.
 
-### Offener Schwerpunkt: Mitglieder-/Trainer-Einladung
-Der Einladungsfehler ist weiterhin offen und nicht Teil von Release 1.5.2:
-- Einladungslinks aus DEV führten auf PROD bzw. den normalen Login statt in den erwarteten Passwort-Erstellungsfluss.
-- Der Name wurde offenbar trotz Erfolgsmeldung nicht gespeichert.
-- Eine Mehrfachzuordnung zu Mannschaften verursachte in einem Fall Loginprobleme; nach Entfernen der zweiten Zuordnung funktionierte die Anmeldung.
-- Vor einer neuen Einladung sind vorhandene Auth-Benutzer und Mannschaftszuordnungen zu berücksichtigen.
+### Release 1.6 – Mitglieder-/Trainer-Einladung (DEV-Implementierung, Praxistests offen)
+Die read-only Bestandsaufnahme ist abgeschlossen und die erste Umsetzung wurde nach ausdrücklicher Nutzerfreigabe ausschließlich in DEV begonnen:
+- Zentrale DEV-Datenbankfunktion `admin_complete_member_invitation()` wurde als Migration `20261103203047` ausgeführt und in `DB_MIGRATION_LOG.md` / `DB_CHANGELOG.md` dokumentiert (DB-DEV-007).
+- Neue Edge Function `invite-member` ist in Supabase DEV ACTIVE (Version 2, JWT-Prüfung aktiv); der Redirect wird über die Supabase-Projektkennung DEV-/PROD-getrennt bestimmt.
+- Die Einladungswege für Super Admin, Vereinsadmin und Mannschaftsadmin verwenden im aktuellen Frontend den gemeinsamen Einladungspfad.
+- `profiles.display_name` ist die einzige maßgebliche Quelle des persönlichen Namens. Frontend-Verwendungen von `team_members.admin_label` sind entfernt; bestehende Daten in diesem Feld bleiben unverändert.
+- Ein reines Vereinsmitglied ohne Mannschaft erhält einen eingeschränkten App-Einstieg statt eines Login-Abbruchs.
+- `develop` und das DEV-Repository `jugendmannschaft-dev/main` wurden nach dem Push auf denselben Commit gespiegelt; die ausgelieferte `index.html` stimmt im SHA überein.
 
-Erstprüfung: read-only Frontend-Aufruf/Payload, Originalcode der Edge Function `invite-trainer`, DEV Auth Site URL/Redirect-Allowlist, E-Mail-Template sowie Speicherung von Name, Rolle und Mannschaft untersuchen. Keine Änderungen ohne gesonderte Freigabe. Die aktuelle Übergabe liegt in `docs/UEBERGABE_NEUER_CHAT_2026-11-02.md`; der zugehörige Prompt liegt daneben. Die Übergabe ist die ausführliche Fakten-/Arbeitsstandsdokumentation, der Prompt eine kompakte Kopiervorlage für einen Folgechat. Beide bleiben bis zur Fehlerbehebung aktiv und werden danach gemeinsam archiviert.
+**Noch offen:** echte DEV-Praxistests der Einladungs-E-Mail, Rollen-/Mitgliedschaftszuordnung, Passwortannahme, bestehende bestätigte und unbestätigte Auth-Benutzer, Fehler- und Wiederholungsfälle. Custom SMTP wurde nicht aktiviert; der Supabase-Standardversand ist für externe Adressen eingeschränkt. Es wurde bislang keine reale Testeinladung versendet.
+
+Ausführlicher Umsetzungsstand und Testmatrix: `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md`. Die Übergabe vom 02.11.2026 und der damalige Prompt bleiben historische Ausgangsdokumente, nicht der aktuelle technische Status. **PROD und `main` bleiben unangetastet; ein PROD-Release erfordert eine separate ausdrückliche Freigabe.**
 
 ### AP01–AP03 Multi-Verein
 Die Release- und Testzuordnung ist dokumentiert, aber kein ausführbares PROD-Migrationspaket freigegeben. Exakte SQL-Quellen, DEV-/PROD-Objektdifferenzen, Sicherheitsbefunde, Integrationstests und Backup-/Restore-Nachweis müssen vor einer späteren PROD-Freigabe vollständig geprüft werden.
