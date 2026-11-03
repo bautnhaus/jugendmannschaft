@@ -65,7 +65,8 @@ Release 1.5.2 wurde laut Nutzerbestätigung am 02.11.2026 nach PROD deployed. Ei
 | `RELEASE_NOTES_*.md` | Fachlicher und technischer Umfang einer veröffentlichten Version |
 | `docs/AP01-03_RELEASE_KATALOG_2026-11-01.md` | AP01–AP03-Releaseumfang, Abhängigkeiten und Freigabeblocker |
 | `docs/AP01-03_MIGRATION_TEST_MAPPING_2026-11-01.md` | Zuordnung der Migrationen, Tests und offenen Nachweise |
-| `docs/AP04-profile-management.md` | AP04-Profilverwaltung, Avatar und geschützte Rollenänderungen |
+| `docs/AP04-profile-management.md` | AP04-Profilverwaltung, Avatar und geschützte Rollenänderungen; Mitgliederbearbeitung im bestehenden Vereinskontext |
+| `docs/CLUB_TEAM_CREATION_PLAN_2026-10-29.md` | Anlage von Vereinen und Mannschaften einschließlich verpflichtender Admin-Zuweisung |
 | `docs/CLUB_TEAM_CREATION_PLAN_2026-10-29.md` | Fachliches und technisches Konzept der Vereins-/Mannschaftsanlage |
 | `docs/database/archive/PROD_Migrationen_01-43/` | Historische Original-SQL-Dateien, Prüfsummen und Inventar der 43 PROD-Anfragen |
 | `docs/archive/` | Historische Projektstände, abgeschlossene DEV-Prüfberichte und alte Arbeitsnotizen |
@@ -84,13 +85,13 @@ Der Einladungsfehler ist weiterhin offen und nicht Teil von Release 1.5.2:
 - Eine Mehrfachzuordnung zu Mannschaften verursachte in einem Fall Loginprobleme; nach Entfernen der zweiten Zuordnung funktionierte die Anmeldung.
 - Vor einer neuen Einladung sind vorhandene Auth-Benutzer und Mannschaftszuordnungen zu berücksichtigen.
 
-Erstprüfung: read-only Frontend-Aufruf/Payload, Originalcode der Edge Function `invite-trainer`, DEV Auth Site URL/Redirect-Allowlist, E-Mail-Template sowie Speicherung von Name, Rolle und Mannschaft untersuchen. Keine Änderungen ohne gesonderte Freigabe. Die aktuelle Übergabe liegt in `docs/UEBERGABE_NEUER_CHAT_2026-11-02.md`; der zugehörige Prompt liegt daneben.
+Erstprüfung: read-only Frontend-Aufruf/Payload, Originalcode der Edge Function `invite-trainer`, DEV Auth Site URL/Redirect-Allowlist, E-Mail-Template sowie Speicherung von Name, Rolle und Mannschaft untersuchen. Keine Änderungen ohne gesonderte Freigabe. Die aktuelle Übergabe liegt in `docs/UEBERGABE_NEUER_CHAT_2026-11-02.md`; der zugehörige Prompt liegt daneben. Die Übergabe ist die ausführliche Fakten-/Arbeitsstandsdokumentation, der Prompt eine kompakte Kopiervorlage für einen Folgechat. Beide bleiben bis zur Fehlerbehebung aktiv und werden danach gemeinsam archiviert.
 
 ### AP01–AP03 Multi-Verein
 Die Release- und Testzuordnung ist dokumentiert, aber kein ausführbares PROD-Migrationspaket freigegeben. Exakte SQL-Quellen, DEV-/PROD-Objektdifferenzen, Sicherheitsbefunde, Integrationstests und Backup-/Restore-Nachweis müssen vor einer späteren PROD-Freigabe vollständig geprüft werden.
 
 ### AP04 Profilverwaltung
-Fünf AP04-Migrationen sind in `develop` versioniert. Sie sind nicht automatisch für PROD freigegeben. Frontend-Abhängigkeiten und effektive Berechtigungen sind vor einer Übernahme zu prüfen.
+Fünf AP04-Migrationen sind in `develop` versioniert. Sie sind nicht automatisch für PROD freigegeben. Frontend-Abhängigkeiten und effektive Berechtigungen sind vor einer Übernahme zu prüfen. Das AP04-Dokument behandelt gemeinsame Profile, Avatare und geschützte Mitglieder-/Rollenbearbeitung; die Anlage neuer Vereine und Mannschaften ist separat im Vereins-/Mannschaftsanlageplan dokumentiert.
 
 ### Weitere Produktarbeit
 Der Backlog umfasst unter anderem flexible Kaderplanung, Saison- und Vereinsverwaltung, Spielformen je Altersklasse, Dashboard (E09), UI-/Design-System, Navigation, Verfügbarkeitsmanagement, FAQ und Sicherheit. Detaillierte fachliche Anforderungen bleiben in den jeweiligen Epic-/AP-Dokumenten; alte Statusangaben sind vor Umsetzung erneut gegen DEV zu prüfen.

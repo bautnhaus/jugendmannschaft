@@ -6,6 +6,8 @@
 **PROD:** unverändert  
 **Status:** SQL-Migration in DEV ausgeführt; Frontendformulare ergänzt; Praxistest ausstehend
 
+**Dokumentationsabgrenzung:** Dieser Plan behandelt ausschließlich die Anlage und Grundkonfiguration von Vereinen und Mannschaften einschließlich der verpflichtenden Admin-Zuweisung. Gemeinsame Profile, Profilbilder und die laufende Bearbeitung bestehender Mitglieder sind im [AP04-Dokument](AP04-profile-management.md) beschrieben. Die Dokumente ergänzen sich; keines ersetzt das andere.
+
 ## 1. Bestehende Dokumentation als Grundlage
 
 Diese Arbeit baut auf den bereits vorhandenen AP02-/AP03-Unterlagen im Repository `bautnhaus/jugendmannschaft-dev` auf, insbesondere:
