@@ -716,8 +716,6 @@ Der Katalog schlägt vor, AP1 und AP2 mit den notwendigen Teilen von AP3 als zus
 
 ---
 
----
-
 ## Release 1.5.2 – veröffentlichter PROD-Stand zum 02.11.2026
 
 **Deployment-Status:** Der Projektverantwortliche hat am 02.11.2026 bestätigt: „Prod deploy erfolgt.“ Dies ist eine Nutzerbestätigung, kein unabhängiger technischer Deployment-Nachweis. Ein unabhängiger Post-Deploy-Smoke-Test und ein unabhängig bestätigter Post-Deploy-Commit-SHA sind nicht dokumentiert.
