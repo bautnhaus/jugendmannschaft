@@ -1,18 +1,38 @@
-# Kaderkompass -- Projektkontext
+# Jugendmannschaft – Projektkontext
 
-**Dokumenttyp:** Zentrale Projektdokumentation / Übergabekontext\
-**Stand:** 01.11.2026\
-**Status:** Aktualisiert nach Abgleich mit den aktuellen GitHub-Repositorys und der Nutzerbestätigung zum Deployment-Ablauf; ältere Abschnitte sind teilweise historische Momentaufnahmen
+**Dokumenttyp:** Projektdokumentation zum veröffentlichten PROD-Stand
+**Stand:** 03.11.2026
+**Status:** Dokumentationsstand für `main`. Release 1.5.2 wurde laut Nutzerbestätigung am 02.11.2026 nach PROD deployed. Ein unabhängiger Post-Deploy-Smoke-Test und ein unabhängig bestätigter Post-Deploy-Commit-SHA sind weiterhin offen.
 
-> Zweck: Dieses Dokument hält Architektur, bestätigten Projektstand,
-> offene Prüfungen, Sicherheitsbefunde und Backlog-Kontext fest. Es soll
-> als verlässliche Ausgangsbasis für weitere Arbeit und neue
-> Chat-Unterhaltungen dienen. Unbestätigte oder noch nicht vollständig
-> geprüfte Punkte sind ausdrücklich als offen gekennzeichnet.
+> Zweck: Dieses Dokument hält Architektur, veröffentlichten Funktionsstand, historische Entscheidungen, Sicherheitsbefunde und den Projektkontext fest. DEV-spezifische Entwicklungsstände sind ausdrücklich als solche gekennzeichnet und dürfen nicht als PROD-Nachweis verstanden werden.
 
 ------------------------------------------------------------------------
 
-## Aktueller Stand – 01.11.2026 (maßgeblich)
+## Aktueller PROD-Stand – 03.11.2026
+
+### Branches und Release 1.5.2
+- Repository: `bautnhaus/jugendmannschaft`.
+- `main`: Produktionsbranch; diese Dokumentation beschreibt den laut Nutzerbestätigung am 02.11.2026 veröffentlichten Stand 1.5.2.
+- `develop`: führender Entwicklungs- und Arbeitsstand. Änderungen und offene technische Aufgaben werden dort zuerst gepflegt.
+- Release 1.5.2 wurde laut ausdrücklicher Nutzerbestätigung am 02.11.2026 nach PROD deployed.
+- Ein unabhängiger Post-Deploy-Smoke-Test sowie ein unabhängig bestätigter PROD-Commit-SHA sind nicht dokumentiert. Der vor dem Deployment bekannte SHA von `develop/index.html` ist kein Post-Deploy-Nachweis.
+
+### Inhaltliche Abgrenzung
+- Die Release Notes 1.5.2 dokumentieren den freigegebenen Veröffentlichungsumfang: `RELEASE_NOTES_1.5.2_PROD_2026-11-02.md`.
+- Die Mitglieder-/Trainer-Einladung ist als offener Entwicklungsfehler dokumentiert und nicht Bestandteil von Release 1.5.2. Eine Fehlerbehebung wird nicht behauptet.
+- Angaben zu DEV-Migrationen, DEV-Funktionen oder DEV-Tests sind historische Entwicklungsnachweise und kein Beleg dafür, dass diese Änderungen in PROD vorhanden sind.
+- Nutzerbestätigungen, technische GitHub-Nachweise und offene Prüfungen werden getrennt dargestellt.
+
+### Dokumentationsführung
+- `develop/PROJECT_CONTEXT.md` und `develop/DB_CHANGELOG.md` sind die führenden Arbeitsdokumente für laufende technische Dokumentation.
+- `main/PROJECT_CONTEXT.md` und `main/DB_CHANGELOG.md` bilden den dokumentierten Veröffentlichungsstand und die dazugehörigen historischen Nachweise ab.
+- Release Notes tatsächlich veröffentlichter Versionen werden in `main` und `develop` geführt.
+- Übergabedokumentationen und Chat-Prompts bleiben grundsätzlich in `develop`.
+- Hauptdokumente werden nicht als parallele `*_updated`-Arbeitskopien geführt. Die kanonischen Namen sind `PROJECT_CONTEXT.md` und `DB_CHANGELOG.md`.
+
+------------------------------------------------------------------------
+
+## Historischer Stand – 01.11.2026 (Momentaufnahme; nicht der aktuelle Release-Status)
 
 ### Bestätigter Deployment- und Branch-Ablauf
 
@@ -533,7 +553,7 @@ DEV-Datenbank; Unterschiede zur Dokumentation werden hier nachgeführt.
 Datenmodell, Sicherheitsmodell, Deployment oder Backlog-Status diese
 Datei aktualisieren.
 
-## 8. Vollständiger Epic-Backlog
+## Ergänzende Detailsektion – Vollständiger Epic-Backlog
 
 **Dokumentierter Stand:** 3. Oktober 2026 · 16 Epics. Die Detailanforderungen stammen aus der vom Nutzer bereitgestellten Backlog-Beschreibung. Wo der Einzelstatus nicht eindeutig ausgewiesen wurde, bleibt er offen und wird nicht erschlossen.
 
@@ -627,7 +647,7 @@ Datei aktualisieren.
 
 Sicherheitsaufgaben haben Vorrang vor der nächsten betroffenen PROD-Veröffentlichung. Featurearbeit darf parallel in DEV stattfinden; Sicherheitsänderungen kontrolliert und möglichst getrennt halten. PROD bleibt bis zu erfolgreichen Tests und ausdrücklicher Freigabe unverändert. **Abhängigkeiten:** E01–E04.
 
-## 9. Übergreifende Produktentscheidungen
+## Ergänzende Detailsektion – Übergreifende Produktentscheidungen
 
 - Die App empfiehlt, der Trainer entscheidet.
 - Trainingsbeteiligung ist ein zentrales Fairnesskriterium der Kaderempfehlung.
@@ -637,7 +657,7 @@ Sicherheitsaufgaben haben Vorrang vor der nächsten betroffenen PROD-Veröffentl
 - Smartphone-first, aber nicht ausschließlich für ein Gerät.
 - DEV-Test und ausdrückliche Freigabe vor jeder PROD-Übernahme.
 
-## 4.4 DEV-Änderungsnachweis – E07 Trainingsverwaltung / aktueller Frontend-Teststand
+## Ergänzende Detailsektion – DEV-Änderungsnachweis E07 Trainingsverwaltung
 
 **Umgebung:** ausschließlich DEV  
 **Status:** E07-Serienlogik, Rückmeldungen, Anwesenheit, Statistikregeln und Trainingsnamendarstellung in DEV getestet; Optionsmenü offen; keine PROD-Übernahme.
@@ -646,7 +666,7 @@ Der aktuelle zuletzt geprüfte DEV-Frontendstand ist `index01(2)_e07_training_ti
 
 **PROD:** unverändert; keine Übernahme.
 
-## 10. Offene Abgleiche vor GitHub-Ablage
+## Ergänzende Detailsektion – Offene Abgleiche vor GitHub-Ablage
 
 - [ ] Statuskategorien der Gesamtübersicht abschließend einzelnen Epics zuordnen.
 - [ ] Aktuelle DEV-`index.html` und Commit-/Versionsstand eindeutig erfassen.
@@ -660,19 +680,19 @@ Der aktuelle zuletzt geprüfte DEV-Frontendstand ist `index01(2)_e07_training_ti
 - [ ] E03-DEV-Teststatus klar vom PROD-Veröffentlichungsstatus trennen.
 - [ ] Nach Abgleich in `develop` ablegen und dort reviewen.
 
-## 11. Arbeitsweise für weitere Epics
+## Ergänzende Detailsektion – Arbeitsweise für weitere Epics
 
 Für jedes Epic festhalten: Ziel/Problem; Nutzer und Ablauf; fachliche Regeln/Sonderfälle; Datenmodell/Migrationen; UI/UX; Rollen/Berechtigungen; Akzeptanzkriterien; positive, negative und Regressionstests; DEV-Test, Freigabe und PROD-Rollout.
 
 Vor Änderungen aktuelle DEV-Datei und relevante Datenbankstruktur identifizieren. Änderungen klein und nachvollziehbar halten. Keine Datenbankänderung vor Prüfung und Besprechung konkreter Notwendigkeit. Keine PROD-Übernahme ohne erfolgreiche Tests und ausdrückliche Freigabe.
 
-## 12. Übergabehinweis für neue Chats
+## Ergänzende Detailsektion – Übergabehinweis für neue Chats
 
 Diese Datei zusammen mit der aktuellen DEV-`index.html` als Ausgangsbasis verwenden. Zuerst gewünschtes Epic und tatsächlichen Stand betroffener Dateien/Datenbank klären. Frühere Codeausschnitte und temporäre Dateien nicht ungeprüft als aktuell behandeln. Bei Abweichungen gilt der verifizierte DEV-Stand; Dokumentation anschließend aktualisieren.
 
 **Pflegehinweis:** Nach wesentlichen Änderungen an Architektur, Datenmodell, Sicherheit, Deployment oder Epic-Status diese Datei aktualisieren.
 
-## 13. AP0-Restprüfung und Multi-Verein-Release-Katalog – 01.11.2026
+## Ergänzende Detailsektion – AP0-Restprüfung und Multi-Verein-Release-Katalog (01.11.2026)
 
 AP0 wird nicht neu begonnen. Die vorhandene Dokumentation zu Architektur, Rollen, Deployment und AP02/AP03 bleibt die Grundlage. Eine aktuelle read-only Prüfung von Supabase DEV/PROD hat nur die noch offenen Release-Basispunkte ergänzt.
 
@@ -692,3 +712,45 @@ AP0 wird nicht neu begonnen. Die vorhandene Dokumentation zu Architektur, Rollen
 Der Katalog schlägt vor, AP1 und AP2 mit den notwendigen Teilen von AP3 als zusammenhängende Multi-Verein-Grundlage zu veröffentlichen, falls die konkrete SQL-Abhängigkeitsprüfung keine sichere Trennung erlaubt. AP4-Profil-/Avatar-Funktionen, historische Spielerzugehörigkeiten, umfassende Saisonhistorie und zusätzliche Mannschaftsauswahl werden nicht automatisch in den ersten Release aufgenommen. Die genaue Scope-Grenze wird nach dem Frontend-/RPC-Abhängigkeitsreview festgelegt.
 
 **Keine Änderungen vorgenommen:** keine Datenbankmigrationen ausgeführt, keine Daten verändert, keine Frontenddatei geändert, PROD nicht verändert. Diese Prüfung und der Katalog sind Dokumentationsarbeit und ein Bestandsnachweis, keine Release-Freigabe.
+
+
+---
+
+---
+
+## Release 1.5.2 – veröffentlichter PROD-Stand zum 02.11.2026
+
+**Deployment-Status:** Der Projektverantwortliche hat am 02.11.2026 bestätigt: „Prod deploy erfolgt.“ Dies ist eine Nutzerbestätigung, kein unabhängiger technischer Deployment-Nachweis. Ein unabhängiger Post-Deploy-Smoke-Test und ein unabhängig bestätigter Post-Deploy-Commit-SHA sind nicht dokumentiert.
+
+### Dokumentierter Umfang
+- Soft-Deaktivierung von Mannschaften über `public.teams.active boolean NOT NULL DEFAULT true` und `public.remove_team(p_team_id uuid)`.
+- Das Frontend filtert aktive Mannschaften anhand `active = true`; Deaktivierungshinweis und -bestätigung wurden angepasst.
+- Der Guard in `openEditTeamForm` wurde auf gültigen Vereinskontext und passende Berechtigung ausgerichtet.
+- Bekannte Commits aus der Vorarbeit: `ce75777434fb0ef119b53204ab7767b86bb0f551` und `e5bbcf0b233f3c166c09f91c8d72f4684e5afef7`.
+- Vor Deployment bekannter SHA von `develop/index.html`: `4a07dd8221669e2919e77317bca3ebec6c1b2a9c`. Dieser SHA ist ausdrücklich kein bestätigter Post-Deploy-SHA.
+
+### Datenbank- und Berechtigungsstatus laut bisheriger Dokumentation
+- Migration 15 mit `teams.active` und `remove_team(p_team_id uuid)` wurde laut Projektverlauf in DEV und PROD ausgeführt/verifiziert. Die vollständige Originaldefinition von `remove_team` ist in diesem Dokument nicht enthalten und muss vor jeder späteren Änderung direkt aus der Zielumgebung ausgelesen werden.
+- Laut Projektverlauf wurden in PROD EXECUTE-Rechte für `PUBLIC`, `anon` und `authenticated` auf `handle_new_user()`, `log_team_role_change()`, `prevent_last_team_admin_removal()` und `rls_auto_enable()` entzogen. Die dokumentierte ACL-Prüfung ersetzt keinen vollständigen Runtime-Test aller betroffenen Trigger; dieser ist nicht als abgeschlossen belegt.
+- `admin_update_club_member_profile(uuid,uuid,text,text)`: laut früherer Prüfung in DEV und PROD kein EXECUTE für `anon`, EXECUTE für `authenticated`.
+- `save_player_with_positions`: PROD-Definition wurde laut früherer Prüfung ausgelesen und als passend beurteilt.
+- 25 im Frontend verwendete RPCs, relevante RLS-Policies sowie Storage-Buckets `club-assets` und `profile-avatars` wurden laut früherem Abgleich zwischen DEV und PROD geprüft. Dies ist ein historischer Prüfhinweis, keine erneute Prüfung zum 03.11.2026.
+
+### Historische Migrationspakete 1–14
+Laut Projektverlauf wurden die Pakete 1–9 sowie 10–14 manuell in PROD angewendet; Migration 14 wurde als ausgeführt/verifiziert gemeldet. Vollständige Original-SQL-Dateien und exakte Migrationsnamen sind anhand der tatsächlichen Supabase-Migrationshistorie bzw. der Originalquellen zu belegen. Keine Definition aus dem Gedächtnis rekonstruieren.
+
+### Nächster Arbeitsauftrag: Mitglieder-/Trainer-Einladung
+Der Einladungsfehler bleibt offen und ist nicht Bestandteil von Release 1.5.2:
+1. Eine Einladung aus DEV leitete auf PROD bzw. den normalen Login statt in den erwarteten Passwort-Erstellungsfluss.
+2. Der Name wurde offenbar nicht gespeichert, obwohl die Oberfläche einen erfolgreichen Versand meldete.
+3. Eine Mehrfachzuordnung zu Mannschaften führte in einem Fall zu Loginproblemen; nach Entfernen der zweiten Zuordnung funktionierte die Anmeldung.
+4. Vor einer neuen Einladung sollen bestehende Auth-Benutzer und Mannschaftszuordnungen berücksichtigt werden.
+
+Zuerst read-only Frontend-Aufruf/Payload, Originalcode der Edge Function `invite-trainer`, DEV Auth Site URL/Redirect-Allowlist, E-Mail-Template und Speicherung von Name/Rolle/Mannschaft untersuchen. Keine Änderungen ohne gesonderte Freigabe.
+
+### Verbindliche Arbeitsregeln
+- `develop` ist der DEV-Quellstand; `main` ist PROD.
+- Vor Codeänderungen die aktuelle `develop/index.html` frisch abrufen.
+- DEV zuerst; keine PROD-Änderungen oder Deploys ohne separate ausdrückliche Freigabe.
+- Keine SQL-Migration, schreibende SQL-Ausführung oder Auth-/Edge-Konfigurationsänderung ohne ausdrückliche Freigabe.
+- Originaldefinitionen auslesen, nicht rekonstruieren; den jeweils freigegebenen Auftrag fokussiert bearbeiten.
