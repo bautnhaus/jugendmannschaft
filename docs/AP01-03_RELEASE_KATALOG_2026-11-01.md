@@ -192,11 +192,11 @@ Abgeschlossen und nicht erneut von vorn zu bearbeiten: grundlegende Architektur-
 
 ## 7. Nachweise
 
-- Zentrale Projektdokumentation: `PROJECT_CONTEXT_updated.md`
+- Zentrale Projektdokumentation: `PROJECT_CONTEXT.md`
 - DEV-Rollen-/Berechtigungsprüfbericht: `docs/DEV_ROLLEN_BERECHTIGUNGEN_PRUEFBERICHT_2026-10-28.md`
 - Mannschaftskontext-Bericht: `docs/DEV_MANSCHAFTSKONTEXT_VEREINSADMIN_SUPERADMIN_2026-10-28.md`
 - Vereins-/Mannschaftsanlage: `docs/CLUB_TEAM_CREATION_PLAN_2026-10-29.md`
 - AP04-Profil-/Avatar-Status: `docs/AP04-profile-management.md`
-- DEV-Datenbankänderungsprotokoll: `DB_CHANGELOG_DEV_updated.md`
+- DEV-Datenbankänderungsprotokoll: `DB_CHANGELOG.md`
 
 Diese Dokumente ergänzen einander; keines allein ersetzt die finalen, versionierten SQL-Quellen oder den abschließenden Release-Review.
