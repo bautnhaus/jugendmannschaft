@@ -2,6 +2,8 @@
 
 Status: DEV-Integration aktiv. Name und Profilbild (einzeln und gemeinsam), erneutes Laden sowie Passwortänderung wurden vom Nutzer manuell erfolgreich getestet. E-Mail-Änderung ist mangels freier Testadresse noch nicht manuell verifiziert. Statische JavaScript-Syntaxprüfung erfolgreich; PROD wurde nicht verändert.
 
+**Dokumentationsabgrenzung:** Dieses Dokument behandelt gemeinsame Profile, Profilbilder sowie die Bearbeitung bestehender Mitglieder und ihrer Rollen. Die eigenständige Anlage von Vereinen und Mannschaften einschließlich der verpflichtenden Admin-Zuweisung ist im [Umsetzungsplan zur Vereins- und Mannschaftsanlage](CLUB_TEAM_CREATION_PLAN_2026-10-29.md) dokumentiert. Überschneidende Rollen-/Kontextregeln sind dort nicht erneut vollständig zu pflegen; maßgeblich sind die jeweils aktuellen fachlichen Entscheidungen und der tatsächliche Datenbankstand.
+
 ## Fachliche Entscheidungen
 - Name und Profilbild sind gemeinsame persönliche Profildaten und gelten in allen Bereichen und Mannschaftskontexten.
 - Mannschaftsrollen bleiben auf die jeweilige Mannschaft bezogen.

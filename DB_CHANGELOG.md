@@ -2,11 +2,11 @@
 
 **Stand:** 03.11.2026  
 **Geltungsbereich:** Dokumentierte Änderungen und Prüfungen in Supabase DEV und PROD; die jeweilige Umgebung und Nachweisgrenze sind pro Eintrag maßgeblich.  
-**Arbeitsführende Fassung:** Branch `develop`. Diese Kopie in `main` hält den dokumentierten Veröffentlichungsstand und die historischen DEV-/PROD-Nachweise fest. DEV-Einträge sind ausdrücklich keine Aussage über das PROD-Schema. Dieses Protokoll ist kein Live-Schema-Dump und ersetzt weder Originalmigrationen noch aktuelle Abfragen der Zielumgebung.
+**Führende Fassung:** Branch `develop`. Dieses Dokument beschreibt Datenbankobjekte, historische Änderungen und Verifikationsbefunde; es ist kein vollständiges Ausführungsjournal. Jede tatsächlich ausgeführte schreibende SQL-Anweisung – auch manuell im Supabase SQL Editor und unabhängig davon, ob eine Migrationsdatei existiert – muss zusätzlich mit eigenem Ausführungsnachweis in `DB_MIGRATION_LOG.md` erfasst werden. DEV und PROD sind getrennt zu dokumentieren. Dieses Protokoll ist kein Live-Schema-Dump und ersetzt weder Originalmigrationen noch aktuelle Abfragen der Zielumgebung.
 
 **Historischer Ausgangsstand:** 09.10.2026  
 **Umgebung:** Supabase DEV  
-**Historischer Zweck (09.10.2026):** Dokumentation des damals nachweislich abgeglichenen DEV-Bestands als Grundlage für einen späteren kontrollierten PROD-Rollout. Dieser Satz beschreibt den ursprünglichen Zweck des historischen DEV-Abschnitts, nicht den aktuellen Veröffentlichungsstatus. Die aktuelle Geltung und Abgrenzung stehen in der Kopfzeile; DEV-Einträge sind kein PROD-Schemanachweis.
+**Zweck:** Dokumentation des nachweislich abgeglichenen DEV-Bestands als Grundlage für einen späteren kontrollierten PROD-Rollout. Dieses Protokoll dokumentiert die bekannten DEV-Änderungen bis 09.10.2026; es ist kein vollständiger Schema-, RLS- oder Policy-Abgleich.
 
 ## DB-DEV-001 – Schutz des letzten Administrators (E16.2)
 
@@ -380,7 +380,7 @@ Nicht übertragen. Für PROD ist eine separate, geprüfte Release-Migration erfo
 
 ---
 
-## Release 1.5.2 – veröffentlichter PROD-Datenbank- und Berechtigungsnachweis (02.11.2026)
+## Release 1.5.2 – konsolidierter Datenbank- und Berechtigungsnachweis (02.11.2026)
 
 **Deployment-Kontext:** Release 1.5.2 wurde laut Nutzerbestätigung am 02.11.2026 nach PROD deployed. Ein unabhängiger Post-Deploy-Smoke-Test ist nicht dokumentiert. Die folgenden Angaben geben dokumentierte frühere Ausführungen/Prüfungen wieder und sind keine erneute Live-Abfrage am 03.11.2026.
 
@@ -425,3 +425,10 @@ Laut Projektverlauf wurden Pakete 1–9 sowie 10–14 manuell in PROD angewendet
 3. Originaldefinition und Abhängigkeiten jeder betroffenen Funktion sichern.
 4. Fehlende Original-SQL-Quellen ausdrücklich als fehlend dokumentieren.
 5. Erst nach ausdrücklicher Freigabe SQL ändern; aus diesem Protokoll folgt keine implizite Freigabe.
+
+
+## Historischer PROD-SQL-Bestand – Migrationen 1–43 (03.11.2026)
+
+Die 43 vom Nutzer bereitgestellten SQL-Originale wurden vollständig inventarisiert und bytegenau gegen die Quelldateien aus Sql.zip verglichen. Die einzelnen SHA-256-Prüfsummen und Kurzbeschreibungen stehen im Inventar docs/database/archive/PROD_Migrationen_01-43/MIGRATIONEN_01-43_Inventar.md; die Originaldateien und die technische Matrix befinden sich im Archivpaket docs/database/archive/PROD_Migrationen_01-43/PROD_Migrationen_01-43_Arbeitsstand.tar.xz.
+
+Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und im damaligen Chat geprüft wurden. Die Einzelabfragen und Resultate der Prüfungen sind im Archiv nicht enthalten und wurden nicht erneut eingesehen. Diese Dokumentation ist daher ein historischer Ausführungs- und Nutzerbestätigungsnachweis, kein aktueller Live-Schema- oder RLS/ACL-Abgleich. Siehe die 43 getrennten PROD-Datensätze in DB_MIGRATION_LOG.md.
