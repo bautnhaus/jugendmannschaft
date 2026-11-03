@@ -305,7 +305,7 @@ Deno.serve(async (req: Request) => {
         }
 
         targetUser = racedUser;
-        emailWarning = inviteError?.message || "Ein paralleler Einladungsversuch hat das Konto bereits angelegt. Der bestehende Einladungsstatus wurde übernommen.";
+        emailWarning = "Für dieses Konto konnte keine neue Einladungs-E-Mail bestätigt werden. Die vorhandene Konto-/Einladungssituation wurde übernommen; bitte prüfen, ob der ursprüngliche Einladungslink noch gültig ist.";
       } else {
         targetUser = inviteData.user;
         invitationEmailSent = true;
