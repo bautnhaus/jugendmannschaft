@@ -26,9 +26,13 @@ Der offene Fehler im Mitglieder-/Trainer-Einladungsablauf ist der nächste fokus
 
 ### Dokumentationsführung
 - `PROJECT_CONTEXT.md` ist die führende Projektdokumentation.
-- `DB_CHANGELOG.md` ist das Änderungs- und Verifikationsprotokoll für Datenbankänderungen; jeder Eintrag muss Umgebung und Nachweisstatus nennen.
-- `develop` enthält laufende technische Dokumentation, Entscheidungen, offene Aufgaben und Arbeitsunterlagen.
-- `main` enthält eine zum veröffentlichten Stand passende Projektdokumentation und Release Notes tatsächlich veröffentlichter Versionen. Übergaben und Chat-Prompts bleiben grundsätzlich in `develop`.
+- `DB_CHANGELOG.md` dokumentiert technische Datenbankobjekte, Änderungen, historische Prüfungen und Verifikationsbefunde. Es ist kein vollständiges Ausführungsjournal.
+- `DB_MIGRATION_LOG.md` ist das verbindliche, chronologische Ausführungsprotokoll für jede tatsächlich ausgeführte schreibende SQL-Anweisung bzw. jeden schreibenden SQL-Eingriff.
+- **Ausnahmslos:** Das Migrationsprotokoll ist unabhängig vom Ausführungsweg zu führen – auch bei direkter Ausführung im Supabase SQL Editor oder über administrative Werkzeuge, ohne GitHub-Migrationsdatei. Maßgeblich ist die tatsächliche Ausführung, nicht der Ablageort des SQL.
+- Vor einer schreibenden SQL-Ausführung sind Zweck, Zielumgebung und SQL zur ausdrücklichen Freigabe vorzulegen. Nach der Ausführung wird der tatsächliche SQL-Text (oder ein sicherer, nachvollziehbarer Verweis), Ausführungszeitpunkt, Umgebung, Ergebnis und Verifikation im Migrationsprotokoll erfasst. Fehlgeschlagene oder teilweise ausgeführte Schreibversuche werden als solche gekennzeichnet und nicht als erfolgreich behandelt.
+- DEV und PROD erhalten getrennte Ausführungsnachweise. Eine erfolgreiche DEV-Ausführung oder vorhandene SQL-Datei ist kein Beleg für eine PROD-Ausführung. Vor jedem PROD-Release ist das Protokoll gegen den tatsächlichen Stand beider Datenbanken abzugleichen.
+- `develop` ist die alleinige führende Dokumentationsquelle. `main` ist ein aus `develop` erzeugter PROD-Snapshot; keine eigenständige Dokumentationspflege ausschließlich in `main`. Release Notes veröffentlichter Versionen werden bereits in `develop` gepflegt und mit dem PROD-Snapshot übernommen. Der aktuelle PROD-Workflow übernimmt `develop` nach `main`; diese Regel berücksichtigt dieses Verhalten, ohne den Workflow zu ändern.
+- Übergaben und Chat-Prompts bleiben grundsätzlich in `develop`.
 - Historische Prüfungen werden nicht als aktuelle Prüfungen ausgegeben. Nutzerbestätigungen, technische Nachweise und offene Prüfungen bleiben unterscheidbar.
 
 ------------------------------------------------------------------------
