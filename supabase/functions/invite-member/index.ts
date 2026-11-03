@@ -257,11 +257,22 @@ Deno.serve(async (req: Request) => {
       return respond({ error: "Du kannst dich nicht selbst einladen." }, 400);
     }
 
-    if (targetUser && (targetUser.app_metadata?.global_role === "super_admin")) {
-      return respond({ error: "Ein Super Admin kann nicht als Vereins- oder Mannschaftsmitglied zugeordnet werden." }, 409);
-    }
-
     if (targetUser) {
+      const { data: globalRoles, error: globalRoleError } = await adminClient
+        .from("global_user_roles")
+        .select("role")
+        .eq("user_id", targetUser.id);
+
+      if (globalRoleError) {
+        console.error("Globale Benutzerrollen konnten nicht geprüft werden:", globalRoleError);
+        return respond({ error: "Die globalen Rollen des bestehenden Kontos konnten nicht geprüft werden." }, 500);
+      }
+
+      if ((globalRoles || []).some((row: any) => row.role === "super_admin")) {
+        return respond({ error: "Ein Super Admin kann nicht als Vereins- oder Mannschaftsmitglied zugeordnet werden." }, 409);
+      }
+
+
       try {
         await preflightExistingAssignments(adminClient, targetUser.id, clubId, invitedRole, teamId);
       } catch (preflightError) {
