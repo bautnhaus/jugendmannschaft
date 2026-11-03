@@ -6,7 +6,7 @@
 
 **Historischer Ausgangsstand:** 09.10.2026  
 **Umgebung:** Supabase DEV  
-**Zweck:** Dokumentation des nachweislich abgeglichenen DEV-Bestands als Grundlage für einen späteren kontrollierten PROD-Rollout. Dieses Protokoll dokumentiert die bekannten DEV-Änderungen bis 09.10.2026; es ist kein vollständiger Schema-, RLS- oder Policy-Abgleich.
+**Historischer Zweck (09.10.2026):** Dokumentation des damals nachweislich abgeglichenen DEV-Bestands als Grundlage für einen späteren kontrollierten PROD-Rollout. Dieser Satz beschreibt den ursprünglichen Zweck des historischen DEV-Abschnitts, nicht den aktuellen Veröffentlichungsstatus. Die aktuelle Geltung und Abgrenzung stehen in der Kopfzeile; DEV-Einträge sind kein PROD-Schemanachweis.
 
 ## DB-DEV-001 – Schutz des letzten Administrators (E16.2)
 
