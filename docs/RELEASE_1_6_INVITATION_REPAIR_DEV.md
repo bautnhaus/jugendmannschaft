@@ -42,7 +42,7 @@ Migration:
 
 Neue Funktion: `invite-member`
 - Quelldatei: `supabase/functions/invite-member/index.ts`
-- DEV-Status: ACTIVE, Version 2
+- DEV-Status: ACTIVE, Version 3
 - JWT-Prüfung: aktiviert
 - Aufgabe: Anmeldenden und Kontext prüfen, bestehende Auth-Benutzer ermitteln, existierende Vereins-/Mannschaftszuordnungen prüfen, DEV-Redirect aus Projektkennung wählen, Einladungsversand bzw. bestehendes Konto behandeln und danach die transaktionale Datenbankfunktion aufrufen.
 - Ein Zielkonto mit globaler Rolle `super_admin` wird vor dem Versand anhand `global_user_roles` abgelehnt.
@@ -63,7 +63,8 @@ Datei: `index.html`
 
 - GitHub Branch `develop` und DEV-Repository `bautnhaus/jugendmannschaft-dev` Branch `main` stehen nach dem Push auf demselben Commit.
 - Der SHA von `index.html` in `develop` stimmt mit dem SHA in `jugendmannschaft-dev/main` überein.
-- Supabase DEV `invite-member` ist ACTIVE, Version 2; die live ausgelesene Quelltextdatei stimmt mit `supabase/functions/invite-member/index.ts` in `develop` überein.
+- Der GitHub-Actions-Lauf `deploy-dev` für Commit `f96e9382e2cdc0ecf6ac6e83e0acde5ac074c788` wurde mit `completed / success` abgeschlossen; `jugendmannschaft-dev/main` stand anschließend auf diesem Commit.
+- Supabase DEV `invite-member` ist ACTIVE, Version 3; die live ausgelesene Quelltextdatei stimmt bytegenau mit `supabase/functions/invite-member/index.ts` in `develop` überein.
 - Die DEV Auth-Site-URL und Redirect-Allowlist wurden read-only anhand der vom Nutzer bereitgestellten Screenshots geprüft und enthalten die DEV-App-Adresse.
 - Das Invite-User-Template ist das Supabase-Standardtemplate. Custom SMTP wurde nicht aktiviert oder geändert.
 
