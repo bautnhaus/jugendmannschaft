@@ -1691,8 +1691,9 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
 <main>
   <div class="tabs dashboardLegacyTabs"><button data-tab="dashboard">Dashboard</button><button data-tab="players">Spieler</button><button data-tab="trainings">Training</button><button data-tab="matchday">Spieltag</button><button id="settingsTab" data-tab="settings">Mehr</button></div>
   <section id="dashboard" class="tab dashboardPage">
-    <div class="dashboardWelcome"><div><h2 id="dashboardGreeting">Hallo, Trainer!</h2><p id="dashboardTeamSeason">Deine Mannschaft im Überblick</p></div><span class="dashboardWelcomeIcon material-symbols-outlined" aria-hidden="true">waving_hand</span></div>
-    <div class="card"><div class="statsGrid" style="margin-top:0"><div><div class="muted">Spieler</div><div id="dashboardPlayerCount" class="stat">0</div></div><div><div class="muted">Trainings</div><div id="dashboardTrainingCount" class="stat">0</div></div><div><div class="muted">Spieltage</div><div id="dashboardMatchdayCount" class="stat">0</div></div></div></div>
+    <div class="dashboardWelcome"><div><h2 id="dashboardGreeting">Hallo!</h2><p id="dashboardTeamSeason">Deine Mannschaft im Überblick</p></div><span class="dashboardWelcomeIcon material-symbols-outlined" aria-hidden="true">waving_hand</span></div>
+    <div id="clubMemberWelcome" class="card hidden"><h3>Vereinsmitgliedschaft aktiv</h3><p>Du bist als Vereinsmitglied registriert. Dir ist noch keine Mannschaft zugeordnet. Sobald eine Mannschaftsrolle hinterlegt ist, wird der Mannschaftsbereich freigeschaltet.</p></div>
+    <div class="card" id="dashboardStatsCard"><div class="statsGrid" style="margin-top:0"><div><div class="muted">Spieler</div><div id="dashboardPlayerCount" class="stat">0</div></div><div><div class="muted">Trainings</div><div id="dashboardTrainingCount" class="stat">0</div></div><div><div class="muted">Spieltage</div><div id="dashboardMatchdayCount" class="stat">0</div></div></div></div>
     <div id="dashboardEvents" class="dashboardEvents"></div>
   </section>
   <section id="players" class="tab hidden"><div class="card trainingPageCard"><div class="toolbar trainingPageHeader"><h2 style="margin:0;flex:1">Spieler</h2><button class="primary iconAddButton" onclick="addPlayer()" aria-label="Spieler hinzufügen" title="Spieler hinzufügen">+</button></div></div><div class="card"><div id="playerTable"></div></div></section>
@@ -1732,7 +1733,7 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
   </div>
   <div class="settingsSection">
     <div class="card hidden" id="superAdminPanel"><div id="superAdminClubListView"><h3>Plattformverwaltung</h3><p class="muted small">Wähle einen Verein aus. Antippen öffnet die Vereinsverwaltung.</p><button type="button" class="primary" style="margin:10px 0" onclick="window.toggleClubCreateForm()">+ Verein anlegen</button><div id="clubCreateForm" class="card hidden" style="margin:8px 0"><h3>Neuen Verein anlegen</h3><label class="matchdayCreateField">Vereinsadmin<select id="newClubAdminUser" required><option value="">Benutzer werden geladen …</option></select></label><p class="muted small adminFormHelp">Nur bestehende, noch keinem Verein zugeordnete Konten können ausgewählt werden.</p><label class="matchdayCreateField">Vereinsname<input id="newClubName" required maxlength="160" placeholder="z. B. 1.FC Turnverein"></label><label class="matchdayCreateField">Kurzname (optional)<input id="newClubShortName" maxlength="40" placeholder="z. B. FCB"></label><div class="adminFormPhoto"><div id="clubPhotoPreview" class="adminFormPhotoPreview" data-photo=""><span class="material-symbols-outlined adminClubCrestPlaceholder">shield_with_heart</span></div><button type="button" class="photoActionButton" onclick="window.openPhotoSheet('club')"><span class="material-symbols-outlined" aria-hidden="true">add_a_photo</span><span>Wappen hinzufügen</span></button><input id="clubPhotoInput" type="file" accept="image/*" style="display:none"><p class="muted small adminFormHelp">PNG, JPEG oder WebP, maximal 2 MB.</p></div><h4>Heimspielstätte</h4><label class="matchdayCreateField">Name<input id="newClubHomeName" required placeholder="Name der Sportanlage"></label><label class="matchdayCreateField">Straße und Hausnummer<input id="newClubHomeStreet" required placeholder="Musterstraße 1"></label><label class="matchdayCreateField">Postleitzahl<input id="newClubHomePostal" required autocomplete="postal-code"></label><label class="matchdayCreateField">Ort<input id="newClubHomeCity" required autocomplete="address-level2"></label><label class="matchdayCreateField">Land<input id="newClubHomeCountry" required value="Deutschland" autocomplete="country-name"></label><label class="adminFormCheckbox"><input id="newClubTrainingDiffers" type="checkbox" onchange="window.toggleDifferentTrainingVenue()" style="width:auto"> Trainingsort weicht von der Heimspielstätte ab</label><div id="newClubTrainingVenueFields" class="hidden"><h4>Abweichender Trainingsort</h4><label class="matchdayCreateField">Name<input id="newClubTrainingName" placeholder="Name des Trainingsorts"></label><label class="matchdayCreateField">Straße und Hausnummer<input id="newClubTrainingStreet" placeholder="Musterstraße 2"></label><label class="matchdayCreateField">Postleitzahl<input id="newClubTrainingPostal" placeholder="PLZ"></label><label class="matchdayCreateField">Ort<input id="newClubTrainingCity" placeholder="Ort"></label><label class="matchdayCreateField">Land<input id="newClubTrainingCountry" value="Deutschland" placeholder="Land"></label></div><div class="toolbar" style="margin-top:14px"><button type="button" class="primary" onclick="window.createSuperAdminClub()">Verein speichern</button><button type="button" onclick="window.toggleClubCreateForm(false)">Abbrechen</button></div><p id="newClubCreateStatus" class="notice small hidden" role="status"></p></div><div id="superAdminClubCards" class="playerListRows" aria-label="Vereine auswählen"><p class="muted small">Vereine werden geladen …</p></div></div><div id="superAdminClubDetailView" class="hidden"><div class="detailHeader" style="margin-top:12px"><button type="button" class="iconBack" aria-label="Zurück zu den Vereinen" onclick="window.backToSuperAdminClubs()"><span class="material-symbols-outlined">arrow_back</span></button><div class="playerListAvatar clubCrestAvatar"><span class="playerAvatar"><img id="superAdminClubDetailCrest" class="hidden" alt="Vereinswappen" style="width:100%;height:100%;object-fit:contain;background-color:transparent;mix-blend-mode:normal"><span id="superAdminClubDetailCrestFallback" class="material-symbols-outlined">shield</span></span></div><div style="flex:1;min-width:0"><h2 id="superAdminClubDetailName" style="margin:0">Verein</h2><p class="muted small" style="margin:4px 0 0">Vereinsverwaltung</p></div></div><div class="card" style="margin-top:12px"><h3>Vereinsinformationen</h3><p id="superAdminClubDetailInfo" class="muted small">Allgemeine Vereinsangaben.</p><button type="button" class="primary" style="margin-top:10px;width:100%" onclick="window.openEditClubForm()">Verein bearbeiten</button></div><h3 style="margin-top:18px">Mannschaften im Verein</h3><div id="superAdminClubTeamList" class="playerListRows" style="margin-top:10px"><p class="muted small">Mannschaften werden geladen …</p></div></div><div id="superAdminClubSubView" class="hidden"><div class="detailHeader" style="margin-top:12px"><button type="button" class="iconBack" aria-label="Zurück zum Verein" onclick="window.backToSuperAdminClubDetail()"><span class="material-symbols-outlined">arrow_back</span></button><h2 id="superAdminClubSubTitle" style="margin:0">Mannschaften</h2></div><div id="superAdminClubSubContent" class="playerListRows"></div></div><div id="superAdminTeamDetailView" class="hidden"><div class="detailHeader" style="margin-top:12px"><button type="button" class="iconBack" aria-label="Zurück zum Verein" onclick="window.backToSuperAdminTeams()"><span class="material-symbols-outlined">arrow_back</span></button><div class="playerListAvatar"><span class="playerAvatar"><span class="material-symbols-outlined">groups</span></span></div><div style="flex:1;min-width:0"><h2 id="superAdminTeamDetailName" style="margin:0">Mannschaft</h2><p id="superAdminTeamDetailMeta" class="muted small" style="margin:4px 0 0">Mannschaftsverwaltung</p></div><div class="teamMemberOptionsWrap" style="position:relative"><button type="button" class="iconAddButton" style="background:transparent!important;color:var(--text);box-shadow:none" onclick="window.toggleSelectedAdminTeamOptions()" aria-label="Mannschaftsoptionen" aria-expanded="false"><span class="material-symbols-outlined">more_vert</span></button><div id="selectedAdminTeamOptions" class="matchdayOptionsMenu hidden" role="menu" style="right:0;left:auto;top:44px;z-index:20"><button type="button" role="menuitem" onclick="window.closeSelectedAdminTeamOptions();window.openEditTeamForm(window.selectedAdminTeam?.id)"><span class="material-symbols-outlined">edit</span> Bearbeiten</button><button type="button" role="menuitem" class="dangerText" onclick="window.closeSelectedAdminTeamOptions();window.removeSelectedAdminTeam()"><span class="material-symbols-outlined">delete</span> Mannschaft entfernen</button></div></div></div><div class="card" style="margin-top:12px"><h3>Mannschaftsinformationen</h3><p id="superAdminTeamDetailInfo" class="muted small">Mannschaft und Saison</p></div></div><div id="superAdminTeamSettingView" class="card hidden"><div class="detailHeader"><button type="button" class="iconBack" aria-label="Zurück zur Mannschaft" onclick="window.backToSelectedTeamDetail()"><span class="material-symbols-outlined">arrow_back</span></button><h2 id="superAdminTeamSettingTitle" style="margin:0">Einstellungen</h2></div><div id="superAdminTeamSettingContent"></div></div><div id="superAdminStatus" class="notice small hidden" role="status" style="margin-top:10px"></div><div id="superAdminTeamContext" class="hidden"><h3 style="margin-top:18px">Mannschaft auswählen</h3><label style="display:block;margin-top:8px">Mannschaft für Arbeitskontext<select id="superAdminTeamSelect"><option value="">Zuerst Verein auswählen …</option></select></label><button type="button" class="primary" style="margin-top:8px" onclick="selectAdminTeamContext('superAdminTeamSelect')">Mannschaft öffnen</button></div></div>
-    <div class="card hidden" id="clubAdminPanel"><h3>Verein verwalten</h3><p class="muted small">Vereinsmitglieder, Vereinsrollen und Spieler des ausgewählten Vereins. Mannschaftsrollen bleiben von Vereinsrollen getrennt.</p><button type="button" class="primary" style="width:100%;margin:10px 0" onclick="window.openEditClubForm()">Vereinsdaten bearbeiten</button><label style="display:block;margin:10px 0">Mannschaft für Arbeitskontext<select id="clubAdminTeamSelect"><option value="">Bitte Mannschaft auswählen …</option></select></label><button type="button" class="primary" onclick="selectAdminTeamContext('clubAdminTeamSelect')">Mannschaft öffnen</button><button type="button" style="width:100%;margin-top:8px" onclick="window.openEditTeamFormFromClubAdmin()">Mannschaftsstammdaten bearbeiten</button><p class="muted small">Mitglieder hinzufügen und bearbeiten erfolgt über dieselbe Maske. Das Konto muss bereits existieren; neue Konten werden über die Einladungsfunktion angelegt.</p><button type="button" class="primary" style="margin-top:10px;width:100%" onclick="openClubMemberEditor()">Mitglied hinzufügen</button><div id="clubMemberStatus" class="notice small hidden" style="margin-top:10px"></div><h3 style="margin-top:18px">Vereinsmitglieder</h3><label>Mannschaftsfilter<select id="clubMemberTeamFilter" onchange="renderClubMembers()"><option value="">Alle Mannschaften</option></select></label><p class="muted small">Die Liste zeigt Vereinsrolle und Mannschaftsrollen. Mitglieder ohne Mannschaft erscheinen unter „Ohne Mannschaft“.</p><div id="clubMemberList"><p class="muted small">Öffne Einstellungen, um die Liste zu laden.</p></div><h3 style="margin-top:22px">Spieler nach Mannschaft</h3><label>Mannschaftsfilter<select id="clubPlayerTeamFilter" onchange="renderClubPlayers()"><option value="">Alle Mannschaften</option></select></label><div id="clubPlayerList"><p class="muted small">Spieler werden geladen, sobald ein Verein geöffnet wurde.</p></div></div>
+    <div class="card hidden" id="clubAdminPanel"><h3>Verein verwalten</h3><p class="muted small">Vereinsmitglieder, Vereinsrollen und Spieler des ausgewählten Vereins. Mannschaftsrollen bleiben von Vereinsrollen getrennt.</p><button type="button" class="primary" style="width:100%;margin:10px 0" onclick="window.openEditClubForm()">Vereinsdaten bearbeiten</button><label style="display:block;margin:10px 0">Mannschaft für Arbeitskontext<select id="clubAdminTeamSelect"><option value="">Bitte Mannschaft auswählen …</option></select></label><button type="button" class="primary" onclick="selectAdminTeamContext('clubAdminTeamSelect')">Mannschaft öffnen</button><button type="button" style="width:100%;margin-top:8px" onclick="window.openEditTeamFormFromClubAdmin()">Mannschaftsstammdaten bearbeiten</button><p class="muted small">Mitglieder hinzufügen und bearbeiten erfolgt über dieselbe Maske. Das Neue Konten können direkt mit Vereins- oder Mannschaftsrolle eingeladen werden.</p><button type="button" class="primary" style="margin-top:10px;width:100%" onclick="openClubMemberInvite()">Mitglied einladen</button><div id="clubMemberStatus" class="notice small hidden" style="margin-top:10px"></div><h3 style="margin-top:18px">Vereinsmitglieder</h3><label>Mannschaftsfilter<select id="clubMemberTeamFilter" onchange="renderClubMembers()"><option value="">Alle Mannschaften</option></select></label><p class="muted small">Die Liste zeigt Vereinsrolle und Mannschaftsrollen. Mitglieder ohne Mannschaft erscheinen unter „Ohne Mannschaft“.</p><div id="clubMemberList"><p class="muted small">Öffne Einstellungen, um die Liste zu laden.</p></div><h3 style="margin-top:22px">Spieler nach Mannschaft</h3><label>Mannschaftsfilter<select id="clubPlayerTeamFilter" onchange="renderClubPlayers()"><option value="">Alle Mannschaften</option></select></label><div id="clubPlayerList"><p class="muted small">Spieler werden geladen, sobald ein Verein geöffnet wurde.</p></div></div>
   </div>
   <div class="settingsSection adminOnly">
     <div class="sectionHeading"><div class="sectionIcon"><span class="material-symbols-outlined" aria-hidden="true">settings</span></div><div><h2 id="settingsMainHeading">Einstellungen</h2><p id="settingsMainSub" class="muted">Mannschaft und App verwalten. Dieser Bereich ist nur für Admins sichtbar.</p></div></div>
@@ -1771,7 +1772,8 @@ let playerSearchText='';
 let playerRosterView='active';
 const LEVEL_POINTS={Einsteiger:1,Fortgeschritten:2,Stark:3,Profi:4};
 const POSITION_COLORS=['#dbeafe','#dcfce7','#fef3c7','#fee2e2','#ede9fe','#cffafe','#fce7f3','#e2e8f0'];
-let supabase=null, currentUser=null, team=null, season=null, role='trainer', currentTeamRoles=[], currentClubId=null, canManageClub=false, clubOnlyMode=false, isSuperAdmin=false, contextReadOnly=false, openingAdminContext=false, adminContextActive=false;
+let supabase=null, currentUser=null, team=null, season=null, role='trainer', currentTeamRoles=[], currentClubId=null, canManageClub=false, clubOnlyMode=false, clubMemberOnlyMode=false, isSuperAdmin=false, contextReadOnly=false, openingAdminContext=false, adminContextActive=false;
+let currentProfileDisplayName='';
 let state={players:[],inactivePlayers:[],trainings:[],trainingSeries:[],positions:[],positionRows:[],matchdays:[],trainers:[]};
 let matchdaySelection=new Set();
 let currentMatchdayId=null;
@@ -1817,48 +1819,32 @@ window.changePassword=async()=>{try{const password=$('newPassword').value;if(pas
 window.deleteMyAccount=async()=>{showStatus('Die Kontolöschung ist vorübergehend deaktiviert, weil Rollen, Vereinszugehörigkeiten und historische Daten noch nicht vollständig sicher behandelt werden. Bitte wende dich an den Systemadministrator.','error');return;};
 window.addTrainerToTeam=async()=>{
   if(!adminGuard()) return;
-  let invitationCompleted=false;
   try {
-    const label=$('trainerLabelAdd').value.trim();
+    const displayName=$('trainerLabelAdd').value.trim();
     const email=$('trainerEmailAdd').value.trim().toLowerCase();
-    const newRole=$('trainerRoleAdd').value;
-    if(!label){showStatus('Bitte einen eindeutigen Trainername eingeben.','error');return;}
+    const requestedRole=$('trainerRoleAdd').value;
+    if(!displayName){showStatus('Bitte einen persönlichen Namen eingeben.','error');return;}
     if(!email){showStatus('Bitte eine E-Mail-Adresse eingeben.','error');return;}
-    if(!team){showStatus('Keine Mannschaft ausgewählt. Bitte Seite neu laden.','error');return;}
-    if(state.trainers.some(t=>(t.admin_label||'').toLowerCase()===label.toLowerCase())){showStatus('Dieser Trainername ist bereits vergeben.','error');return;}
-    showStatus('Einladung wird verschickt …');
-    const {data,error}=await getClient().functions.invoke('invite-trainer',{body:{email,role:newRole,team_id:team}});
-    if(error) throw error;
-    if(data?.error) throw new Error(data.error);
-    invitationCompleted=true;
-
-    // Die E-Mail-Adressen in profiles sind aus Sicherheitsgründen nicht für jeden
-    // Trainer direkt lesbar. Deshalb übernimmt eine geschützte RPC-Funktion die
-    // Zuordnung E-Mail -> Benutzer und speichert den dauerhaften Admin-Namen.
-    const {error:labelError}=await getClient().rpc('admin_set_trainer_label',{p_team_id:team,p_email:email,p_label:label});
+    if(!team||!currentClubId){showStatus('Keine vollständige Mannschafts-/Vereinszuordnung vorhanden. Bitte Seite neu laden.','error');return;}
+    const {data,error}=await getClient().functions.invoke('invite-member',{body:{
+      email,display_name:displayName,club_id:currentClubId,
+      invited_role:requestedRole==='admin'?'team_admin':'trainer',team_id:team
+    }});
+    if(error){
+      let message=error.message||String(error);
+      if(error.context){try{const body=await error.context.json();if(body?.error)message=body.error;if(body?.invitation_email_sent)message='Einladung wurde versendet, die Zuordnung ist aber noch nicht vollständig: '+message;}catch{}}
+      throw new Error(message);
+    }
+    if(data?.success!==true)throw new Error(data?.error||'Die Einladung wurde nicht vollständig bestätigt.');
     $('trainerLabelAdd').value='';$('trainerEmailAdd').value='';
-    if(labelError){
-      showStatus('Einladung und Rolle wurden gespeichert, aber der Trainername konnte nicht gespeichert werden. Bitte später erneut prüfen.','error');
-    }else{
-      showStatus(data?.message||'Die Einladung wurde erfolgreich verschickt.','ok');
-    }
-    try { await loadApp(); }
-    catch(refreshError) {
-      console.error('Einladung erfolgreich; Aktualisieren der Ansicht fehlgeschlagen:',refreshError);
-      showStatus('Einladung und Rolle wurden gespeichert. Die Ansicht konnte nicht aktualisiert werden; bitte Seite neu laden.','error');
-    }
+    try{await loadApp();}catch(refreshError){showStatus('Zuordnung wurde gespeichert. Die Ansicht konnte nicht aktualisiert werden: '+(refreshError?.message||refreshError),'error');return;}
+    showStatus(data.warning?(data.message+' Hinweis: '+data.warning):data.message,data.warning?'error':'ok');
   } catch(e) {
-    console.error('invite-trainer:',e);
-    let message=e?.message||String(e);
-    if(e?.context){try{const body=await e.context.json();if(body?.error)message=body.error;}catch{}}
-    if(invitationCompleted){
-      showStatus('Einladung und Rolle wurden gespeichert, aber ein nachfolgender Schritt ist fehlgeschlagen: '+message,'error');
-    }else{
-      showStatus('Trainer konnte nicht eingeladen werden: '+message,'error');
-    }
+    console.error('invite-member:',e);
+    showStatus('Mitglied konnte nicht eingeladen werden: '+(e?.message||e),'error');
   }
 };
-window.logout=async()=>{if(supabase&&contextReadOnly){try{await getClient().rpc('clear_team_context');}catch(e){console.warn('Mannschaftskontext konnte nicht gelöscht werden:',e);}}if(supabase)await supabase.auth.signOut();currentUser=null;team=null;season=null;clubOnlyMode=false;isSuperAdmin=false;currentClubId=null;canManageClub=false;contextReadOnly=false;adminContextActive=false;$('superAdminPanel')?.classList.add('hidden');$('clubAdminPanel')?.classList.add('hidden');$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');setLoginMsg('Abgemeldet.');};
+window.logout=async()=>{clubMemberOnlyMode=false;currentProfileDisplayName='';if(supabase&&contextReadOnly){try{await getClient().rpc('clear_team_context');}catch(e){console.warn('Mannschaftskontext konnte nicht gelöscht werden:',e);}}if(supabase)await supabase.auth.signOut();currentUser=null;team=null;season=null;clubOnlyMode=false;isSuperAdmin=false;currentClubId=null;canManageClub=false;contextReadOnly=false;adminContextActive=false;$('superAdminPanel')?.classList.add('hidden');$('clubAdminPanel')?.classList.add('hidden');$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');setLoginMsg('Abgemeldet.');};
 
 async function loadApp(){
   const c=getClient();
@@ -1869,7 +1855,7 @@ async function loadApp(){
   const platformPanelAtStart=$('superAdminPanel');if(platformPanelAtStart&&!adminContextActive)platformPanelAtStart.classList.add('hidden');
   const clubPanelAtStart=$('clubAdminPanel');if(clubPanelAtStart)clubPanelAtStart.classList.add('hidden');
   document.querySelectorAll('[data-tab]').forEach(b=>b.classList.remove('hidden'));
-  clubOnlyMode=false;isSuperAdmin=false;currentClubId=null;canManageClub=false;
+  clubOnlyMode=false;clubMemberOnlyMode=false;isSuperAdmin=false;currentClubId=null;canManageClub=false;
   const {data:globalRoles,error:globalRoleError}=await c.from('global_user_roles').select('role').eq('user_id',currentUser.id);
   if(globalRoleError)throw globalRoleError;
   isSuperAdmin=(globalRoles||[]).some(x=>x.role==='super_admin');
@@ -1946,6 +1932,21 @@ async function loadApp(){
       window.showTab('settings');
       return;
     }
+    if(candidateClubIds.length===1){
+      clubMemberOnlyMode=true;clubOnlyMode=false;team=null;season=null;role='club_member';currentTeamRoles=[];
+      canManageClub=false;contextReadOnly=false;
+      state.trainers=[];state.players=[];state.inactivePlayers=[];state.trainings=[];state.trainingSeries=[];state.positions=[];state.positionRows=[];state.matchdays=[];
+      $('headerSub').textContent='Vereinsmitgliedschaft';
+      $('accountInfo').textContent=currentUser?.email?'Angemeldet als '+currentUser.email+' · Rolle: Vereinsmitglied':'Vereinsmitglied';
+      if($('accountEmail'))$('accountEmail').value=currentUser?.email||'';
+      document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('hidden',!['dashboard','settings'].includes(b.dataset.tab)));
+      document.querySelectorAll('.adminOnly').forEach(x=>x.classList.add('hidden'));
+      $('superAdminPanel')?.classList.add('hidden');
+      $('clubAdminPanel')?.classList.add('hidden');
+      $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');
+      window.showTab('dashboard');
+      return;
+    }
     throw new Error('Dein Konto ist noch keiner Mannschaft zugeordnet und besitzt keine Vereinsadmin-Berechtigung.');
   }
   const availableTeams=[...new Set(members.map(m=>m.team_id))];if(availableTeams.length>1)throw new Error('Dein Konto gehört zu mehreren Mannschaften. Die sichere Mannschaftsauswahl ist noch nicht verfügbar. Bitte nutze die App erst wieder, wenn eine Mannschaft explizit ausgewählt werden kann.');team=availableTeams[0];currentTeamRoles=[...new Set(members.filter(m=>m.team_id===team).map(m=>m.role))];role=currentTeamRoles.includes('admin')?'admin':'trainer';const currentRoleLabel=currentTeamRoles.map(r=>r==='admin'?'Admin':'Trainer').join(' + ')||'Trainer';
@@ -1956,7 +1957,7 @@ async function loadApp(){
       console.warn('Trainerdaten konnten nicht vollständig geladen werden:',trainerError.message);
       throw new Error('Die Rollenliste konnte nicht sicher geladen werden. Bitte Seite neu laden oder Admin kontaktieren.');
     }
-    const trainerIds=(trainerRows||[]).map(m=>m.user_id);let profileRows=[];if(trainerIds.length){const {data:profilesData,error:profilesError}=await c.from('profiles').select('id,display_name,avatar_url').in('id',trainerIds);if(profilesError)console.warn('Mitgliederprofile konnten nicht vollständig geladen werden:',profilesError.message);else profileRows=profilesData||[];}const profilesById=new Map(profileRows.map(p=>[p.id,p]));state.trainers=(trainerRows||[]).map(m=>{const p=profilesById.get(m.user_id)||{};return {user_id:m.user_id,roles:Array.isArray(m.roles)?m.roles:[m.role||'trainer'],role:(Array.isArray(m.roles)?m.roles:[m.role||'trainer']).includes('admin')?'admin':'trainer',admin_label:m.admin_label||'',display_name:p.display_name||m.admin_label||'',avatar_url:p.avatar_url||'',email:m.email||''};});
+    const trainerIds=(trainerRows||[]).map(m=>m.user_id);let profileRows=[];if(trainerIds.length){const {data:profilesData,error:profilesError}=await c.from('profiles').select('id,display_name,avatar_url').in('id',trainerIds);if(profilesError)console.warn('Mitgliederprofile konnten nicht vollständig geladen werden:',profilesError.message);else profileRows=profilesData||[];}const profilesById=new Map(profileRows.map(p=>[p.id,p]));state.trainers=(trainerRows||[]).map(m=>{const p=profilesById.get(m.user_id)||{};return {user_id:m.user_id,roles:Array.isArray(m.roles)?m.roles:[m.role||'trainer'],role:(Array.isArray(m.roles)?m.roles:[m.role||'trainer']).includes('admin')?'admin':'trainer',display_name:p.display_name||'',avatar_url:p.avatar_url||'',email:m.email||''};});
   }
   const {data:teamRow,error:te}=await c.from('teams').select('id,name,club_id,recommended_squad_size').eq('id',team).single();if(te)throw te;currentClubId=teamRow?.club_id||null;recommendedSquadSize=Number(teamRow?.recommended_squad_size)||16;canManageClub=false;if(currentClubId){const {data:clubAdminFlag,error:clubAdminError}=await c.rpc('is_club_admin',{p_club_id:currentClubId});if(clubAdminError)console.warn('Vereinsverwaltung konnte nicht geprüft werden:',clubAdminError.message);else canManageClub=clubAdminFlag===true;}const clubPanel=$('clubAdminPanel');if(clubPanel)clubPanel.classList.toggle('hidden',!canManageClub||contextReadOnly);
   const {data:seasonRows,error:se}=await c.from('seasons').select('id,name,start_date,end_date,is_active').eq('team_id',team).eq('is_active',true).limit(1);if(se)throw se;season=seasonRows?.[0]||null;
@@ -2041,7 +2042,7 @@ async function loadMyProfile(){
   if(!currentUser)return;
   const {data,error}=await getClient().from('profiles').select('id,display_name,avatar_url').eq('id',currentUser.id).maybeSingle();
   if(error)throw error;
-  const p=data||{};if($('myProfileName'))$('myProfileName').value=p.display_name||'';
+  const p=data||{};currentProfileDisplayName=String(p.display_name||'').trim();if($('myProfileName'))$('myProfileName').value=p.display_name||'';
   const photo=$('myProfilePhotoPreview');if(photo){photo.dataset.photo=p.avatar_url||'';photo.innerHTML=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="Profilbild">':'<span class="material-symbols-outlined">account_circle</span>';}
   if($('myProfileNameDisplay'))$('myProfileNameDisplay').textContent=p.display_name||'Profil';
 
@@ -2534,7 +2535,7 @@ function renderTrainingDetail(t){
   const search=esc(trainingSearchText);
   const filters=isResponses?`<div class="trainingFilterChips"><button class="trainingFilterChip ${trainingResponseFilter==='all'?'active':''}" onclick="setTrainingResponseFilter('all')">Alle (${state.players.length})</button><button class="trainingFilterChip ${trainingResponseFilter==='yes'?'active':''}" onclick="setTrainingResponseFilter('yes')">Zusagen (${responseCounts(t).yes})</button><button class="trainingFilterChip ${trainingResponseFilter==='no'?'active':''}" onclick="setTrainingResponseFilter('no')">Absagen (${responseCounts(t).no})</button><button class="trainingFilterChip ${trainingResponseFilter==='open'?'active':''}" onclick="setTrainingResponseFilter('open')">Offen (${responseCounts(t).open})</button></div>`:`<div class="trainingFilterChips"><button class="trainingFilterChip ${trainingAttendanceFilter==='all'?'active':''}" onclick="setTrainingAttendanceFilter('all')">Alle (${state.players.length})</button><button class="trainingFilterChip ${trainingAttendanceFilter==='present'?'active':''}" onclick="setTrainingAttendanceFilter('present')">Anwesend (${state.players.filter(p=>t.attendance[p.id]).length})</button><button class="trainingFilterChip ${trainingAttendanceFilter==='missing'?'active':''}" onclick="setTrainingAttendanceFilter('missing')">Abwesend (${state.players.length-state.players.filter(p=>t.attendance[p.id]).length})</button></div>`;
   const rows=sortTrainingPlayers(state.players).map(p=>trainingPlayerRow(t,p,isResponses?'responses':'attendance')).filter(Boolean).join('');
-  const trainers=state.trainers.map(tr=>{const label=tr.admin_label||tr.email||'Trainer';const yes=!!t.trainerAttendance?.[tr.user_id];return `<button type="button" class="trainingTrainerChip ${yes?'trainerYes':'trainerNo'}" onclick="toggleTrainerAttendance('${t.id}','${tr.user_id}',${!yes})">${esc(label)} · ${yes?'Ja':'Nein'}</button>`;}).join('');
+  const trainers=state.trainers.map(tr=>{const label=tr.display_name||tr.email||'Trainer';const yes=!!t.trainerAttendance?.[tr.user_id];return `<button type="button" class="trainingTrainerChip ${yes?'trainerYes':'trainerNo'}" onclick="toggleTrainerAttendance('${t.id}','${tr.user_id}',${!yes})">${esc(label)} · ${yes?'Ja':'Nein'}</button>`;}).join('');
   const present=trainingAttendanceCount(t);
   const hasTeams=Object.keys(t.teams||{}).length>0;
   const teamChanged=trainingTeamsNeedRebuild(t);
@@ -2662,7 +2663,7 @@ function renderMatchday(){
     const date=fmtDateLong(md.date);
     const status=matchdayCardStatus(md);
     const info=[md.opponent?`<div class="trainingInfoLine">${materialIcon('shield_with_heart')}<span>${esc(md.opponent)}</span></div>`:'',md.gameType?`<div class="trainingInfoLine">${materialIcon('emoji_events')}<span>${esc(md.gameType)}</span></div>`:'',md.location?`<div class="trainingInfoLine">${materialIcon('location_on')}<span>${esc(md.location)}</span></div>`:''].join('');
-    const trainerChips=state.trainers.map(tr=>{const label=tr.admin_label||tr.email||'Trainer';const yes=!!md.trainerAttendance?.[tr.user_id];return `<button type="button" class="trainingTrainerChip ${yes?'trainerYes':'trainerNo'}" onclick="toggleMatchdayTrainerAttendance('${tr.user_id}',${!yes})">${esc(label)} · ${yes?'Ja':'Nein'}</button>`;}).join('');
+    const trainerChips=state.trainers.map(tr=>{const label=tr.display_name||tr.email||'Trainer';const yes=!!md.trainerAttendance?.[tr.user_id];return `<button type="button" class="trainingTrainerChip ${yes?'trainerYes':'trainerNo'}" onclick="toggleMatchdayTrainerAttendance('${tr.user_id}',${!yes})">${esc(label)} · ${yes?'Ja':'Nein'}</button>`;}).join('');
     list.innerHTML=`<div class="trainingDetail matchdayDetail"><div class="trainingDetailHeader"><button class="iconBack" type="button" onclick="closeMatchday()" aria-label="Zurück zur Spieltagsübersicht">${materialIcon('arrow_back')}</button><div class="trainingDetailTitle"><div class="trainingTitleLine"><h2>${esc(md.name||md.opponent||'Spieltag')}</h2><span class="trainingStatus ${status.cls}">${status.label}</span></div><div class="muted">${date}${fmtMatchdayTime(md)?' · '+esc(fmtMatchdayTime(md)):''}</div></div><div class="matchdayOptionsWrap"><button class="iconMore" type="button" onclick="toggleMatchdayOptions()" aria-label="Optionen für den Spieltag">${materialIcon('more_vert')}</button>${matchdayOptionsOpen?`<div class="matchdayOptionsMenu">${md.status==='done'?`<button type="button" onclick="closeMatchdayOptions();setMatchdayStatus('${md.id}','planned')">${materialIcon('event')} Wieder auf „Geplant“ setzen</button>`:`<button type="button" onclick="closeMatchdayOptions();setMatchdayStatus('${md.id}','done')">${materialIcon('check_circle')} Spiel auf durchgeführt setzen</button>`}${md.status==='cancelled'?`<button type="button" onclick="closeMatchdayOptions();setMatchdayStatus('${md.id}','planned')">${materialIcon('event')} Wieder auf „Geplant“ setzen</button>`:`<button type="button" onclick="closeMatchdayOptions();setMatchdayStatus('${md.id}','cancelled')">${materialIcon('event_busy')} Spiel absagen</button>`}<button type="button" onclick="closeMatchdayOptions();editMatchday('${md.id}')">${materialIcon('edit')} Bearbeiten</button><button type="button" class="dangerText" onclick="closeMatchdayOptions();deleteMatchday('${md.id}')">${materialIcon('delete')} Löschen</button></div>`:''}</div></div>
       <div class="trainingDetailInfo">${info}${md.notes?`<button class="trainingNoteLine" type="button" onclick="openMatchdayNote()">${materialIcon('sticky_note_2')}<span class="trainingNoteText">${esc(md.notes)}</span><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></button>`:''}</div>${trainerChips?`<div class="trainingTrainerRow">${materialIcon('groups')}<div>${trainerChips}</div></div>`:''}
       <div class="trainingSegmented matchdayDetailTabs">${tab('squad','Kader ('+selectedIds.size+')')}${tab('attendance','Anwesenheit')}${tab('teams','Teams')}${tab('played','Einsatz')}</div>
@@ -2787,32 +2788,30 @@ window.submitTeamMemberInvite=async()=>{
   };
   if(contextReadOnly&&!isSuperAdmin){setInviteStatus('Als Vereinsadmin kannst du diesen Mannschaftskontext nur ansehen.');return;}
   if(role!=='admin'&&!(contextReadOnly&&isSuperAdmin)){setInviteStatus('Diese Funktion ist nur für Admins verfügbar.');return;}
-  const label=$('teamInviteLabel')?.value.trim();
+  const displayName=$('teamInviteLabel')?.value.trim();
   const email=$('teamInviteEmail')?.value.trim().toLowerCase();
-  const roles=[];
-  if($('teamInviteRoleAdmin')?.checked)roles.push('admin');
-  if($('teamInviteRoleTrainer')?.checked)roles.push('trainer');
-  if(!label){setInviteStatus('Bitte einen Anzeigenamen eingeben.');return;}
+  const invitedRole=$('teamInviteRoleAdmin')?.checked?'team_admin':$('teamInviteRoleTrainer')?.checked?'trainer':'';
+  if(!displayName){setInviteStatus('Bitte einen persönlichen Namen eingeben.');return;}
   if(!email){setInviteStatus('Bitte eine E-Mail-Adresse eingeben.');return;}
-  if(!roles.length){setInviteStatus('Bitte eine Rolle auswählen. Weitere Rollen können nach der Einladung über das Optionsmenü ergänzt werden.');return;}
-  if(state.trainers.some(t=>(t.admin_label||'').trim().toLocaleLowerCase('de')===label.toLocaleLowerCase('de'))){setInviteStatus('Dieser Anzeigename ist bereits vergeben.');return;}
-  let invitationCompleted=false;
+  if(!invitedRole){setInviteStatus('Bitte eine Mannschaftsrolle auswählen.');return;}
+  if(!team||!currentClubId){setInviteStatus('Der ausgewählte Mannschafts-/Vereinskontext ist unvollständig. Bitte Seite neu laden.');return;}
   try{
-    setInviteStatus('Einladung wird verschickt …','');
-    const {data,error}=await getClient().functions.invoke('invite-trainer',{body:{email,role:roles[0],team_id:team}});
-    if(error)throw error;
-    if(data?.error)throw new Error(data.error);
-    invitationCompleted=true;
-    const {error:labelError}=await getClient().rpc('admin_set_trainer_label',{p_team_id:team,p_email:email,p_label:label});
+    setInviteStatus('Einladung wird geprüft und verarbeitet …','');
+    const {data,error}=await getClient().functions.invoke('invite-member',{body:{
+      email,display_name:displayName,club_id:currentClubId,
+      invited_role:invitedRole,team_id:team
+    }});
+    if(error){
+      let message=error.message||String(error);
+      if(error.context){try{const body=await error.context.json();if(body?.error)message=body.error;if(body?.invitation_email_sent)message='Die Einladung wurde bereits versendet, aber die Zuordnung ist noch nicht vollständig: '+message;}catch{}}
+      throw new Error(message);
+    }
+    if(data?.success!==true)throw new Error(data?.error||'Die Einladung wurde nicht vollständig bestätigt.');
     closeModal();
-    await loadApp();
-    renderTrainerList();
-    if(labelError)showStatus('Einladung wurde versendet, aber der Anzeigename konnte nicht gespeichert werden. Bitte später prüfen.','error');
-    else showStatus(data?.message||'Einladung wurde versendet.','ok');
+    try{await loadApp();renderTrainerList();}catch(refreshError){showStatus('Einladung und Zuordnung wurden gespeichert. Die Ansicht konnte nicht aktualisiert werden: '+(refreshError?.message||refreshError),'error');return;}
+    setInviteStatus(data.warning?(data.message+' Hinweis: '+data.warning):data.message,data.warning?'error':'ok');
   }catch(e){
-    let message=e?.message||String(e);
-    if(e?.context){try{const body=await e.context.json();if(body?.error)message=body.error;}catch{}}
-    setInviteStatus(invitationCompleted?'Einladung wurde versendet; ein nachfolgender Schritt ist fehlgeschlagen: '+message:'Mitglied konnte nicht eingeladen werden: '+message);
+    setInviteStatus('Mitglied konnte nicht eingeladen werden: '+(e?.message||e));
   }
 };
 window.openTeamMemberRoleEditor=userId=>{
@@ -2866,31 +2865,20 @@ function renderTrainerList(){
   const box=$('trainerList');if(!box)return;
   if(role!=='admin'&&!(contextReadOnly&&isSuperAdmin)){box.innerHTML='';return;}
   const filters=$('teamMemberRoleFilters');
-  const all=[...state.trainers].sort((a,b)=>String(a.display_name||a.admin_label||a.email||'').localeCompare(String(b.display_name||b.admin_label||b.email||''),'de',{sensitivity:'base'}));
+  const all=[...state.trainers].sort((a,b)=>String(a.display_name||a.email||'').localeCompare(String(b.display_name||b.admin_label||b.email||''),'de',{sensitivity:'base'}));
   const counts={Alle:all.length,Trainer:all.filter(t=>(t.roles||[t.role||'trainer']).includes('trainer')).length,Admin:all.filter(t=>(t.roles||[t.role||'trainer']).includes('admin')).length};
   if(filters)filters.innerHTML=['Alle','Trainer','Admin'].map(f=>`<button type="button" class="playerFilterChip ${teamMemberRoleFilter===f?'active':''}" onclick="setTeamMemberRoleFilter('${f}')">${f}${f==='Alle'?' ('+counts[f]+')':''}</button>`).join('');
   const filtered=all.filter(t=>teamMemberRoleFilter==='Alle'||(t.roles||[t.role||'trainer']).includes(teamMemberRoleFilter==='Admin'?'admin':'trainer'));
   if(!filtered.length){box.innerHTML='<p class="muted">'+(all.length?'Keine Mitglieder für diesen Filter.':'Noch keine Mitglieder in dieser Mannschaft.')+'</p>';}
   else box.innerHTML=filtered.map(t=>{
-    const roles=t.roles||[t.role||'trainer'];const label=t.display_name||t.admin_label||t.email||'Mitglied';
+    const roles=t.roles||[t.role||'trainer'];const label=t.display_name||t.email||'Mitglied';
     const badges=roles.map(r=>`<span class="playerListPosition">${r==='admin'?'Mannschaftsadmin':'Trainer'}</span>`).join('');
     return `<div class="teamMemberOptionsWrap"><div class="playerListRow"><span class="playerListAvatar">${t.avatar_url?`<img src="${esc(t.avatar_url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`<span class="playerAvatar">${materialIcon('account_circle')}</span>`}</span><span class="playerListIdentity"><span class="playerListName">${esc(label)}</span><span class="muted small">${esc(t.email||'E-Mail nicht verfügbar')}</span><span class="playerListPositions">${badges}</span></span><button type="button" class="iconAddButton" style="background:transparent!important;color:var(--text);box-shadow:none" onclick="toggleTeamMemberOptions('${esc(t.user_id)}')" aria-label="Optionen für ${esc(label)}" title="Optionen" aria-expanded="${teamMemberOptionsOpenId===t.user_id}">${materialIcon('more_vert')}</button></div>${teamMemberOptionsOpenId===t.user_id?`<div class="matchdayOptionsMenu" role="menu"><button type="button" role="menuitem" onclick="closeTeamMemberOptions();openTeamMemberRoleEditor('${esc(t.user_id)}')">${materialIcon('edit')} Bearbeiten</button><button type="button" role="menuitem" class="dangerText" ${t.user_id===currentUser?.id?'disabled title="Das eigene Konto kann nicht entfernt werden."':''} onclick="${t.user_id===currentUser?.id?'closeTeamMemberOptions()':`closeTeamMemberOptions();removeTrainer('${esc(t.user_id)}')`}">${materialIcon('person_remove')} Aus Mannschaft entfernen</button></div>`:''}</div>`;
   }).join('');
   const footer=$('teamMemberListFooter');if(footer)footer.innerHTML=`<span>${filtered.length} von ${all.length} Mitgliedern</span><span>${teamMemberRoleFilter==='Alle'?'Alle Rollen':teamMemberRoleFilter}</span>`;
 }
 window.editTrainerLabel=async userId=>{
-  if(!adminGuard())return;
-  const target=state.trainers.find(x=>x.user_id===userId);if(!target)return;
-  const label=prompt('Dauerhafter Admin-Name für diesen Trainer:',target.admin_label||'');
-  if(label===null)return;
-  const clean=label.trim();
-  if(!clean){showStatus('Der Trainername darf nicht leer sein.','error');return;}
-  if(state.trainers.some(x=>x.user_id!==userId&&(x.admin_label||'').toLowerCase()===clean.toLowerCase())){showStatus('Dieser Trainername ist bereits vergeben.','error');return;}
-  try{
-    const {error}=await getClient().rpc('admin_set_trainer_label',{p_team_id:team,p_email:target.email,p_label:clean});
-    if(error)throw error;
-    target.admin_label=clean;renderTrainerList();showStatus('Trainername gespeichert.','ok');
-  }catch(e){showStatus('Trainername konnte nicht gespeichert werden: '+(e.message||e),'error');}
+  window.openTeamMemberRoleEditor(userId);
 };
 window.changeTrainerRole=async(userId,newRole)=>{
   if(!adminGuard())return;
@@ -3133,11 +3121,11 @@ window.importJSON=async event=>{
   r.readAsText(file);
 };
 
-function dashboardGreeting(){const me=state.trainers.find(x=>x.user_id===currentUser?.id);const label=String(me?.admin_label||'').trim();if(label){const first=label.split(/\s+/)[0];return 'Hallo, '+first+'!';}return 'Hallo, Trainer!';}
+function dashboardGreeting(){const label=String(currentProfileDisplayName||'').trim();return label?'Hallo, '+label+'!':'Hallo!';}
 function dashboardTrainingStart(t){return new Date(`${t.date}T${fmtTime(t.startTime)||'23:59'}:00`);}
 function dashboardNextTraining(){const now=new Date();return state.trainings.filter(t=>t.status==='planned'&&dashboardTrainingStart(t)>=now).sort((a,b)=>dashboardTrainingStart(a)-dashboardTrainingStart(b))[0]||null;}
 function dashboardNextMatchday(){return state.matchdays.filter(m=>matchdayIsUpcoming(m)).sort((a,b)=>{const da=new Date(`${a.date}T${fmtTime(a.kickoffTime)||'23:59'}:00`),db=new Date(`${b.date}T${fmtTime(b.kickoffTime)||'23:59'}:00`);return da-db;})[0]||null;}
-function renderDashboard(){const greeting=$('dashboardGreeting'),teamSeason=$('dashboardTeamSeason'),events=$('dashboardEvents');if(!greeting||!teamSeason||!events)return;greeting.textContent=dashboardGreeting();const teamName=$('headerSub')?.textContent||'Deine Mannschaft';teamSeason.textContent=teamName.replace(/ · (Admin|Trainer)$/,'');$('dashboardPlayerCount').textContent=state.players.length;$('dashboardTrainingCount').textContent=state.trainings.length;$('dashboardMatchdayCount').textContent=state.matchdays.length;const training=dashboardNextTraining(),matchday=dashboardNextMatchday();const trainingHtml=training?renderNextTrainingCard(training):`<div class="dashboardEventEmpty"><p>Kein kommendes Training geplant.</p><button type="button" onclick="showTab('trainings')">Trainings öffnen</button></div>`;const matchdayHtml=matchday?renderNextMatchdayCard(matchday):`<div class="dashboardEventEmpty"><p>Kein kommender Spieltag geplant.</p><button type="button" onclick="showTab('matchday')">Spieltage öffnen</button></div>`;events.innerHTML=`<section class="dashboardEventSection"><div class="dashboardEventHeading"><span class="dashboardEventIcon">${materialIcon(training?'event_available':'calendar_add_on')}</span><h3>Nächstes Training</h3></div>${trainingHtml}</section><section class="dashboardEventSection"><div class="dashboardEventHeading"><span class="dashboardEventIcon">${materialIcon(matchday?'trophy':'calendar_add_on')}</span><h3>Nächster Spieltag</h3></div>${matchdayHtml}</section>`;}
+function renderDashboard(){const greeting=$('dashboardGreeting'),teamSeason=$('dashboardTeamSeason'),events=$('dashboardEvents');if(!greeting||!teamSeason||!events)return;greeting.textContent=dashboardGreeting();const memberWelcome=$('clubMemberWelcome'),statsCard=$('dashboardStatsCard');if(clubMemberOnlyMode){teamSeason.textContent='Deine Vereinsmitgliedschaft';memberWelcome?.classList.remove('hidden');statsCard?.classList.add('hidden');events.classList.add('hidden');return;}memberWelcome?.classList.add('hidden');statsCard?.classList.remove('hidden');events.classList.remove('hidden');const teamName=$('headerSub')?.textContent||'Deine Mannschaft';teamSeason.textContent=teamName.replace(/ · (Admin|Trainer)$/,'');$('dashboardPlayerCount').textContent=state.players.length;$('dashboardTrainingCount').textContent=state.trainings.length;$('dashboardMatchdayCount').textContent=state.matchdays.length;const training=dashboardNextTraining(),matchday=dashboardNextMatchday();const trainingHtml=training?renderNextTrainingCard(training):`<div class="dashboardEventEmpty"><p>Kein kommendes Training geplant.</p><button type="button" onclick="showTab('trainings')">Trainings öffnen</button></div>`;const matchdayHtml=matchday?renderNextMatchdayCard(matchday):`<div class="dashboardEventEmpty"><p>Kein kommender Spieltag geplant.</p><button type="button" onclick="showTab('matchday')">Spieltage öffnen</button></div>`;events.innerHTML=`<section class="dashboardEventSection"><div class="dashboardEventHeading"><span class="dashboardEventIcon">${materialIcon(training?'event_available':'calendar_add_on')}</span><h3>Nächstes Training</h3></div>${trainingHtml}</section><section class="dashboardEventSection"><div class="dashboardEventHeading"><span class="dashboardEventIcon">${materialIcon(matchday?'trophy':'calendar_add_on')}</span><h3>Nächster Spieltag</h3></div>${matchdayHtml}</section>`;}
 window.loadSuperAdminClubs=async()=>{const box=$('superAdminClubCards');const status=$('superAdminStatus');if(!box)return;box.innerHTML='<p class="muted small">Vereine werden geladen …</p>';try{const {data,error}=await getClient().from('clubs').select('id,name,short_name,crest_path').order('name');if(error)throw error;const clubs=data||[];if(!clubs.length){box.innerHTML='<p class="muted small">Es sind noch keine Vereine vorhanden.</p>';}else{box.innerHTML=clubs.map(club=>{const crestUrl=club.crest_path?getClient().storage.from('club-assets').getPublicUrl(club.crest_path).data.publicUrl:'';const avatar=crestUrl?'<img src="'+esc(crestUrl)+'" alt="" style="width:100%;height:100%;object-fit:contain;background:transparent">':materialIcon('shield','');return '<button type="button" class="playerListRow" data-super-admin-club="'+esc(club.id)+'" aria-label="Verein öffnen: '+esc(club.name||'Verein ohne Namen')+'"><span class="playerListAvatar clubCrestAvatar"><span class="playerCardAvatarWrap"><span class="playerAvatar">'+avatar+'</span></span></span><span class="playerListIdentity"><span class="playerListName">'+esc(club.name||'Verein ohne Namen')+'</span><span class="muted small">'+(club.short_name?esc(club.short_name)+' · ':'')+'Vereinsverwaltung öffnen</span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>';}).join('');box.querySelectorAll('[data-super-admin-club]').forEach(card=>card.addEventListener('click',()=>window.selectSuperAdminClub(card.dataset.superAdminClub)));}if(status){status.textContent=clubs.length?'Tippe auf eine Vereinskachel, um sie zu öffnen.':'Lege zunächst einen Verein an, sobald die Vereinserstellung verfügbar ist.';status.classList.remove('hidden');}}catch(e){console.error(e);box.innerHTML='<p class="muted small">Vereine konnten nicht geladen werden.</p>';if(status){status.textContent='Vereine konnten nicht geladen werden. Bitte Berechtigung prüfen.';status.classList.remove('hidden');}}};
 
 window.openEditClubForm=async()=>{
@@ -3211,9 +3199,10 @@ window.renderSuperAdminClubTeamContextList=async(clubId,listId='superAdminClubTe
 let clubMembersCache=[];let clubPlayersCache=[];let clubTeamsCache=[];
 const clubEsc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 function populateClubTeamFilters(){const teams=new Map(clubTeamsCache.map(t=>[t.id,t.name]));clubMembersCache.forEach(m=>(m.teams||[]).forEach(t=>teams.set(t.team_id,t.team_name)));clubPlayersCache.forEach(p=>teams.set(p.team_id,p.team_name));clubTeamsCache=Array.from(teams.entries()).map(([id,name])=>({id,name})).sort((a,b)=>a.name.localeCompare(b.name));[['clubMemberTeamFilter','Alle Mannschaften'],['clubPlayerTeamFilter','Alle Mannschaften']].forEach(([id,label])=>{const el=$(id);if(!el)return;const current=el.value;el.innerHTML='<option value="">'+label+'</option>'+(id==='clubMemberTeamFilter'?'<option value="__none">Ohne Mannschaft</option>':'')+clubTeamsCache.map(t=>'<option value="'+clubEsc(t.id)+'">'+clubEsc(t.name)+'</option>').join('');if(Array.from(el.options).some(o=>o.value===current))el.value=current;});}
-window.renderClubMembers=async()=>{const box=$('clubMemberList');if(!box)return;if(!canManageClub||!currentClubId){box.innerHTML='<p class="muted small">Keine Berechtigung zur Vereinsverwaltung.</p>';return;}box.innerHTML='<p class="muted small">Lade Vereinsmitglieder …</p>';try{const {data,error}=await getClient().rpc('get_club_members_v2',{p_club_id:currentClubId});if(error)throw error;clubMembersCache=data||[];const {data:players,error:playerError}=await getClient().rpc('get_club_players',{p_club_id:currentClubId});if(playerError)throw playerError;clubPlayersCache=players||[];const {data:teams,error:teamsError}=await getClient().from('teams').select('id,name').eq('club_id',currentClubId).eq('active',true).order('name');clubTeamsCache=!teamsError&&teams?teams.map(t=>({id:t.id,name:t.name})):[];populateClubTeamFilters();renderClubPlayers();const filter=$('clubMemberTeamFilter')?.value||'';const rows=clubMembersCache.filter(m=>filter===''||(filter==='__none'?!(m.teams||[]).length:(m.teams||[]).some(t=>t.team_id===filter)));if(!rows.length){box.innerHTML='<p class="muted small">Keine Mitglieder für diesen Filter gefunden.</p>';return;}const ids=rows.map(m=>m.user_id);let profiles=[];if(ids.length){const {data:pdata}=await getClient().from('profiles').select('id,display_name,avatar_url').in('id',ids);profiles=pdata||[];}const profileById=new Map(profiles.map(p=>[p.id,p]));box.innerHTML='<button type="button" class="primary" style="width:100%;margin:4px 0 12px" onclick="openClubMemberEditor()">+ Mitglied hinzufügen</button>'+rows.map(m=>{const teams=m.teams||[];const roleText=teams.length?teams.map(t=>clubEsc(t.team_name)+': '+clubEsc((t.roles||[]).join(', ')||'Mitglied')).join(' · '):'Ohne Mannschaft';const p=profileById.get(m.user_id)||{};const name=p.display_name||m.email||'Mitglied';const avatar=p.avatar_url?'<img src="'+clubEsc(p.avatar_url)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">':'<span class="material-symbols-outlined">account_circle</span>';return '<div class="card" style="margin:8px 0;padding:10px"><div style="display:flex;gap:10px;align-items:center"><div class="profileAvatarPreview" style="width:48px;height:48px;flex:0 0 48px">'+avatar+'</div><div style="min-width:0;overflow-wrap:anywhere"><strong>'+clubEsc(name)+'</strong><div class="muted small">'+clubEsc(m.email||'E-Mail nicht verfügbar')+'</div></div></div><div class="muted small" style="margin:8px 0">'+(m.is_club_admin?'Vereinsadmin':'Vereinsmitglied')+' · '+roleText+'</div><div class="toolbar"><button type="button" style="flex:1" onclick="openClubMemberEditor(\''+clubEsc(m.user_id)+'\')">Bearbeiten</button><button type="button" class="danger" style="flex:1" onclick="removeClubMember(\''+clubEsc(m.user_id)+'\')">Entfernen</button></div></div>';}).join('');}catch(e){console.error(e);box.innerHTML='<p class="muted small">Mitglieder oder Spieler konnten nicht geladen werden. Bitte Berechtigung und Verbindung prüfen.</p>';}};window.renderClubPlayers=()=>{const box=$('clubPlayerList');if(!box)return;if(!canManageClub||!currentClubId){box.innerHTML='<p class="muted small">Keine Berechtigung zur Vereinsverwaltung.</p>';return;}const filter=$('clubPlayerTeamFilter')?.value||'';const rows=clubPlayersCache.filter(p=>!filter||p.team_id===filter);if(!rows.length){box.innerHTML='<p class="muted small">Keine Spieler für diesen Filter gefunden.</p>';return;}let currentTeam='';box.innerHTML=rows.map(p=>{const heading=p.team_id!==currentTeam?'<h4 style="margin:12px 0 6px">'+clubEsc(p.team_name)+'</h4>':'';currentTeam=p.team_id;return heading+'<div style="padding:8px 4px;border-bottom:1px solid var(--line)"><strong>'+clubEsc(p.player_name)+'</strong><div class="muted small">'+(p.active?'Aktiv':'Inaktiv')+(p.level?' · Niveau: '+clubEsc(p.level):'')+'</div></div>';}).join('');};
+window.renderClubMembers=async()=>{const box=$('clubMemberList');if(!box)return;if(!canManageClub||!currentClubId){box.innerHTML='<p class="muted small">Keine Berechtigung zur Vereinsverwaltung.</p>';return;}box.innerHTML='<p class="muted small">Lade Vereinsmitglieder …</p>';try{const {data,error}=await getClient().rpc('get_club_members_v2',{p_club_id:currentClubId});if(error)throw error;clubMembersCache=data||[];const {data:players,error:playerError}=await getClient().rpc('get_club_players',{p_club_id:currentClubId});if(playerError)throw playerError;clubPlayersCache=players||[];const {data:teams,error:teamsError}=await getClient().from('teams').select('id,name').eq('club_id',currentClubId).eq('active',true).order('name');clubTeamsCache=!teamsError&&teams?teams.map(t=>({id:t.id,name:t.name})):[];populateClubTeamFilters();renderClubPlayers();const filter=$('clubMemberTeamFilter')?.value||'';const rows=clubMembersCache.filter(m=>filter===''||(filter==='__none'?!(m.teams||[]).length:(m.teams||[]).some(t=>t.team_id===filter)));if(!rows.length){box.innerHTML='<p class="muted small">Keine Mitglieder für diesen Filter gefunden.</p>';return;}const ids=rows.map(m=>m.user_id);let profiles=[];if(ids.length){const {data:pdata}=await getClient().from('profiles').select('id,display_name,avatar_url').in('id',ids);profiles=pdata||[];}const profileById=new Map(profiles.map(p=>[p.id,p]));box.innerHTML='<button type="button" class="primary" style="width:100%;margin:4px 0 12px" onclick="openClubMemberInvite()">+ Mitglied einladen</button>'+rows.map(m=>{const teams=m.teams||[];const roleText=teams.length?teams.map(t=>clubEsc(t.team_name)+': '+clubEsc((t.roles||[]).join(', ')||'Mitglied')).join(' · '):'Ohne Mannschaft';const p=profileById.get(m.user_id)||{};const name=p.display_name||'Mitglied ohne persönlichen Namen';const avatar=p.avatar_url?'<img src="'+clubEsc(p.avatar_url)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">':'<span class="material-symbols-outlined">account_circle</span>';return '<div class="card" style="margin:8px 0;padding:10px"><div style="display:flex;gap:10px;align-items:center"><div class="profileAvatarPreview" style="width:48px;height:48px;flex:0 0 48px">'+avatar+'</div><div style="min-width:0;overflow-wrap:anywhere"><strong>'+clubEsc(name)+'</strong><div class="muted small">'+clubEsc(m.email||'E-Mail nicht verfügbar')+'</div></div></div><div class="muted small" style="margin:8px 0">'+(m.is_club_admin?'Vereinsadmin':'Vereinsmitglied')+' · '+roleText+'</div><div class="toolbar"><button type="button" style="flex:1" onclick="openClubMemberEditor(\''+clubEsc(m.user_id)+'\')">Bearbeiten</button><button type="button" class="danger" style="flex:1" onclick="removeClubMember(\''+clubEsc(m.user_id)+'\')">Entfernen</button></div></div>';}).join('');}catch(e){console.error(e);box.innerHTML='<p class="muted small">Mitglieder oder Spieler konnten nicht geladen werden. Bitte Berechtigung und Verbindung prüfen.</p>';}};window.renderClubPlayers=()=>{const box=$('clubPlayerList');if(!box)return;if(!canManageClub||!currentClubId){box.innerHTML='<p class="muted small">Keine Berechtigung zur Vereinsverwaltung.</p>';return;}const filter=$('clubPlayerTeamFilter')?.value||'';const rows=clubPlayersCache.filter(p=>!filter||p.team_id===filter);if(!rows.length){box.innerHTML='<p class="muted small">Keine Spieler für diesen Filter gefunden.</p>';return;}let currentTeam='';box.innerHTML=rows.map(p=>{const heading=p.team_id!==currentTeam?'<h4 style="margin:12px 0 6px">'+clubEsc(p.team_name)+'</h4>':'';currentTeam=p.team_id;return heading+'<div style="padding:8px 4px;border-bottom:1px solid var(--line)"><strong>'+clubEsc(p.player_name)+'</strong><div class="muted small">'+(p.active?'Aktiv':'Inaktiv')+(p.level?' · Niveau: '+clubEsc(p.level):'')+'</div></div>';}).join('');};
 window.openClubMemberEditor=async userId=>{
   if(!canManageClub||!currentClubId){showStatus('Bitte zuerst einen berechtigten Vereinskontext öffnen.','error');return;}
+  if(!userId){window.openClubMemberInvite();return;}
   const editing=!!userId;
   const member=editing?clubMembersCache.find(m=>m.user_id===userId):null;
   if(editing&&!member){showStatus('Mitglied wurde nicht gefunden. Bitte Liste aktualisieren.','error');return;}
@@ -3233,10 +3222,82 @@ window.openClubMemberEditor=async userId=>{
     finally{ev.target.value='';}
   });
 };
-window.saveClubMemberEditor=async userId=>{if(!canManageClub||!currentClubId){showStatus('Keine Berechtigung zur Vereinsverwaltung.','error');return;}const editing=!!userId;const email=$('clubMemberEditorEmail')?.value.trim().toLowerCase()||'';const name=$('clubMemberName')?.value.trim()||'';const emailInput=$('clubMemberEditorEmail');if(!email||!emailInput?.checkValidity()){showStatus('Bitte eine gültige E-Mail-Adresse eingeben.','error');return;}if(!name){showStatus('Bitte einen Namen eingeben.','error');return;}const clubRole=$('clubMemberEditorRole')?.value||'member';const photo=$('clubMemberPhotoPreview');let avatar=photo?.dataset.photo||null;const desired=new Map();document.querySelectorAll('[data-club-team-role][data-team-id]').forEach(el=>{const id=el.dataset.teamId;if(!desired.has(id))desired.set(id,[]);if(el.checked)desired.get(id).push(el.dataset.clubTeamRole);});let targetId=userId;try{if(!editing){if(clubMembersCache.some(m=>(m.email||'').toLowerCase()===email))throw new Error('Dieses Konto ist bereits Vereinsmitglied. Bitte öffne den vorhandenen Eintrag über „Bearbeiten“.');const {error}=await getClient().rpc('admin_add_club_member_by_email',{p_club_id:currentClubId,p_email:email,p_role:clubRole});if(error)throw error;await window.renderClubMembers();const found=clubMembersCache.find(m=>(m.email||'').toLowerCase()===email);if(!found)throw new Error('Mitglied wurde zugeordnet, konnte aber nicht erneut geladen werden. Bitte Liste aktualisieren.');targetId=found.user_id;}else{const original=clubMembersCache.find(m=>m.user_id===targetId);const oldClubRole=original?.is_club_admin?'club_admin':'member';if(targetId===currentUser?.id&&oldClubRole!==clubRole)throw new Error('Die eigene Vereinsrolle kann hier nicht geändert werden.');if(oldClubRole!==clubRole){const {error}=await getClient().rpc('admin_set_club_member_role',{p_club_id:currentClubId,p_user_id:targetId,p_role:clubRole});if(error)throw error;}}if(avatar?.startsWith('data:'))avatar=await uploadProfileAvatar(targetId,avatar);const {error:profileError}=await getClient().rpc('admin_update_club_member_profile',{p_club_id:currentClubId,p_user_id:targetId,p_display_name:name,p_avatar_url:avatar});if(profileError)throw profileError;const oldMember=clubMembersCache.find(m=>m.user_id===targetId);const oldRoles=new Map((oldMember?.teams||[]).map(t=>[t.team_id,t.roles||[]]));for(const [teamId,wanted] of desired){const had=oldRoles.get(teamId)||[];if(targetId===currentUser?.id&&['admin','trainer'].some(r=>had.includes(r)!==wanted.includes(r)))throw new Error('Eigene Mannschaftsrollen können nicht geändert werden.');for(const r of ['admin','trainer']){if(had.includes(r)===wanted.includes(r))continue;const {error}=await getClient().rpc(wanted.includes(r)?'admin_add_team_role':'admin_remove_team_role',{p_team_id:teamId,p_user_id:targetId,p_role:r});if(error)throw error;}}closeModal();await window.renderClubMembers();showStatus(editing?'Mitglied gespeichert.':'Mitglied hinzugefügt und gespeichert.','success');}catch(e){console.error(e);showStatus('Änderungen konnten nicht vollständig gespeichert werden: '+(e?.message||e),'error');try{await window.renderClubMembers();}catch{}}};
+window.openClubMemberInvite=()=>{
+  if(!canManageClub||!currentClubId){showStatus('Bitte zuerst einen berechtigten Vereinskontext öffnen.','error');return;}
+  const teamOptions=clubTeamsCache.map(t=>'<option value="'+clubEsc(t.id)+'">'+clubEsc(t.name)+'</option>').join('');
+  openModal(`<h2>Mitglied einladen</h2>
+  <label>Persönlicher Name<input id="clubInviteName" type="text" autocomplete="name" maxlength="120" placeholder="Vor- und Nachname" required></label>
+  <label style="display:block;margin-top:12px">E-Mail-Adresse<input id="clubInviteEmail" type="email" autocomplete="email" placeholder="name@beispiel.de" required></label>
+  <label style="display:block;margin-top:12px">Einzuladende Rolle
+    <select id="clubInviteRole" onchange="toggleClubInviteTeamField()">
+      <option value="member">Vereinsmitglied</option>
+      <option value="club_admin">Vereinsadmin</option>
+      <option value="team_admin">Mannschaftsadmin</option>
+      <option value="trainer">Trainer</option>
+    </select>
+  </label>
+  <div id="clubInviteTeamGroup" class="hidden" style="margin-top:12px">
+    <label>Mannschaft
+      <select id="clubInviteTeam"><option value="">Bitte Mannschaft auswählen</option>${teamOptions}</select>
+    </label>
+    <p class="muted small">Eine Person kann derzeit nur einer Mannschaft zugeordnet werden.</p>
+  </div>
+  <div id="clubInviteStatus" class="status" role="status" aria-live="polite" style="margin-top:12px"></div>
+  <div class="toolbar" style="margin-top:16px">
+    <button type="button" class="primary" style="flex:1" onclick="submitClubMemberInvite()">Einladung senden</button>
+    <button type="button" onclick="closeModal()">Abbrechen</button>
+  </div>`);
+};
+window.toggleClubInviteTeamField=()=>{
+  const role=$('clubInviteRole')?.value||'member';
+  const required=['team_admin','trainer'].includes(role);
+  $('clubInviteTeamGroup')?.classList.toggle('hidden',!required);
+  const select=$('clubInviteTeam');if(select)select.required=required;
+};
+window.submitClubMemberInvite=async()=>{
+  const status=$('clubInviteStatus');
+  const setStatus=(message,type='error')=>{
+    if(status){status.textContent=message;status.className='status show '+type;}
+    showStatus(message,type);
+  };
+  if(!canManageClub||!currentClubId){setStatus('Keine Berechtigung für diesen Vereinskontext.');return;}
+  const displayName=$('clubInviteName')?.value.trim()||'';
+  const email=$('clubInviteEmail')?.value.trim().toLowerCase()||'';
+  const invitedRole=$('clubInviteRole')?.value||'';
+  const teamId=$('clubInviteTeam')?.value||null;
+  if(!displayName){setStatus('Bitte einen persönlichen Namen eingeben.');return;}
+  if(!email||!$('clubInviteEmail')?.checkValidity()){setStatus('Bitte eine gültige E-Mail-Adresse eingeben.');return;}
+  if(!['member','club_admin','team_admin','trainer'].includes(invitedRole)){setStatus('Bitte eine gültige Rolle auswählen.');return;}
+  const needsTeam=['team_admin','trainer'].includes(invitedRole);
+  if(needsTeam&&!teamId){setStatus('Bitte eine Mannschaft auswählen.');return;}
+  if(!needsTeam&&teamId){setStatus('Für diese Vereinsrolle darf keine Mannschaft angegeben werden.');return;}
+  if(clubMembersCache.some(m=>(m.email||'').trim().toLowerCase()===email)){
+    setStatus('Dieses Konto ist bereits Vereinsmitglied. Bitte öffne den vorhandenen Eintrag über „Bearbeiten“.');
+    return;
+  }
+  try{
+    setStatus('Einladung wird geprüft und verarbeitet …','');
+    const {data,error}=await getClient().functions.invoke('invite-member',{body:{
+      email,display_name:displayName,club_id:currentClubId,
+      invited_role:invitedRole,team_id:teamId
+    }});
+    if(error){
+      let message=error.message||String(error);
+      if(error.context){try{const body=await error.context.json();if(body?.error)message=body.error;if(body?.invitation_email_sent)message='Die Einladung wurde versendet, aber die Zuordnung ist noch nicht vollständig: '+message;}catch{}}
+      throw new Error(message);
+    }
+    if(data?.success!==true)throw new Error(data?.error||'Die Einladung wurde nicht vollständig bestätigt.');
+    closeModal();
+    try{await window.renderClubMembers();}catch(refreshError){showStatus('Einladung und Zuordnung wurden gespeichert. Die Mitgliederliste konnte nicht aktualisiert werden: '+(refreshError?.message||refreshError),'error');return;}
+    showStatus(data.warning?(data.message+' Hinweis: '+data.warning):data.message,data.warning?'error':'ok');
+  }catch(e){
+    setStatus('Mitglied konnte nicht eingeladen werden: '+(e?.message||e));
+  }
+};
+window.saveClubMemberEditor=async userId=>{if(!canManageClub||!currentClubId){showStatus('Keine Berechtigung zur Vereinsverwaltung.','error');return;}const editing=!!userId;if(!editing){showStatus('Neue Konten werden über „Mitglied einladen“ angelegt.','error');return;}const email=$('clubMemberEditorEmail')?.value.trim().toLowerCase()||'';const name=$('clubMemberName')?.value.trim()||'';const emailInput=$('clubMemberEditorEmail');if(!email||!emailInput?.checkValidity()){showStatus('Bitte eine gültige E-Mail-Adresse eingeben.','error');return;}if(!name){showStatus('Bitte einen Namen eingeben.','error');return;}const clubRole=$('clubMemberEditorRole')?.value||'member';const photo=$('clubMemberPhotoPreview');let avatar=photo?.dataset.photo||null;const desired=new Map();document.querySelectorAll('[data-club-team-role][data-team-id]').forEach(el=>{const id=el.dataset.teamId;if(!desired.has(id))desired.set(id,[]);if(el.checked)desired.get(id).push(el.dataset.clubTeamRole);});let targetId=userId;try{if(!editing){if(clubMembersCache.some(m=>(m.email||'').toLowerCase()===email))throw new Error('Dieses Konto ist bereits Vereinsmitglied. Bitte öffne den vorhandenen Eintrag über „Bearbeiten“.');const {error}=await getClient().rpc('admin_add_club_member_by_email',{p_club_id:currentClubId,p_email:email,p_role:clubRole});if(error)throw error;await window.renderClubMembers();const found=clubMembersCache.find(m=>(m.email||'').toLowerCase()===email);if(!found)throw new Error('Mitglied wurde zugeordnet, konnte aber nicht erneut geladen werden. Bitte Liste aktualisieren.');targetId=found.user_id;}else{const original=clubMembersCache.find(m=>m.user_id===targetId);const oldClubRole=original?.is_club_admin?'club_admin':'member';if(targetId===currentUser?.id&&oldClubRole!==clubRole)throw new Error('Die eigene Vereinsrolle kann hier nicht geändert werden.');if(oldClubRole!==clubRole){const {error}=await getClient().rpc('admin_set_club_member_role',{p_club_id:currentClubId,p_user_id:targetId,p_role:clubRole});if(error)throw error;}}if(avatar?.startsWith('data:'))avatar=await uploadProfileAvatar(targetId,avatar);const {error:profileError}=await getClient().rpc('admin_update_club_member_profile',{p_club_id:currentClubId,p_user_id:targetId,p_display_name:name,p_avatar_url:avatar});if(profileError)throw profileError;const oldMember=clubMembersCache.find(m=>m.user_id===targetId);const oldRoles=new Map((oldMember?.teams||[]).map(t=>[t.team_id,t.roles||[]]));for(const [teamId,wanted] of desired){const had=oldRoles.get(teamId)||[];if(targetId===currentUser?.id&&['admin','trainer'].some(r=>had.includes(r)!==wanted.includes(r)))throw new Error('Eigene Mannschaftsrollen können nicht geändert werden.');for(const r of ['admin','trainer']){if(had.includes(r)===wanted.includes(r))continue;const {error}=await getClient().rpc(wanted.includes(r)?'admin_add_team_role':'admin_remove_team_role',{p_team_id:teamId,p_user_id:targetId,p_role:r});if(error)throw error;}}closeModal();await window.renderClubMembers();showStatus(editing?'Mitglied gespeichert.':'Mitglied hinzugefügt und gespeichert.','success');}catch(e){console.error(e);showStatus('Änderungen konnten nicht vollständig gespeichert werden: '+(e?.message||e),'error');try{await window.renderClubMembers();}catch{}}};
 window.saveClubMemberRole=async userId=>{const el=$('club-role-'+userId);if(!el)return;showStatus('Bitte öffne „Bearbeiten“, um Vereins- und Mannschaftsrollen gemeinsam zu ändern.','error');};
 window.removeClubMember=async userId=>{if(!canManageClub||!currentClubId){showStatus('Keine Berechtigung zur Vereinsverwaltung.','error');return;}const member=clubMembersCache.find(m=>m.user_id===userId);if(!member)return;if(!confirm('Soll '+(member.email||'dieses Mitglied')+' wirklich aus dem Verein entfernt werden? Mannschaftsrollen müssen vorher in der jeweiligen Mannschaft entfernt werden.'))return;try{const {error}=await getClient().rpc('admin_remove_club_member',{p_club_id:currentClubId,p_user_id:userId});if(error)throw error;showStatus('Mitglied aus dem Verein entfernt.','success');await window.renderClubMembers();}catch(e){console.error(e);showStatus(e?.message||'Mitglied konnte nicht entfernt werden.','error');}};
-window.addClubMemberFromSettings=async()=>{window.openClubMemberEditor();};
+window.addClubMemberFromSettings=async()=>{window.openClubMemberInvite();};
 window.mehrCurrentPage='home';
 window.backMehrPage=()=>{
   const page=window.mehrCurrentPage||'home';
@@ -3485,10 +3546,15 @@ window.finishInvitation=async()=>{
     $('normalLoginFields').classList.remove('hidden');
     $('loginEmail').disabled=false;
     $('loginPassword').disabled=false;
-    await loadApp();
-    showStatus('Passwort gespeichert. Willkommen in der Mannschafts-App.','ok');
+    try{
+      await loadApp();
+      showStatus('Passwort gespeichert. Dein Zugang ist eingerichtet.','ok');
+    }catch(contextError){
+      console.error('Passwort gespeichert; App-Kontext konnte nicht geladen werden:',contextError);
+      setLoginMsg('Dein Passwort wurde gespeichert. Der Zugang konnte aber noch nicht vollständig geöffnet werden: '+(contextError?.message||contextError),true);
+    }
   }catch(e){
-    console.error('Trainer-Einladung:',e);
+    console.error('Einladung abschließen:',e);
     $('inviteMsg').textContent='Passwort konnte nicht gespeichert werden: '+(e.message||e);
     $('inviteMsg').style.color='#b91c1c';
   }
