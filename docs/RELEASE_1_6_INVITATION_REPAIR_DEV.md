@@ -61,10 +61,10 @@ Datei: `index.html`
 
 ## 3. Deployment-Nachweise
 
-- GitHub Branch `develop` und DEV-Repository `bautnhaus/jugendmannschaft-dev` Branch `main` stehen nach dem Push auf demselben Commit.
-- Der SHA von `index.html` in `develop` stimmt mit dem SHA in `jugendmannschaft-dev/main` überein.
-- Der GitHub-Actions-Lauf `deploy-dev` für Commit `f96e9382e2cdc0ecf6ac6e83e0acde5ac074c788` wurde mit `completed / success` abgeschlossen; `jugendmannschaft-dev/main` stand anschließend auf diesem Commit.
-- Supabase DEV `invite-member` ist ACTIVE, Version 3; die live ausgelesene Quelltextdatei stimmt bytegenau mit `supabase/functions/invite-member/index.ts` in `develop` überein.
+- GitHub Branch `develop` und DEV-Repository `bautnhaus/jugendmannschaft-dev` Branch `main` stehen aktuell beide auf Commit `1da3a179299c9059d5414078dc9d8ba93863bfa9`.
+- `index.html` besitzt in beiden Repositories denselben Blob-SHA: `2f6d90cf79cf235d4c82489dd693517f88a50785`.
+- Der GitHub-Actions-Lauf [Deploy DEV #348](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41716381902) für Commit `1da3a179299c9059d5414078dc9d8ba93863bfa9` wurde mit `completed / success` abgeschlossen; das Job-Log bestätigt den Push `af3ab5d..1da3a17 HEAD -> main`.
+- Supabase DEV `invite-member` ist ACTIVE, Version 3, mit JWT-Prüfung aktiviert. Die live ausgelesene Quelltextdatei stimmt bytegenau mit `supabase/functions/invite-member/index.ts` in `develop` überein. GitHub-Datei-SHA: `fa4792d84b58db5e2a5145f71214cf34011c6bc4`; aktiver Supabase-Deployment-SHA: `c1d9ccbd2480dcfc35a46a118fda4187c8fd9311601bd302e2956bcf72093c53`.
 - Die DEV Auth-Site-URL und Redirect-Allowlist wurden read-only anhand der vom Nutzer bereitgestellten Screenshots geprüft und enthalten die DEV-App-Adresse.
 - Das Invite-User-Template ist das Supabase-Standardtemplate. Custom SMTP wurde nicht aktiviert oder geändert.
 
@@ -87,7 +87,7 @@ Mindestens folgende Tests sind noch auszuführen:
 | Passwort setzen und Login | neue Einladung | Passwort wird gespeichert; nachgelagerter Kontextfehler wird nicht als Passwortfehler ausgegeben | Offen |
 | Persönlicher Name | alle Rollen | `profiles.display_name` wird an allen Stellen verwendet | Offen |
 | Bestehendes bestätigtes Konto | alle Kontexte | Keine zweite Einladung; zulässige Zuordnung wird ergänzt | Offen |
-| Offenes/unbestätigtes Auth-Konto | alle Kontexte | Wiederholungs-/Resend-Verhalten prüfen; keine falsche Erfolgsmeldung | Offen |
+| Offenes/unbestätigtes Auth-Konto | alle Kontexte | Bestehendes Konto übernehmen; keine neue Mail behaupten, wenn Supabase keine bestätigt; ursprünglichen Link prüfen | Offen |
 | Abweichender Verein | alle Kontexte | Kontrollierte Ablehnung | Offen |
 | Andere Mannschaft vorhanden | Teamrolle | Kontrollierte Ablehnung ohne zweite Mannschaftszuordnung | Offen |
 | Wiederholte Einladung | gleicher Empfänger | Keine doppelten Konten/Rollen; Warnung bei Teilfehlern | Offen |
@@ -95,7 +95,15 @@ Mindestens folgende Tests sind noch auszuführen:
 
 ### SMTP-Hinweis
 
-Custom SMTP ist nicht aktiviert. Supabase dokumentiert, dass der Standard-SMTP-Versand auf Mitglieder der Supabase-Organisation beschränkt ist. Ein Test an eine externe E-Mail-Adresse kann daher mit `email_address_not_authorized` scheitern, ohne dass die neue App-Weiterleitung falsch ist. Für echte externe Einladungen wäre später ein eigener SMTP-Anbieter nötig; das ist nicht Teil dieser bereits ausgeführten DEV-Änderungen und bedarf einer gesonderten Entscheidung.
+Custom SMTP ist nicht aktiviert. Laut aktueller Supabase-Dokumentation sendet der Standardversand nur an vorab autorisierte E-Mail-Adressen der Supabase-Organisation und ist auf 2 E-Mails pro Stunde begrenzt. Ein Test an eine externe Adresse kann daher mit `email_address_not_authorized` scheitern, ohne dass der neue Einladungs-Code oder die Weiterleitung fehlerhaft ist. Siehe [Supabase – Custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp) und [Test Auth Flows](https://supabase.com/docs/guides/auth/testing-auth-flows). Für externe Einladungen wäre später ein eigener SMTP-Anbieter oder ein Send-Email-Auth-Hook nötig; das ist nicht Teil dieser bereits ausgeführten DEV-Änderungen und bedarf einer gesonderten Entscheidung.
+
+
+
+### Offene/unbestätigte Einladungen
+
+Bei einer bereits vorhandenen, noch nicht bestätigten Auth-Identität versucht die Edge Function erneut den Supabase-Einladungsaufruf. Wenn Supabase keine neue E-Mail bestätigt, wird das vorhandene Konto erneut gelesen und die erlaubte Zuordnung kontrolliert verarbeitet. Die Antwort enthält nun ausdrücklich die Warnung, dass keine neue Einladungs-E-Mail bestätigt wurde und der ursprüngliche Link geprüft werden muss. Ein automatischer Ersatz für einen abgelaufenen Invite-Link ist derzeit nicht implementiert. Dieses Szenario bleibt ein offener Praxistest; ein zuverlässiger Resend ist nicht bestätigt.
+
+Die Supabase-Dokumentation weist darauf hin, dass Invite-Links entsprechend der Einstellung `Email OTP Expiration` ablaufen (Standardwert: eine Stunde). Der tatsächliche DEV-Wert wurde nicht ausgelesen. Siehe [Supabase – Users / Inviting users](https://supabase.com/docs/guides/auth/users).
 
 ### Wiederherstellung / Rollback
 
