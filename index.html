@@ -2865,7 +2865,7 @@ function renderTrainerList(){
   const box=$('trainerList');if(!box)return;
   if(role!=='admin'&&!(contextReadOnly&&isSuperAdmin)){box.innerHTML='';return;}
   const filters=$('teamMemberRoleFilters');
-  const all=[...state.trainers].sort((a,b)=>String(a.display_name||a.email||'').localeCompare(String(b.display_name||b.admin_label||b.email||''),'de',{sensitivity:'base'}));
+  const all=[...state.trainers].sort((a,b)=>String(a.display_name||a.email||'').localeCompare(String(b.display_name||b.email||''),'de',{sensitivity:'base'}));
   const counts={Alle:all.length,Trainer:all.filter(t=>(t.roles||[t.role||'trainer']).includes('trainer')).length,Admin:all.filter(t=>(t.roles||[t.role||'trainer']).includes('admin')).length};
   if(filters)filters.innerHTML=['Alle','Trainer','Admin'].map(f=>`<button type="button" class="playerFilterChip ${teamMemberRoleFilter===f?'active':''}" onclick="setTeamMemberRoleFilter('${f}')">${f}${f==='Alle'?' ('+counts[f]+')':''}</button>`).join('');
   const filtered=all.filter(t=>teamMemberRoleFilter==='Alle'||(t.roles||[t.role||'trainer']).includes(teamMemberRoleFilter==='Admin'?'admin':'trainer'));
