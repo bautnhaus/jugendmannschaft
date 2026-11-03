@@ -425,3 +425,10 @@ Laut Projektverlauf wurden Pakete 1–9 sowie 10–14 manuell in PROD angewendet
 3. Originaldefinition und Abhängigkeiten jeder betroffenen Funktion sichern.
 4. Fehlende Original-SQL-Quellen ausdrücklich als fehlend dokumentieren.
 5. Erst nach ausdrücklicher Freigabe SQL ändern; aus diesem Protokoll folgt keine implizite Freigabe.
+
+
+## Historischer PROD-SQL-Bestand – Migrationen 1–43 (03.11.2026)
+
+Die 43 vom Nutzer bereitgestellten SQL-Originale wurden vollständig inventarisiert und bytegenau gegen die Quelldateien aus Sql.zip verglichen. Die einzelnen SHA-256-Prüfsummen und Kurzbeschreibungen stehen im Inventar docs/database/archive/PROD_Migrationen_01-43/MIGRATIONEN_01-43_Inventar.md; die Originaldateien und die technische Matrix befinden sich im Archivpaket docs/database/archive/PROD_Migrationen_01-43/PROD_Migrationen_01-43_Arbeitsstand.tar.xz.
+
+Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und im damaligen Chat geprüft wurden. Die Einzelabfragen und Resultate der Prüfungen sind im Archiv nicht enthalten und wurden nicht erneut eingesehen. Diese Dokumentation ist daher ein historischer Ausführungs- und Nutzerbestätigungsnachweis, kein aktueller Live-Schema- oder RLS/ACL-Abgleich. Siehe die 43 getrennten PROD-Datensätze in DB_MIGRATION_LOG.md.
