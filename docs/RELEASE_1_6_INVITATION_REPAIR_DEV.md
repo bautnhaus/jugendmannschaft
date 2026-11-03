@@ -61,9 +61,9 @@ Datei: `index.html`
 
 ## 3. Deployment-Nachweise
 
-- GitHub Branch `develop` und DEV-Repository `bautnhaus/jugendmannschaft-dev` Branch `main` stehen aktuell beide auf Commit `1da3a179299c9059d5414078dc9d8ba93863bfa9`.
-- `index.html` besitzt in beiden Repositories denselben Blob-SHA: `2f6d90cf79cf235d4c82489dd693517f88a50785`.
-- Der GitHub-Actions-Lauf [Deploy DEV #348](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41716381902) für Commit `1da3a179299c9059d5414078dc9d8ba93863bfa9` wurde mit `completed / success` abgeschlossen; das Job-Log bestätigt den Push `af3ab5d..1da3a17 HEAD -> main`.
+- Der Code-/Frontend-Stand wurde auf Commit `1da3a179299c9059d5414078dc9d8ba93863bfa9` durch [Deploy DEV #348](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41716381902) erfolgreich nach `jugendmannschaft-dev/main` gespiegelt; das Job-Log bestätigt `af3ab5d..1da3a17 HEAD -> main`.
+- Die anschließende Dokumentationsaktualisierung auf Commit `fa9d978566686153052ea4b251e8cadb065fa7de` wurde durch [Deploy DEV #349](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41716616554) ebenfalls erfolgreich gespiegelt.
+- Bei beiden Abgleichen hatte `index.html` in `develop` und `jugendmannschaft-dev/main` denselben Blob-SHA: `2f6d90cf79cf235d4c82489dd693517f88a50785`.
 - Supabase DEV `invite-member` ist ACTIVE, Version 3, mit JWT-Prüfung aktiviert. Die live ausgelesene Quelltextdatei stimmt bytegenau mit `supabase/functions/invite-member/index.ts` in `develop` überein. GitHub-Datei-SHA: `fa4792d84b58db5e2a5145f71214cf34011c6bc4`; aktiver Supabase-Deployment-SHA: `c1d9ccbd2480dcfc35a46a118fda4187c8fd9311601bd302e2956bcf72093c53`.
 - Die DEV Auth-Site-URL und Redirect-Allowlist wurden read-only anhand der vom Nutzer bereitgestellten Screenshots geprüft und enthalten die DEV-App-Adresse.
 - Das Invite-User-Template ist das Supabase-Standardtemplate. Custom SMTP wurde nicht aktiviert oder geändert.
