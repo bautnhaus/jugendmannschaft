@@ -1,0 +1,39 @@
+Wir setzen die Entwicklung der Web-App „Jugendmannschaft“ fort. Release 1.5.2 wurde laut mir am 02.11.2026 nach PROD deployed. Bitte bearbeite ausschließlich den offenen Fehler der Mitglieder-/Trainer-Einladung und bleibe fokussiert.
+
+PROJEKT
+- Hauptrepo: https://github.com/bautnhaus/jugendmannschaft
+- `develop` = getestete Entwicklungsquelle; `main` = PROD
+- separates DEV-Frontend-Repo: `bautnhaus/jugendmannschaft-dev`, Branch `main`
+- PROD-App: https://bautnhaus.github.io/jugendmannschaft/
+- Supabase DEV: `pzazqvvoruqnqhcorbwx`
+- Supabase PROD: `qdugtpzgefpswnnqbusd`
+- Frontend: große `index.html`; Backend: Supabase/Postgres/Auth/RLS/RPC/Storage und Edge Function `invite-trainer`.
+- Ich bin kein Programmierer; gib kurze, konkrete Schritt-für-Schritt-Anweisungen.
+
+FEHLER
+1. Einladung aus DEV öffnet PROD bzw. den normalen Login statt des vorgesehenen Einladungs-/Passwort-erstellen-Flows.
+2. UI meldete E-Mail versendet, aber der Name wurde offenbar nicht gespeichert.
+3. Ein Trainerlogin scheiterte, als der Benutzer mehreren Mannschaften zugeordnet war; nach Entfernen der zweiten Zuordnung funktionierte es.
+4. Vor Einladung bestehende Auth-Benutzer und Mannschaftszuordnungen erkennen.
+
+VERBINDLICHE REGELN
+- Zuerst tatsächlichen Stand in GitHub, Supabase und vorhandener Dokumentation ermitteln.
+- Zunächst read-only analysieren: DEV-Frontend-Aufruf/Payload, Originaldefinition von `invite-trainer`, DEV Auth Site URL/Redirect-Allowlist, E-Mail-Template, Speicherlogik von Name/Rolle/Mannschaft und Verhalten bei bestehenden Benutzern.
+- Ursache nicht raten; konkrete Belege und Pfade nennen.
+- Nur DEV; keine echten PROD-Einladungen und keine Änderungen an PROD.
+- Keine SQL-Migration, schreibendes SQL oder Auth-/Edge-Konfigurationsänderung ohne meine ausdrückliche Zustimmung.
+- Vor Codeänderungen aktuelle `develop/index.html` frisch laden.
+- Minimalen Fix vorschlagen; nach Analyse zuerst Befund und Testplan präsentieren und auf Freigabe warten.
+- Tests: neue E-Mail, vorhandene E-Mail, bereits zugeordneter Benutzer, Versandfehler, Link öffnet DEV, Passwort setzen, Login, Name/Rolle/Mannschaft korrekt. Keine echten externen Einladungen ohne Absprache.
+- Erfolg nur melden, wenn alle notwendigen Schritte erfolgreich waren.
+- Danach Commit, Dateien, Testergebnisse und Risiken dokumentieren. Kein PROD-Deploy ohne separate Freigabe.
+
+ERSTER AUFTRAG
+1. Aktuellen Aufruf von `invite-trainer` finden.
+2. Originalcode der Edge Function und Redirect-URL-Logik lesen.
+3. DEV Auth URL-Konfiguration read-only prüfen; PROD bei Bedarf nur lesend vergleichen.
+4. Speicherung von Name/Rolle/Mannschaft nachverfolgen.
+5. Erkennen vorhandener Nutzer und Mannschaftszuordnungen prüfen.
+6. Belege und kleinsten Fixvorschlag berichten. Noch nichts verändern.
+
+Keine neue Releaseplanung für 1.5.2 und keine anderen Backlog-Themen aufmachen.

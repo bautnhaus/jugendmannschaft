@@ -1,754 +1,122 @@
 # Jugendmannschaft – Projektkontext
 
-**Dokumenttyp:** Projektdokumentation zum veröffentlichten PROD-Stand
-**Stand:** 03.11.2026
-**Status:** Dokumentationsstand für `main`. Release 1.5.2 wurde laut Nutzerbestätigung am 02.11.2026 nach PROD deployed. Ein unabhängiger Post-Deploy-Smoke-Test und ein unabhängig bestätigter Post-Deploy-Commit-SHA sind weiterhin offen.
+**Dokumenttyp:** Zentrale Projektdokumentation  
+**Stand:** 03.11.2026  
+**Führende Quelle:** Branch `develop` im Repository `bautnhaus/jugendmannschaft`
 
-> Zweck: Dieses Dokument hält Architektur, veröffentlichten Funktionsstand, historische Entscheidungen, Sicherheitsbefunde und den Projektkontext fest. DEV-spezifische Entwicklungsstände sind ausdrücklich als solche gekennzeichnet und dürfen nicht als PROD-Nachweis verstanden werden.
+## 1. Zweck und Dokumentationsprinzip
+
+Diese Datei ist der kompakte Einstieg in das Projekt. Sie enthält den aktuellen, bestätigten Arbeitsstand, verbindliche Arbeitsregeln und Verweise auf die ausführlichen Fachdokumente.
 
-------------------------------------------------------------------------
+- `develop` ist die zentrale Quelle für App-Entwicklung und Projektdokumentation.
+- Nach einem regulären PROD-Release sollen `develop` und `main` denselben Dokumentationsstand enthalten.
+- Es gibt keine dauerhaft getrennte DEV- und PROD-Dokumentationsbasis. Historische DEV-/PROD-Unterschiede bleiben dort gekennzeichnet, wo sie fachlich wichtig sind.
+- Jedes Thema hat einen eindeutigen Hauptspeicherort. Dieses Dokument verweist auf Detaildokumente, statt deren vollständige Inhalte zu duplizieren.
+- Historische Prüfberichte und SQL-Originale werden archiviert, nicht gelöscht. Archivierte Informationen sind keine automatisch aktuellen Statusaussagen.
 
-## Aktueller PROD-Stand – 03.11.2026
+## 2. Projekt und Produkt
 
-### Branches und Release 1.5.2
-- Repository: `bautnhaus/jugendmannschaft`.
-- `main`: Produktionsbranch; diese Dokumentation beschreibt den laut Nutzerbestätigung am 02.11.2026 veröffentlichten Stand 1.5.2.
-- `develop`: führender Entwicklungs- und Arbeitsstand. Änderungen und offene technische Aufgaben werden dort zuerst gepflegt.
-- Release 1.5.2 wurde laut ausdrücklicher Nutzerbestätigung am 02.11.2026 nach PROD deployed.
-- Ein unabhängiger Post-Deploy-Smoke-Test sowie ein unabhängig bestätigter PROD-Commit-SHA sind nicht dokumentiert. Der vor dem Deployment bekannte SHA von `develop/index.html` ist kein Post-Deploy-Nachweis.
+**Repository:** https://github.com/bautnhaus/jugendmannschaft  
+**App:** Jugendmannschaft – mobile Web-App zur Organisation von Mannschaften und Teamsportgruppen.
 
-### Inhaltliche Abgrenzung
-- Die Release Notes 1.5.2 dokumentieren den freigegebenen Veröffentlichungsumfang: `RELEASE_NOTES_1.5.2_PROD_2026-11-02.md`.
-- Die Mitglieder-/Trainer-Einladung ist als offener Entwicklungsfehler dokumentiert und nicht Bestandteil von Release 1.5.2. Eine Fehlerbehebung wird nicht behauptet.
-- Angaben zu DEV-Migrationen, DEV-Funktionen oder DEV-Tests sind historische Entwicklungsnachweise und kein Beleg dafür, dass diese Änderungen in PROD vorhanden sind.
-- Nutzerbestätigungen, technische GitHub-Nachweise und offene Prüfungen werden getrennt dargestellt.
+Die Anwendung unterstützt insbesondere:
+- Spieler- und Mitgliederverwaltung,
+- Mannschaften, Vereine, Rollen und Mitgliedschaften,
+- Trainings, Trainingsserien und Anwesenheit,
+- Spieltage, Verfügbarkeit und Kaderplanung,
+- Empfehlungen und Teambildung,
+- Konten, Einladungen, Administration und Datensicherung.
 
-### Dokumentationsführung
-- `develop/PROJECT_CONTEXT.md` und `develop/DB_CHANGELOG.md` sind die führenden Arbeitsdokumente für laufende technische Dokumentation.
-- `main/PROJECT_CONTEXT.md` und `main/DB_CHANGELOG.md` bilden den dokumentierten Veröffentlichungsstand und die dazugehörigen historischen Nachweise ab.
-- Release Notes tatsächlich veröffentlichter Versionen werden in `main` und `develop` geführt.
-- Übergabedokumentationen und Chat-Prompts bleiben grundsätzlich in `develop`.
-- Hauptdokumente werden nicht als parallele `*_updated`-Arbeitskopien geführt. Die kanonischen Namen sind `PROJECT_CONTEXT.md` und `DB_CHANGELOG.md`.
+**Produktleitlinien:** iPhone-/Mobile-first, zugleich responsiv für größere Bildschirme; sportartneutral; neutrales Blau als primäre Gestaltungsfarbe; klare Navigation, konsistente Komponenten und verständliche Statusanzeigen. Rot, Gelb und Grün sind semantisch belegte Status-/Bedeutungsfarben und werden nicht als beliebige Dekorations- oder Primärfarben eingesetzt. Die App empfiehlt, die verantwortliche Person entscheidet.
 
-------------------------------------------------------------------------
+## 3. Technische Umgebung und Branches
 
-## Historischer Stand – 01.11.2026 (Momentaufnahme; nicht der aktuelle Release-Status)
+| Bereich | Verwendung |
+|---|---|
+| `develop` | Entwicklungs- und Dokumentationsquelle |
+| `main` | PROD-Branch |
+| Supabase DEV | `pzazqvvoruqnqhcorbwx` |
+| Supabase PROD | `qdugtpzgefpswnnqbusd` |
+| Hosting | GitHub Pages |
+| Frontend | Single-Page-App, zentrale `index.html` |
 
-### Bestätigter Deployment- und Branch-Ablauf
+Release 1.5.2 wurde laut Nutzerbestätigung am 02.11.2026 nach PROD deployed. Ein unabhängiger Post-Deploy-Smoke-Test und ein unabhängig bestätigter Post-Deploy-Commit-SHA sind nicht dokumentiert.
 
-Die folgenden Zuordnungen wurden am 01.11.2026 vom Projektverantwortlichen bestätigt und sind für die weitere Arbeit verbindlich:
+**Deployment-Ablauf:** Der bestehende manuelle PROD-Workflow übernimmt den Stand von `develop` nach `main` und deployt anschließend. Dieser Workflow bleibt vorerst unverändert. Deshalb müssen vor einem PROD-Release alle Änderungen in `develop` geprüft und freigegeben sein. Diese Dokumentationsbereinigung löst keinen Deployment-Workflow aus.
 
-- **Repository `bautnhaus/jugendmannschaft`, Branch `main`:** Produktionsstand (PROD). Dieser Branch darf im normalen DEV-Arbeitsablauf nicht geändert werden.
-- **Repository `bautnhaus/jugendmannschaft`, Branch `develop`:** Entwicklungsstand. Änderungen an der App werden zuerst hier vorgenommen und in DEV geprüft.
-- **Repository `bautnhaus/jugendmannschaft-dev`, Branch `main`:** Browser-/Preview-Stand für DEV. Der Deploy-Prozess überträgt den Stand von `jugendmannschaft/develop` automatisch auf diese `main`-Branch.
+## 4. Verbindliche Arbeits- und Freigaberegeln
 
-**Verbindliche Konsequenz:** Für eine normale Frontend-Änderung reicht es, die freigegebene `index.html` im Branch `develop` des Repositorys `bautnhaus/jugendmannschaft` zu aktualisieren. Der bestehende Deploy-Prozess aktualisiert anschließend automatisch die `main`-Branch von `bautnhaus/jugendmannschaft-dev`, die im Browser den DEV-Stand bereitstellt. Eine separate manuelle Aktualisierung der `main`-Branch von `jugendmannschaft-dev` ist dafür nicht erforderlich.
+1. Reguläre App-Entwicklung erfolgt zuerst in `develop`; vor Codeänderungen die aktuelle Originaldatei frisch aus GitHub abrufen.
+2. DEV testen und Ergebnisse dokumentieren. PROD bleibt bis zu einer gesonderten ausdrücklichen Freigabe unverändert.
+3. Vor jeder schreibenden SQL-Ausführung Zweck, Zielumgebung und vollständigen SQL-Text vorlegen und ausdrückliche Freigabe einholen.
+4. Jede tatsächlich ausgeführte schreibende SQL-Anweisung wird ausnahmslos im `DB_MIGRATION_LOG.md` dokumentiert – unabhängig davon, ob sie aus einer GitHub-Migrationsdatei, dem Supabase SQL Editor oder einem anderen administrativen Werkzeug stammt.
+5. DEV- und PROD-Ausführungen werden getrennt nachgewiesen. Eine SQL-Datei, ein DEV-Erfolg oder ein Nutzerhinweis ersetzt keinen eigenständigen PROD-Ausführungsnachweis. Fehlgeschlagene oder teilweise ausgeführte Schreibversuche werden ebenfalls nachvollziehbar dokumentiert.
+6. Keine Originaldefinitionen von Funktionen, Triggern, Policies oder SQL-Migrationen aus dem Gedächtnis rekonstruieren. Vor Änderungen die tatsächlichen Definitionen und Abhängigkeiten aus der Zielumgebung auslesen.
+7. Vor GitHub-Schreibzugriffen Branch-HEAD und betroffene Originaldateien erneut prüfen. Nur den freigegebenen Umfang ändern.
+8. Kein Deployment, keine PROD-Datenbankänderung und keine Auth-/Edge-Konfigurationsänderung ohne separate ausdrückliche Freigabe.
 
-Die Produktions-Branch `main` im Repository `bautnhaus/jugendmannschaft` bleibt davon unberührt. Eine PROD-Änderung erfolgt nur in einem gesonderten Release-Schritt nach erfolgreichem DEV-Test und ausdrücklicher Freigabe.
+## 5. Verbindlicher Ablauf für neue Funktionen und Features
 
-### Verbindliche Frontend-Ausgangsbasis
+Neue Funktionen und Features werden grundsätzlich in einer abgestimmten Konzeptionsfolge entwickelt. Die Umsetzung beginnt nicht direkt mit dem Programmieren:
 
-Der Projektverantwortliche hat am 01.11.2026 bestätigt, dass die DEV-Seite wieder den erwarteten Stand zeigt und dass die `index.html` aus dem folgenden Commit ab sofort die verbindliche Ausgangsbasis für die weitere Entwicklung ist:
+1. **Anforderungen klären:** Wenn möglich, bestehende Backlog-Einträge und bereits getroffene Produktentscheidungen als Ausgangspunkt verwenden. Ziel, Nutzen, Zielgruppe, Anwendungsfälle, Regeln, Randbedingungen und offene Fragen gemeinsam klären. Fehlende Anforderungen vor dem Entwurf sichtbar machen.
+2. **Userflows und Grundstruktur abstimmen:** Zunächst mit schematischen Entwürfen, Wireframes und/oder Low-Fidelity-Skizzen die wesentlichen Abläufe, Navigation, Zustände und Interaktionen darstellen. Erst wenn der Userflow gemeinsam abgestimmt ist, geht es zur visuellen Ausarbeitung.
+3. **High-Fidelity-Konzept abstimmen:** Auf Grundlage des freigegebenen Userflows das konkrete UI mit den vorgesehenen Komponenten, Abständen, Typografie, Farben und Zuständen ausarbeiten. Die tatsächliche UI-Umsetzung beginnt erst nach gemeinsamer Abstimmung dieses Konzepts.
+4. **Vorhandene Komponenten wiederverwenden:** Bestehende UI-Bausteine – insbesondere Navigation, Icons, Buttons, Listenlayouts, Kacheln, Detailkarten und vergleichbare Elemente – sind grundsätzlich 1:1 aus der vorhandenen Anwendung zu übernehmen und für den jeweiligen Anwendungsfall anzupassen. Sie dürfen nicht ohne Notwendigkeit nachgebaut oder durch optisch ähnliche Eigenvarianten ersetzt werden. Vor einer Umsetzung ist die vorhandene Implementierung zu prüfen und als Referenz zu verwenden.
+5. **Neue Komponenten gemeinsam entwickeln:** Ergibt die Prüfung, dass ein benötigter Baustein in der Anwendung noch nicht existiert oder sich ein vorhandener nicht sinnvoll anpassen lässt, wird der Bedarf gemeinsam geklärt und die neue Komponente abgestimmt entwickelt. Sie soll sich anschließend in das bestehende Designsystem einfügen und wiederverwendbar sein.
+6. **Farb- und Designregeln beachten:** Neutrales Blau ist die primäre Marken-/Akzentfarbe. Rot, Gelb und Grün haben jeweils semantische Bedeutungen (z. B. Fehler/Warnung/Erfolg bzw. definierte Status) und dürfen nicht beliebig zur Gestaltung eingesetzt werden. Vorhandene Farb- und Komponentenregeln sind konsistent weiterzuverwenden.
 
-- **Referenz-Commit:** `ebfb04a55b2d3bd683e7d82e1399a28a9bcd4eef`
-- **Quelle:** `bautnhaus/jugendmannschaft-dev`, Commit `ebfb04a55b2d3bd683e7d82e1399a28a9bcd4eef`
-- **Datei:** `index.html`
-- **Aktueller DEV-Branch:** `bautnhaus/jugendmannschaft` / `develop`
-- **Aktueller Dateiblob in develop und Preview:** `693726c0eb60f62c3f300da3111da4a33e1c107c`
-- **Wiederherstellungs-Commit in develop:** `3ad42c411fe55d5c91d6b370173753817db0a540`
+**Verbindliche Reihenfolge:** Anforderungen → schematische Entwürfe/Wireframes/Low Fidelity und Userflow-Abstimmung → High-Fidelity-UI-Konzept und Abstimmung → Umsetzung und DEV-Prüfung. Abweichungen davon werden vorab gemeinsam vereinbart.
 
-Der Dateiinhalt in `jugendmannschaft/develop` wurde mit der `index.html` des Referenz-Commits verglichen: Beide haben denselben Git-Blob-SHA und dieselbe Dateigröße. Auch `jugendmannschaft-dev/main` enthält denselben Datei-Blob. Der Nutzer hat bestätigt, dass die App im Browser wieder korrekt angezeigt wird.
+## 6. Dokumentationsübersicht – eindeutiger Speicherort
 
-**Arbeitsregel:** Weitere Frontend-Änderungen müssen von diesem bestätigten Stand ausgehen. Keine ältere lokale Datei oder ältere Commit-Version als Basis verwenden, solange der Projektverantwortliche keinen anderen Stand ausdrücklich bestimmt. Änderungen weiterhin zuerst in `jugendmannschaft/develop`, dann DEV-Test; `jugendmannschaft/main` (PROD) bleibt unverändert bis zur separaten Release-Freigabe.
+| Dokument | Zuständigkeit |
+|---|---|
+| `PROJECT_CONTEXT.md` | Projektüberblick, aktueller Stand, Regeln und Verweise |
+| `DB_CHANGELOG.md` | Technische Datenbankobjekte, Änderungen, Definitionen und Prüfungen |
+| `DB_MIGRATION_LOG.md` | Chronologischer Ausführungsnachweis aller schreibenden SQL-Eingriffe |
+| `RELEASE_NOTES_*.md` | Fachlicher und technischer Umfang einer veröffentlichten Version |
+| `docs/AP01-03_RELEASE_KATALOG_2026-11-01.md` | AP01–AP03-Releaseumfang, Abhängigkeiten und Freigabeblocker |
+| `docs/AP01-03_MIGRATION_TEST_MAPPING_2026-11-01.md` | Zuordnung der Migrationen, Tests und offenen Nachweise |
+| `docs/AP04-profile-management.md` | AP04-Profilverwaltung, Avatar und geschützte Rollenänderungen; Mitgliederbearbeitung im bestehenden Vereinskontext |
+| `docs/CLUB_TEAM_CREATION_PLAN_2026-10-29.md` | Anlage von Vereinen und Mannschaften einschließlich verpflichtender Admin-Zuweisung |
+| `docs/CLUB_TEAM_CREATION_PLAN_2026-10-29.md` | Fachliches und technisches Konzept der Vereins-/Mannschaftsanlage |
+| `docs/database/archive/PROD_Migrationen_01-43/` | Historische Original-SQL-Dateien, Prüfsummen und Inventar der 43 PROD-Anfragen |
+| `docs/archive/` | Historische Projektstände, abgeschlossene DEV-Prüfberichte und alte Arbeitsnotizen |
 
-### Letzter UI-Prüfpunkt
+Die ausführlichen Rollen-/Berechtigungsprüfberichte sind unter `docs/archive/` abgelegt. Sie bleiben als historische Belege erhalten; aktuelle Berechtigungsentscheidungen und offene Punkte sind in den AP-Dokumenten zu pflegen.
 
-Der Nutzer hat am 01.11.2026 bestätigt: **Das Optionsmenü auf der Mannschaftsdetailseite funktioniert wie erwartet.** Dieser konkrete UI-Prüfpunkt ist damit abgenommen und darf nicht mehr als offen geführt werden, sofern keine neue Regression auftritt.
+## 7. Aktueller Arbeitsstand
 
-### Vereinsadmin: Wiederverwendung der Super-Admin-Ansichten – 01.11.2026
+### Release 1.5.2
+Am 02.11.2026 laut Nutzerbestätigung nach PROD deployed. Die Release Notes dokumentieren den bekannten Umfang und die Grenzen der Nachweise.
 
-**Status: in DEV umgesetzt und vom Nutzer funktional bestätigt; PROD unverändert.**
+### Offener Schwerpunkt: Mitglieder-/Trainer-Einladung
+Der Einladungsfehler ist weiterhin offen und nicht Teil von Release 1.5.2:
+- Einladungslinks aus DEV führten auf PROD bzw. den normalen Login statt in den erwarteten Passwort-Erstellungsfluss.
+- Der Name wurde offenbar trotz Erfolgsmeldung nicht gespeichert.
+- Eine Mehrfachzuordnung zu Mannschaften verursachte in einem Fall Loginprobleme; nach Entfernen der zweiten Zuordnung funktionierte die Anmeldung.
+- Vor einer neuen Einladung sind vorhandene Auth-Benutzer und Mannschaftszuordnungen zu berücksichtigen.
 
-Ziel war, die zuletzt verbesserte Verwaltungsführung des Super Admins auf die Perspektive des Vereinsadmins zu übertragen. Die vorhandenen Ansichten und Komponenten sollen direkt wiederverwendet werden, statt ähnliche Seiten neu nachzubauen.
+Erstprüfung: read-only Frontend-Aufruf/Payload, Originalcode der Edge Function `invite-trainer`, DEV Auth Site URL/Redirect-Allowlist, E-Mail-Template sowie Speicherung von Name, Rolle und Mannschaft untersuchen. Keine Änderungen ohne gesonderte Freigabe. Die aktuelle Übergabe liegt in `docs/UEBERGABE_NEUER_CHAT_2026-11-02.md`; der zugehörige Prompt liegt daneben. Die Übergabe ist die ausführliche Fakten-/Arbeitsstandsdokumentation, der Prompt eine kompakte Kopiervorlage für einen Folgechat. Beide bleiben bis zur Fehlerbehebung aktiv und werden danach gemeinsam archiviert.
 
-Umgesetzt in `index.html` auf `develop`:
+### AP01–AP03 Multi-Verein
+Die Release- und Testzuordnung ist dokumentiert, aber kein ausführbares PROD-Migrationspaket freigegeben. Exakte SQL-Quellen, DEV-/PROD-Objektdifferenzen, Sicherheitsbefunde, Integrationstests und Backup-/Restore-Nachweis müssen vor einer späteren PROD-Freigabe vollständig geprüft werden.
 
-- Der Einstieg **Mehr → Verein / Mannschaft** für einen Vereinsadmin mit bestehender Vereinszuordnung öffnet die bestehende Vereinsdetailansicht aus dem Super-Admin-Bereich.
-- Der Einstieg **Mehr → Mitglieder und Rollen** verwendet ebenfalls den bestehenden Verwaltungsbereich, statt das bisherige eigenständige Vereinsadmin-Panel mit Formularen und Mannschaftsauswahl anzuzeigen.
-- Die Vereinsauswahl bzw. plattformweite Anlage von Vereinen wird für diesen Vereinsadmin-Einstieg nicht als Aktion angeboten.
-- Die Rücknavigation aus der Vereinsdetailansicht führt für den Vereinsadmin zurück zu „Mehr“; sie soll keine Super-Admin-Kontextwechsel-Aktion auslösen.
-- Die Daten werden im vorhandenen Vereinskontext geladen. Es wurde keine Datenbankmigration ausgeführt und keine Änderung an PROD vorgenommen.
+### AP04 Profilverwaltung
+Fünf AP04-Migrationen sind in `develop` versioniert. Sie sind nicht automatisch für PROD freigegeben. Frontend-Abhängigkeiten und effektive Berechtigungen sind vor einer Übernahme zu prüfen. Das AP04-Dokument behandelt gemeinsame Profile, Avatare und geschützte Mitglieder-/Rollenbearbeitung; die Anlage neuer Vereine und Mannschaften ist separat im Vereins-/Mannschaftsanlageplan dokumentiert.
 
-**Technischer Nachweis:**
-- Commit: `8edc390bf339f32cc5bc8b0b2172a447cac06f1b`
-- [GitHub-Commit](https://github.com/bautnhaus/jugendmannschaft/commit/8edc390bf339f32cc5bc8b0b2172a447cac06f1b)
-- [DEV-Deploy-Workflow erfolgreich](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41282027117)
-- [Preview-/Pages-Build erfolgreich](https://github.com/bautnhaus/jugendmannschaft-dev/actions/runs/41282034554)
+### Weitere Produktarbeit
+Der Backlog umfasst unter anderem flexible Kaderplanung, Saison- und Vereinsverwaltung, Spielformen je Altersklasse, Dashboard (E09), UI-/Design-System, Navigation, Verfügbarkeitsmanagement, FAQ und Sicherheit. Detaillierte fachliche Anforderungen bleiben in den jeweiligen Epic-/AP-Dokumenten; alte Statusangaben sind vor Umsetzung erneut gegen DEV zu prüfen.
 
-**Praxistest:** Der Nutzer hat am 01.11.2026 bestätigt, dass die Vereinsansicht auf den ersten Blick korrekt erscheint und anschließend gemeldet, dass auch die Mitglieder-/Rollenansicht sowie die Navigation reibungslos zu funktionieren scheinen. Dies ist eine positive Nutzerbestätigung des DEV-Verhaltens, aber kein vollständiger automatisierter Berechtigungs- oder Sicherheitstest.
+## 8. Datenbankhistorie und Nachweisgrenzen
 
-**Noch verbindlich:** Rollen- und Aktionsrechte müssen weiterhin durch die vorhandenen serverseitigen Berechtigungsprüfungen erzwungen werden. Die optische Wiederverwendung darf keine zusätzlichen Rechte verleihen. Vor einem späteren PROD-Release sind Änderungen und Rollengrenzen erneut gezielt zu prüfen; keine PROD-Übernahme ohne gesonderte ausdrückliche Freigabe.
+- Das `DB_CHANGELOG.md` beschreibt technische Änderungen und Prüfungen, ist aber kein vollständiges Ausführungsjournal.
+- Das `DB_MIGRATION_LOG.md` enthält 43 historische PROD-Datensätze zu den vom Nutzer bereitgestellten SQL-Anfragen. Der Nutzer bestätigte, dass alle 43 in PROD ausgeführt und damals geprüft wurden. Die Einzelprüfabfragen und Resultate waren nicht Teil des SQL-Archivs und wurden nicht unabhängig erneut eingesehen.
+- Die 43 Original-SQL-Dateien liegen im Archiv unter `docs/database/archive/PROD_Migrationen_01-43/`; Inventar und SHA-256-Prüfsummen sind dort dokumentiert.
+- Historische Migrationspakete 1–14 sind nicht vollständig mit Original-SQL-Quellen belegt. Keine fehlende Definition aus dem Gedächtnis ergänzen.
+- Historische Prüfvermerke sind keine Live-Verifikation. Vor jeder relevanten Änderung den tatsächlichen Stand der jeweiligen Umgebung read-only prüfen.
 
-### Repository-Referenzen
+## 9. Historischer Projektkontext
 
-- PROD-/DEV-Hauptrepository: https://github.com/bautnhaus/jugendmannschaft
-- DEV-Browser-/Preview-Repository: https://github.com/bautnhaus/jugendmannschaft-dev
-- Zu bearbeitender Branch für reguläre DEV-Frontendänderungen: `develop` in `bautnhaus/jugendmannschaft`
-- Automatisch aktualisierter Preview-Branch: `main` in `bautnhaus/jugendmannschaft-dev`
-
-**Hinweis zur Beleglage:** Die Repositorys und Branches sind direkt erreichbar. Die genaue Automatisierung des Deployments und die Branch-Zuordnung oben entsprechen der ausdrücklichen Bestätigung des Projektverantwortlichen; dieser Dokumentationsschritt hat keinen Deploy ausgelöst und keine Anwendung geändert.
-
-## Historischer Stand – 09.10.2026 (Momentaufnahme, nicht der aktuelle Deployment-Status)
-
-- **E07 Training/Trainingsserien:** Die zentrale Funktionalität wurde in DEV getestet. Die aktuelle zuletzt geprüfte Frontenddatei ist `index01(2)_e07_training_title_fix_v10_DEV.html`.
-- **Erfolgreich getestete E07-Bereiche:** Serienerstellung und Vorschau; individuelle Terminänderungen und Override-Erhalt; Änderung künftiger Serienwerte; Änderungen an Wochentagen und Serienzeitraum; Löschen nachfolgender Termine bei Erhalt der verbleibenden Serienzugehörigkeit; Rückmeldungen und tatsächliche Anwesenheit; Trainerteilnahme; korrekte Statistikbehandlung abgesagter/geplanter Termine; Anzeige des Trainingsnamens.
-- **Noch offen in E07:** Optionsmenü auf der Trainingsdetailseite. Geplante Aktionen: Bearbeiten, Absagen, Als durchgeführt markieren, Löschen. Außerdem ist der Trigger für `training_series.updated_at` weiterhin nicht abschließend verifiziert.
-- **Kaderempfehlung bei fehlenden Trainingsterminen:** bewusst nicht geändert. Die Produktiv-App enthält bereits historische Trainingsdaten; die Beobachtung in einer leeren DEV-Testbasis wurde daher nicht als Fehler eingestuft.
-- **Datenbank:** E07-Erweiterungen und Serien-Overrides wurden ausschließlich in Supabase DEV ausgeführt. Kein E07-SQL wurde nach PROD übertragen.
-- **PROD:** unverändert. Ein Release erfordert weiterhin getrennte Prüfung des DEV-/PROD-Schemas, der exakten SQL-Migrationen und der freigegebenen Frontenddatei sowie ausdrückliche Freigabe.
-
-## 1. Projektüberblick
-
-**Projektname:** Jugendmannschaft\
-**Produktname:** Kaderkompass\
-**Untertitel:** Orientierung für die Kaderplanung
-
-Der Kaderkompass ist eine mobile, insbesondere für iPhones optimierte
-Web-App zur Organisation einer Jugendfußballmannschaft. Sie unterstützt
-Trainer bei der Verwaltung von Spielern, Trainings, Anwesenheiten,
-Spieltagen und der Kaderplanung.
-
-Der Nutzer ist Trainer einer Jugendmannschaft in Deutschland. Ein großer
-Spielerkader macht die Auswahl für Spieltage anspruchsvoll. Die App soll
-die Planung nachvollziehbarer machen und historische Daten sinnvoll
-berücksichtigen.
-
-## 2. Architektur und Entwicklungsumgebung
-
-  -----------------------------------------------------------------------
-  Bereich                             Bekannter Stand
-  ----------------------------------- -----------------------------------
-  Frontend                            Einzelne `index.html` mit HTML, CSS
-                                      und JavaScript; Single-Page-App
-
-  Backend                             Supabase (Datenbank und
-                                      Authentifizierung)
-
-  Hosting                             GitHub Pages
-
-  Versionsverwaltung                  GitHub; Branches `main` und
-                                      `develop` wurden verwendet
-
-  Umgebungen                          Getrennte DEV-/Staging- und
-                                      PROD-Umgebung
-                                      vorgesehen/eingerichtet
-
-  Mobile Nutzung                      Mobile-first, insbesondere iPhone
-
-  Datenübernahme                      JSON-Export/Backup und
-                                      Import/Restore vorhanden
-  -----------------------------------------------------------------------
-
-**Verbindlicher Deployment-Ablauf (Stand 01.11.2026):**
-
-1. Frontend-Änderungen in `bautnhaus/jugendmannschaft` auf Branch `develop` vornehmen.
-2. Den DEV-Stand über die bestehende automatische Bereitstellung im Browser prüfen. Der Deploy-Prozess aktualisiert dafür `bautnhaus/jugendmannschaft-dev` auf Branch `main`.
-3. Akzeptanzkriterien und relevante Regressionen prüfen und das Ergebnis dokumentieren.
-4. Erst nach erfolgreichem DEV-Test und ausdrücklicher Freigabe einen separaten PROD-Release durchführen. Die `main`-Branch von `bautnhaus/jugendmannschaft` ist PROD und wird nicht durch normale DEV-Arbeiten verändert.
-
-Die Deployment-Zuordnung ist vom Projektverantwortlichen bestätigt. Änderungen an Datenbank, Migrationen oder Berechtigungen benötigen weiterhin eine eigene Prüfung und Freigabe; eine Aktualisierung der Frontend-`index.html` ersetzt diese nicht. Zugangsdaten, Tokens, Passwörter und Service-Role-Keys gehören nicht in diese Datei.
-
-## 3. Funktionsumfang
-
-### 3.1 Spieler
-
--   Spielerliste mit Name, Foto, Positionen und Level
--   Zuordnung von Spielern zu Positionen
--   Spielerstammdaten in DEV umfassen Geburtsjahr (kein vollständiges
-    Geburtsdatum) und bevorzugten Fuß (links/rechts/beidfüßig); die
-    zugehörigen Constraints sind im DEV-Schemaüberblick dokumentiert.
-    Vereinsvergangenheit bleibt als Erweiterungsidee gesondert zu prüfen.
--   Level-Skala im aktuellen Datenmodell: `Einsteiger`,
-    `Fortgeschritten`, `Stark`, `Profi`
--   Historische UI-Bezeichnungen wie „schwach", „mittel", „stark" und
-    „herausragend" wurden im Projektkontext erwähnt; die genaue
-    Zuordnung im aktuellen Frontend ist vor weiteren Änderungen gegen
-    den tatsächlichen Code zu prüfen.
-
-### 3.2 Training und Anwesenheit
-
--   Trainings anlegen und anzeigen
--   Anwesenheit von Spielern je Training dokumentieren
--   Trainingshistorie als Grundlage für die Kaderempfehlung
--   Trainer können als Trainingsteilnehmer dokumentiert werden
--   Gewünschte UX: Anwesenheit bearbeiten, ohne dass die Ansicht
-    unerwartet auf ein anderes/neueres Training springt; „Alle
-    auswählen" und „Alle abwählen"; kompakte, vertikale Darstellung ohne
-    horizontales Scrollen
-
-### 3.3 Spieltage und Kaderplanung
-
--   Spieltage anlegen und verwalten
--   Kaderempfehlung anhand von Trainingsanwesenheit und historischen
-    Daten
--   Frühere Spieltagsauswahlen sollen bei der Empfehlung berücksichtigt
-    werden, damit Einsätze möglichst ausgewogen verteilt werden
--   Kaderanzeige, bisher unter anderem als „Top 16" beschrieben;
-    Kadergröße soll perspektivisch administrativ flexibel sein
--   Teambildung mit Berücksichtigung von Positionen und Spielstärken;
-    bisher wurde unter anderem die Einteilung in Teams mit vier
-    Feldspielern plus Torwart betrachtet
--   Weitere geplante Möglichkeiten: Spieltagsarten, Anstoßzeit,
-    Formationsvorlagen und Dokumentation verfügbarer, aber nicht
-    eingesetzter Spieler
-
-### 3.4 Trainer, Konten und Administration
-
--   Trainer-/Adminrollen und Teammitgliedschaften
--   Trainerverwaltung und Einladungsablauf
--   Konto- und Passwortverwaltung
--   JSON-Backup, Export und Wiederherstellung
--   Admin-Bereich für administrative Aufgaben
-
-**Bekannter Einladungsstatus:** Die Trainer-Einladung funktionierte
-grundsätzlich und die Einladungs-E-Mail konnte versendet werden. Weitere
-Tests waren durch Supabase-Fehler `Email rate limit exceeded`
-eingeschränkt. Eine gesonderte Testdatei für das Passwort-Setup
-eingeladener Trainer wurde zuvor erstellt; ihr aktueller Integrations-
-und Teststatus ist zu verifizieren.
-
-## 4. Datenbank -- dokumentierter Bestand
-
-Folgende Tabellen wurden im Projekt untersucht bzw. benannt:
-
--   `attendance`
--   `matchday_players`
--   `matchday_trainers`
--   `matchdays`
--   `player_positions`
--   `players`
--   `positions`
--   `profiles`
--   `seasons`
--   `team_members`
--   `teams`
--   `training_players`
--   `training_trainers`
--   `trainings`
-
-### 4.1 Wichtige Constraints und Beziehungen
-
--   `attendance`: zusammengesetzter Schlüssel aus Training und Spieler;
-    Fremdschlüssel mit Cascade-Verhalten
--   `matchday_players`: zusammengesetzter Schlüssel aus Spieltag und
-    Spieler; `team_number` ist nullable oder im Bereich 1--4
--   `matchday_trainers`: zusammengesetzter Schlüssel aus Spieltag und
-    Nutzer
--   `matchdays`: Teambezug; Saisonbezug kann bei Löschung der Saison auf
-    `NULL` gesetzt werden
--   `player_positions`: Zuordnungstabelle mit zusammengesetztem
-    Schlüssel aus Spieler und Position
--   `players`: Teambezug; Constraints für Geburtsjahr, Level und
-    bevorzugten Fuß
--   `positions`: Teambezug und eindeutiger Positionsname je Team
--   `profiles`: Profil-ID ist an `auth.users` gebunden
--   `seasons`: Teambezug und eindeutiger Saisonname je Team
--   `team_members`: zusammengesetzter Schlüssel aus Team und Nutzer;
-    Rollen `admin` oder `trainer`
--   `teams`: zentrale Teamtabelle
--   `training_players`: zusammengesetzter Schlüssel aus Training und
-    Spieler; `team_number` mindestens 1, sofern gesetzt
--   `training_trainers`: Zuordnung von Trainern zu Trainings
--   `trainings`: Teambezug; Saisonbezug kann bei Löschung der Saison auf
-    `NULL` gesetzt werden
-
-Die Datenbank wurde mit aktivierter RLS auf den genannten Tabellen
-beschrieben. RLS war nicht als `FORCE ROW LEVEL SECURITY` gesetzt. Das
-allein ist kein Beweis für eine Sicherheitslücke; Eigentümer-,
-Funktions- und Bypass-Rechte müssen im jeweiligen Kontext betrachtet
-werden.
-
-**Hinweis:** Diese Übersicht ist ein komprimierter Bestandsauszug, kein
-Ersatz für einen aktuellen Schema-Dump oder versionierte
-SQL-Migrationsdateien.
-
-### 4.2 DEV-Änderungsnachweis – E16.2 Schutz des letzten Administrators
-
-**Umgebung:** ausschließlich Supabase DEV  
-**Status:** implementiert und funktional im DEV getestet; nicht nach PROD übertragen  
-**Betroffene Tabelle:** `public.team_members`  
-**Neue Funktion:** `public.prevent_last_team_admin_removal()`  
-**Neuer Trigger:** `prevent_last_team_admin_removal`
-
-Die Funktion wird als `SECURITY DEFINER` mit festgelegtem Suchpfad
-(`pg_catalog, public`) ausgeführt. Der Constraint-Trigger ist ein
-`AFTER DELETE OR UPDATE`-Trigger auf `public.team_members`,
-`DEFERRABLE INITIALLY DEFERRED` und wird je betroffener Zeile ausgeführt.
-Die Funktion prüft Änderungen an Admin-Mitgliedschaften und verhindert,
-dass die letzte Admin-Mitgliedschaft eines bestehenden Teams entfernt
-oder herabgestuft wird. Bei vollständiger Löschung des Teams wird die
-Entfernung der Mitgliedschaften nicht durch diesen Schutz blockiert.
-EXECUTE-Rechte wurden für `PUBLIC`, `anon` und `authenticated` entzogen;
-der Trigger ruft die Funktion intern auf.
-
-**Verifikation und Testnachweis:**
-- Triggerabfrage bestätigte genau einen Trigger mit aktiviertem Status,
-  verzögerter Ausführung und `SECURITY DEFINER`-Funktion.
-- SQL-Testtransaktionen für Admin-Entfernung/-Herabstufung wurden
-  ausgeführt und zurückgerollt; der Adminbestand blieb erhalten.
-- Echter Löschversuch des einzigen Admin-Kontos über die DEV-App wurde
-  mit der Datenbankmeldung „Die letzte Admin-Mitgliedschaft einer
-  Mannschaft kann nicht entfernt oder herabgestuft werden“ blockiert.
-- Nachkontrolle bestätigte, dass die Mitgliedschaften den Löschversuch
-  überstanden haben. Die Testrollen wurden anschließend auf den
-  beabsichtigten Zustand zurückgesetzt: zwei Admins und ein Trainer.
-- Kein Test der konkurrierenden, zeitgleichen Änderungen in getrennten
-  Datenbanktransaktionen durchgeführt.
-
-**Wichtige Rollout-Einschränkung:** Der vollständige, exakt ausgeführte
-DDL-Text der Funktion und des Triggers ist in diesem Änderungsnachweis
-nicht als ausführbare Migration hinterlegt. Vor einer PROD-Übernahme muss
-der tatsächliche Funktions-/Trigger-DDL-Stand aus DEV exportiert bzw.
-gegen die hier beschriebene Implementierung abgeglichen und als
-versionierte SQL-Migration ergänzt werden. Diesen Abschnitt nicht als
-SQL zum direkten Ausführen in PROD verwenden. Rollenänderungen an den
-Testkonten waren Testdatenänderungen und sind keine Schema-Migration.
-
-## 5. Berechtigungen und Sicherheitsbestand
-
-### 5.1 RLS -- bekannte Beobachtungen
-
--   Teambezogene SELECT- und Schreibrechte werden häufig über
-    `is_team_member(...)` bzw. Admin-Prüfungen gesteuert.
--   `players` besitzt permissive INSERT-/UPDATE-Richtlinien für
-    Teammitglieder sowie zusätzliche Admin-Richtlinien. Da permissive
-    Policies grundsätzlich per OR wirken, können Trainer dadurch
-    ebenfalls Spieler einfügen oder ändern. Zu klären ist, ob das
-    fachlich beabsichtigt ist.
--   `player_positions` wurde zuletzt als SELECT für Teammitglieder sowie
-    INSERT/DELETE nur für Admins beschrieben; beim INSERT wird die
-    Teamzugehörigkeit von Spieler und Position geprüft.
--   Bei UPDATE-Richtlinien für `attendance`, `matchday_players` und
-    `training_players` wurde festgestellt, dass die
-    `WITH CHECK`-Bedingung die Mitgliedschaft am zugehörigen Team prüft,
-    aber die Teamkonsistenz der verknüpften Spieler-ID nicht in gleicher
-    Weise erneut validiert wie die INSERT-Richtlinie. Das ist als
-    gezielter Prüf- und Härtungspunkt zu behandeln.
--   `team_members`, `seasons` und `positions` haben Admin-beschränkte
-    Schreiboperationen gemäß der zuletzt bereitgestellten
-    Policy-Übersicht.
--   Profilzugriff ist eingeschränkt; Nutzer können das eigene Profil
-    aktualisieren, während Admins im Teamkontext weitere Profile
-    einsehen können.
-
-### 5.2 Datenbankfunktionen
-
-Im bisherigen Bestand wurden unter anderem folgende Funktionen
-untersucht:
-
--   `add_team_member_by_email(...)`
--   `admin_set_trainer_label(...)`
--   `delete_my_account()`
--   `get_team_trainers(...)`
--   `handle_new_user()`
--   `is_team_admin(...)` (mehrere Überladungen)
--   `is_team_member(...)` (mehrere Überladungen)
--   `set_updated_at()`
-
-Einige Funktionen sind `SECURITY DEFINER`; ihre Ausführung und internen
-Prüfungen sind daher sicherheitsrelevant. Bei der bisherigen Prüfung
-wurden `PUBLIC`- und `anon`-EXECUTE-Rechte auf Funktionen als möglicher
-Härtungspunkt identifiziert. Erforderliche Aufrufe durch
-authentifizierte Nutzer und Trigger-Abhängigkeiten müssen vor Änderungen
-genau berücksichtigt werden.
-
-Die zweiparametrige Hilfsfunktion `is_team_admin(p_user_id, p_team_id)`
-wurde intern durch weitere Funktionen verwendet. Sie darf daher nicht
-als ungenutzt behandelt werden, ohne die Abhängigkeiten vorher zu ändern
-und zu prüfen. Auch die Verwendung der entsprechenden
-`is_team_member`-Überladung ist vor einem Rechteentzug zu überprüfen.
-
-### 5.3 Frontend-Sicherheitsgrenzen
-
--   `adminGuard()` prüft die lokal verfügbare Rolle im Frontend. Eine
-    solche UI-Prüfung verbessert die Bedienung, ersetzt aber keine
-    serverseitige Berechtigungsprüfung.
--   In der Trainerverwaltung gibt es Frontend-Prüfungen, die verhindern
-    sollen, dass der letzte Admin über die Oberfläche entfernt oder
-    herabgestuft wird. Diese Prüfung muss zusätzlich serverseitig
-    abgesichert sein.
--   Die Funktion `delete_my_account()` löscht die Mitgliedschaft und das
-    Konto des aufrufenden Nutzers. Im bisherigen Funktionsstand war kein
-    Schutz vor dem Löschen des letzten Team-Admins erkennbar.
--   Der JSON-Restore führt Datenbankoperationen schrittweise aus. Es
-    gibt eine Sicherheitskopie und einen Rollback-Versuch bei Fehlern,
-    aber der gesamte Restore ist keine einzelne atomare Transaktion;
-    auch ein Rollback kann scheitern.
-
-### 5.4 Sicherheitsstatus
-
-**Als offene Härtungspunkte festhalten:**
-
-1.  Letzten Admin serverseitig vor Entfernung, Herabstufung und
-    Kontolöschung schützen.
-2.  UPDATE-RLS-Richtlinien für Zuordnungstabellen auf erneute Team- und
-    Fremdschlüssel-Konsistenz prüfen und bei Bedarf korrigieren.
-3.  Rollenmodell fachlich festlegen: Dürfen Trainer Spieler anlegen und
-    bearbeiten?
-4.  EXECUTE-Rechte für RPCs/Funktionen nach dem Prinzip der minimal
-    erforderlichen Rechte prüfen; `PUBLIC`/`anon` nicht pauschal
-    entziehen, sondern Abhängigkeiten berücksichtigen.
-5.  `SECURITY DEFINER`-Funktionen, Suchpfade, Schemaqualifizierung und
-    tatsächliche Aufrufwege überprüfen.
-6.  Trigger auf `auth.users` für `handle_new_user()` gezielt
-    verifizieren; die bisherige Triggerprüfung auf öffentlichen Tabellen
-    genügt dafür nicht.
-7.  JSON-Restore hinsichtlich Transaktionssicherheit und
-    Wiederherstellbarkeit konzeptionell verbessern.
-8.  Sicherheitsrelevante Änderungen in DEV mit positiven und negativen
-    Berechtigungstests prüfen, bevor sie für PROD freigegeben werden.
-
-**Wichtig:** Die oben genannten Punkte sind Prüf- bzw. Härtungsaufgaben,
-keine pauschale Aussage, dass jede davon bereits eine ausnutzbare
-Sicherheitslücke darstellt.
-
-## 6. Produkt- und UX-Leitlinien
-
--   iPhone-taugliche, kompakte und responsive Oberfläche
--   Klare, konsistente Abstände, Icons und Badges
--   Lange Namen dürfen das Layout nicht sprengen
--   Spieler- und Trainerlisten möglichst ohne horizontales Scrollen
--   Spielerinformationen sollen bearbeitbar sein
--   Fotoauswahl soll Kamera und Fotomediathek unterstützen und Fotos
-    entfernbar machen
--   Nächstes anstehendes Training bzw. nächster Spieltag soll visuell
-    hervorgehoben werden
--   Historische Trainings- und Einsatzdaten sollen für Empfehlungen
-    nutzbar sein
--   Empfehlungen sollen für Trainer leicht verständlich und
-    nachvollziehbar erklärt werden
-
-## 7. Spielformen nach Altersklasse
-
-Als Produktanforderung wurde ein Epic „Spielform je Altersklasse"
-aufgenommen. Im bisherigen Projektkontext wurden die seit 2024/25
-geltenden Kinderfußball-Spielformen wie folgt zusammengefasst:
-
-  Altersklasse            Im Projektkontext genannte Spielformen
-  ----------------------- --------------------------------------------------
-  G-Jugend (U6/U7)        2v2 oder 3v3, ohne Torwart
-  F-Jugend (U8/U9)        3v3, 3+1 oder 5v5 in den beschriebenen Varianten
-  E-Jugend (U10/U11)      5v5 oder 7v7
-  D-Jugend (U12/U13)      9v9
-  Ab C-Jugend (U14/U15)   11v11
-
-Die App soll anhand der gewählten Spielform relevante Kaderparameter
-ableiten können, etwa Feldspieler, Torhüter, Teamgröße, benötigte
-Teamanzahl, mögliche Kadergröße und passende Formationsvarianten.
-
-**Offen:** Konkrete Vorgaben und Umsetzungen des zuständigen
-Fußballkreises bzw. FLVW für den jeweiligen Wettbewerb müssen vor einer
-verbindlichen Regelabbildung geprüft werden. Die Tabelle ist eine
-bisherige Projektzusammenfassung und keine aktuelle Verbandsfreigabe.
-
-## 8. Backlog -- Themenübersicht
-
-Der Backlog wird als laufende Produktdokumentation geführt.
-Statusangaben einzelner Tickets müssen vor dem Einchecken mit der
-zuletzt gepflegten Backlog-Liste abgeglichen werden.
-
-### Bereits als umgesetzt bzw. weitgehend umgesetzt besprochene Themen
-
--   Level-Abgleich zwischen App und Datenbank
--   Saisonwechsel-Grundlagen bzw. Saisonbezug
--   Flexible Kadergröße (Status laut älterer Backlog-Angabe als
-    umgesetzt genannt; aktuelle Implementierung gegen DEV prüfen)
--   Trainer-/Adminverwaltung und Einladung -- Einladung grundsätzlich
-    funktionsfähig, Passwort-Setup weiter zu verifizieren
--   Anpassung des Datumsfelds bei Trainingserstellung
--   DEV-/PROD-Struktur und zugehöriger Deployment-Ablauf
--   weitere frühere Backlog-Punkte 1--11 wurden zeitweise als umgesetzt
-    bezeichnet; genaue Ticket-zu-Status-Zuordnung vor Veröffentlichung
-    prüfen
-
-### Weitere bekannte Epics und Ideen
-
--   Saisonübergang zwischen Altersklassen und Mannschaften
--   Mehrere Teams und Trainerzuordnung zu mehreren Teams
--   Änderungshistorie für Spieler- und Stammdaten
--   Schutz vor paralleler Bearbeitung
--   Spielerprofil um Geburtsjahr, bevorzugten Fuß und
-    Vereinsvergangenheit erweitern
--   Verfügbarkeit und Zu-/Absagen für Training und Spieltag
--   Soll-/Ist-Anwesenheit und optionaler Fehlgrund
--   Elternkonto und Eltern-Kind-Verknüpfung
--   verfügbare, aber nicht eingesetzte Spieler auf Spieltagen markieren
--   Trainer als Trainingsteilnehmer dokumentieren
--   Formationsvorlagen für die Teambildung
--   Spieltagsarten (Meisterschaft, Freundschaftsspiel, Turnier) und
-    Anstoßzeit
--   nächstes Training / nächster Spieltag hervorheben
--   Trainingshistorie ab Vereinsbeitritt und saisonbezogene
-    Einsatzstatistik
--   Trainingsserien und Notizen zu Trainings und Spieltagen
--   Dashboard auf Basis des aktuellen und zukünftigen Funktionsstands
--   Spielerentwicklung und Spielernotizen (zunächst zurückgestellt)
--   Spielerwechsel zwischen Vereinen bzw. Mannschaften
--   Icons, kompaktere UI und responsive Darstellung
--   Spielform je Altersklasse
--   Sicherheit und Rechteverwaltung härten
-
-## 9. Arbeitsweise für weitere Epics
-
-Für jedes Epic möglichst einheitlich festhalten:
-
-1.  **Ziel und Problem:** Welchen konkreten Bedarf löst das Epic?
-2.  **Nutzer und Ablauf:** Wer nutzt es und in welchem Prozess?
-3.  **Fachliche Regeln:** Welche Entscheidungen, Grenzen und Sonderfälle
-    gelten?
-4.  **Datenmodell:** Welche Tabellen, Spalten, Beziehungen oder
-    Migrationen sind betroffen?
-5.  **UI/UX:** Welche Ansichten und Interaktionen ändern sich?
-6.  **Berechtigungen:** Welche Rollen dürfen lesen, erstellen, ändern
-    oder löschen?
-7.  **Akzeptanzkriterien:** Woran erkennen wir, dass das Epic fertig
-    ist?
-8.  **Testfälle:** Normalfälle, Grenzfälle, Berechtigungen und
-    Fehlerbehandlung
-9.  **Rollout:** DEV-Test, Freigabe und erst danach PROD
-
-Vor jeder Änderung: - aktuelle DEV-Datei und relevante Datenbankstruktur
-identifizieren - betroffene Funktionen und Policies ermitteln - Änderung
-klein und nachvollziehbar halten - Tests und erwartetes Ergebnis
-dokumentieren - keine PROD-Übernahme ohne ausdrückliche Freigabe
-
-## 10. Offene Dokumentations- und Abgleichaufgaben
-
--   [ ] Bei der nächsten tatsächlichen DEV-Frontendänderung den aktualisierten Commit von `jugendmannschaft/develop` und die automatische Aktualisierung von `jugendmannschaft-dev/main` dokumentieren.
--   [ ] Aktuelle DEV-Datenbankstruktur und Policies mit diesem Überblick
-    abgleichen.
--   [x] GitHub-Repositorys und Branch-Zuordnung für PROD, DEV und Browser-Preview dokumentieren (01.11.2026).
--   [ ] Backlog-Status der übrigen Epics anhand der zuletzt gepflegten Liste aktualisieren; das zuletzt geprüfte Optionsmenü der Mannschaftsdetailseite ist am 01.11.2026 vom Nutzer bestätigt worden. PROD-Rollout bleibt separat.
--   [ ] Sicherheitsbefunde als „bestätigt", „Verdacht/Prüfpunkt" oder
-    „erledigt" markieren.
--   [ ] Dokumentation in `develop` ablegen und Änderungen dort reviewen.
--   [ ] Nach erfolgreichem Abgleich einen kurzen Versionshinweis
-    ergänzen.
-
-## 11. Übergabehinweis für neue Chats
-
-Bei Fortsetzung des Projekts zuerst diese Datei und die aktuelle
-DEV-`index.html` als maßgebliche Ausgangsbasis verwenden. Anschließend
-gezielt klären, welches Epic bearbeitet wird und ob aktuelle
-SQL-/Frontend-Dateien oder Ergebnisse neuer Tests vorliegen.
-
-Nicht ungeprüft annehmen, dass frühere Dateien, temporäre Links oder
-ältere Codeausschnitte dem aktuellen DEV-Stand entsprechen. Bei
-Widersprüchen gilt der aktuell verifizierte DEV-Code und die aktuelle
-DEV-Datenbank; Unterschiede zur Dokumentation werden hier nachgeführt.
-
-------------------------------------------------------------------------
-
-**Pflegehinweis:** Nach jeder größeren Änderung an Architektur,
-Datenmodell, Sicherheitsmodell, Deployment oder Backlog-Status diese
-Datei aktualisieren.
-
-## Ergänzende Detailsektion – Vollständiger Epic-Backlog
-
-**Dokumentierter Stand:** 3. Oktober 2026 · 16 Epics. Die Detailanforderungen stammen aus der vom Nutzer bereitgestellten Backlog-Beschreibung. Wo der Einzelstatus nicht eindeutig ausgewiesen wurde, bleibt er offen und wird nicht erschlossen.
-
-| ID | Epic | Status | Priorität |
-|---|---|---|---|
-| E01 | Entwicklungsumgebung & Release-Prozess | Erledigt | – |
-| E02 | Trainerverwaltung & Zusammenarbeit | Nicht einzeln ausgewiesen | Normal |
-| E03 | Spielerprofil & Spielerstammdaten | Erledigt in DEV; PROD separat | – |
-| E04 | Saison-, Vereins- & Mannschaftsverwaltung | Umsetzungsbereit | Normal |
-| E05 | Kaderplanung & Spieltagsauswahl | Umsetzungsbereit | Normal |
-| E06 | Teambildung & Aufstellungen | Umsetzungsbereit | Normal |
-| E07 | Training erweitern | DEV weitgehend umgesetzt und getestet; Optionsmenü offen; PROD offen | Normal |
-| E08 | Spieltag erweitern | Offen / in Ausarbeitung* | Normal |
-| E09 | Übersicht & Orientierung | Idee* | Normal |
-| E10 | UI & Design-System | Idee* | Normal |
-| E11 | Termin- & Verfügbarkeitsmanagement | Idee* | Normal |
-| E12 | Elternkonto & Eltern-Kind-Verknüpfung | Idee* | Normal |
-| E13 | Icon-Bibliothek & Positionsverwaltung | Idee* | Normal |
-| E14 | Übergreifendes Navigationskonzept | Idee* | Normal |
-| E15 | Hilfebereich & FAQ | Idee* | Normal |
-| E16 | Sicherheit & Rechteverwaltung härten | Teilweise umgesetzt; E16.2 in DEV funktional getestet, weitere Teilaufgaben offen | Hoch |
-
-*Die Gesamtübersicht nennt 2 erledigte, 4 umsetzungsbereite, 3 offene/in Ausarbeitung befindliche und 7 Ideen. Die Einzelzuordnung ist nicht für alle Epics explizit; vor GitHub-Veröffentlichung anhand der gepflegten Backlog-Ansicht abgleichen. E01 ist erledigt, E03 in DEV getestet, E04–E06 sind umsetzungsbereit; E07 ist in DEV weitgehend umgesetzt und getestet, das Optionsmenü sowie der PROD-Rollout sind offen. E16.2 (Schutz des letzten Administrators) ist in DEV funktional getestet; weitere E16-Aufgaben und die PROD-Übernahme sind offen.
-
-### E01 – Entwicklungsumgebung & Release-Prozess
-**Status: Erledigt.** Getrennte App- und Supabase-Umgebungen für DEV und PROD. GitHub-Repository `jugendmannschaft` mit `main` als PROD und `develop` als DEV sowie eigenständiges `jugendmannschaft-dev` mit eigener Pages-Bereitstellung. Neue Funktionen zuerst in DEV umsetzen, testen und Fehler beheben; Release-Notizen nur für tatsächlich umgesetzte und getestete Änderungen; erst nach ausdrücklicher Freigabe nach PROD übernehmen. Keine ungetestete automatische Übernahme, keine Vermischung von DEV-/PROD-Daten und keine Veröffentlichung ohne bewusste Freigabe. Datumsfeldanpassung ebenfalls als erledigt dokumentiert.
-
-### E02 – Trainerverwaltung & Zusammenarbeit
-**Priorität: Normal.** Mehrere Trainer sollen eine oder mehrere Mannschaften verwalten können. Eigene Konten und Rollen (Trainer/Admin); Admins laden per E-Mail ein und verwalten Trainer; Trainer können Anzeigenamen ändern sowie Spieler ihrer Mannschaft anlegen/bearbeiten und sehen grundsätzlich nur zugewiesene Mannschaften. Trainer können als Trainingsteilnehmer über Benutzer-ID erfasst werden, nicht als Spieler und nicht in Kaderempfehlung/Teambildung; Namensänderungen dürfen Historie nicht verändern; Admins sind nicht automatisch Trainingsteilnehmer. Einladung über E-Mail-Link mit Passwort-Setup über Bestätigungslink; Teamzuweisungsfehler verständlich behandeln und Teilausfälle nachvollziehbar auffangen. Später: feinere Rollen, Änderungshistorie/Audit-Logs, mehrere Mannschaftszuweisungen, Schutz vor paralleler Bearbeitung. V1 ohne detaillierte Trainerstatistiken, komplexe Trainer-Abwesenheitsplanung oder unnötig komplexe Rollenstruktur. **Abhängigkeiten:** E04, E07, E16.
-
-### E03 – Spielerprofil & Spielerstammdaten
-**Status: Erledigt in DEV; DEV-Testcheckliste vollständig, keine automatische PROD-Freigabe.** Datensparsame Profile mit Vor-/Nachname, Foto, Geburtsjahr (kein vollständiges Geburtsdatum), starkem Fuß (links/rechts/beidfüßig), Positionen und qualitativer Stärke: Einsteiger, Fortgeschritten, Stark, Profi; Darstellung mit farbigen Sternen und Text, nicht numerisch/FIFA-basiert. Spieler sind unabhängig von Verein/Mannschaft angelegt und über Mitgliedschaften mit Mannschaft und Saison verbunden; mehrere Teams im selben Verein möglich; Historie bleibt bei Wechseln erhalten. Geburtsjahr leitet keine Mannschaftszugehörigkeit automatisch ab; Positionen sind Fähigkeit/Präferenz, nicht zwingend tatsächliche Spieltagsposition. Spielerkarte enthält persönliche/sportliche Infos, aktuelle Zugehörigkeit und abgeleitete Statistiken: Trainingsbeteiligung, Spieltagsteilnahmen, Nominierungen, tatsächliche Einsätze, Torwarteinsätze. Statistiken nicht manuell editierbar; Quoten innerhalb Mannschafts-/Mitgliedschaftsperiode berücksichtigen. UI: kompakte vertikale Liste, umbrechende Positionschips, Nominierungsmarkierung (grüne Umrandung/Trikotsymbol), Beteiligungsring, Empfehlungen zuerst und vollständige Reserveliste in Empfehlungsreihenfolge, Sortierung (Empfehlung/Nachname/Vorname/Beteiligung), kombinierbare Suche/Positionsfilter, iPhone Portrait/Landscape. Keine vollständigen Geburtsdaten, numerische Bewertung, detaillierte Entwicklung oder umfassende Positionshistorie in V1.
-
-### E04 – Saison-, Vereins- & Mannschaftsverwaltung
-**Priorität: Normal · Umsetzungsbereit.** Modell: Verein als Organisation, Mannschaft als Trainings-/Spielgruppe, Saison als Zeitraum, Spieler als eigenständiger Datensatz, Mitgliedschaft als Spieler-Mannschaft-Saison-Verknüpfung. Mehrere Mannschaften pro Spieler innerhalb eines Vereins; Trainerzuweisung kann Mannschaft/Saison berücksichtigen; Spieler separat oder direkt bei Anlage zuordnen; Eintrittsdatum dokumentieren. Saisonwechsel als kontrollierte Übergabe: bisheriger Trainer schlägt Spieler vor, neuer Trainer bestätigt aktiv; nicht bestätigte bleiben historisch erhalten, aber ohne aktive Mannschaft; keine automatische Zuordnung nach Geburtsjahr. Vereinswechsel: Freigabe und Bestätigung durch aufnehmenden Trainer; Wechsel innerhalb desselben Vereins kann Mehrfachzugehörigkeit erlauben; bei bestätigtem Vereinswechsel endet alte Zugehörigkeit und neue beginnt, Historie/Statistiken bleiben. Statistiken sind saison- und mannschaftsbezogen und durch Eintrittsdatum begrenzt. Kein öffentliches Spielerregister, Transfermarktplatz, automatische Mannschaftsoptimierung oder komplexe Berechtigungsverwaltung für Saisonwechsel in V1. **Abhängigkeiten:** E02, E03, E05, E16.
-
-### E05 – Kaderplanung & Spieltagsauswahl
-**Priorität: Normal · Umsetzungsbereit.** Leitprinzip: App empfiehlt, Trainer entscheidet. Kadergröße durch Trainer, Mannschaftsstandard mit Spieltagsabweichung, keine starre 16er-Grenze. Verfügbarkeit: „Nimmt teil“, „Nimmt nicht teil“, „Nicht verfügbar“; neue Spieltage starten standardmäßig nicht verfügbar; „Alle verfügbar/nicht verfügbar“; verfügbar bedeutet nicht automatisch nominiert. Nur verfügbare Spieler fließen in Empfehlung ein. Trainingsbeteiligung ist zentrales Fairnesskriterium; zusätzlich frühere Nominierungen, tatsächliche Einsätze, Aktualität/zeitliche Nähe und Zufall bei Gleichstand. Eine spätere Erläuterung nennt bei gleicher Trainingsbeteiligung jüngere Trainingshistorie, danach weniger bisherige Nominierungen, dann Zufall. **Offen:** die exakte Reihenfolge und Gewichtung, insbesondere Verhältnis Nominierungen zu tatsächlichen Einsätzen, vor Implementierung vereinheitlichen. Relevante Quoten innerhalb der Mitgliedschaftsperiode verwenden. Nach Auswahl tatsächliche Einsätze markierbar, „Alle eingesetzt“, einzelne Abwahl und separate Torwarteinsätze; Statistiken unterscheiden Spieltage, Nominierungen, tatsächliche Einsätze und Torwarteinsätze. Keine endgültige automatische Entscheidung, Spielminuten/Auswechslungen, Gleichsetzung von Verfügbarkeit und Anwesenheit oder starre Kadergröße. **Abhängigkeiten:** E03, E04, E06, E11.
-
-### E06 – Teambildung & Aufstellungen
-**Priorität: Normal · Umsetzungsbereit.** Altersgerecht: G/F ohne klassische Formationen und Fokus auf ausgeglichene Teams; E/D vereinfachte Positionsmöglichkeiten; C–A klassische Formationslogik. Spielformen als bisherige Orientierung: G 2v2/3v3 ohne Torwart; F 3v3, 3+1 oder 5v5 mit zulässigen Torvarianten; E 5v5/7v7; D 9v9; C–A grundsätzlich 11v11. Vor verbindlicher Umsetzung aktuelle DFB-/FLVW- und Kreisregeln prüfen. Automatische Balance über Anzahl der Spieler je qualitativer Stärkestufe (Profi, Stark, Fortgeschritten, Einsteiger), keine numerischen 1–4-Punkte. Torwartqualifikation berücksichtigen; bei ausreichender Zahl möglichst ein Torwart je Team; Torwarte können Feldspieler sein; bei Mangel entscheidet Trainer. Jüngere Altersklassen primär nach Stärke/Ausgewogenheit, Positionen kein Hauptkriterium außer Torwart. Formationen passend zur Spielform anbieten (Beispiel 7v7: 2-2-2 plus Torwart). Trainer kann Spieler/Positionen/Teams/Formationen manuell ändern; danach keine automatische Neuoptimierung; Aufstellung als Spieltags-Momentaufnahme speichern. Kein taktischer Optimierer, keine „beste“ Formation, Chemie-/Synergiewertung, numerische Bewertung, Spielminuten/Auswechslungen oder automatische Strategie. **Abhängigkeiten:** E03, E05, E08, Spielform je Altersklasse.
-
-### E07 – Training erweitern
-**Status: In DEV weitgehend umgesetzt und fachlich getestet; PROD offen.** Trainingsserien erzeugen eigenständige Einzeltermine mit Datum, Startzeit, Dauer, Ort, optionalem Namen und Notiz. Die Serie enthält Start-/Enddatum, Startzeit, Dauer, Ort, optionalen Namen und einen oder mehrere Wochentage. Einzeltermine können Felder individuell überschreiben; die Overrides werden je Termin in `public.trainings.overrides` (JSONB-Objekt) geführt. Eine Serienänderung aktualisiert zukünftige Termine nur bei Feldern, die nicht individuell überschrieben wurden. Notizen bleiben immer terminbezogen.
-
-**Serienregeln:** Änderungen können auf den ausgewählten Termin und nachfolgende Termine angewandt werden. Vergangene Termine werden durch Serienänderungen nicht verändert. Bei Änderung der Wochentage warnt die App, wenn Termine hinzukommen oder wegfallen können; betroffene individuell geänderte Termine dürfen nicht stillschweigend gelöscht werden. Beim Verkürzen des Serienzeitraums werden Termine außerhalb des neuen Zeitraums entfernt, auch wenn sie individuell geändert wurden. Beim Löschen nachfolgender Termine bleibt der ausgewählte Termin erhalten; nur spätere Termine werden entfernt. Die verbleibenden Termine behalten ihre Serienzugehörigkeit; die Serie wird auf den ausgewählten Termin begrenzt.
-
-**Status und Teilnahme:** Status `Geplant`, `Durchgeführt`, `Abgesagt`. Abgesagte Termine werden vollständig aus Teilnahmeberechnungen ausgeschlossen. Geplante Termine ohne erfasste Anwesenheit zählen noch nicht als stattgefundene Trainings. Wird tatsächliche Anwesenheit vorzeitig bestätigt, wird sie sofort berücksichtigt. Tatsächliche Anwesenheit ist von den geplanten Spieler-Rückmeldungen getrennt und kann unabhängig davon korrigiert werden. Trainer können ihre eigene Teilnahme und die Teilnahme anderer Trainer angeben; Trainerzuordnung/-teilnahme ist fachlich mit E02 verknüpft.
-
-**Aktueller Frontend-Teststand (09.10.2026):** `index01(2)_e07_training_title_fix_v10_DEV.html`. Erfolgreich getestet wurden: Serienvorschau; Einzeltermin-Overrides und deren Erhalt bei Serienänderungen; Änderungen an Startzeit/Dauer/Ort/Name; Wochentags- und Zeitraumänderungen; Löschung nachfolgender Termine bei Erhalt der Serienzugehörigkeit; Rückmeldungen und Anwesenheit; Absagen/Wiederherstellung; Ausschluss abgesagter Termine aus der Statistik; keine sofortige Zählung geplanter Termine ohne Anwesenheit; sofortige Berücksichtigung vorzeitig bestätigter Anwesenheit; Trainerteilnahme; Trainingsname in Übersicht/Detail. Die Anzeige eines Trainingsnamens ersetzt den Standardtitel „Training“; ohne individuellen Namen bleibt der Standardtitel bestehen.
-
-**Offen:** Optionsmenü der Trainingsdetailseite. Gewünschte Aktionen: „Bearbeiten“, „Absagen“, „Als durchgeführt markieren“, „Löschen“; Löschen muss mit Sicherheitsabfrage erfolgen. Zusätzlich ist nicht abschließend verifiziert, ob `training_series.updated_at` einen `set_updated_at`-Trigger besitzt. Die Kaderempfehlungslogik bei einer leeren DEV-Testbasis wurde bewusst nicht verändert, da PROD bereits historische Trainingsdaten enthält.
-
-**V1 weiterhin nicht vorgesehen:** strukturierter Übungskatalog/Trainingsplan, Karten/Navigation, detaillierte Trainerstatistiken oder komplexe Wiederholungsmuster. **Abhängigkeiten:** E02, E03, E11, E15.
-
-### E08 – Spieltag erweitern
-**Priorität: Normal.** Spielart: Meisterschaft, Freundschaftsspiel, Turnier. Angaben: Datum, Anstoßzeit, Spielort als Freitext und Notiz. Ergebnis zunächst in Notiz; separate Ergebnisfunktion später denkbar. Verknüpfung zu Kader/Verfügbarkeit (E05), Aufstellungen (E06), Zu-/Absagen (E11), Elternmeldungen (E12) sowie Orts-/Notizlogik aus E07. V1 ohne Liga-/Tabellenverwaltung, umfangreiche Ergebnisstatistik, komplexe Turnierverwaltung oder Karten-/Navigation. Offen: genaue Übersicht, Pflichtfelder, mehrere Spiele eines Turniers und spätere Ergebnisauswertung.
-
-### E09 – Übersicht & Orientierung
-**Priorität: Normal.** Zentrales Dashboard mit echtem Nutzen statt bloßer Listenaggregation. Bisher zwei Ansätze: Dashboard aus bestehenden Funktionen und zukünftiges Dashboard mit Backlog-Funktionen. Nächstes Training und nächster Spieltag visuell hervorheben; vergangene und künftige Termine unterscheiden. Kompakt, smartphonefreundlich, klare Hierarchie und E10-konform. Später Benachrichtigungen, Erinnerungen, weitere Kennzahlen und rollenbezogene Übersichten. Erste Ausbaustufe ohne Erinnerungen/Benachrichtigungen, Überladung oder unnötige Doppelungen. **Abhängigkeiten:** E07, E08, E10, E11, E14.
-
-### E10 – UI & Design-System
-**Priorität: Normal.** E10.1-Leitlinien sind abgestimmt: Smartphone-first (iPhone als zentrales Testgerät, aber auch Tablet/Desktop); klare Informationshierarchie; kompakt und touchfreundlich mit ausreichenden Touchzielen und Ellipsen für lange Texte; wiederverwendbare, konsistente Buttons, Karten, Badges, Listen, Felder, Statusanzeigen und Icons; sportartneutrales Grunddesign, Fußballgrün nicht als Markenbasis, Farben gezielt und dezent; Barrierefreiheit mit ausreichendem Kontrast, Farbe nicht als einzigem Merkmal, Light-/Dark-Mode von Anfang an; einheitliche Begriffe, Navigation/Zurück-Logik, Aktionsplatzierung, Status-/Stärke-/Rollendarstellung und Datums-/Uhrzeit-/Zahlenformate. Noch offen: genaue Farben, Schriften, Maße, Icon-Auswahl, Komponentenvarianten, Animationen und vollständige Screens. E10.1 setzt Leitlinien, konkrete Screens werden schrittweise festgelegt. **Abhängigkeiten:** E13, E14, alle funktionalen Epics.
-
-### E11 – Termin- & Verfügbarkeitsmanagement
-**Priorität: Normal.** Geplante Zu-/Absagen für Training und Spieltag durch Spieler bzw. perspektivisch Eltern; unbeantwortete Anfrage als eigener Status; Absagegrund optional später. Grundzustände: Zugesagt, Abgesagt, Keine Rückmeldung. Soll-/Ist-Vergleich macht zugesagte, aber nicht erschienene Spieler erkennbar. E11 dokumentiert Planung, E05 nutzt Status zur Spieltagsplanung, E07/Spieltagsdokumentation erfasst tatsächliche Teilnahme/Einsatz. Zusage wird nie automatisch als Anwesenheit gewertet. V1 ohne verpflichtenden Grund oder umfangreiche Benachrichtigungsabläufe. Offen: Änderungsrechte, Vorlaufzeit, kurzfristige Anpassung und Benachrichtigungen. **Abhängigkeiten:** E05, E07, E08, E12.
-
-### E12 – Elternkonto & Eltern-Kind-Verknüpfung
-**Priorität: Normal.** Eltern erhalten eigenes Konto ohne Trainerzugang; Konto kann mit mehreren Kindern verbunden werden, Verknüpfung eindeutig und sicher. Eltern melden Verfügbarkeit für Training/Spieltage; Trainer sehen die Meldungen. Keine unnötigen internen Trainerrechte. Zusammenarbeit mit E03–E05, E07, E08 und E11. Offen: Verknüpfungs-/Bestätigungsprozess, Konten beider Elternteile, sichtbare Daten, mehrere Kinder in verschiedenen Teams, Benachrichtigungen. Keine umfassende Kommunikationsplattform, Chat oder endgültige Rollenstruktur bisher definiert.
-
-### E13 – Icon-Bibliothek & Positionsverwaltung
-**Priorität: Normal.** Zentrale Icon-Bibliothek auf Basis Google Material Symbols. Neue Icons werden bei Entwicklung registriert; Admins wählen ausschließlich vorhandene Icons, keine freie Eingabe von Icon-Namen. Bestehende Zuordnungen bleiben stabil. Admins können Positionen anlegen/bearbeiten und ein Icon zuweisen; Farben und Löschen wurden als weitere Wünsche genannt. Bibliothek funktionsübergreifend und visuell einheitlich. Keine eigenen Admin-Grafiken, freie Icon-Namenseingabe oder vollständiges Redesign im Epic. **Abhängigkeiten:** E10, E14.
-
-### E14 – Übergreifendes Navigationskonzept
-**Priorität: Normal.** Hauptbereiche bisher Spieler, Training, Spieltag, Einstellungen. Einheitliche Hauptnavigation mit sichtbarem aktivem Bereich und responsiver Nutzung. Detailansichten brauchen klares, vorhersehbares Zurück-Verhalten; nicht nur außerhalb einer Karte tippen oder eine einzelne Schließen-Aktion als Ausweg. Wenige Navigationsebenen, erweiterbar für neue Bereiche, Rollenrechte, konsistente Begriffe/Icons, smartphonefreundlich und E10-konform. Keine tiefen Menüstrukturen oder ausschließlich versteckte/gestenbasierte Aktionen. **Abhängigkeiten:** E10, E15, alle App-Bereiche.
-
-### E15 – Hilfebereich & FAQ
-**Priorität: Normal.** Integrierter, thematisch gegliederter FAQ-Bereich mit aufklappbaren Inhalten; Suche und kontextbezogene Hilfe später möglich. Themen: Kaderempfehlung/Reservefolge, Beteiligung/Statistiken, Spielerpflege/Positionen/Stärke, Suche/Filter/Sortierung, Teambildung/Aufstellungen, Saisonwechsel, Trainerverwaltung, Backup/Restore. Texte müssen dem realen App-Verhalten entsprechen, praxisnah sein und bei Änderungen aktualisiert werden; auch fachliche Gründe erläutern. Beispieltext zur Kaderempfehlung (Trainingsbeteiligung, jüngere Trainingshistorie, weniger Nominierungen, Zufall) ist mit E05 abzugleichen, insbesondere tatsächliche Einsätze. Kein Ticketsystem, Support-Chat, umfangreiche Videobibliothek oder große Infobox in der Spielerliste. **Abhängigkeit:** E14 und erklärte Funktionsepics.
-
-### E16 – Sicherheit & Rechteverwaltung härten
-**Priorität: Hoch · teilweise umgesetzt.** E16.2 „Schutz des letzten Administrators“ wurde in DEV implementiert und funktional getestet (siehe Abschnitt 4.2). Die übrigen Aufgaben sowie die gesonderte Prüfung paralleler Transaktionen bleiben offen. Serverseitige Sicherheit stärken, ungültige Admin-Konstellationen verhindern, Datenänderungen zuverlässig ausführen/rollbacken. Aufgaben:
-1. EXECUTE-Rechte der zweiparametrigen `is_team_admin`-/`is_team_member`-Varianten prüfen; nur nötige Rollen zulassen, RLS und Funktionsrechte zusammen bewerten und direkte unberechtigte RPC-Aufrufe verhindern.
-2. Letzten Admin serverseitig vor Entfernen, Herabstufen und Kontolöschung schützen; Frontend-Prüfung reicht nicht.
-3. JSON-Restore in atomare Datenbanktransaktion überführen; keine Teilwiederherstellung bei Fehlern, Beziehungen berücksichtigen, Adminnutzung erhalten.
-4. Einladungsfehler, insbesondere Teamzuweisung und Teilausfälle, nachvollziehbar behandeln; inkonsistente Konten vermeiden.
-5. Klären und serverseitig umsetzen, ob Trainer Spielerpositionen zuweisen/entfernen dürfen.
-6. Nutzersuche auch über 1.000 Konten zuverlässig und vollständig gestalten.
-7. DEV-Sicherheits- und Regressionstests für RLS, Rollen, direkte Funktionsaufrufe, Einladungen/Teamzuweisungen, Rollenänderung, Nutzerentfernung/-löschung, letzten Admin, JSON-Backup/Restore und bestehende Admin-/Trainerfunktionen durchführen.
-
-**Akzeptanz:** Teamdaten nur für Berechtigte; keine unberechtigten Adminaktionen; Team bleibt nicht versehentlich ohne Admin; fehlgeschlagener Restore hinterlässt keinen Teilbestand; Einladungsfehler sind behandelbar; bestehende Funktionen bleiben erhalten; Änderungen sind vor PROD in DEV erfolgreich getestet.
-
-Sicherheitsaufgaben haben Vorrang vor der nächsten betroffenen PROD-Veröffentlichung. Featurearbeit darf parallel in DEV stattfinden; Sicherheitsänderungen kontrolliert und möglichst getrennt halten. PROD bleibt bis zu erfolgreichen Tests und ausdrücklicher Freigabe unverändert. **Abhängigkeiten:** E01–E04.
-
-## Ergänzende Detailsektion – Übergreifende Produktentscheidungen
-
-- Die App empfiehlt, der Trainer entscheidet.
-- Trainingsbeteiligung ist ein zentrales Fairnesskriterium der Kaderempfehlung.
-- Saison-, Mannschafts- und Vereinswechsel löschen keine Historie.
-- Datensparsamkeit: nur tatsächlich benötigte Angaben erfassen.
-- Technische und visuelle Basis soll perspektivisch sportartneutral erweiterbar sein.
-- Smartphone-first, aber nicht ausschließlich für ein Gerät.
-- DEV-Test und ausdrückliche Freigabe vor jeder PROD-Übernahme.
-
-## Ergänzende Detailsektion – DEV-Änderungsnachweis E07 Trainingsverwaltung
-
-**Umgebung:** ausschließlich DEV  
-**Status:** E07-Serienlogik, Rückmeldungen, Anwesenheit, Statistikregeln und Trainingsnamendarstellung in DEV getestet; Optionsmenü offen; keine PROD-Übernahme.
-
-Der aktuelle zuletzt geprüfte DEV-Frontendstand ist `index01(2)_e07_training_title_fix_v10_DEV.html` (09.10.2026). Die detaillierten fachlichen Regeln und Testergebnisse sind im Abschnitt „E07 – Training erweitern“ dokumentiert. Die Teambildungslogik wurde im Rahmen dieser E07-Änderungen nicht gezielt geändert.
-
-**PROD:** unverändert; keine Übernahme.
-
-## Ergänzende Detailsektion – Offene Abgleiche vor GitHub-Ablage
-
-- [ ] Statuskategorien der Gesamtübersicht abschließend einzelnen Epics zuordnen.
-- [ ] Aktuelle DEV-`index.html` und Commit-/Versionsstand eindeutig erfassen.
-- [ ] DEV-Schema, RLS-Policies, Funktionen und Trigger mit der technischen Bestandsaufnahme abgleichen.
-- [ ] Exakten DDL-Text von `prevent_last_team_admin_removal()` und dem Constraint-Trigger aus DEV exportieren, als versionierte SQL-Migration ablegen und vor PROD gegen den tatsächlichen DEV-Stand prüfen.
-- [ ] Für DEV und PROD getrennte Datenbank-Änderungsprotokolle führen; je Umgebung den angewendeten Migrationsstand und Prüfstatus festhalten.
-- [ ] PROD-Dokumentation erst nach eigenständiger Bestandsaufnahme der PROD-Datenbank erstellen; DEV-Änderungen nicht als bereits in PROD vorhanden kennzeichnen.
-- [ ] Repositorys, Branches, Pages-Bereitstellungen und Deploy-Workflows in GitHub verifizieren.
-- [ ] E05-Reihenfolge/ Gewichtung der Empfehlungsfaktoren fachlich vereinheitlichen.
-- [ ] Spielformen anhand aktueller DFB-/FLVW- und Kreisregelungen prüfen.
-- [ ] E03-DEV-Teststatus klar vom PROD-Veröffentlichungsstatus trennen.
-- [ ] Nach Abgleich in `develop` ablegen und dort reviewen.
-
-## Ergänzende Detailsektion – Arbeitsweise für weitere Epics
-
-Für jedes Epic festhalten: Ziel/Problem; Nutzer und Ablauf; fachliche Regeln/Sonderfälle; Datenmodell/Migrationen; UI/UX; Rollen/Berechtigungen; Akzeptanzkriterien; positive, negative und Regressionstests; DEV-Test, Freigabe und PROD-Rollout.
-
-Vor Änderungen aktuelle DEV-Datei und relevante Datenbankstruktur identifizieren. Änderungen klein und nachvollziehbar halten. Keine Datenbankänderung vor Prüfung und Besprechung konkreter Notwendigkeit. Keine PROD-Übernahme ohne erfolgreiche Tests und ausdrückliche Freigabe.
-
-## Ergänzende Detailsektion – Übergabehinweis für neue Chats
-
-Diese Datei zusammen mit der aktuellen DEV-`index.html` als Ausgangsbasis verwenden. Zuerst gewünschtes Epic und tatsächlichen Stand betroffener Dateien/Datenbank klären. Frühere Codeausschnitte und temporäre Dateien nicht ungeprüft als aktuell behandeln. Bei Abweichungen gilt der verifizierte DEV-Stand; Dokumentation anschließend aktualisieren.
-
-**Pflegehinweis:** Nach wesentlichen Änderungen an Architektur, Datenmodell, Sicherheit, Deployment oder Epic-Status diese Datei aktualisieren.
-
-## Ergänzende Detailsektion – AP0-Restprüfung und Multi-Verein-Release-Katalog (01.11.2026)
-
-AP0 wird nicht neu begonnen. Die vorhandene Dokumentation zu Architektur, Rollen, Deployment und AP02/AP03 bleibt die Grundlage. Eine aktuelle read-only Prüfung von Supabase DEV/PROD hat nur die noch offenen Release-Basispunkte ergänzt.
-
-**Aktuell verifiziert:**
-- Supabase DEV: 27 Tabellen im Schema `public`, 42 Einträge in der Migrationsliste.
-- Supabase PROD: 19 Tabellen im Schema `public`, 3 Einträge in der Migrationsliste.
-- Acht Tabellen sind derzeit nur in DEV vorhanden: `clubs`, `club_members`, `global_user_roles`, `club_member_roles`, `team_member_roles`, `team_role_change_log`, `user_team_context`, `user_club_context`.
-- Zusätzliche DEV-Spalten: `teams.club_id`, `teams.birth_cohorts`, `teams.abbreviation`, `profiles.avatar_url`.
-- Im aktiven Repository `develop` liegen derzeit fünf versionierte Dateien unter `supabase/migrations/`, alle mit AP04-Präfix. Die exakten SQL-Quellen für die in DEV angewendeten AP01–AP03-Migrationen sind im aktiven Repository noch nicht vollständig reproduzierbar abgelegt.
-- Der dokumentierte Rollen-/Berechtigungsprüfbericht und der Mannschaftskontextbericht halten authentifizierte End-to-End-Tests weiterhin teilweise als offen fest.
-- Der DEV-Security-Advisor meldet unter anderem eine SECURITY DEFINER-Funktion `admin_update_club_member_profile(...)`, die laut Advisor auch von `anon` ausführbar ist. Vor einem Release muss die Absicht geprüft und bei unzulässigem Grant in DEV korrigiert und verifiziert werden. Die übrigen Advisor-Befunde sind einzeln zu klassifizieren.
-- Backup-/Restore-Nachweis für den konkreten PROD-Release ist in dieser Prüfung nicht erneut bestätigt worden; das ist vor der Freigabe nachzuweisen. Ein JSON-Export ist kein Ersatz für ein getestetes Datenbank-Restore-Verfahren.
-
-**Nächster Arbeitsstand:** Release-Katalog AP1–AP3 als Arbeitsentwurf angelegt:
-`docs/AP01-03_RELEASE_KATALOG_2026-11-01.md`.
-
-Der Katalog schlägt vor, AP1 und AP2 mit den notwendigen Teilen von AP3 als zusammenhängende Multi-Verein-Grundlage zu veröffentlichen, falls die konkrete SQL-Abhängigkeitsprüfung keine sichere Trennung erlaubt. AP4-Profil-/Avatar-Funktionen, historische Spielerzugehörigkeiten, umfassende Saisonhistorie und zusätzliche Mannschaftsauswahl werden nicht automatisch in den ersten Release aufgenommen. Die genaue Scope-Grenze wird nach dem Frontend-/RPC-Abhängigkeitsreview festgelegt.
-
-**Keine Änderungen vorgenommen:** keine Datenbankmigrationen ausgeführt, keine Daten verändert, keine Frontenddatei geändert, PROD nicht verändert. Diese Prüfung und der Katalog sind Dokumentationsarbeit und ein Bestandsnachweis, keine Release-Freigabe.
-
-
----
-
-## Release 1.5.2 – veröffentlichter PROD-Stand zum 02.11.2026
-
-**Deployment-Status:** Der Projektverantwortliche hat am 02.11.2026 bestätigt: „Prod deploy erfolgt.“ Dies ist eine Nutzerbestätigung, kein unabhängiger technischer Deployment-Nachweis. Ein unabhängiger Post-Deploy-Smoke-Test und ein unabhängig bestätigter Post-Deploy-Commit-SHA sind nicht dokumentiert.
-
-### Dokumentierter Umfang
-- Soft-Deaktivierung von Mannschaften über `public.teams.active boolean NOT NULL DEFAULT true` und `public.remove_team(p_team_id uuid)`.
-- Das Frontend filtert aktive Mannschaften anhand `active = true`; Deaktivierungshinweis und -bestätigung wurden angepasst.
-- Der Guard in `openEditTeamForm` wurde auf gültigen Vereinskontext und passende Berechtigung ausgerichtet.
-- Bekannte Commits aus der Vorarbeit: `ce75777434fb0ef119b53204ab7767b86bb0f551` und `e5bbcf0b233f3c166c09f91c8d72f4684e5afef7`.
-- Vor Deployment bekannter SHA von `develop/index.html`: `4a07dd8221669e2919e77317bca3ebec6c1b2a9c`. Dieser SHA ist ausdrücklich kein bestätigter Post-Deploy-SHA.
-
-### Datenbank- und Berechtigungsstatus laut bisheriger Dokumentation
-- Migration 15 mit `teams.active` und `remove_team(p_team_id uuid)` wurde laut Projektverlauf in DEV und PROD ausgeführt/verifiziert. Die vollständige Originaldefinition von `remove_team` ist in diesem Dokument nicht enthalten und muss vor jeder späteren Änderung direkt aus der Zielumgebung ausgelesen werden.
-- Laut Projektverlauf wurden in PROD EXECUTE-Rechte für `PUBLIC`, `anon` und `authenticated` auf `handle_new_user()`, `log_team_role_change()`, `prevent_last_team_admin_removal()` und `rls_auto_enable()` entzogen. Die dokumentierte ACL-Prüfung ersetzt keinen vollständigen Runtime-Test aller betroffenen Trigger; dieser ist nicht als abgeschlossen belegt.
-- `admin_update_club_member_profile(uuid,uuid,text,text)`: laut früherer Prüfung in DEV und PROD kein EXECUTE für `anon`, EXECUTE für `authenticated`.
-- `save_player_with_positions`: PROD-Definition wurde laut früherer Prüfung ausgelesen und als passend beurteilt.
-- 25 im Frontend verwendete RPCs, relevante RLS-Policies sowie Storage-Buckets `club-assets` und `profile-avatars` wurden laut früherem Abgleich zwischen DEV und PROD geprüft. Dies ist ein historischer Prüfhinweis, keine erneute Prüfung zum 03.11.2026.
-
-### Historische Migrationspakete 1–14
-Laut Projektverlauf wurden die Pakete 1–9 sowie 10–14 manuell in PROD angewendet; Migration 14 wurde als ausgeführt/verifiziert gemeldet. Vollständige Original-SQL-Dateien und exakte Migrationsnamen sind anhand der tatsächlichen Supabase-Migrationshistorie bzw. der Originalquellen zu belegen. Keine Definition aus dem Gedächtnis rekonstruieren.
-
-### Nächster Arbeitsauftrag: Mitglieder-/Trainer-Einladung
-Der Einladungsfehler bleibt offen und ist nicht Bestandteil von Release 1.5.2:
-1. Eine Einladung aus DEV leitete auf PROD bzw. den normalen Login statt in den erwarteten Passwort-Erstellungsfluss.
-2. Der Name wurde offenbar nicht gespeichert, obwohl die Oberfläche einen erfolgreichen Versand meldete.
-3. Eine Mehrfachzuordnung zu Mannschaften führte in einem Fall zu Loginproblemen; nach Entfernen der zweiten Zuordnung funktionierte die Anmeldung.
-4. Vor einer neuen Einladung sollen bestehende Auth-Benutzer und Mannschaftszuordnungen berücksichtigt werden.
-
-Zuerst read-only Frontend-Aufruf/Payload, Originalcode der Edge Function `invite-trainer`, DEV Auth Site URL/Redirect-Allowlist, E-Mail-Template und Speicherung von Name/Rolle/Mannschaft untersuchen. Keine Änderungen ohne gesonderte Freigabe.
-
-### Verbindliche Arbeitsregeln
-- `develop` ist der DEV-Quellstand; `main` ist PROD.
-- Vor Codeänderungen die aktuelle `develop/index.html` frisch abrufen.
-- DEV zuerst; keine PROD-Änderungen oder Deploys ohne separate ausdrückliche Freigabe.
-- Keine SQL-Migration, schreibende SQL-Ausführung oder Auth-/Edge-Konfigurationsänderung ohne ausdrückliche Freigabe.
-- Originaldefinitionen auslesen, nicht rekonstruieren; den jeweils freigegebenen Auftrag fokussiert bearbeiten.
+Die frühere ausführliche Fassung dieses Dokuments wurde unverändert archiviert: [PROJECT_CONTEXT_2026-11-03.md](docs/archive/PROJECT_CONTEXT_2026-11-03.md). Sie enthält ältere Epic-Detailbeschreibungen, Zwischenstände und historische Entscheidungen. Bei Widersprüchen gelten aktuelle, verifizierte Projektdateien und neuere ausdrückliche Nutzerentscheidungen; das Archiv ist kein aktueller Arbeitsauftrag.
