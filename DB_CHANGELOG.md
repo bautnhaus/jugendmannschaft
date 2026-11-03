@@ -432,3 +432,21 @@ Laut Projektverlauf wurden Pakete 1–9 sowie 10–14 manuell in PROD angewendet
 Die 43 vom Nutzer bereitgestellten SQL-Originale wurden vollständig inventarisiert und bytegenau gegen die Quelldateien aus Sql.zip verglichen. Die einzelnen SHA-256-Prüfsummen und Kurzbeschreibungen stehen im Inventar docs/database/archive/PROD_Migrationen_01-43/MIGRATIONEN_01-43_Inventar.md; die Originaldateien und die technische Matrix befinden sich im Archivpaket docs/database/archive/PROD_Migrationen_01-43/PROD_Migrationen_01-43_Arbeitsstand.tar.xz.
 
 Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und im damaligen Chat geprüft wurden. Die Einzelabfragen und Resultate der Prüfungen sind im Archiv nicht enthalten und wurden nicht erneut eingesehen. Diese Dokumentation ist daher ein historischer Ausführungs- und Nutzerbestätigungsnachweis, kein aktueller Live-Schema- oder RLS/ACL-Abgleich. Siehe die 43 getrennten PROD-Datensätze in DB_MIGRATION_LOG.md.
+
+## DB-DEV-007 – Gemeinsamer Abschluss der Mitglieder-/Trainer-Einladung
+
+- **Umgebung:** Supabase DEV
+- **Migrationsversion:** `20261103203047` (`r16_member_invitation_transaction_dev`)
+- **Status:** Migration erfolgreich ausgeführt und Struktur-/Rechteverifikation abgeschlossen.
+- **Funktion:** `public.admin_complete_member_invitation(p_user_id uuid, p_display_name text, p_club_id uuid, p_invited_role text, p_team_id uuid DEFAULT NULL)`
+- **Rückgabe:** `jsonb`
+- **Sicherheit:** `SECURITY DEFINER`, fester `search_path = pg_catalog, public, auth`; EXECUTE für `authenticated`, kein EXECUTE für `anon` oder `PUBLIC`.
+- **Zweck:** Gemeinsamer transaktionaler Abschluss für die vier Zielrollen `member`, `club_admin`, `team_admin` und `trainer`. Die Funktion validiert Auth-Benutzer, Verein, optionale Mannschaft und Einladungsrolle; prüft die Berechtigung des einladenden Super Admins/Vereinsadmins/Mannschaftsadmins; verhindert abweichende Vereins- und zusätzliche Mannschaftszuordnungen; ergänzt die Vereinsmitgliedschaft automatisch; ergänzt gegebenenfalls Vereins- oder Mannschaftsrollen.
+- **Profilname:** `profiles.display_name` wird nur gesetzt, wenn das Profil noch keinen persönlichen Namen enthält oder derzeit die E-Mail-Adresse als Fallback enthält. Ein bereits vorhandener persönlicher Name bleibt erhalten. `team_members.admin_label` wird durch diese Funktion nicht geschrieben.
+- **Transaktions-/Parallelitätsverhalten:** Die Zielzeile in `auth.users` wird mit `FOR UPDATE` gesperrt. Ein vorhandenes Profil wird ebenfalls für die Dauer der Transaktion gesperrt. Die Datenbankänderungen der Funktion werden transaktional ausgeführt.
+- **Verifikation:** Live-Definition über `pg_get_functiondef()` gelesen; `to_regprocedure()` bestätigt Existenz; `prosecdef = true`; EXECUTE-Prüfung ergab `authenticated=true`, `anon=false`, `PUBLIC=false`; Migration in Supabase-Historie vorhanden.
+- **Nicht verifiziert:** Noch kein echter Funktionsaufruf für einen Benutzer aus einem der drei Kontexte; keine End-to-End-Einladung, keine E-Mail, keine parallele Konkurrenzprüfung. Die Funktion ist zunächst Backend-Grundlage und noch nicht an die App angebunden.
+- **PROD:** Nicht ausgeführt. Keine PROD-Änderung.
+
+**Wichtige Abgrenzung:** Diese Funktion legt keine Auth-Benutzer an und versendet keine Einladungs-E-Mails. Beides verbleibt in der nachfolgenden Edge-Function-Verarbeitung. Bei einem späteren Rollback ist vor dem Löschen zu prüfen, dass keine aufrufenden Edge Functions oder anderen Datenbankobjekte mehr davon abhängen.
+
