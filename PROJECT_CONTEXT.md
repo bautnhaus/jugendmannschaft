@@ -94,7 +94,7 @@ Am 02.11.2026 laut Nutzerbestätigung nach PROD deployed. Die Release Notes doku
 ### Release 1.6 – Mitglieder-/Trainer-Einladung (DEV-Implementierung, Praxistests offen)
 Die read-only Bestandsaufnahme ist abgeschlossen und die erste Umsetzung wurde nach ausdrücklicher Nutzerfreigabe ausschließlich in DEV begonnen:
 - Zentrale DEV-Datenbankfunktion `admin_complete_member_invitation()` wurde als Migration `20261103203047` ausgeführt und in `DB_MIGRATION_LOG.md` / `DB_CHANGELOG.md` dokumentiert (DB-DEV-007).
-- Neue Edge Function `invite-member` ist in Supabase DEV ACTIVE (Version 2, JWT-Prüfung aktiv); der Redirect wird über die Supabase-Projektkennung DEV-/PROD-getrennt bestimmt.
+- Neue Edge Function `invite-member` ist in Supabase DEV ACTIVE (Version 3, JWT-Prüfung aktiv); der Redirect wird über die Supabase-Projektkennung DEV-/PROD-getrennt bestimmt.
 - Die Einladungswege für Super Admin, Vereinsadmin und Mannschaftsadmin verwenden im aktuellen Frontend den gemeinsamen Einladungspfad.
 - `profiles.display_name` ist die einzige maßgebliche Quelle des persönlichen Namens. Frontend-Verwendungen von `team_members.admin_label` sind entfernt; bestehende Daten in diesem Feld bleiben unverändert.
 - Ein reines Vereinsmitglied ohne Mannschaft erhält einen eingeschränkten App-Einstieg statt eines Login-Abbruchs.
