@@ -554,7 +554,7 @@ DEV-Datenbank; Unterschiede zur Dokumentation werden hier nachgeführt.
 Datenmodell, Sicherheitsmodell, Deployment oder Backlog-Status diese
 Datei aktualisieren.
 
-## 8. Vollständiger Epic-Backlog
+## Ergänzende Detailsektion – Vollständiger Epic-Backlog
 
 **Dokumentierter Stand:** 3. Oktober 2026 · 16 Epics. Die Detailanforderungen stammen aus der vom Nutzer bereitgestellten Backlog-Beschreibung. Wo der Einzelstatus nicht eindeutig ausgewiesen wurde, bleibt er offen und wird nicht erschlossen.
 
@@ -648,7 +648,7 @@ Datei aktualisieren.
 
 Sicherheitsaufgaben haben Vorrang vor der nächsten betroffenen PROD-Veröffentlichung. Featurearbeit darf parallel in DEV stattfinden; Sicherheitsänderungen kontrolliert und möglichst getrennt halten. PROD bleibt bis zu erfolgreichen Tests und ausdrücklicher Freigabe unverändert. **Abhängigkeiten:** E01–E04.
 
-## 9. Übergreifende Produktentscheidungen
+## Ergänzende Detailsektion – Übergreifende Produktentscheidungen
 
 - Die App empfiehlt, der Trainer entscheidet.
 - Trainingsbeteiligung ist ein zentrales Fairnesskriterium der Kaderempfehlung.
@@ -658,7 +658,7 @@ Sicherheitsaufgaben haben Vorrang vor der nächsten betroffenen PROD-Veröffentl
 - Smartphone-first, aber nicht ausschließlich für ein Gerät.
 - DEV-Test und ausdrückliche Freigabe vor jeder PROD-Übernahme.
 
-## 4.4 DEV-Änderungsnachweis – E07 Trainingsverwaltung / aktueller Frontend-Teststand
+## Ergänzende Detailsektion – DEV-Änderungsnachweis E07 Trainingsverwaltung
 
 **Umgebung:** ausschließlich DEV  
 **Status:** E07-Serienlogik, Rückmeldungen, Anwesenheit, Statistikregeln und Trainingsnamendarstellung in DEV getestet; Optionsmenü offen; keine PROD-Übernahme.
@@ -667,7 +667,7 @@ Der aktuelle zuletzt geprüfte DEV-Frontendstand ist `index01(2)_e07_training_ti
 
 **PROD:** unverändert; keine Übernahme.
 
-## 10. Offene Abgleiche vor GitHub-Ablage
+## Ergänzende Detailsektion – Offene Abgleiche vor GitHub-Ablage
 
 - [ ] Statuskategorien der Gesamtübersicht abschließend einzelnen Epics zuordnen.
 - [ ] Aktuelle DEV-`index.html` und Commit-/Versionsstand eindeutig erfassen.
@@ -681,19 +681,19 @@ Der aktuelle zuletzt geprüfte DEV-Frontendstand ist `index01(2)_e07_training_ti
 - [ ] E03-DEV-Teststatus klar vom PROD-Veröffentlichungsstatus trennen.
 - [ ] Nach Abgleich in `develop` ablegen und dort reviewen.
 
-## 11. Arbeitsweise für weitere Epics
+## Ergänzende Detailsektion – Arbeitsweise für weitere Epics
 
 Für jedes Epic festhalten: Ziel/Problem; Nutzer und Ablauf; fachliche Regeln/Sonderfälle; Datenmodell/Migrationen; UI/UX; Rollen/Berechtigungen; Akzeptanzkriterien; positive, negative und Regressionstests; DEV-Test, Freigabe und PROD-Rollout.
 
 Vor Änderungen aktuelle DEV-Datei und relevante Datenbankstruktur identifizieren. Änderungen klein und nachvollziehbar halten. Keine Datenbankänderung vor Prüfung und Besprechung konkreter Notwendigkeit. Keine PROD-Übernahme ohne erfolgreiche Tests und ausdrückliche Freigabe.
 
-## 12. Übergabehinweis für neue Chats
+## Ergänzende Detailsektion – Übergabehinweis für neue Chats
 
 Diese Datei zusammen mit der aktuellen DEV-`index.html` als Ausgangsbasis verwenden. Zuerst gewünschtes Epic und tatsächlichen Stand betroffener Dateien/Datenbank klären. Frühere Codeausschnitte und temporäre Dateien nicht ungeprüft als aktuell behandeln. Bei Abweichungen gilt der verifizierte DEV-Stand; Dokumentation anschließend aktualisieren.
 
 **Pflegehinweis:** Nach wesentlichen Änderungen an Architektur, Datenmodell, Sicherheit, Deployment oder Epic-Status diese Datei aktualisieren.
 
-## 13. AP0-Restprüfung und Multi-Verein-Release-Katalog – 01.11.2026
+## Ergänzende Detailsektion – AP0-Restprüfung und Multi-Verein-Release-Katalog (01.11.2026)
 
 AP0 wird nicht neu begonnen. Die vorhandene Dokumentation zu Architektur, Rollen, Deployment und AP02/AP03 bleibt die Grundlage. Eine aktuelle read-only Prüfung von Supabase DEV/PROD hat nur die noch offenen Release-Basispunkte ergänzt.
 
