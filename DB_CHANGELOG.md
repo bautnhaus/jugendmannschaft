@@ -2,7 +2,7 @@
 
 **Stand:** 03.11.2026  
 **Geltungsbereich:** Dokumentierte Änderungen und Prüfungen in Supabase DEV und PROD; die jeweilige Umgebung und Nachweisgrenze sind pro Eintrag maßgeblich.  
-**Führende Fassung:** Branch `develop`. Dieses Protokoll ist kein Live-Schema-Dump und ersetzt weder Originalmigrationen noch aktuelle Abfragen der Zielumgebung.
+**Führende Fassung:** Branch `develop`. Dieses Dokument beschreibt Datenbankobjekte, historische Änderungen und Verifikationsbefunde; es ist kein vollständiges Ausführungsjournal. Jede tatsächlich ausgeführte schreibende SQL-Anweisung – auch manuell im Supabase SQL Editor und unabhängig davon, ob eine Migrationsdatei existiert – muss zusätzlich mit eigenem Ausführungsnachweis in `DB_MIGRATION_LOG.md` erfasst werden. DEV und PROD sind getrennt zu dokumentieren. Dieses Protokoll ist kein Live-Schema-Dump und ersetzt weder Originalmigrationen noch aktuelle Abfragen der Zielumgebung.
 
 **Historischer Ausgangsstand:** 09.10.2026  
 **Umgebung:** Supabase DEV  
