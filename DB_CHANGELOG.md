@@ -1,8 +1,12 @@
-# Kaderkompass – Datenbankänderungsprotokoll DEV
+# Jugendmannschaft – Datenbankänderungs- und Verifikationsprotokoll
 
-**Stand:** 09.10.2026  
+**Stand:** 03.11.2026  
+**Geltungsbereich:** Dokumentierte Änderungen und Prüfungen in Supabase DEV und PROD; die jeweilige Umgebung und Nachweisgrenze sind pro Eintrag maßgeblich.  
+**Arbeitsführende Fassung:** Branch `develop`. Diese Kopie in `main` hält den dokumentierten Veröffentlichungsstand und die historischen DEV-/PROD-Nachweise fest. DEV-Einträge sind ausdrücklich keine Aussage über das PROD-Schema. Dieses Protokoll ist kein Live-Schema-Dump und ersetzt weder Originalmigrationen noch aktuelle Abfragen der Zielumgebung.
+
+**Historischer Ausgangsstand:** 09.10.2026  
 **Umgebung:** Supabase DEV  
-**Zweck:** Dokumentation des nachweislich abgeglichenen DEV-Bestands als Grundlage für einen späteren kontrollierten PROD-Rollout. Dieses Protokoll dokumentiert die bekannten DEV-Änderungen bis 09.10.2026; es ist kein vollständiger Schema-, RLS- oder Policy-Abgleich.
+**Historischer Zweck (09.10.2026):** Dokumentation des damals nachweislich abgeglichenen DEV-Bestands als Grundlage für einen späteren kontrollierten PROD-Rollout. Dieser Satz beschreibt den ursprünglichen Zweck des historischen DEV-Abschnitts, nicht den aktuellen Veröffentlichungsstatus. Die aktuelle Geltung und Abgrenzung stehen in der Kopfzeile; DEV-Einträge sind kein PROD-Schemanachweis.
 
 ## DB-DEV-001 – Schutz des letzten Administrators (E16.2)
 
@@ -371,3 +375,53 @@ Nicht übertragen. Für PROD ist eine separate, geprüfte Release-Migration erfo
 
 - DEV-Praxistest: gültige Vereinsadmin-Zuweisung, gültige Mannschaftsadmin-Zuweisung, Ablehnung eines Kontos aus einem anderen Verein, Ablehnung fehlender Admin-Auswahl und Neutralität des Super Admins.
 - Keine Änderung an PROD.
+
+
+
+---
+
+## Release 1.5.2 – veröffentlichter PROD-Datenbank- und Berechtigungsnachweis (02.11.2026)
+
+**Deployment-Kontext:** Release 1.5.2 wurde laut Nutzerbestätigung am 02.11.2026 nach PROD deployed. Ein unabhängiger Post-Deploy-Smoke-Test ist nicht dokumentiert. Die folgenden Angaben geben dokumentierte frühere Ausführungen/Prüfungen wieder und sind keine erneute Live-Abfrage am 03.11.2026.
+
+### DB-DEV/PROD-015 – Soft-Deaktivierung von Mannschaften
+Laut Projektverlauf in DEV und PROD ausgeführt und verifiziert.
+
+Dokumentierter SQL-Auszug:
+```sql
+ALTER TABLE public.teams
+  ADD COLUMN IF NOT EXISTS active boolean NOT NULL DEFAULT true;
+```
+
+Zusätzlich wurde `public.remove_team(p_team_id uuid)` zur Soft-Deaktivierung von Mannschaften eingeführt/verwendet. **Die vollständige Originaldefinition ist in diesem Protokoll nicht enthalten.** Vor einer künftigen Änderung muss sie direkt aus der jeweiligen Zielumgebung, beispielsweise über `pg_get_functiondef()`, ausgelesen werden. Dieser Eintrag ersetzt nicht die Originalmigration.
+
+Frontend-Verhalten laut Release-Dokumentation: aktive Mannschaften werden über `active = true` gefiltert; der Bestätigungs-/Hinweistext zur Deaktivierung wurde angepasst.
+
+### DB-ACL-2026-11-02 – interne Funktionen in PROD
+Laut Projektverlauf wurde folgende Berechtigungsbereinigung in PROD ausgeführt:
+
+```sql
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.log_team_role_change() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.prevent_last_team_admin_removal() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
+```
+
+Laut damaliger Prüfung war EXECUTE für `PUBLIC`, `anon` und `authenticated` entzogen. Ein vollständiger Laufzeittest aller zugehörigen Trigger ist nicht als abgeschlossen dokumentiert. Bei einer künftigen Prüfung Triggerfunktion, Triggerdefinition und tatsächliche Triggerausführung getrennt bewerten; interne Triggerfunktionen sind nicht als App-RPC aufzurufen.
+
+### Weitere im Verlauf geprüfte Berechtigungen und Objekte
+- `public.admin_update_club_member_profile(uuid,uuid,text,text)`: laut früherer Prüfung in DEV und PROD kein EXECUTE für `anon`, EXECUTE für `authenticated`.
+- `save_player_with_positions`: PROD-Definition laut früherer Prüfung ausgelesen und als passend beurteilt.
+- 25 vom Frontend verwendete RPCs: laut früherem Abgleich in beiden Umgebungen vorhanden; Signaturen und SECURITY-DEFINER-Merkmale wurden verglichen.
+- Relevante RLS-Policies sowie Storage-Buckets `club-assets` und `profile-avatars`: laut früherem Abgleich zwischen DEV und PROD geprüft.
+- Diese Angaben sind historische Prüfvermerke. Sie stellen keine erneute Live-Verifikation zum 03.11.2026 dar.
+
+### Historische Migrationspakete 1–14
+Laut Projektverlauf wurden Pakete 1–9 sowie 10–14 manuell in PROD angewendet; Migration 14 wurde als ausgeführt/verifiziert gemeldet. Die vollständigen Original-SQL-Dateien und exakten Migrationsnamen sind in diesem Protokoll nicht enthalten. Sie müssen anhand der tatsächlichen Supabase-Migrationshistorie und der Originalquellen ergänzt bzw. belegt werden. Keine SQL-Definition aus dem Gedächtnis rekonstruieren.
+
+### Pflicht vor der nächsten Datenbankänderung
+1. Migrationseinträge in DEV und PROD read-only abfragen.
+2. Tabellen/Spalten, Constraints, Indizes, Funktionen, Trigger, Grants, RLS-Policies und Storage-Policies in beiden Umgebungen vergleichen.
+3. Originaldefinition und Abhängigkeiten jeder betroffenen Funktion sichern.
+4. Fehlende Original-SQL-Quellen ausdrücklich als fehlend dokumentieren.
+5. Erst nach ausdrücklicher Freigabe SQL ändern; aus diesem Protokoll folgt keine implizite Freigabe.

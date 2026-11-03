@@ -15,8 +15,8 @@ Diese Arbeit baut auf den bereits vorhandenen AP02-/AP03-Unterlagen im Repositor
 - `docs/AP02_P0_EXECUTION_READINESS.md`
 - `docs/AP02_P0_DEV_TEST_MATRIX.md`
 - `docs/AP02_P0_VALIDATION_REPORT.md`
-- `DB_CHANGELOG_DEV_updated.md`
-- `PROJECT_CONTEXT_updated.md`
+- `DB_CHANGELOG.md`
+- `PROJECT_CONTEXT.md`
 
 Die Feature-Branches sind gegenüber `main` teils stark auseinanderentwickelt. Sie werden als Dokumentations- und Prüfquellen verwendet, aber nicht ungeprüft zusammengeführt. Die aktuelle Frontendbasis bleibt `develop` im Repository `bautnhaus/jugendmannschaft`.
 
@@ -89,7 +89,7 @@ Vorgesehene SQL-Bausteine:
 ## 6. Ausführung und aktueller Status
 
 - Die DEV-Migrationen `20261029045927_club_team_creation_and_club_context_20261029` und `20261029050011_club_team_creation_20261029` wurden in der Supabase-Migrationshistorie bestätigt.
-- Die Schema- und Rechte-Nachprüfung ist abgeschlossen; Details stehen in `DB_CHANGELOG_DEV_updated.md` unter DB-DEV-005.
+- Die Schema- und Rechte-Nachprüfung ist abgeschlossen; Details stehen in `DB_CHANGELOG.md` unter DB-DEV-005.
 - `index.html` in `develop` enthält jetzt ein Formular zur Vereinsanlage einschließlich Adressen, optionalem Wappen und bedingtem Trainingsort sowie ein Formular zur Mannschaftsanlage mit Jahrgängen, Saison, Kürzel und Kadergröße.
 
 - Nachtrag: Vereinswappen werden nach dem Upload auch in der Vereinsliste und im Vereinsdetail angezeigt; PNG-Transparenz wird durch `object-fit: contain` und transparenten Hintergrund erhalten.
