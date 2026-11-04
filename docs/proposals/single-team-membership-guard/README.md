@@ -106,7 +106,7 @@ Der Frontend-Code verwendet ausschließlich invite-member. Die alte Edge Functio
 2. Mannschaftsadmin aus Team A kann über seinen eigenen Team-Kontext in Team A arbeiten; keine Mitgliedschaft in Team B wird dafür angelegt.
 3. Vereinsadmin kann im eigenen Vereinskontext Verwaltungsaufgaben in mehreren Teams durchführen, ohne selbst in jedem Team Mitglied zu sein.
 4. Superadmin kann nach Auswahl eines anderen Team-Kontexts dort Verwaltungsaufgaben durchführen, ohne in diesem Team Mitglied zu sein.
-5. Superadmin, der noch keiner Mannschaft zugeordnet ist, kann als Zielperson Vereinsadmin, Mannschaftsadmin oder Trainer werden.
+5. Superadmin, der noch keiner Mannschaft zugeordnet ist, kann als Zielperson Vereinsadmin, Mannschaftsadmin oder Trainer werden. **Teiltest bestanden (04.11.2026):** Ein bestehender, bestätigter Superadmin wurde als Trainer in genau einer Mannschaft zugeordnet; globale Superadmin-Rolle blieb erhalten. Die weiteren Zielrollen sind noch offen.
 6. Superadmin, der bereits einer Mannschaft zugeordnet ist, kann zusätzliche Vereinsrollen erhalten und bleibt in dieser einen Mannschaft berechtigt; eine zweite Mannschaftszuordnung wird abgewiesen.
 7. Ein bestehender Mannschaftsadmin/Trainer wird nicht als Kandidat für die Anlage einer weiteren Mannschaft angeboten.
 8. Ein bereits in Team A zugeordneter Benutzer wird durch `admin_create_team`, `admin_add_team_role` oder `invite-member` nicht zusätzlich Team B zugeordnet.
@@ -114,7 +114,7 @@ Der Frontend-Code verwendet ausschließlich invite-member. Die alte Edge Functio
 10. Ein bestehendes Mannschaftsmitglied erhält nachträglich die Rolle Vereinsadmin; alle bestehenden Mannschaftszuordnungen und Teamrollen bleiben unverändert.
 11. Ein bestehendes Mannschaftsmitglied erhält nachträglich Superadmin und Vereinsadmin; beide zusätzlichen Rollen bleiben unabhängig von der bestehenden Mannschaftszuordnung bestehen.
 12. Das Entfernen von Superadmin und/oder Vereinsadmin verändert ebenfalls keine bestehende Mannschaftszuordnung.
-13. Die aktualisierte invite-member-Version ist in DEV deployed und der Live-Quelltext entspricht develop; der End-to-End-Test mit einem bestehenden Superadmin als Zielperson ist noch auszuführen.
+13. Die aktualisierte invite-member-Version ist in DEV deployed und der Live-Quelltext entspricht develop. **Teiltest bestanden (04.11.2026):** Ein bestehendes, bestätigtes Superadmin-Konto wurde als Trainer zugeordnet; Datenbankprüfung bestätigt unveränderte Superadmin-Rolle und genau eine Mannschaftszuordnung. Weitere Rollenfälle bleiben offen.
 14. Der alte Edge-Endpunkt invite-trainer ist in DEV auf Version 4 deployed; der Live-Quelltext enthält HTTP 410. Ein authentifizierter Request-Level-Test steht noch aus.
 15. Ein Vereinsadmin mit zusätzlicher Mannschaftsrolle startet zuerst in der Vereinsverwaltung; ein ausdrücklich ausgewählter Teamkontext überschreibt eine Mitgliedschaft in einer anderen Mannschaft. Frontend-Fix am 04.11.2026 in DEV deployed; manueller Browser-Test steht noch aus.
 
