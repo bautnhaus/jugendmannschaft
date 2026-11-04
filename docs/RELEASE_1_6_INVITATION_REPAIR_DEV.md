@@ -1,7 +1,7 @@
 # Release 1.6 – Mitglieder-/Trainer-Einladung (DEV-Arbeitsstand)
 
 **Stand:** 04.11.2026  
-**Status:** DEV-Einladungsablauf im ersten End-to-End-Fall erfolgreich; Profilanzeige in Superadmin-Mitgliederverwaltung noch offen  
+**Status:** Erster Trainer-Einladungs-End-to-End-Test erfolgreich; Profilname in Superadmin-Mitgliederliste und Bearbeitungsdialog manuell bestätigt; DB-DEV-009 ausgeführt; beide korrigierten Edge Functions in DEV Version 4 deployed. Weitere Rollen-/Kontext-Praxistests offen.  
 **Geltungsbereich:** ausschließlich Supabase DEV und GitHub `develop` / DEV-Deployment  
 **PROD:** unverändert; kein PROD-SQL, keine PROD-Konfiguration, kein PROD-Deployment.
 
@@ -40,13 +40,12 @@ Migration:
 
 ### Edge Function
 
-Neue Funktion: `invite-member`
-- Quelldatei: `supabase/functions/invite-member/index.ts`
-- DEV-Status: ACTIVE, Version 3
-- JWT-Prüfung: aktiviert
+Neue Funktion: invite-member
+- Quelldatei: supabase/functions/invite-member/index.ts
+- Aktueller DEV-Status (Nachtrag 04.11.2026): ACTIVE, Version 4; JWT-Prüfung aktiviert.
 - Aufgabe: Anmeldenden und Kontext prüfen, bestehende Auth-Benutzer ermitteln, existierende Vereins-/Mannschaftszuordnungen prüfen, DEV-Redirect aus Projektkennung wählen, Einladungsversand bzw. bestehendes Konto behandeln und danach die transaktionale Datenbankfunktion aufrufen.
-- Ein Zielkonto mit globaler Rolle `super_admin` wird vor dem Versand anhand `global_user_roles` abgelehnt.
-- Die alte Funktion `invite-trainer` (DEV Version 3) bleibt vorerst aktiv, wird aber vom aktualisierten Frontend nicht mehr aufgerufen. Sie wird erst nach abgeschlossener Testphase separat stillgelegt.
+- Die vorherige Sperre gegen bestehende Superadmin-Konten als Zielpersonen ist entfernt. Die zentrale Datenbankfunktion prüft die Ein-Mannschaft-Regel transaktional.
+- Die alte Funktion invite-trainer ist ebenfalls Version 4 und liefert für Nicht-OPTIONS-Anfragen HTTP 410 Gone. Beide Funktionen behalten verify_jwt=true.
 
 ### Frontend
 
@@ -64,7 +63,7 @@ Datei: `index.html`
 - Der Code-/Frontend-Stand wurde auf Commit `1da3a179299c9059d5414078dc9d8ba93863bfa9` durch [Deploy DEV #348](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41716381902) erfolgreich nach `jugendmannschaft-dev/main` gespiegelt; das Job-Log bestätigt `af3ab5d..1da3a17 HEAD -> main`.
 - Die anschließende Dokumentationsaktualisierung auf Commit `fa9d978566686153052ea4b251e8cadb065fa7de` wurde durch [Deploy DEV #349](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41716616554) ebenfalls erfolgreich gespiegelt.
 - Bei beiden Abgleichen hatte `index.html` in `develop` und `jugendmannschaft-dev/main` denselben Blob-SHA: `2f6d90cf79cf235d4c82489dd693517f88a50785`.
-- Supabase DEV `invite-member` ist ACTIVE, Version 3, mit JWT-Prüfung aktiviert. Die live ausgelesene Quelltextdatei stimmt bytegenau mit `supabase/functions/invite-member/index.ts` in `develop` überein. GitHub-Datei-SHA: `fa4792d84b58db5e2a5145f71214cf34011c6bc4`; aktiver Supabase-Deployment-SHA: `c1d9ccbd2480dcfc35a46a118fda4187c8fd9311601bd302e2956bcf72093c53`.
+- Historischer Zwischenstand vor der Rollenmodell-Korrektur: Supabase DEV invite-member Version 3. Der aktuelle Deployment-Stand (Version 4) und der Live-Quelltextabgleich sind im Nachtrag 12 dokumentiert.
 - Die DEV Auth-Site-URL und Redirect-Allowlist wurden read-only anhand der vom Nutzer bereitgestellten Screenshots geprüft und enthalten die DEV-App-Adresse.
 - Das Invite-User-Template ist das Supabase-Standardtemplate. Custom SMTP wurde nicht aktiviert oder geändert.
 
@@ -184,7 +183,7 @@ Verbindlich gilt:
 - Superadmins und Vereinsadmins können in den Mannschaftskontexten ihres Berechtigungsbereichs administrieren, ohne dort tatsächliche Mitglieder zu sein.
 - Die Ein-Team-Regel beschränkt nur die Zuordnung der Zielperson, nicht den Handlungskontext des aufrufenden Administrators.
 
-**Technischer Status nach DB-DEV-009 (04.11.2026):** Die Datenbankmigration wurde ausschließlich in Supabase DEV erfolgreich ausgeführt: Version `20261104143331`, Name `db_dev_009_single_team_membership_guard`. Die Ein-Mannschaft-Trigger, die angepassten RPCs, ACLs, Index und Datenintegrität wurden read-only geprüft. Der vollständige Ausführungsnachweis steht in `DB_MIGRATION_LOG.md` (DB-MIG-2026-003); technische Beschreibung in `DB_CHANGELOG.md` (DB-DEV-009). Die angepasste Frontend-Quelle liegt in `develop` und im DEV-Spiegel; manueller Browser-/Praxistest offen. Die Quellen für `invite-member` und den 410-Gone-Ersatz `invite-trainer` sind in `develop` versioniert, aber in Supabase DEV noch nicht deployed; live sind beide weiterhin Version 3. Für beide Edge-Deployments ist eine separate ausdrückliche Freigabe erforderlich.
+**Technischer Status nach DB-DEV-009 (04.11.2026):** Die Datenbankmigration wurde ausschließlich in Supabase DEV erfolgreich ausgeführt: Version `20261104143331`, Name `db_dev_009_single_team_membership_guard`. Die Ein-Mannschaft-Trigger, die angepassten RPCs, ACLs, Index und Datenintegrität wurden read-only geprüft. Der vollständige Ausführungsnachweis steht in `DB_MIGRATION_LOG.md` (DB-MIG-2026-003); technische Beschreibung in `DB_CHANGELOG.md` (DB-DEV-009). Die angepasste Frontend-Quelle liegt in `develop` und im DEV-Spiegel; manueller Browser-/Praxistest offen. Die Quellen für invite-member und den 410-Gone-Ersatz invite-trainer sind in develop versioniert und wurden nach ausdrücklicher Freigabe am 04.11.2026 ausschließlich in Supabase DEV auf Version 4 deployed. Beide sind ACTIVE, verify_jwt=true; die Live-Quelltexte stimmen bytegenau mit develop überein.
 
 **Dokumentationsführung:** `develop` ist führend. Der SQL-Entwurf und die Nachprüfung liegen unter `docs/proposals/single-team-membership-guard/`; die geplante Datenbankänderung ist in `DB_CHANGELOG.md` beschrieben. Tatsächliche SQL-Ausführung und Supabase-Deployments werden erst nach Durchführung in den jeweiligen Protokollen dokumentiert.
 
@@ -196,4 +195,23 @@ Die angepasste `index.html` liegt in `develop`. Der aktuelle DEV-Spiegel `bautnh
 - `develop/index.html`: `ebf7363aa2df1f5b3fc465934e2fab8cea3ef0c1`
 - `jugendmannschaft-dev/main/index.html`: `ebf7363aa2df1f5b3fc465934e2fab8cea3ef0c1`
 
-Damit ist die Frontend-Quelle im DEV-Spiegel angekommen. Ein manueller Browser-/Praxistest dieser Rollenänderung ist noch offen. Die SQL-Migration DB-DEV-009 wurde am 04.11.2026 in Supabase DEV erfolgreich ausgeführt (Version `20261104143331`); der Ausführungsnachweis ist in `DB_MIGRATION_LOG.md` dokumentiert. Die Supabase-Edge-Functions bleiben unverändert auf Version 3. PROD und `main` bleiben unverändert.
+Damit ist die Frontend-Quelle im DEV-Spiegel angekommen. Ein manueller Browser-/Praxistest dieser Rollenänderung ist noch offen. Die SQL-Migration DB-DEV-009 wurde am 04.11.2026 in Supabase DEV erfolgreich ausgeführt (Version `20261104143331`); der Ausführungsnachweis ist in `DB_MIGRATION_LOG.md` dokumentiert. Die Supabase-Edge-Functions sind inzwischen separat auf Version 4 deployed; Details stehen im Nachtrag 12 und im SUPABASE_CHANGELOG.md. PROD und main bleiben unverändert.
+
+
+## 12. Nachtrag 04.11.2026 – Edge Functions nach Freigabe in DEV deployed
+
+Am 04.11.2026 hat der Nutzer das Deployment beider vorbereiteten Edge Functions ausschließlich in Supabase DEV (Projekt pzazqvvoruqnqhcorbwx) ausdrücklich freigegeben. Es wurden keine SQL-Änderungen ausgeführt und PROD sowie GitHub main blieben unangetastet.
+
+| Funktion | DEV-Version | Status | JWT | Ergebnis |
+|---|---:|---|---|---|
+| invite-member | 4 | ACTIVE | aktiviert | Superadmin-Zielperson wird nicht mehr pauschal abgewiesen; bestehende Ein-Team-Prüfung bleibt bestehen; DEV-/PROD-Redirect erfolgt anhand der Projektkennung |
+| invite-trainer | 4 | ACTIVE | aktiviert | Legacy-Endpunkt; Nicht-OPTIONS-Anfragen erhalten HTTP 410 Gone und den Verweis auf invite-member |
+
+**Live-Nachprüfung:** Beide Edge Functions wurden unmittelbar nach dem Deployment erneut aus Supabase ausgelesen. Beide Live-Quelltexte stimmen bytegenau mit den Dateien in develop überein.
+
+- invite-member: GitHub-Blob-SHA 23234ab65ae1c9ba85067cf8d72d1a290f5a486e; aktiver Deployment-SHA 84dd949d0952615cb59bd2e661d0c722de738bd94751d0989695e5d050f6e0ea.
+- invite-trainer: GitHub-Blob-SHA 004499fe27bef85d9896fd1f1c35883dd12ee0bc; aktiver Deployment-SHA 0f2e6e69caa730a80220e4e1f959ade5f1f218d00eb6d0a26f325e7608a323a7.
+
+**Noch offen:** Ein authentifizierter HTTP-Aufruf des Legacy-Endpunkts sowie der Browser-End-to-End-Test, bei dem ein bestehender Superadmin als Zielperson eingeladen wird. Ebenso bleiben die weiteren Rollen-/Kontext- und Ein-Mannschaft-Negativtests offen. Deployment und Quelltext-Rücklese sind kein Ersatz für diese Praxistests.
+
+**PROD:** unverändert; kein PROD-SQL, kein PROD-Deployment und keine Änderung an GitHub main.
