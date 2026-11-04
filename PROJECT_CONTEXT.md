@@ -128,3 +128,6 @@ Der Backlog umfasst unter anderem flexible Kaderplanung, Saison- und Vereinsverw
 ## 9. Historischer Projektkontext
 
 Die frühere ausführliche Fassung dieses Dokuments wurde unverändert archiviert: [PROJECT_CONTEXT_2026-11-03.md](docs/archive/PROJECT_CONTEXT_2026-11-03.md). Sie enthält ältere Epic-Detailbeschreibungen, Zwischenstände und historische Entscheidungen. Bei Widersprüchen gelten aktuelle, verifizierte Projektdateien und neuere ausdrückliche Nutzerentscheidungen; das Archiv ist kein aktueller Arbeitsauftrag.
+
+
+**Datenbank-Folgekorrektur 04.11.2026:** Die neue read-only RPC `public.get_club_members_v3(uuid)` wurde ausschließlich in Supabase DEV als Migration `20261104113632_club_member_profiles_read_v3_dev` erfolgreich ausgeführt. Sie liefert Profilname und Avatar im explizit berechtigten Vereinskontext. Funktionsdefinition, SECURITY DEFINER/search_path, EXECUTE-Rechte und unveränderte `profiles`-RLS-Policies wurden geprüft. SQL-Quelldatei: `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql`; Ausführungsnachweis: `DB_MIGRATION_LOG.md`, DB-MIG-2026-002; Objektbeschreibung: `DB_CHANGELOG.md`, DB-DEV-008. **Noch offen:** Frontend-Integration und Positiv-/Negativtests. PROD bleibt unangetastet.

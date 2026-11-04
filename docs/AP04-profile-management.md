@@ -100,3 +100,15 @@ Die zweite Datei ist zwingend nach der ersten auszuführen.
 - Vollständiger SQL-Entwurf und Pflichtfelder stehen im `DB_MIGRATION_LOG.md`; die Objekt-/Sicherheitsbeschreibung steht in `DB_CHANGELOG.md`, Eintrag DB-DEV-008.
 - **Noch nicht ausgeführt.** Keine Änderung an DEV-Datenbank oder RLS; PROD bleibt unverändert.
 - Nach ausdrücklicher Freigabe des vollständigen SQL-Texts: Migration in Supabase DEV ausführen, tatsächliche Migrationsversion ermitteln, unveränderte SQL-Datei unter `supabase/migrations/` ablegen und Ausführung/Verifikation/Rollback dokumentieren.
+
+
+### Ausführungsnachtrag 04.11.2026 – DB-DEV-008
+
+- **Migration:** `20261104113632_club_member_profiles_read_v3_dev`
+- **Versionierte SQL-Quelle:** `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql`
+- **Ausführung:** Supabase DEV meldete `success: true`.
+- **Verifiziert:** Rückgabeform der RPC enthält `display_name` und `avatar_url`; Funktion ist `SECURITY DEFINER`, `STABLE`, Owner `postgres`, fester `search_path`; EXECUTE für `authenticated`, nicht für `anon` oder `PUBLIC`.
+- **RLS:** Die bestehenden Policies `profiles_select` und `profiles_update` sind unverändert.
+- **Security Advisor:** Die generische SECURITY-DEFINER-Warnung umfasst nun 38 statt zuvor 37 Funktionen. Für diese RPC ist der Zugriff durch `auth.uid()` und `can_manage_club_context(p_club_id)` begrenzt; der Warnhinweis bleibt ausdrücklich dokumentiert.
+- **Noch offen:** Laufzeittests mit Superadmin/Vereinsadmin und Negativtests für fehlenden bzw. fremden Vereinskontext sowie Frontend-Integration und iPhone-Praxistest.
+- **PROD:** Nicht ausgeführt.

@@ -131,4 +131,15 @@ Der erste Einladungs-End-to-End-Test ist erfolgreich. Der eingegebene Name wird 
 ### Geplanter Fix
 Neue read-only RPC `get_club_members_v3(uuid)` mit Profilname und Avatar, abgesichert über `auth.uid()` und `can_manage_club_context(p_club_id)`. Die bestehende RPC v2 und die RLS-Policies bleiben unverändert. Nach SQL-Freigabe werden Superadmin-Mitgliederliste, Vereinsmitgliederliste und Bearbeitungsdialog auf die neue RPC umgestellt.
 
-**SQL-Status:** Vollständiger Entwurf ist in `DB_MIGRATION_LOG.md`, geplant als DB-MIG-2026-002, dokumentiert. Noch nicht ausgeführt; es liegt noch keine neue Migration in der Supabase-Historie vor. PROD bleibt unverändert.
+**SQL-Status:** DB-MIG-2026-002 wurde in Supabase DEV erfolgreich ausgeführt (Version `20261104113632`). Vollständiger Ausführungsnachweis und SQL-Quelle stehen in `DB_MIGRATION_LOG.md` und `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql`. Frontend-Integration und Laufzeittests stehen noch aus. PROD bleibt unverändert.
+
+
+## 7. Datenbank-Folgekorrektur – DB-DEV-008 (04.11.2026)
+
+- **Migration:** `20261104113632_club_member_profiles_read_v3_dev`
+- **Datei:** `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql`
+- **Status:** In Supabase DEV erfolgreich ausgeführt und strukturell/rechtlich verifiziert.
+- **Zweck:** Profilnamen und Avatare für die berechtigte Vereinsmitgliederverwaltung bereitstellen.
+- **Sicherheitsgrenzen:** `auth.uid()` und `can_manage_club_context(p_club_id)` werden vor jeder Rückgabe geprüft. `PUBLIC` und `anon` besitzen kein EXECUTE-Recht. Die bisherige RPC v2 und die `profiles`-RLS-Policies bleiben unverändert.
+- **Noch offen:** Frontend-Aufrufe auf v3 umstellen; Namen und Avatare in beiden Mitgliederlisten darstellen; Bearbeitungsdialog mit den bereits geladenen Profilfeldern füllen; positive und negative Kontexttests durchführen.
+- **PROD:** Unverändert.

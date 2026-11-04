@@ -437,16 +437,16 @@ TO authenticated;
 ### DB-MIG-2026-002 – Vereinsmitglieder inklusive Profilfeldern auslesen
 
 - **Migrations-ID:** DB-MIG-2026-002
-- **Ausführungsdatensatz:** DEV (geplant; noch nicht ausgeführt)
-- **Datum/Uhrzeit (mit Zeitzone):** Noch offen; erst nach tatsächlicher Ausführung eintragen.
+- **Ausführungsdatensatz:** DEV (ausgeführt)
+- **Datum:** 04.11.2026. **Supabase-Migrationsversion/Zeitstempel:** `20261104113632` (das Ausführungsergebnis lieferte keinen gesonderten Zeitzonen-Zeitstempel).
 - **Umgebung:** Supabase DEV `pzazqvvoruqnqhcorbwx`
-- **Ausführungsweg:** Vorgesehen: Supabase-Migrationswerkzeug; noch nicht ausgeführt.
+- **Ausführungsweg:** Supabase-Migrationswerkzeug über die verbundene Supabase-Aktion.
 - **Anlass/Zweck:** Die aktuelle `get_club_members_v2(uuid)` liefert keine Profilfelder. Der Superadmin-Mitgliederbereich zeigt deshalb E-Mail-Adressen statt persönlicher Namen. Der Bearbeitungsdialog liest `profiles` direkt; die bestehende SELECT-Policy erlaubt diesen Zugriff im ausgewählten Vereinskontext nicht. Die Frontend-Abfrage ignoriert den Lesefehler und das Namensfeld bleibt leer.
 - **Betroffene Objekte:** Neue read-only RPC `public.get_club_members_v3(uuid)`; lesender Zugriff auf `public.club_members`, `auth.users`, `public.profiles`, `public.club_member_roles`, `public.teams`, `public.team_member_roles` und `public.team_members`.
-- **Freigabe:** Der Nutzer hat den DEV-Fix einschließlich einer neuen SQL-RPC grundsätzlich freigegeben. Die ausdrückliche Freigabe des nachstehenden vollständigen SQL-Texts vor Ausführung steht noch aus.
-- **Ausführender:** Noch nicht ausgeführt.
-- **Status:** Geplant.
-- **Vorgesehenes SQL (vollständiger Entwurf; noch nicht ausgeführt):**
+- **Freigabe:** Ausdrückliche Nutzerfreigabe im Chat am 04.11.2026: „SQL in Supabase DEV ausführen“.
+- **Ausführender:** Supabase-Migrationswerkzeug, ausgelöst durch den Assistenten nach ausdrücklicher Nutzerfreigabe.
+- **Status:** Erfolgreich ausgeführt; strukturelle und Berechtigungsverifikation erfolgreich. Authentifizierte Laufzeittests des Frontend-Aufrufs noch offen.
+- **Tatsächlich ausgeführtes SQL (identisch mit der versionierten Quelldatei):**
 
 ```sql
 CREATE FUNCTION public.get_club_members_v3(p_club_id uuid)
@@ -557,15 +557,17 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
     TO authenticated;
 ```
 
-- **Ergebnis / Fehlermeldung:** Noch nicht ausgeführt; kein Ergebnis.
-- **Verifikation (nach Ausführung):**
-  1. `to_regprocedure('public.get_club_members_v3(uuid)')` muss die Funktion finden.
-  2. `pg_get_functiondef(...)`, `prosecdef`, `proconfig` und Owner read-only prüfen.
-  3. EXECUTE-Rechte prüfen: `authenticated = true`, `anon = false`, `PUBLIC = false`.
-  4. Positivtest mit Superadmin im ausdrücklich ausgewählten Verein sowie Vereinsadmin im eigenen Verein.
-  5. Negativtest ohne Anmeldung, ohne passenden Vereinskontext und für einen fremden Verein.
-  6. Frontendtest: Name/Avatar in Mitgliederliste und Bearbeitungsdialog; bestehende Mitgliedschafts-/Rollenanzeige bleibt erhalten.
-- **Rollback/Wiederherstellung:** Nach Rücknahme der Frontend-Aufrufe und Prüfung aller Abhängigkeiten: `DROP FUNCTION IF EXISTS public.get_club_members_v3(uuid);`. Keine Tabellen, Datensätze oder bestehenden Policies sollen verändert werden.
+- **Ergebnis / Fehlermeldung:** Supabase-Migrationswerkzeug meldete `success: true`. Die DEV-Migrationshistorie enthält Version `20261104113632` mit dem Namen `club_member_profiles_read_v3_dev`.
+- **Verifikation (read-only, nach Ausführung):**
+  1. `to_regprocedure('public.get_club_members_v3(uuid)')` bestätigt die Existenz.
+  2. `pg_get_functiondef(...)` bestätigt den gespeicherten Funktionskörper.
+  3. Metadaten: Owner `postgres`, `SECURITY DEFINER = true`, Volatilität `STABLE`, fester `search_path = pg_catalog, public, auth`.
+  4. EXECUTE-Prüfung: `authenticated = true`, `anon = false`, `PUBLIC = false`; ACL zeigt EXECUTE für `authenticated`, `postgres` und `service_role`.
+  5. Supabase-Migrationshistorie: Version `20261104113632`, Name `club_member_profiles_read_v3_dev`.
+  6. Die beiden bestehenden Policies `profiles_select` und `profiles_update` sind unverändert.
+  7. Security Advisor: generische Warnung „Signed-In Users Can Execute SECURITY DEFINER Function“, Anzahl stieg von 37 auf 38. Die Warnung ist dokumentiert und gegen die explizite Kontextprüfung der RPC zu bewerten.
+  8. Noch offen: positive Laufzeittests mit Superadmin im gewählten Verein und Vereinsadmin im eigenen Verein; negative Tests ohne Anmeldung, ohne Kontext und mit fremdem Verein; Frontend-Anzeige und Bearbeitungsdialog.
+- **Rollback/Wiederherstellung:** Nach Rücknahme aller Frontend-Aufrufe und Prüfung sämtlicher Abhängigkeiten: `DROP FUNCTION IF EXISTS public.get_club_members_v3(uuid);`. Die Migration hat keine Tabellen, Datensätze oder bestehenden Policies verändert.
 - **Gegenstück in PROD:** Nicht ausgeführt; keine PROD-Änderung vorgesehen.
-- **GitHub-Datei und Commit-SHA:** Versionierte Datei unter `supabase/migrations/` wird nach erfolgreicher Ausführung mit der von Supabase tatsächlich vergebenen Migrationsversion angelegt. Dieser Eintrag ist bis dahin die vollständige geplante SQL-Quelle.
-- **Zusätzliche Hinweise / Nachweisgrenzen:** `get_club_members_v2` bleibt unverändert. Die bestehende RLS-Policy auf `profiles` wird nicht erweitert. Die neue RPC ist `SECURITY DEFINER`, prüft aber vor jeder Rückgabe `auth.uid()` und `can_manage_club_context(p_club_id)`; EXECUTE wird nur an `authenticated` vergeben. Supabase Security Advisor meldet allgemein authentifizierten Zugriff auf SECURITY DEFINER-RPCs; diese Funktion ist als eng begrenzte, kontextgebundene Lese-RPC vorgesehen. Die Warnung und tatsächlichen Rechte werden nach Ausführung separat dokumentiert.
+- **GitHub-Datei:** `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql` (identischer SQL-Text); zusammen mit diesem Ausführungsnachtrag committed. Der Commit ist in der Repository-Historie nachvollziehbar.
+- **Zusätzliche Hinweise / Nachweisgrenzen:** `get_club_members_v2` bleibt unverändert. Die bestehende RLS-Policy auf `profiles` wird nicht erweitert. Die neue RPC ist `SECURITY DEFINER`, prüft aber vor jeder Rückgabe `auth.uid()` und `can_manage_club_context(p_club_id)`; EXECUTE wird nur an `authenticated` vergeben. Die generische Security-Advisor-Warnung wird bewusst nicht pauschal entfernt; Kontextprüfung, fester Suchpfad und ACL sind Teil der Sicherheitsbegründung. Es wurden keine Nutzerdaten verändert.

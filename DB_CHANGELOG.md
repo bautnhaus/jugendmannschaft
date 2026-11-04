@@ -452,16 +452,16 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 
 
 
-## DB-DEV-008 – Vereinsmitglieder inklusive Profilnamen und Profilbilder auslesen (geplant)
+## DB-DEV-008 – Vereinsmitglieder inklusive Profilnamen und Profilbilder auslesen
 
 - **Umgebung:** Supabase DEV
-- **Status:** SQL vorbereitet und dokumentiert; noch nicht ausgeführt.
+- **Status:** In Supabase DEV ausgeführt; Funktions- und Rechteverifikation erfolgreich. Funktionaler Frontendtest noch offen.
 - **Anlass:** `get_club_members_v2(uuid)` gibt derzeit nur Benutzer-ID, E-Mail, Vereinsadmin-Status und Mannschaftsrollen zurück. Die Superadmin-Kartenansicht fragt Profilnamen nicht ab. Der bestehende direkte Profil-Lesezugriff im Bearbeitungsdialog wird durch die aktuelle `profiles_select`-Policy im ausgewählten Vereinskontext nicht freigegeben; der Frontend-Abfragefehler wird bisher nicht sichtbar behandelt.
-- **Geplantes Objekt:** Neue Funktion `public.get_club_members_v3(p_club_id uuid)`.
+- **Objekt:** Neue Funktion `public.get_club_members_v3(p_club_id uuid)`. Migration `20261104113632` (`club_member_profiles_read_v3_dev`).
 - **Rückgabe:** `user_id`, `email`, `display_name`, `avatar_url`, `is_club_admin`, `teams`.
 - **Sicherheitsmodell:** `SECURITY DEFINER`, fester `search_path = pg_catalog, public, auth`; vor jeder Rückgabe muss `auth.uid()` vorhanden sein und `public.can_manage_club_context(p_club_id)` erfolgreich sein. Profilfelder werden ausschließlich für Mitglieder des angegebenen Vereins zurückgegeben. EXECUTE wird explizit nur an `authenticated` vergeben; `PUBLIC` und `anon` werden entzogen.
 - **Abgrenzung:** `get_club_members_v2` bleibt unverändert. Keine Tabellen-/Datenänderung, keine Erweiterung der `profiles`-RLS-Policies und keine Änderung bestehender Profile.
 - **Frontend nach SQL-Freigabe:** Superadmin-Mitgliederliste zeigt `display_name` als Hauptzeile und E-Mail darunter; Avatar aus `avatar_url`; Bearbeitungsdialog nutzt die bereits geladene Profilinformation der Vereinsmitglied-RPC statt einer separaten, durch RLS blockierten Abfrage.
-- **Ausführungsnachweis:** Vorgesehen in `DB_MIGRATION_LOG.md`, ID DB-MIG-2026-002. Die Migrationsversion und Quelldatei unter `supabase/migrations/` werden erst nach erfolgreicher Ausführung ergänzt.
+- **Ausführungsnachweis:** `DB_MIGRATION_LOG.md`, ID DB-MIG-2026-002. Supabase bestätigte die erfolgreiche Migration; versionierte Quelle: `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql`.
 - **PROD:** Nicht ausgeführt und nicht freigegeben.
-- **Verifikation:** Nach Ausführung Schema-/Rechteprüfung, positiver Test im berechtigten Vereinskontext und negativer Test auf fehlenden/fremden Kontext; Frontend-Praxistest bleibt gesondert auszuweisen.
+- **Verifikation:** Funktion vorhanden; Owner `postgres`; `SECURITY DEFINER`; `STABLE`; fester `search_path`; EXECUTE für `authenticated` (zusätzlich postgres/service_role), nicht für anon/PUBLIC. Bestehende `profiles`-Policies unverändert. Authentifizierte Positiv-/Negativtests und Frontend-Praxistest bleiben offen.
