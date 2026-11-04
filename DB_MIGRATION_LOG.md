@@ -640,12 +640,13 @@ Die zuvor ergänzte vollständige Superadmin-Neutralität war zu weit gefasst un
 
 - Höchstens eine tatsächliche Mannschaftszuordnung pro Benutzer, unabhängig von globalen/vereinsbezogenen Rollen.
 - Ein Superadmin kann zugleich Vereinsmitglied, Vereinsadmin, Mannschaftsadmin und Trainer derselben Mannschaft sein.
+- Ein bereits bestehendes Mannschaftsmitglied kann nachträglich zusätzlich die globale Rolle `super_admin`, die Vereinsrolle `club_admin` oder beide erhalten. Die bestehenden Zuordnungen und Rollen in `team_members` und `team_member_roles` müssen dabei unverändert bestehen bleiben. Die Vergabe dieser zusätzlichen Rollen darf die Mannschaftsmitgliedschaft weder löschen noch verschieben oder neu anlegen.
 - Ein Mannschaftsmitglied darf nicht zusätzlich einer zweiten Mannschaft zugeordnet werden – auch dann nicht, wenn es Superadmin oder Vereinsadmin ist.
 - Superadmins und Vereinsadmins dürfen andere Mannschaften ihres ausgewählten/eigenen Berechtigungsbereichs verwalten, ohne dort selbst als Mitglied eingetragen zu sein.
 - Die bisherige Live-Sperre in `invite-member` und `admin_complete_member_invitation` für Superadmins als Zielperson wird im Korrekturvorschlag entfernt. Die aktuelle DEV-Laufzeit bleibt bis zu einer späteren Freigabe unverändert.
-- Es gibt keinen Trigger, der eine spätere Vergabe der Superadmin-Rolle an ein bereits zugeordnetes Mannschaftsmitglied verhindern soll.
+- Es darf keine Sperre gegen die nachträgliche Vergabe von `super_admin` und/oder `club_admin` an ein bestehendes Mannschaftsmitglied geben. Diese Rollenvergabe ist von der tatsächlichen Mannschaftszuordnung getrennt; bestehende Team-Zuordnungszeilen und Mannschaftsrollen dürfen dadurch nicht verändert werden.
 
-Die korrigierte Umsetzung ist weiterhin nur Vorschlag im Review-Feature-Branch. Keine SQL-Ausführung, kein DEV-Deployment und keine PROD-Änderung.
+Das fachliche Rollenmodell einschließlich der nachträglichen Vergabe von Superadmin und/oder Vereinsadmin an bestehende Mannschaftsmitglieder bei unveränderter Mannschaftszuordnung wurde am 04.11.2026 vom Nutzer freigegeben. Die technische Umsetzung ist weiterhin nur Vorschlag im Review-Feature-Branch. Keine SQL-Ausführung, kein DEV-Deployment und keine PROD-Änderung; für die SQL-Ausführung in DEV ist eine separate ausdrückliche Ausführungsfreigabe erforderlich.
 
 ### Read-only Kontextprüfung in Supabase DEV (04.11.2026)
 
