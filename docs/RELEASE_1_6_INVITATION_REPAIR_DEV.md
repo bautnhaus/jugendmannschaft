@@ -392,3 +392,35 @@ Es bleiben nur:
 3. der vereinsübergreifende Negativtest, sobald eine zweite Vereinsanlage in DEV verfügbar ist.
 
 **Arbeitsgrenzen:** Keine neue SQL-Migration wurde erstellt. Es gab keine Änderung an Supabase-Auth-/SMTP-Konfigurationen, keine Änderung an PROD und keine Änderung an GitHub `main`.  
+
+
+## 19. Mobile UX-Korrekturen – Mitgliederliste und Trainer-Anwesenheit (04.11.2026)
+
+**Geltungsbereich:** ausschließlich Frontend in GitHub `develop` und DEV-Deployment. Keine Datenbank-/Schemaänderung.
+
+### Umgesetzt
+
+1. **Mitglieder- und Rollenlisten – lange E-Mail-Adressen:** In den Vereinsmitgliederkarten und in der Mannschafts-Mitglieder-/Rollenliste wird die E-Mail-Zeile jetzt innerhalb der verfügbaren Breite mit CSS-Ellipsis (`…`) gekürzt. Das Optionsmenü behält seinen eigenen Platz; die E-Mail kann nicht mehr darunterlaufen.
+2. **Mitglied einladen – kompakter Aktionsbereich:** Die Aktionen sind als zwei gleich breite Spalten angeordnet. Der primäre Button trägt nun die kurze Beschriftung „Einladen“; beide Schaltflächen haben eine einheitliche kompakte Mindesthöhe von 44 px.
+3. **Trainer-Anwesenheit bei Training und Spieltag:** Die Anwesenheits-Chips werden nur noch für Mitglieder erzeugt, deren Rollenliste tatsächlich `trainer` enthält. Ein reiner Mannschaftsadmin (`admin`) wird nicht angezeigt; ein Mitglied mit den kombinierten Rollen `admin` und `trainer` wird angezeigt. Beide Speicher-Handler prüfen zusätzlich die Trainerrolle, bevor eine Anwesenheit geschrieben wird. Reine Admins können dadurch über diese UI-Funktionen nicht als Trainer-Anwesenheit neu erfasst werden.
+
+### Technische Grundlage und Datenerhalt
+
+- Die vorhandene, berechtigungsgeschützte RPC `get_team_trainers_v2(p_team_id)` liefert pro Person die Rollen als `roles text[]`; die Anpassung nutzt dieses vorhandene Rollen-Array.
+- Die vorhandenen Anwesenheitstabellen `training_trainers` und `matchday_trainers` wurden nicht geändert.
+- Historische Anwesenheitszeilen werden nicht gelöscht. Nicht mehr berechtigte reine Admins werden in der Trainer-Anwesenheitsanzeige ausgeblendet; bestehende historische Datensätze bleiben unverändert erhalten.
+- Keine SQL-Abfrage mit Schreibwirkung, keine Migration, keine Änderungen an RLS, Auth, SMTP oder Edge Functions.
+
+### Commit und DEV-Nachweis
+
+- Commit: `94acfccd0f120161643482614b45567659ebaa31` – `fix: polish member lists and trainer attendance`.
+- Datei: `index.html`, Blob-SHA `ba849c4eb8c959df7c7eb3088466e0150e1d4174`.
+- JavaScript-Syntaxprüfung: beide Script-Blöcke erfolgreich geparst.
+- DEV-Deployment: [Deploy DEV #424](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41908308622), erfolgreich.
+- DEV-Spiegel `jugendmannschaft-dev/main/index.html`: identischer Blob-SHA `ba849c4eb8c959df7c7eb3088466e0150e1d4174`.
+
+**Manueller Nachtest:** Noch offen. Der Nutzer soll im DEV-Browser auf dem iPhone die E-Mail-Kürzung in der Mitglieder-/Rollenliste, die kompakte Einladungsschaltfläche sowie die Trainer-Anwesenheitsliste in einem Training und einem Spieltag prüfen. Erwartung: Ein reiner Mannschaftsadmin ist in beiden Anwesenheitsbereichen nicht mehr sichtbar; ein Nutzer mit Trainerrolle bleibt sichtbar.
+
+### Noch nicht umgesetzt – Designabstimmung
+
+Der dunkelblaue Header und die Begrüßung wurden bewusst nicht verändert. Vor der Umsetzung wird ein Entwurf abgestimmt: Header nur mit dem App-Namen „KADAssist“; der Begrüßungsbereich soll Vereinswappen/-name, Mannschaft, Saison und die aktive Rolle enthalten. Es wird erst nach fachlicher Zustimmung implementiert.
