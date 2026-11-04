@@ -484,3 +484,10 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 - **PROD:** nicht geprüft, nicht geändert, nicht freigegeben.
 
 Diese Beschreibung ist ein Lösungsvorschlag und kein Ausführungsnachweis. Erst nach ausdrücklicher Freigabe darf eine finale Migration nach `supabase/migrations/` übernommen und in Supabase DEV ausgeführt werden.
+
+
+### Ergänzung: Superadmin-Neutralität in beide Richtungen
+
+Zusätzlich zur Sperre bei Mannschaftszuordnungen eines bestehenden Superadmins enthält die Migration einen Trigger auf `global_user_roles`. Er verhindert, dass ein bereits einer Mannschaft zugeordnetes Konto nachträglich die Rolle `super_admin` erhält. Auch diese Triggerfunktion sperrt die Auth-Benutzerzeile mit `FOR UPDATE` und besitzt keine EXECUTE-Freigabe für `PUBLIC`, `anon` oder `authenticated`.
+
+Die Live-Prüfung ergab, dass `global_user_roles` derzeit keine INSERT-/UPDATE-/DELETE-Rechte für `authenticated` besitzt und keine öffentliche RPC zum Schreiben dieser Tabelle existiert. Der zusätzliche Trigger sichert trotzdem künftige privilegierte Änderungen ab.
