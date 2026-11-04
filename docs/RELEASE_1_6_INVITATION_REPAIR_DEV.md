@@ -349,12 +349,4 @@ Der Nutzer soll für diesen Test keine bestehende Mannschaftsrolle entfernen. Ei
 - JavaScript-Syntaxprüfung des Hauptmoduls nach Herausnahme des einzelnen externen ESM-Imports: bestanden.
 - `main` und PROD unverändert.
 
-**Manueller DEV-Praxistest noch offen:**
-1. Mit einem Vereinsadmin ohne Mannschaftszuordnung anmelden.
-2. Mannschaftsübersicht öffnen und eine Mannschaft bearbeiten, z. B. Name oder Zielkadergröße ändern.
-3. Speichern und prüfen, dass die Kachel ohne Neuladen sofort die neuen Daten zeigt.
-4. Spielstätte/Trainingsstätte, aktive Spielerzahl und Zielkadergröße auf der Kachel prüfen.
-5. Eine Mannschaft öffnen und kontrollieren, dass derselbe Informationsstand auch im Detailbereich erscheint.
-6. Prüfen, dass eine Mannschaft mit identischer Spiel- und Trainingsstätte nur eine gemeinsame Standortangabe zeigt und bei abweichendem Trainingsort beide Angaben getrennt angezeigt werden.
-
-Der technische DEV-Deploy ist abgeschlossen; ein erfolgreicher Browser-Praxistest ist damit noch nicht behauptet.
+**Manueller DEV-Praxistest bestanden (04.11.2026):** Der Nutzer hat die DEV-App mit einem Vereinsadmin ohne Mannschaftszuordnung geprüft und bestätigt: „Ja funktioniert“. Damit ist die Korrektur zur direkten Aktualisierung nach dem Speichern sowie die Anzeige der gewünschten Mannschafts- und Vereinsinformationen im tatsächlichen Browser-Praxistest bestätigt. Der Nutzer musste die Seite nicht manuell neu laden. Der Test wurde vom Nutzer durchgeführt; es wurde kein automatisierter Browser-Test behauptet.
