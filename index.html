@@ -3176,8 +3176,10 @@ function dashboardTrainingStart(t){return new Date(`${t.date}T${fmtTime(t.startT
 function dashboardNextTraining(){const now=new Date();return state.trainings.filter(t=>t.status==='planned'&&dashboardTrainingStart(t)>=now).sort((a,b)=>dashboardTrainingStart(a)-dashboardTrainingStart(b))[0]||null;}
 function dashboardNextMatchday(){return state.matchdays.filter(m=>matchdayIsUpcoming(m)).sort((a,b)=>{const da=new Date(`${a.date}T${fmtTime(a.kickoffTime)||'23:59'}:00`),db=new Date(`${b.date}T${fmtTime(b.kickoffTime)||'23:59'}:00`);return da-db;})[0]||null;}
 function dashboardContextRoleLabels(){
-  if(isSuperAdmin&&contextReadOnly)return ['Superadmin','Nur Ansicht'];
-  if(canManageClub&&contextReadOnly)return ['Vereinsadmin','Nur Ansicht'];
+  // Superadmins haben im explizit ausgewählten Teamkontext Support- und Adminrechte.
+  // Der interne Kontextmarker darf daher nicht als „Nur Ansicht“ erscheinen.
+  if(isSuperAdmin&&contextReadOnly)return ['Superadmin'];
+  if(canManageClub&&contextReadOnly)return ['Vereinsadmin'];
   if(clubOnlyMode&&canManageClub)return ['Vereinsadmin'];
   if(clubMemberOnlyMode)return ['Vereinsmitglied'];
   const roles=(currentTeamRoles||[]).map(r=>r==='admin'?'Mannschaftsadmin':r==='trainer'?'Trainer':'').filter(Boolean);
@@ -3185,6 +3187,9 @@ function dashboardContextRoleLabels(){
   if(role==='club_admin')return ['Vereinsadmin'];
   if(role==='super_admin')return ['Superadmin'];
   return [];
+}
+function dashboardContextRoleNote(){
+  return !isSuperAdmin&&canManageClub&&contextReadOnly?'Nur Ansicht in diesem Mannschaftskontext':'';
 }
 function renderDashboardWelcomeContext(){
   const clubName=$('dashboardClubName'),teamSeason=$('dashboardTeamSeason'),rolesBox=$('dashboardContextRoles');
@@ -3202,7 +3207,9 @@ function renderDashboardWelcomeContext(){
     else contextParts.push('Kein Arbeitskontext ausgewählt');
   }
   teamSeason.textContent=contextParts.join(' · ');
-  rolesBox.innerHTML=dashboardContextRoleLabels().map(label=>'<span class="dashboardRolePill">'+esc(label)+'</span>').join('');
+  const rolePills=dashboardContextRoleLabels().map(label=>'<span class="dashboardRolePill">'+esc(label)+'</span>').join('');
+  const roleNote=dashboardContextRoleNote();
+  rolesBox.innerHTML=rolePills+(roleNote?'<span class="dashboardRoleNote">'+esc(roleNote)+'</span>':'');
   const image=$('dashboardClubCrestImage'),fallback=$('dashboardClubCrestFallback');
   const crestPath=currentWelcomeClub?.crest_path||'';
   const crestUrl=crestPath?getClient().storage.from('club-assets').getPublicUrl(crestPath).data.publicUrl:'';
@@ -4186,29 +4193,29 @@ html[data-theme="dark"] .clubCrestAvatar .playerAvatar {
 <style>
 /* KADAssist: kompakter App-Header und persönlicher Kontextblock */
 header{padding:12px 16px}
-header h1{font-size:20px;line-height:1.35;margin:0;font-weight:800;letter-spacing:.1px}
+header h1{font-size:24px;line-height:1.3;margin:0;font-weight:800;letter-spacing:.1px}
 header #headerSub{display:none!important}
 .tabs{top:52px}
 .dashboardWelcome{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:10px;padding:6px 2px 14px}
 .dashboardWelcome h2{font-size:20px!important;line-height:1.2;margin:0!important;font-weight:750;letter-spacing:-.25px}
-.dashboardContextRow{display:flex;align-items:center;gap:12px;min-width:0}
-.dashboardClubCrest{width:58px;height:58px;flex:0 0 58px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--line);border-radius:13px;background:var(--card);color:var(--muted)}
-.dashboardClubCrest img{display:block;width:100%;height:100%;object-fit:contain;padding:4px}
-.dashboardClubCrest .material-symbols-outlined{font-size:32px;line-height:1}
+.dashboardContextRow{display:flex;align-items:stretch;gap:12px;min-width:0}
+.dashboardClubCrest{width:70px;height:auto;min-height:70px;flex:0 0 70px;align-self:stretch;display:flex;align-items:center;justify-content:center;overflow:visible;border:0;border-radius:0;background:transparent;color:var(--muted)}
+.dashboardClubCrest img{display:block;width:100%;height:100%;object-fit:contain;padding:0}
+.dashboardClubCrest .material-symbols-outlined{font-size:42px;line-height:1}
 .dashboardContextInfo{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:3px}
 .dashboardClubName{max-width:100%;font-size:17px;line-height:1.2;font-weight:800;letter-spacing:-.2px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dashboardTeamSeason{max-width:100%;font-size:13px;line-height:1.3;font-weight:500;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dashboardContextRoles{display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0;margin-top:1px}
 .dashboardRolePill{display:inline-flex;align-items:center;min-height:21px;padding:2px 7px;border:1px solid #dbeafe;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:10px;font-weight:700;line-height:1.2;white-space:nowrap}
-html[data-theme="dark"] .dashboardClubCrest{background:#111827;border-color:#334155;color:#94a3b8}
+html[data-theme="dark"] .dashboardClubCrest{background:transparent;border-color:transparent;color:#94a3b8}
 html[data-theme="dark"] .dashboardRolePill{background:#1e3a5f;border-color:#315781;color:#bfdbfe}
 @media(prefers-color-scheme:dark){
-  html:not([data-theme="light"]) .dashboardClubCrest{background:#111827;border-color:#334155;color:#94a3b8}
+  html:not([data-theme="light"]) .dashboardClubCrest{background:transparent;border-color:transparent;color:#94a3b8}
   html:not([data-theme="light"]) .dashboardRolePill{background:#1e3a5f;border-color:#315781;color:#bfdbfe}
 }
 @media(max-width:360px){
   .dashboardContextRow{gap:9px}
-  .dashboardClubCrest{width:52px;height:52px;flex-basis:52px}
+  .dashboardClubCrest{width:60px;min-height:66px;flex-basis:60px}
   .dashboardClubName{font-size:16px}
   .dashboardTeamSeason{font-size:12px}
 }
@@ -4876,5 +4883,17 @@ html[data-theme="dark"] .dashboardEventEmpty button {
     border-color: #3b82f6 !important;
     color: #dbeafe !important;
   }
+}
+</style>
+<style>
+/* KADAssist: Detailanpassung aus dem iPhone-Praxistest */
+.dashboardPage #dashboardStatsCard{padding:8px 10px;margin:6px 0 8px}
+.dashboardPage #dashboardStatsCard .statsGrid{gap:4px}
+.dashboardPage #dashboardStatsCard .statsGrid>div>.muted{font-size:12px;line-height:1.2}
+.dashboardPage #dashboardStatsCard .statsGrid .stat{font-size:21px;line-height:1.05;margin-top:2px}
+.dashboardRoleNote{display:inline-flex;align-items:center;min-height:21px;color:var(--muted);font-size:10px;font-weight:500;line-height:1.2;white-space:normal}
+@media(max-width:600px){
+  .dashboardPage #dashboardStatsCard{padding:8px 10px;margin:6px 0 8px}
+  .dashboardPage #dashboardStatsCard .statsGrid .stat{font-size:21px}
 }
 </style>
