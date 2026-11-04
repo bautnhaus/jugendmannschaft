@@ -437,3 +437,43 @@ Der dunkelblaue Header und die Begrüßung wurden bewusst noch nicht verändert.
 - Darunter folgen die aktive(n) Rolle(n) nochmals kleiner und zurückhaltend.
 - Das Layout muss unterschiedliche Kontexte abbilden: Trainer, Mannschaftsadmin, kombinierte Rollen, Vereinsadmin ohne Mannschaft und Superadmin mit/ohne ausgewählten Kontext.
 - Vor einer Änderung an `index.html` wird der endgültige Entwurf nochmals fachlich bestätigt.
+
+
+## 21. Header und Begrüßungsbereich – Umsetzung Variante A (04.11.2026)
+
+**Designentscheidung:** Begrüßung oberhalb des Kontextblocks. Der Vereinsname ist typografisch stärker als Mannschaft/Saison; Rollen folgen als kleinere, zurückhaltende Kennzeichnungen.
+
+### Umsetzung
+
+- Der dunkelblaue App-Header zeigt ausschließlich **KADAssist**. Die bisherige Unterzeile mit Mannschaft, Saison und Rolle wird nicht mehr angezeigt. Auch der Browser-/App-Titel lautet nun „KADAssist – Teamorganisation“.
+- Auf dem Dashboard steht zuerst die persönliche Begrüßung („Hallo, …!“).
+- Direkt darunter folgt der Kontextblock mit Vereinswappen links und Vereinsname rechts.
+- Mannschaft und Saison stehen gemeinsam in einer Zeile, z. B. „F-Jugend 2 · Saison 2026/2027“.
+- Die aktiven Rollen erscheinen darunter als kleinere Kennzeichnungen.
+- Für Vereinsmitgliedschaft, Vereinsadmin, Superadmin und explizit geöffnete Teamkontexte werden passende Kontext-/Rollenbeschriftungen dargestellt. Bei Superadmin-/Vereinsadmin-Leseansichten wird „Nur Ansicht“ kenntlich gemacht.
+- Ohne vorhandenes Wappen wird ein neutrales Schildsymbol angezeigt.
+
+### Datenherkunft und Berechtigungen
+
+- Persönliche Begrüßung: vorhandenes eigenes Profilfeld `profiles.display_name`.
+- Vereinsname/Wappen: `clubs.name` und `clubs.crest_path` im aktuellen, ausdrücklich ausgewählten Vereinskontext.
+- Mannschaft/Saison: bereits geladene Team- und Saisoninformationen des aktuellen Teamkontexts.
+- Rollen: bestehende `currentTeamRoles` aus `team_member_roles` beziehungsweise Vereins-/Superadmin-Kontext.
+- Die bestehende SELECT-Policy für `clubs` erlaubt authentifizierten Vereinsmitgliedern den Zugriff auf ihren Verein sowie Superadmins den Zugriff. Der Storage-Bucket `club-assets` ist öffentlich lesbar, damit das hinterlegte Wappen angezeigt werden kann.
+
+### Technischer Nachweis
+
+- Commit: `f14fa4e41861a3a24e4906ec5c0e86d23ad81d2e` – `feat: clarify app header and dashboard context`.
+- Datei: `index.html`, Blob-SHA `22648c3d87f1501852891ea51a7e429811306ab1`.
+- JavaScript-Syntaxprüfung: beide Script-Blöcke erfolgreich geparst.
+- DEV-Deployment: [Deploy DEV #429](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41911209608), erfolgreich.
+- DEV-Spiegel `jugendmannschaft-dev/main/index.html`: identischer Blob-SHA `22648c3d87f1501852891ea51a7e429811306ab1`.
+- Keine SQL-/Schemaänderung, keine Änderung an RLS, Auth, SMTP oder Edge Functions.
+
+**Manueller Nachtest:** Noch offen. Im DEV-Browser auf dem iPhone sind mindestens folgende Kontexte zu prüfen:
+1. normaler Trainer: Begrüßung, Vereinswappen/-name, Mannschaft und Saison, Rolle Trainer;
+2. Mannschaftsadmin mit zusätzlicher Trainerrolle: beide Rollen werden angezeigt;
+3. Superadmin im explizit geöffneten Teamkontext: Superadmin und Nur Ansicht werden korrekt dargestellt.
+Zusätzlich bitte kurz prüfen, ob Header und Begrüßung auf der Dashboardseite den oberen sichtbaren Bereich kompakt halten und das Wappen korrekt geladen wird.
+
+**PROD:** Nicht geändert. GitHub `main` bleibt unverändert.
