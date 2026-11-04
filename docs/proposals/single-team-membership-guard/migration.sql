@@ -73,12 +73,6 @@ BEGIN
             USING ERRCODE = '22023';
     END IF;
 
-    IF TG_OP = 'UPDATE'
-       AND NEW.user_id IS NOT DISTINCT FROM OLD.user_id
-       AND NEW.team_id IS NOT DISTINCT FROM OLD.team_id THEN
-        RETURN NEW;
-    END IF;
-
     PERFORM 1
     FROM auth.users AS u
     WHERE u.id = NEW.user_id
