@@ -572,3 +572,40 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Gegenstück in PROD:** Nicht ausgeführt; keine PROD-Änderung vorgesehen.
 - **GitHub-Datei:** `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql` (identischer SQL-Text); zusammen mit diesem Ausführungsnachtrag committed. Der Commit ist in der Repository-Historie nachvollziehbar.
 - **Zusätzliche Hinweise / Nachweisgrenzen:** `get_club_members_v2` bleibt unverändert. Die bestehende RLS-Policy auf `profiles` wird nicht erweitert. Die neue RPC ist `SECURITY DEFINER`, prüft aber vor jeder Rückgabe `auth.uid()` und `can_manage_club_context(p_club_id)`; EXECUTE wird nur an `authenticated` vergeben. Die generische Security-Advisor-Warnung wird bewusst nicht pauschal entfernt; Kontextprüfung, fester Suchpfad und ACL sind Teil der Sicherheitsbegründung. Es wurden keine Nutzerdaten verändert. Frontend-Anbindung in Commit `cb0a5b943e3bb367a9f7c5bfafd693803ec39ea0`; Deploy DEV #41822962197 erfolgreich. Statische Syntaxprüfung der drei geänderten Blöcke bestanden; manuelle UI- und Kontexttests offen.
+
+
+## DB-MIG-2026-003 – Ein-Mannschaft-Regel mit zusätzlichen Verwaltungsrollen
+
+- **Migrations-ID:** DB-MIG-2026-003 (fachlicher Vorgang DB-DEV-009)
+- **Supabase-Migrationsversion:** `20261104143331`
+- **Migrationsname:** `db_dev_009_single_team_membership_guard`
+- **Ausführungsdatensatz:** DEV
+- **Datum:** 04.11.2026
+- **Uhrzeit:** Das Supabase-Ausführungswerkzeug gab keinen separaten lokalen Zeitstempel zurück. Die von Supabase registrierte Versions-ID lautet `20261104143331`; deren Zeitkomponente wird hier nicht als lokale Uhrzeit interpretiert.
+- **Umgebung:** Supabase DEV – Projekt `pzazqvvoruqnqhcorbwx`
+- **Ausführungsweg:** Verbundenes Supabase-Migrationswerkzeug (`apply_migration`)
+- **Anlass/Zweck:** Zentrale Datenbankabsicherung der fachlich freigegebenen Ein-Mannschaft-Regel; Superadmin und Vereinsadmin bleiben zusätzliche, von der tatsächlichen Mannschaftszuordnung getrennte Rollen.
+- **Freigabe:** Ausdrückliche Nutzerfreigabe zur Ausführung von DB-DEV-009 ausschließlich in Supabase DEV am 04.11.2026. Keine Freigabe für PROD.
+- **Ausführender:** ChatGPT über das verbundene Supabase-Migrationswerkzeug, auf ausdrückliche Nutzerfreigabe.
+- **Status:** Erfolgreich ausgeführt; Struktur-, Rechte- und Read-only-Bestandsprüfung erfolgreich. Funktionale Positiv-/Negativtests über die App stehen noch aus.
+- **Tatsächlich ausgeführtes SQL bzw. unveränderlicher Verweis:** `supabase/migrations/20261104143331_db_dev_009_single_team_membership_guard.sql`; GitHub-Blob-SHA `b73af4ef0e45ce0d475f0498eb4bf8db31d0a09a`. Die Datei enthält den vollständigen an Supabase übergebenen SQL-Text.
+- **Betroffene Objekte:**
+  - Neue Triggerfunktion `public.enforce_single_team_membership()`.
+  - Neue BEFORE-Trigger `team_members_single_team_guard` auf `public.team_members` und `team_member_roles_single_team_guard` auf `public.team_member_roles`.
+  - Neuer Index `idx_team_member_roles_user` auf `public.team_member_roles(user_id)`.
+  - Angepasste Funktionen `admin_add_team_role(uuid,uuid,text)`, `admin_create_team(uuid,text,integer,text,text,text,uuid)`, `admin_list_team_admin_candidates(uuid)` und `admin_complete_member_invitation(uuid,text,uuid,text,uuid)`.
+- **Ergebnis:** Supabase meldete `success: true`. Die Migrationshistorie enthält Version `20261104143331` mit dem Namen `db_dev_009_single_team_membership_guard`.
+- **Verifikation (read-only):**
+  1. Beide neuen Trigger sind vorhanden und aktiviert; ihre Definition lautet BEFORE INSERT OR UPDATE OF `user_id, team_id`. Die bestehenden Audit-Trigger und der Schutz der letzten Mannschaftsadmin-Rolle sind weiterhin vorhanden.
+  2. Kein Trigger auf `global_user_roles` wurde angelegt. Es existiert kein Gegentrigger, der eine spätere Superadmin-Hochstufung eines Mannschaftsmitglieds verhindert.
+  3. `enforce_single_team_membership()` gehört `postgres`, ist SECURITY DEFINER und hat den festen Suchpfad `pg_catalog, public, auth`. EXECUTE für `anon` und `authenticated` ist false. `service_role` besitzt weiterhin EXECUTE; die Funktion ist triggerorientiert und die Anwendung ruft sie nicht als RPC auf.
+  4. Die vier angepassten RPCs gehören `postgres`, sind SECURITY DEFINER, verwenden den festen Suchpfad und sind für `authenticated` ausführbar, nicht für `anon`. Die bestehenden EXECUTE-Rechte von `service_role` bleiben erhalten.
+  5. Index `idx_team_member_roles_user` ist vorhanden.
+  6. Benutzer mit Mehrfachzuordnung über die Vereinigungsmenge von `team_members` und `team_member_roles`: **0**.
+  7. Die Einladungs-RPC enthält keine Sperre mehr gegen Superadmins als Zielpersonen. `admin_create_team` lässt einen Superadmin als Mannschaftsadmin-Ziel zu, sofern er Vereinsmitglied und noch keiner Mannschaft zugeordnet ist. Die Kandidatenliste schließt Superadmins nicht allein wegen ihrer globalen Rolle aus, sondern filtert tatsächliche Mannschaftszuordnungen.
+  8. Die Migration enthält keine INSERT-/UPDATE-/DELETE-Anweisungen für bestehende Mitgliedschafts- oder Rollendaten und keine Änderungen an RLS-Policies. Die bestehenden Policies wurden read-only nach der Migration ausgelesen.
+  9. Read-only Tabellenbestand nach Migration: `team_members` 3 Zeilen, `team_member_roles` 4, `club_members` 4, `club_member_roles` 1, `global_user_roles` 1. Diese Werte sind eine Momentaufnahme nach Ausführung, kein separater Vorher-/Nachher-Datenvergleich.
+- **Security-/Performance-Advisor nach Ausführung:** Security: 3 Lint-Gruppen (INFO 1, WARN 2), darunter 38 SECURITY DEFINER-Hinweise, ein RLS-ohne-Policy-Hinweis für die absichtlich RPC-geschützten Kontexttabellen und ein Hinweis zur Passwort-Leak-Protection. Performance: 4 Lint-Gruppen (INFO 2, WARN 2), darunter 65 Mehrfach-Policies und 67 Auth-RLS-Initplan-Hinweise; der neu angelegte Index wird unmittelbar nach Erstellung noch als ungenutzt gemeldet. Diese Advisor-Hinweise sind nicht automatisch durch DB-DEV-009 verursacht und müssen als gesonderte Sicherheits-/Performance-Aufgaben bewertet werden.
+- **Rollback/Wiederherstellung:** Ein Zurückbau müsste die beiden neuen Trigger entfernen, die ursprünglichen vier Funktionsdefinitionen aus dem dokumentierten Vorher-Stand wiederherstellen und den neuen Index sowie die Triggerfunktion erst nach Abhängigkeitsprüfung entfernen. Die vorherigen Live-Funktionsdefinitionen sind im Arbeitsverlauf read-only ausgelesen worden; ein automatischer Rollback wurde nicht ausgeführt. Vor einem Rollback ist eine neue, geprüfte Rücknahmemigration erforderlich.
+- **Gegenstück in PROD:** Nicht ausgeführt, nicht freigegeben. PROD bleibt unverändert.
+- **Zusätzliche Hinweise / Nachweisgrenzen:** Die Migration wurde ausschließlich in DEV ausgeführt. Ein echter App-Aufruf zum Hinzufügen/Entfernen von Rollen und ein Negativtest für eine zweite Mannschaftszuordnung wurden noch nicht ausgeführt. Ebenso sind die aktualisierten Edge Functions noch nicht deployed.
