@@ -187,3 +187,13 @@ Verbindlich gilt:
 **Technischer Status:** Die aktuelle DEV-Laufzeit weist Superadmin-Konten als Zielpersonen in den Einladungswegen noch zurück. Die SQL-Migration ist als Vorschlag in `develop` versioniert, aber nicht ausgeführt. Die angepasste Frontend-Quelle sowie die Quellen für `invite-member` und den 410-Gone-Ersatz `invite-trainer` sind in `develop` versioniert, aber noch nicht nach Supabase DEV deployed. Die fachliche Freigabe ist keine SQL- oder Deployment-Freigabe. Vor jeder Aktivierung sind die aktuellen DEV-Definitionen erneut zu prüfen und die konkreten Änderungen separat freigeben zu lassen.
 
 **Dokumentationsführung:** `develop` ist führend. Der SQL-Entwurf und die Nachprüfung liegen unter `docs/proposals/single-team-membership-guard/`; die geplante Datenbankänderung ist in `DB_CHANGELOG.md` beschrieben. Tatsächliche SQL-Ausführung und Supabase-Deployments werden erst nach Durchführung in den jeweiligen Protokollen dokumentiert.
+
+
+## 11. DEV-Spiegelstand für Rollenmodell (04.11.2026)
+
+Die angepasste `index.html` liegt in `develop`. Der aktuelle DEV-Spiegel `bautnhaus/jugendmannschaft-dev`, Branch `main`, enthält denselben Blob-SHA wie `develop/index.html`:
+
+- `develop/index.html`: `ebf7363aa2df1f5b3fc465934e2fab8cea3ef0c1`
+- `jugendmannschaft-dev/main/index.html`: `ebf7363aa2df1f5b3fc465934e2fab8cea3ef0c1`
+
+Damit ist die Frontend-Quelle im DEV-Spiegel angekommen. Ein manueller Browser-/Praxistest dieser Rollenänderung ist noch offen. Die Supabase-Edge-Functions bleiben unverändert auf Version 3; die SQL-Migration wurde nicht ausgeführt. PROD und `main` bleiben unverändert.
