@@ -465,3 +465,22 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 - **Ausführungsnachweis:** `DB_MIGRATION_LOG.md`, ID DB-MIG-2026-002. Supabase bestätigte die erfolgreiche Migration; versionierte Quelle: `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql`.
 - **PROD:** Nicht ausgeführt und nicht freigegeben.
 - **Verifikation:** Funktion vorhanden; Owner `postgres`; `SECURITY DEFINER`; `STABLE`; fester `search_path`; EXECUTE für `authenticated` (zusätzlich postgres/service_role), nicht für anon/PUBLIC. Bestehende `profiles`-Policies unverändert. Authentifizierte Positiv-/Negativtests und Frontend-Praxistest bleiben offen.
+
+
+## DB-DEV-009 – Zentrale Ein-Mannschaft-Regel (Vorschlag, nicht ausgeführt)
+
+- **Status:** Entwurf im Review-Feature-Branch; keine Migration ausgeführt.
+- **Geplante Objekte:** Triggerfunktion `public.enforce_single_team_membership()`; Trigger auf `public.team_members` und `public.team_member_roles`; überarbeitete RPCs `admin_add_team_role`, `admin_create_team` und `admin_list_team_admin_candidates`; Index `idx_team_member_roles_user`.
+- **Fachliche Regel:** Ein Benutzer darf höchstens einer Mannschaft zugeordnet sein. Ein globaler Superadmin bleibt neutral und darf keiner Mannschaft zugeordnet werden.
+- **Zentrale Absicherung:** Beide Tabellen, in denen Mannschaftszuordnungen gespeichert werden, erhalten BEFORE-Trigger auf INSERT sowie Änderungen an den Zuordnungsschlüsseln. Die Triggerfunktion sperrt die jeweilige Zeile in `auth.users` mit `FOR UPDATE`, prüft globale Superadmin-Rolle und Zuordnungen in beiden Tabellen und weist eine zweite Mannschaft ab.
+- **RPC-Vorprüfung:** `admin_add_team_role` und `admin_create_team` prüfen dieselbe Regel vor den Schreibvorgängen. `admin_list_team_admin_candidates` listet nur noch Vereinsmitglieder ohne vorhandene Mannschaftszuordnung.
+- **Index:** `team_member_roles(user_id)` unterstützt die Suche nach bestehenden Rollen eines Benutzers.
+- **ACL / Sicherheit:** Die Triggerfunktion ist `SECURITY DEFINER`, hat einen festen Suchpfad und soll keine EXECUTE-Freigabe für `PUBLIC`, `anon` oder `authenticated` erhalten. Die bestehenden RPC-Rechte für die regulären Aufrufer bleiben erhalten.
+- **Bestehende Einladung:** `admin_complete_member_invitation` sperrt bereits den Zielbenutzer und verhindert eine zweite Mannschaft. Die neuen Trigger sichern diesen und die weiteren Schreibwege zusätzlich ab.
+- **Altbestand:** `add_team_member_by_email` wird im aktuellen Frontend nicht aufgerufen und hat kein EXECUTE-Recht für `authenticated`; die Trigger sichern die Tabellen dennoch bei privilegierten Aufrufen ab.
+- **Legacy Edge Function:** `invite-trainer` ist DEV-seitig noch ACTIVE (Version 3), wird aber vom aktuellen Frontend nicht mehr verwendet. Vorgesehen ist ein 410-Gone-Ersatz, nicht eine Behauptung physischer Löschung.
+- **Live-Datenprüfung 04.11.2026:** 0 Benutzer mit mehreren Mannschaftszuordnungen; 0 Superadmins mit Mannschaftszuordnung; 0 widersprüchliche Vereins-/Mannschaftszuordnungen.
+- **SQL-Entwurf und read-only Verifikation:** `docs/proposals/single-team-membership-guard/migration.sql` und `docs/proposals/single-team-membership-guard/after_apply_verification.sql`.
+- **PROD:** nicht geprüft, nicht geändert, nicht freigegeben.
+
+Diese Beschreibung ist ein Lösungsvorschlag und kein Ausführungsnachweis. Erst nach ausdrücklicher Freigabe darf eine finale Migration nach `supabase/migrations/` übernommen und in Supabase DEV ausgeführt werden.
