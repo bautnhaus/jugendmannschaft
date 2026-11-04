@@ -1,7 +1,7 @@
 # Release 1.6 – Mitglieder-/Trainer-Einladung (DEV-Arbeitsstand)
 
 **Stand:** 04.11.2026  
-**Status:** Erster Trainer-Einladungs-End-to-End-Test erfolgreich; Profilname in Superadmin-Mitgliederliste und Bearbeitungsdialog manuell bestätigt; DB-DEV-009 ausgeführt; beide korrigierten Edge Functions in DEV Version 4 deployed. Weitere Rollen-/Kontext-Praxistests offen.  
+**Status:** Erster Trainer-Einladungs-End-to-End-Test erfolgreich; Profilname in Superadmin-Mitgliederliste und Bearbeitungsdialog manuell bestätigt; DB-DEV-009 ausgeführt; beide korrigierten Edge Functions in DEV Version 4 deployed; Vereinsadmin-Kontextstart korrigiert und im DEV-Spiegel deployed. Weitere Rollen-/Kontext-Praxistests offen.  
 **Geltungsbereich:** ausschließlich Supabase DEV und GitHub `develop` / DEV-Deployment  
 **PROD:** unverändert; kein PROD-SQL, keine PROD-Konfiguration, kein PROD-Deployment.
 
@@ -215,3 +215,33 @@ Am 04.11.2026 hat der Nutzer das Deployment beider vorbereiteten Edge Functions 
 **Noch offen:** Ein authentifizierter HTTP-Aufruf des Legacy-Endpunkts sowie der Browser-End-to-End-Test, bei dem ein bestehender Superadmin als Zielperson eingeladen wird. Ebenso bleiben die weiteren Rollen-/Kontext- und Ein-Mannschaft-Negativtests offen. Deployment und Quelltext-Rücklese sind kein Ersatz für diese Praxistests.
 
 **PROD:** unverändert; kein PROD-SQL, kein PROD-Deployment und keine Änderung an GitHub main.
+
+
+## 13. Nachtrag 04.11.2026 – Vereinsadmin mit zusätzlicher Mannschaftsrolle: Kontextstart korrigiert
+
+**Beobachtung:** Ein Benutzer mit Vereinsadmin-Berechtigung und zusätzlicher Trainer-/Mannschaftsadminrolle wurde beim normalen Login direkt in seine Mannschaft geladen. Erwartet wird zunächst die Vereinsverwaltung mit bewusster Auswahl des Arbeitskontexts.
+
+**Ursache:** In `loadApp()` wurden zuerst die eigenen Zeilen aus `team_member_roles` ausgewertet. Sobald eine Mannschaftsrolle vorhanden war, wurde der normale Mannschaftsstart ausgeführt. Die Prüfung der Vereinsadmin-Berechtigung lag erst im Zweig ohne Mannschaftszuordnung und wurde daher für Benutzer mit beiden Berechtigungen übersprungen.
+
+**Korrektur in `develop/index.html`:**
+- Beim normalen Login wird die Vereinsadmin-Berechtigung auch dann geprüft, wenn Mannschaftsrollen vorhanden sind.
+- Vereinsadmins starten zunächst in der Vereinsverwaltung und erhalten dort die Mannschaftsauswahl. Ein gespeicherter Mannschaftskontext wird bei diesem normalen Einstieg nicht automatisch wiederhergestellt.
+- Beim ausdrücklich geöffneten Mannschaftskontext hat die ausgewählte Mannschaft Vorrang vor einer Mitgliedschaft in einer anderen Mannschaft.
+- Ist der Benutzer Mitglied der ausgewählten Mannschaft, werden seine dortigen tatsächlichen Rollen verwendet. Ist er dort kein Mitglied, wird der berechtigte Vereinsadmin-Kontext als Nur-Lese-Kontext geladen.
+
+**Technischer Nachweis:**
+- Commit: `81f9ca9cc0294177e89910b0b8ffa158bdc02c44` – `fix: prioritize club context for dual-role members`.
+- Datei: `index.html`, GitHub-Blob-SHA `aa682da4c8d528239b06513fafa3b20eacf36d53`.
+- DEV-Deployment: [Deploy DEV #397](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41859993637), erfolgreich.
+- DEV-Spiegel: `jugendmannschaft-dev/main/index.html` hat denselben Blob-SHA `aa682da4c8d528239b06513fafa3b20eacf36d53`.
+- JavaScript-Syntaxprüfung des Modulskripts: bestanden.
+- Keine Datenbankmigration, keine Änderung an Mitgliedschafts- oder Rollendaten, keine Änderung an PROD oder GitHub `main`.
+
+**Noch offen – manueller DEV-Praxistest:**
+1. Mit einem Konto anmelden, das Vereinsadmin und zusätzlich Trainer oder Mannschaftsadmin einer Mannschaft ist.
+2. Erwartung: Start in der Vereinsverwaltung; keine automatische Öffnung der eigenen Mannschaft.
+3. Eine Mannschaft auswählen, in der das Konto selbst Mitglied ist. Erwartung: Die tatsächliche eigene Mannschaftsrolle wird verwendet.
+4. Eine andere Mannschaft desselben Vereins auswählen, in der das Konto kein Mitglied ist. Erwartung: Der ausgewählte Kontext wird korrekt und nur lesend geladen.
+5. Abmelden und erneut anmelden. Erwartung: Der normale Einstieg beginnt wieder in der Vereinsverwaltung und übernimmt nicht ungefragt den vorherigen Mannschaftskontext.
+
+Der Code ist im DEV-Spiegel angekommen; das fachliche Verhalten ist erst nach diesem Browser-Praxistest als bestanden zu markieren.
