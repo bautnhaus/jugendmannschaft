@@ -53,6 +53,29 @@ Schreibende SQL-Änderungen bleiben zusätzlich und verbindlich in `DB_MIGRATION
 
 ## 4. Neue Einträge
 
-Für die am 04.11.2026 vorbereitete Rollenmodell-Korrektur wurde noch keine Supabase-Edge-Function- oder Konfigurationsänderung ausgeführt. Die geänderten Quellen für `invite-member` und den 410-Gone-Ersatz `invite-trainer` liegen in `develop` unter `supabase/functions/` und sind nicht deployed. Die aktuellen DEV-Live-Versionen bleiben unverändert (beide Funktionen ACTIVE, Version 3, JWT-Prüfung aktiv). Das geänderte Frontend in `develop/index.html` wurde dagegen bereits in den DEV-Spiegel `jugendmannschaft-dev/main` synchronisiert (identischer Blob-SHA `ebf7363aa2df1f5b3fc465934e2fab8cea3ef0c1`); der manuelle Browser-/Praxistest ist noch offen. Die SQL-Migration DB-DEV-009 wurde separat in `DB_MIGRATION_LOG.md` / `DB_CHANGELOG.md` dokumentiert und ist keine Edge-Function-/Konfigurationsänderung. PROD-Edge-Functions und PROD-App sind unverändert. Der vollständige Status steht in `docs/proposals/single-team-membership-guard/README.md` und `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md`.
+### SUPA-2026-001 – Release 1.6: Einladungs-Edge-Functions aktualisiert
+
+- **Datum/Uhrzeit (Europe/Berlin):** 04.11.2026, 16:15:22 (invite-member) und 16:15:24 (invite-trainer).
+- **Umgebung:** ausschließlich DEV.
+- **Supabase-Projektkennung:** pzazqvvoruqnqhcorbwx.
+- **Änderungstyp:** Edge Function.
+- **Anlass/Zweck:** Die zentrale Einladung erlaubt bestehende Superadmin-Konten als Zielpersonen, sofern Vereins- und Mannschaftsregeln eingehalten werden. Der historische Endpunkt invite-trainer wird auf einen 410-Gone-Ersatz umgestellt.
+- **Betroffene Funktionen:** invite-member, invite-trainer.
+- **Vorheriger Zustand:** Beide Funktionen ACTIVE, Version 3, JWT-Prüfung aktiviert. invite-member wies Superadmins als Zielpersonen ausdrücklich ab; invite-trainer enthielt noch den alten Einladungsablauf.
+- **Neuer Zustand:** Beide Funktionen ACTIVE, Version 4, JWT-Prüfung weiterhin aktiviert.
+- **Freigabe:** Ausdrückliche Nutzerfreigabe am 04.11.2026 ausschließlich für diese beiden Edge-Function-Deployments in DEV. Keine SQL-Änderung, keine PROD-Änderung, keine Änderung an GitHub main.
+- **Ausführungsweg:** Supabase Edge-Function-Deployment.
+- **Quellpfade und GitHub-Blob-SHAs in develop:**
+  - supabase/functions/invite-member/index.ts – 23234ab65ae1c9ba85067cf8d72d1a290f5a486e
+  - supabase/functions/invite-trainer/index.ts – 004499fe27bef85d9896fd1f1c35883dd12ee0bc
+- **Deployment-/Änderungsergebnis:** Beide Deployments erfolgreich angenommen.
+- **Aktive Version / Deployment-SHA:**
+  - invite-member: Version 4, 84dd949d0952615cb59bd2e661d0c722de738bd94751d0989695e5d050f6e0ea
+  - invite-trainer: Version 4, 0f2e6e69caa730a80220e4e1f959ade5f1f218d00eb6d0a26f325e7608a323a7
+- **Verifikation:** Beide Funktionen unmittelbar nach Deployment über Supabase erneut ausgelesen. Beide Live-Quelltexte stimmen bytegenau mit den jeweiligen develop-Dateien überein. invite-member enthält keine Superadmin-Zielpersonen-Sperre mehr und leitet anhand der Supabase-Projektkennung auf die DEV-App weiter. invite-trainer antwortet für Nicht-OPTIONS-Anfragen mit HTTP 410 und verweist auf invite-member. Beide Funktionen melden ACTIVE, Version 4 und verify_jwt=true.
+- **Grenze des Nachweises:** Deployment-Metadaten und Live-Quelltexte sind verifiziert. Ein authentifizierter HTTP-Aufruf des Legacy-Endpunkts und der Superadmin-Einladungs-End-to-End-Test in der Browser-App stehen noch aus.
+- **Rollback/Wiederherstellung:** Bei Bedarf die zuvor ausgelesenen Version-3-Quellen als neue Deployments wiederherstellen. Das wäre eine neue, separat freizugebende Supabase-Laufzeitänderung.
+- **Zugehörige DB-Migrationen:** Keine neue Migration. DB-DEV-009 (20261104143331) war zuvor separat in DEV ausgeführt worden.
+- **PROD-Gegenstück:** Nicht ausgeführt und nicht freigegeben. PROD bleibt unverändert.
 
 Künftige tatsächliche Deployments und Konfigurationsänderungen werden ab diesem Protokoll mit dem Eintragsmuster aus Abschnitt 3 dokumentiert. Historische Änderungen werden nicht ohne Beleg rückwirkend rekonstruiert.
