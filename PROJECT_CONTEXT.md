@@ -54,6 +54,7 @@ Release 1.5.2 wurde laut Nutzerbestätigung am 02.11.2026 nach PROD deployed. Ei
 6. Keine Originaldefinitionen von Funktionen, Triggern, Policies oder SQL-Migrationen aus dem Gedächtnis rekonstruieren. Vor Änderungen die tatsächlichen Definitionen und Abhängigkeiten aus der Zielumgebung auslesen.
 7. Vor GitHub-Schreibzugriffen Branch-HEAD und betroffene Originaldateien erneut prüfen. Nur den freigegebenen Umfang ändern.
 8. Kein Deployment, keine PROD-Datenbankänderung und keine Auth-/Edge-Konfigurationsänderung ohne separate ausdrückliche Freigabe.
+9. **Dokumentationsführung erfolgt zentral in `develop`:** Fachliche Entscheidungen, Konzepte, Vorschläge, technische Umsetzung, DEV-Prüfungen, offene Punkte und Releasevorbereitung werden dort dokumentiert – nicht erst nach Umsetzung. Feature-Branches dienen der isolierten Codearbeit und dürfen nicht der einzige Ablageort maßgeblicher Projektinformationen sein. Vor einer Übernahme werden Code und Dokumentation gezielt mit `develop` abgeglichen; ein kompletter Branch wird nicht blind gemerged.
 
 ## 5. Verbindlicher Ablauf für neue Funktionen und Features
 
@@ -73,8 +74,11 @@ Neue Funktionen und Features werden grundsätzlich in einer abgestimmten Konzept
 | Dokument | Zuständigkeit |
 |---|---|
 | `PROJECT_CONTEXT.md` | Projektüberblick, aktueller Stand, Regeln und Verweise |
+| `docs/SUPABASE_CHANGE_CONTROL.md` | Verbindlicher Ablauf und Dokumentationspflicht für alle Supabase-Änderungen |
+| `docs/proposals/single-team-membership-guard/README.md` | Führende Spezifikation des freigegebenen Rollenmodells und seines noch nicht ausgeführten DEV-Änderungsvorschlags |
 | `DB_CHANGELOG.md` | Technische Datenbankobjekte, Änderungen, Definitionen und Prüfungen |
 | `DB_MIGRATION_LOG.md` | Chronologischer Ausführungsnachweis aller schreibenden SQL-Eingriffe |
+| `SUPABASE_CHANGELOG.md` | Chronologischer Nachweis tatsächlicher nicht-SQL-basierter Supabase-Laufzeit- und Konfigurationsänderungen |
 | `RELEASE_NOTES_*.md` | Fachlicher und technischer Umfang einer veröffentlichten Version |
 | `docs/AP01-03_RELEASE_KATALOG_2026-11-01.md` | AP01–AP03-Releaseumfang, Abhängigkeiten und Freigabeblocker |
 | `docs/AP01-03_MIGRATION_TEST_MAPPING_2026-11-01.md` | Zuordnung der Migrationen, Tests und offenen Nachweise |
@@ -134,3 +138,25 @@ Die frühere ausführliche Fassung dieses Dokuments wurde unverändert archivier
 
 
 **Praxistest 04.11.2026 – Superadmin-Profilanzeige:** Nach dem DEV-Deployment hat der Nutzer beide Prüfungen bestätigt: In der Vereinsmitgliederliste erscheint der persönliche Name statt der E-Mail-Adresse; beim Öffnen von „Mitglied bearbeiten“ wird der gespeicherte Name korrekt übernommen. Der Folgefehler ist im Superadmin-Kontext behoben. Weiterhin offen sind Profilbildanzeige, Speichern/Neuladen, Vereinsadmin-Kontext und negative Kontexttests. Keine weitere SQL-Änderung; PROD unverändert.
+
+
+## 10. Rollenmodell – Ein-Mannschaft-Regel und zusätzliche Verwaltungsrollen (04.11.2026)
+
+**Fachlich freigegeben:** Ein Benutzer kann höchstens einer Mannschaft tatsächlich zugeordnet sein. Superadmin und Vereinsadmin sind zusätzliche, davon getrennte Berechtigungen.
+
+- Ein bestehendes Mannschaftsmitglied kann nachträglich Superadmin, Vereinsadmin oder beides werden.
+- Vorhandene Zeilen in `team_members` und `team_member_roles` sowie bestehende Mannschaftsrollen bleiben bei der Vergabe oder Entfernung dieser zusätzlichen Rollen vollständig erhalten.
+- Ein Mannschaftsmitglied darf weiterhin keiner zweiten Mannschaft zugeordnet werden.
+- Superadmins und Vereinsadmins können in den Mannschaftskontexten ihres ausgewählten/eigenen Berechtigungsbereichs administrieren, ohne dort jeweils Mitglied zu sein.
+- Die Regel gilt für die zugeordnete Zielperson; sie beschränkt nicht die Kontextrechte des handelnden Administrators.
+
+**Technischer Status:** SQL-, Frontend- und Edge-Function-Vorschlag ist fachlich freigegeben, technisch aber noch nicht in Supabase DEV ausgeführt und nicht deployed. Eine separate Ausführungsfreigabe für die konkrete DEV-Migration und separate Deployment-Freigaben bleiben erforderlich.
+
+**Zentrale Ablage in `develop`:**
+- Spezifikation und Status: `docs/proposals/single-team-membership-guard/README.md`
+- SQL-Entwurf: `docs/proposals/single-team-membership-guard/migration.sql`
+- Read-only Nachprüfung nach späterer Ausführung: `docs/proposals/single-team-membership-guard/after_apply_verification.sql`
+- Geplante Datenbankänderung: Planungsindex in `DB_MIGRATION_LOG.md` und DB-DEV-009 in `DB_CHANGELOG.md`
+- Supabase-Änderungsprozess: `docs/SUPABASE_CHANGE_CONTROL.md`; tatsächliche Nicht-SQL-Ausführungen in `SUPABASE_CHANGELOG.md`
+
+Der Feature-Branch `feature/dev-single-team-membership-guard-review` bleibt bis zur gezielten Übernahme ein isolierter technischer Arbeitsstand. Diese Projektdokumentation in `develop` ist die führende Quelle. Der Feature-Branch darf nicht als zweite parallele Dokumentationsbasis gepflegt oder vollständig ohne Prüfung gemerged werden.
