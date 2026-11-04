@@ -1,7 +1,7 @@
 # Release 1.6 – Mitglieder-/Trainer-Einladung (DEV-Arbeitsstand)
 
 **Stand:** 04.11.2026  
-**Status:** Erster Trainer-Einladungs-End-to-End-Test erfolgreich; Profilname in Superadmin-Mitgliederliste und Bearbeitungsdialog manuell bestätigt; DB-DEV-009 ausgeführt; beide korrigierten Edge Functions in DEV Version 4 deployed; Vereinsadmin-Kontextstart korrigiert und im DEV-Spiegel deployed. Weitere Rollen-/Kontext-Praxistests offen.  
+**Status:** Erster Trainer-Einladungs-End-to-End-Test erfolgreich; bestehender Superadmin als Trainer und zusätzlich Vereinsadmin zugeordnet; DB-DEV-009 ausgeführt; beide korrigierten Edge Functions in DEV Version 4 deployed; Vereinsadmin-Kontextstart und Mitgliederlisten-Aktualisierung nach Rollenänderung korrigiert und im DEV-Spiegel deployed. Browser-Nachtest der zuletzt korrigierten Aktualisierung noch offen.  
 **Geltungsbereich:** ausschließlich Supabase DEV und GitHub `develop` / DEV-Deployment  
 **PROD:** unverändert; kein PROD-SQL, keine PROD-Konfiguration, kein PROD-Deployment.
 
@@ -283,3 +283,36 @@ Der Nutzer versuchte, das bereits als Trainer in „DEV Mannschaft“ geführte 
 **Testbewertung:** Der Frontend-Schutz gegen eine zweite Mannschaftszuordnung ist im konkreten Fall bestätigt; es wurde keine schreibende Änderung vorgenommen. Der serverseitige Negativpfad (Aufruf von `admin_add_team_role` bzw. des Datenbanktriggers mit einer zweiten Mannschaft) wurde durch diesen UI-Test nicht ausgeführt. Quelltext und Triggerdefinition sind technisch geprüft; ein authentifizierter Laufzeittest des serverseitigen Ablehnungswegs bleibt separat offen.
 
 Der Nutzer soll für diesen Test keine bestehende Mannschaftsrolle entfernen. Ein echter Mannschaftswechsel wäre eine Datenänderung und ist nicht Teil dieses Negativtests.
+
+
+## 16. Nachtrag 04.11.2026 – Bestehendes Mannschaftsmitglied wird Vereinsadmin; Mitgliederliste aktualisiert sich nach Speichern
+
+**Rollenänderung des Nutzers:** Der bestehende Superadmin wurde über „Bearbeiten“ zusätzlich zum Vereinsadmin gemacht. Der Nutzer bestätigte, dass die Trainerrolle weiterhin angezeigt wurde.
+
+**Read-only Nachprüfung in Supabase DEV:**
+- globale Rolle super_admin weiterhin vorhanden;
+- Vereinsrolle club_admin vorhanden;
+- bisherige Trainerrolle in „DEV Mannschaft“ weiterhin vorhanden;
+- genau eine Mannschaftszuordnung;
+- keine Änderung der bestehenden Mannschaftszuordnung.
+
+**Zusätzlich gemeldeter UX-Fehler:** Nach Bestätigung des Bearbeitungsdialogs zeigte die sichtbare Seite „Mitglieder und Rollen“ die neue Vereinsrolle nicht sofort an. Ein manuelles Neuladen aktualisierte zwar die Daten, führte aber aus der Unterseite eine Ebene höher.
+
+**Ursache:** Der Bearbeitungsdialog wird in der neuen Vereinsverwaltung aus einer dynamisch erzeugten Liste im Bereich superAdminClubSubView geöffnet. Nach dem Speichern rief saveClubMemberEditor bislang renderClubMembers() auf. Diese Funktion aktualisiert die alte, ausgeblendete Mitgliederliste (clubMemberList), nicht die gerade sichtbare dynamische Liste in superAdminClubSubContent.
+
+**Korrektur in develop/index.html:**
+- Neue Funktion refreshClubMemberView() erkennt, ob die aktive Unterseite „Vereinsmitglieder“ geöffnet ist.
+- In diesem Fall wird die aktuelle Vereinsmitgliederansicht erneut über openSuperAdminClubSection('members') aus Supabase geladen und an derselben Stelle neu aufgebaut.
+- Die aktive Rollenfilter-Auswahl bleibt erhalten.
+- In anderen Ansichten wird weiterhin die bisherige Mitgliederlisten-Aktualisierung verwendet.
+- Bei einem Aktualisierungsfehler wird ausdrücklich gemeldet, dass die Rollenänderung gespeichert wurde, aber die Liste nicht aktualisiert werden konnte; der Fehler wird nicht als fehlgeschlagene Speicherung ausgegeben.
+
+**Technischer Nachweis:**
+- Commit: `70c7226cf02147e348265afb0e8407188fe9e5c4` – `fix: refresh club members view after role edits`.
+- Datei: `index.html`, Blob-SHA `55cc89958375a5d4d1bac2ed61e1c3fcae75b23c`.
+- DEV-Deployment: [Deploy DEV #407](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41884009756), erfolgreich.
+- DEV-Spiegel `jugendmannschaft-dev/main/index.html`: identischer Blob-SHA `55cc89958375a5d4d1bac2ed61e1c3fcae75b23c`.
+- JavaScript-Syntaxprüfung: bestanden.
+- Keine SQL-Änderung, keine PROD-Änderung, keine Änderung an GitHub `main`.
+
+**Noch offen:** Manueller Browser-Nachtest: Vereinsadmin-Rolle ändern, Speichern bestätigen, neue Rolle muss sofort in der sichtbaren Mitgliederliste erscheinen; die Ansicht muss auf „Mitglieder und Rollen“ bleiben. Ein Seitenneuladen darf dafür nicht erforderlich sein.
