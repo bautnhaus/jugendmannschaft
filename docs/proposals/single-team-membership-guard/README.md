@@ -1,6 +1,6 @@
 # DEV-Korrekturpaket: Ein-Mannschaft-Regel und kontextbasierte Rollen
 
-**Status:** vorbereitet auf Review-Feature-Branch; noch nicht in `develop`, nicht deployed und nicht in Supabase ausgeführt.  
+**Status:** fachlich freigegeben am 04.11.2026; diese Spezifikation ist in `develop` führend dokumentiert. Der technische Frontend-/Edge-Code liegt vorläufig im isolierten Review-Feature-Branch; nicht deployed und nicht in Supabase ausgeführt.  
 **Stand:** 04.11.2026  
 **Zielumgebung:** ausschließlich Supabase DEV (`pzazqvvoruqnqhcorbwx`)  
 **PROD:** unverändert, nicht geändert und nicht freigegeben.
