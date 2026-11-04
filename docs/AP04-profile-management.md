@@ -81,7 +81,7 @@ Die zweite Datei ist zwingend nach der ersten auszuführen.
 - **PROD bleibt unverändert.** Diese Umsetzung und die drei Migrationen gelten ausschließlich für DEV.
 
 
-## Superadmin-Mitgliederliste – Profilfelder im Vereinskontext (04.11.2026, DEV – geplant)
+## Superadmin-Mitgliederliste – Profilfelder im Vereinskontext (04.11.2026, DEV – SQL ausgeführt, Frontend deployed)
 
 ### Befund
 - Die Live-Funktion `get_club_members_v2(uuid)` liefert `user_id`, `email`, `is_club_admin` und `teams`, jedoch weder `display_name` noch `avatar_url`.
@@ -89,16 +89,16 @@ Die zweite Datei ist zwingend nach der ersten auszuführen.
 - Der Bearbeitungsdialog fragt `profiles` separat ab. Die aktuelle `profiles_select`-Policy erlaubt Selbstzugriff und Teamadmin-Zugriff, aber keinen allgemeinen Lesezugriff für einen Superadmin im ausgewählten Vereinskontext. Der Abfragefehler wird bisher nicht ausgewertet; das Namensfeld bleibt dadurch leer.
 - Der gespeicherte Name selbst ist vorhanden und wird im Dashboard/Mein Bereich korrekt verwendet. Die Daten werden nicht neu geschrieben.
 
-### Geplante Lösung
+### Umgesetzte Lösung
 - Neue read-only RPC `public.get_club_members_v3(p_club_id uuid)` mit den bisherigen Mitglieds-/Rollenfeldern plus `profiles.display_name` und `profiles.avatar_url`.
 - Die RPC prüft `auth.uid()` und `can_manage_club_context(p_club_id)`; ein Superadmin benötigt damit weiterhin den ausdrücklich ausgewählten Vereinskontext. Vereinsadmins bleiben auf den eigenen Verein begrenzt.
 - `get_club_members_v2` und die bestehende `profiles_select`-Policy bleiben unverändert.
-- Die beiden Frontend-Mitgliederlisten verwenden nach Freigabe die neue RPC. Der Bearbeitungsdialog übernimmt Name und Avatar aus dem geladenen Mitgliedsdatensatz und braucht keinen zusätzlichen direkten Profil-SELECT.
+- Beide Frontend-Mitgliederlisten verwenden jetzt die neue RPC. Die Superadmin-Karte zeigt den persönlichen Namen als Hauptzeile, E-Mail darunter und das Profilbild, falls vorhanden. Der Bearbeitungsdialog übernimmt Name und Avatar aus dem geladenen Mitgliedsdatensatz und führt keinen zusätzlichen direkten Profil-SELECT mehr aus.
 
 ### SQL-Dokumentation und Status
 - Geplante Ausführungs-ID: `DB-MIG-2026-002`.
 - Vollständiger SQL-Entwurf und Pflichtfelder stehen im `DB_MIGRATION_LOG.md`; die Objekt-/Sicherheitsbeschreibung steht in `DB_CHANGELOG.md`, Eintrag DB-DEV-008.
-- **Noch nicht ausgeführt.** Keine Änderung an DEV-Datenbank oder RLS; PROD bleibt unverändert.
+- **SQL ausgeführt:** Migration `20261104113632_club_member_profiles_read_v3_dev`; siehe Ausführungsnachtrag unten. Die `profiles`-RLS bleibt unverändert; PROD bleibt unverändert.
 - Nach ausdrücklicher Freigabe des vollständigen SQL-Texts: Migration in Supabase DEV ausführen, tatsächliche Migrationsversion ermitteln, unveränderte SQL-Datei unter `supabase/migrations/` ablegen und Ausführung/Verifikation/Rollback dokumentieren.
 
 
@@ -112,3 +112,14 @@ Die zweite Datei ist zwingend nach der ersten auszuführen.
 - **Security Advisor:** Die generische SECURITY-DEFINER-Warnung umfasst nun 38 statt zuvor 37 Funktionen. Für diese RPC ist der Zugriff durch `auth.uid()` und `can_manage_club_context(p_club_id)` begrenzt; der Warnhinweis bleibt ausdrücklich dokumentiert.
 - **Noch offen:** Laufzeittests mit Superadmin/Vereinsadmin und Negativtests für fehlenden bzw. fremden Vereinskontext sowie Frontend-Integration und iPhone-Praxistest.
 - **PROD:** Nicht ausgeführt.
+
+
+### Frontend-Nachtrag 04.11.2026 – DEV / develop
+
+- **Commit:** `cb0a5b943e3bb367a9f7c5bfafd693803ec39ea0` – `fix(dev): load club member profiles through scoped RPC`.
+- **Datei:** `index.html`, Blob-SHA `d58642e6a2903cd37722c161e34dcaff32e2d1e1`.
+- **Änderungen:** Beide Mitglieder-Ladepfade verwenden `get_club_members_v3`; der Superadmin sieht Name als Hauptzeile und E-Mail darunter; ein vorhandenes Profilbild wird angezeigt; der Vereinsmitgliederbereich nutzt dieselben RPC-Profilfelder; der Bearbeitungsdialog verwendet den bereits geladenen Profildatensatz statt eines direkten Profil-SELECT.
+- **Syntaxprüfung:** Die drei geänderten JavaScript-Blöcke wurden separat kompiliert; alle drei Prüfungen erfolgreich.
+- **Deployment:** [Deploy DEV #41822962197](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41822962197) erfolgreich. `jugendmannschaft-dev/main` steht auf demselben Commit; `index.html`-Blob-SHA in Quelle und DEV-Spiegel identisch.
+- **Noch offen:** visueller Praxistest durch den Nutzer mit Superadmin und Vereinsadmin, Name/Avatar in der Liste, Bearbeitungsdialog, Speichern/erneutes Laden sowie Berechtigungs-Negativtests.
+- **PROD:** Nicht verändert.
