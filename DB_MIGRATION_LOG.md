@@ -601,22 +601,22 @@ Die read-only Bestandsprüfung ergab aktuell:
 
 ### Vorgeschlagene Änderung
 
-- Neue SECURITY-DEFINER-Triggerfunktion `public.enforce_single_team_membership()` mit festem `search_path = pg_catalog, public, auth` sowie `public.prevent_super_admin_with_team_membership()` als Rückwärtsschutz bei Superadmin-Hochstufungen.
+- Neue SECURITY-DEFINER-Triggerfunktion `public.enforce_single_team_membership()` mit festem `search_path = pg_catalog, public, auth`. Sie prüft ausschließlich die Ein-Mannschaft-Regel und schließt Superadmins als Zielpersonen nicht aus.
 - Trigger auf `team_members` und `team_member_roles` für INSERT sowie Änderungen an `user_id`/ `team_id`.
 - Vor der Prüfung wird die Auth-Benutzerzeile mit `FOR UPDATE` gesperrt. Damit werden konkurrierende Schreibwege für denselben Benutzer serialisiert.
-- Superadmins werden auf beiden Tabellen abgewiesen.
+- Superadmins dürfen auf beiden Tabellen ebenfalls als Mannschaftsmitglieder geführt werden; ihre globalen Verwaltungsrechte bleiben davon getrennt.
 - Bereits bestehende Zuordnungen in einer anderen Mannschaft werden auf beiden Tabellen abgewiesen.
-- `admin_add_team_role` und `admin_create_team` erhalten zusätzliche Vorabprüfungen und verständliche Fehlermeldungen.
-- `admin_list_team_admin_candidates` bietet nur noch Vereinsmitglieder ohne Mannschaftszuordnung an.
+- `admin_add_team_role` und `admin_create_team` erhalten zusätzliche Vorabprüfungen und verständliche Fehlermeldungen. Sie dürfen Superadmins als Zielpersonen berücksichtigen, wenn diese noch keiner anderen Mannschaft angehören.
+- `admin_list_team_admin_candidates` bietet Vereinsmitglieder ohne Mannschaftszuordnung an. Ein globaler Superadmin wird nicht allein wegen seiner globalen Rolle ausgeschlossen.
 - Ein Index auf `team_member_roles(user_id)` unterstützt die benutzerbezogene Prüfung.
 - Der Vereinsmitglied-Dialog sperrt Rollenfelder anderer Mannschaften und prüft vor dem Speichern, dass höchstens eine Mannschaft ausgewählt ist.
-- Die alte Edge Function `invite-trainer` soll durch einen 410-Gone-Endpunkt ersetzt werden. Das verbundene Werkzeug kann Edge Functions nicht physisch löschen; der vorbereitete Endpunkt bleibt daher im Dashboard als ACTIVE sichtbar, nimmt aber keine Einladungsanfragen mehr an. Die JWT-Prüfung bleibt aktiviert.
+- Die Edge Function `invite-member` soll bestehende Superadmin-Konten als Zielpersonen zulassen; die bisherige Ein-Mannschaft-Prüfung bleibt. Die alte Edge Function `invite-trainer` soll durch einen 410-Gone-Endpunkt ersetzt werden. Das verbundene Werkzeug kann Edge Functions nicht physisch löschen; der vorbereitete Endpunkt bleibt daher im Dashboard als ACTIVE sichtbar, nimmt aber keine Einladungsanfragen mehr an. Die JWT-Prüfung bleibt aktiviert.
 
 ### Sicherheits- und Datenabgrenzung
 
 - Die zentrale Regel gilt für beide Zuordnungstabellen und schützt dadurch auch ältere oder interne Schreibwege, selbst wenn sie nicht vom Frontend aufgerufen werden.
-- `admin_complete_member_invitation` besitzt bereits eine Zielbenutzer-Sperre und prüft eine zweite Mannschaft. Die neuen Trigger bilden zusätzlich eine gemeinsame Rückfallebene.
-- Die Migration enthält eine Vorabprüfung und bricht ab, falls Mehrfachzuordnungen oder Superadmin-Mannschaftszuordnungen vorliegen. Sie bereinigt keine bestehenden Datensätze.
+- `admin_complete_member_invitation` besitzt bereits eine Zielbenutzer-Sperre und prüft eine zweite Mannschaft. Die bisherige Sperre gegen Superadmins als Zielperson wird im Vorschlag entfernt. Die neuen Trigger bilden zusätzlich eine gemeinsame Rückfallebene.
+- Die Migration enthält eine Vorabprüfung und bricht ab, falls bereits Benutzer mehreren unterschiedlichen Mannschaften zugeordnet sind. Superadmins mit einer Mannschaftszuordnung sind ausdrücklich zulässig. Bestehende Datensätze werden nicht bereinigt.
 - Bestehende RLS-Policies werden nicht geändert.
 - Die Triggerfunktion erhält keine EXECUTE-Freigabe für `PUBLIC`, `anon` oder `authenticated`; sie ist ausschließlich trigger-intern.
 - SQL, Frontend, Edge-Stub und Dokumentation liegen nur auf dem Review-Feature-Branch. Kein DEV-Deployment, keine Edge-Function-Aktualisierung und keine Datenbankänderung.
@@ -634,8 +634,16 @@ Die read-only Bestandsprüfung ergab aktuell:
 **Bis zu einer separaten Freigabe bleibt der Status „Vorschlag – nicht ausgeführt“.**
 
 
-### Ergänzung: Superadmin-Neutralität in beide Richtungen
+### Fachliche Präzisierung 04.11.2026 – Mitgliedschaft und Verwaltungsrecht trennen
 
-Zusätzlich zur Sperre bei Mannschaftszuordnungen eines bestehenden Superadmins enthält die Migration einen Trigger auf `global_user_roles`. Er verhindert, dass ein bereits einer Mannschaft zugeordnetes Konto nachträglich die Rolle `super_admin` erhält. Auch diese Triggerfunktion sperrt die Auth-Benutzerzeile mit `FOR UPDATE` und besitzt keine EXECUTE-Freigabe für `PUBLIC`, `anon` oder `authenticated`.
+Die zuvor ergänzte vollständige Superadmin-Neutralität war zu weit gefasst und ist durch die ausdrückliche Nutzerentscheidung zurückgenommen. Verbindlich gilt jetzt:
 
-Die Live-Prüfung ergab, dass `global_user_roles` derzeit keine INSERT-/UPDATE-/DELETE-Rechte für `authenticated` besitzt und keine öffentliche RPC zum Schreiben dieser Tabelle existiert. Der zusätzliche Trigger sichert trotzdem künftige privilegierte Änderungen ab.
+- Höchstens eine tatsächliche Mannschaftszuordnung pro Benutzer, unabhängig von globalen/vereinsbezogenen Rollen.
+- Ein Superadmin kann zugleich Vereinsmitglied, Vereinsadmin, Mannschaftsadmin und Trainer derselben Mannschaft sein.
+- Ein Mannschaftsmitglied darf nicht zusätzlich einer zweiten Mannschaft zugeordnet werden – auch dann nicht, wenn es Superadmin oder Vereinsadmin ist.
+- Superadmins und Vereinsadmins dürfen andere Mannschaften ihres ausgewählten/eigenen Berechtigungsbereichs verwalten, ohne dort selbst als Mitglied eingetragen zu sein.
+- Die bisherige Live-Sperre in `invite-member` und `admin_complete_member_invitation` für Superadmins als Zielperson wird im Korrekturvorschlag entfernt. Die aktuelle DEV-Laufzeit bleibt bis zu einer späteren Freigabe unverändert.
+- Es gibt keinen Trigger, der eine spätere Vergabe der Superadmin-Rolle an ein bereits zugeordnetes Mannschaftsmitglied verhindern soll.
+
+Die korrigierte Umsetzung ist weiterhin nur Vorschlag im Review-Feature-Branch. Keine SQL-Ausführung, kein DEV-Deployment und keine PROD-Änderung.
+
