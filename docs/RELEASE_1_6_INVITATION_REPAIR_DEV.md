@@ -315,4 +315,7 @@ Der Nutzer soll für diesen Test keine bestehende Mannschaftsrolle entfernen. Ei
 - JavaScript-Syntaxprüfung: bestanden.
 - Keine SQL-Änderung, keine PROD-Änderung, keine Änderung an GitHub `main`.
 
-**Noch offen:** Manueller Browser-Nachtest: Vereinsadmin-Rolle ändern, Speichern bestätigen, neue Rolle muss sofort in der sichtbaren Mitgliederliste erscheinen; die Ansicht muss auf „Mitglieder und Rollen“ bleiben. Ein Seitenneuladen darf dafür nicht erforderlich sein.
+**Manueller Browser-Nachtest bestanden (04.11.2026):** Nach erneutem Laden der DEV-App wurde der Bearbeitungsdialog in „Mitglieder und Rollen“ geöffnet und ohne weitere Rollenänderung gespeichert. Der Dialog schloss sich, die sichtbare Mitgliederliste wurde sofort aktualisiert und zeigte die bestehenden Rollen direkt an. Die App blieb auf „Mitglieder und Rollen“; ein weiteres Neuladen war nicht erforderlich. Der Test bestätigt den Refresh-/Navigationspfad. Die vorherige tatsächliche Rollenänderung (club_admin zusätzlich zur Trainerrolle) ist separat read-only in Supabase bestätigt.
+
+
+**Abschluss des manuellen Nachtests (04.11.2026):** Nutzer bestätigt, dass die Mitgliederliste nach Speichern des Bearbeitungsdialogs sofort aktualisiert wird und die Seite „Mitglieder und Rollen“ geöffnet bleibt. Kein manuelles Neuladen nötig. Abschnitt 16 ist damit für DEV abgeschlossen.
