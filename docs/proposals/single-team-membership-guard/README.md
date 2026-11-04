@@ -1,6 +1,6 @@
 # DEV-Korrekturpaket: Ein-Mannschaft-Regel und kontextbasierte Rollen
 
-**Status:** fachlich freigegeben am 04.11.2026; diese Spezifikation und die vorbereiteten Frontend-/Edge-Quellen liegen in `develop`. Die Quellen sind noch nicht nach Supabase DEV deployed und die SQL-Migration ist noch nicht ausgeführt.  
+**Status:** fachlich freigegeben am 04.11.2026; Spezifikation und Quellen liegen in `develop`. Das Frontend wurde beim Push nach `develop` in den DEV-Spiegel `jugendmannschaft-dev/main` synchronisiert (Blob-SHA `ebf7363aa2df1f5b3fc465934e2fab8cea3ef0c1`); der manuelle Browser-/Praxistest steht noch aus. Die Supabase-Edge-Functions sind weiterhin nicht aktualisiert (live beide Version 3); die SQL-Migration ist nicht ausgeführt.  
 **Stand:** 04.11.2026  
 **Zielumgebung:** ausschließlich Supabase DEV (`pzazqvvoruqnqhcorbwx`)  
 **PROD:** unverändert, nicht geändert und nicht freigegeben.
@@ -64,7 +64,7 @@ Zusammen mit der geänderten RPC `admin_complete_member_invitation` können Supe
 
 ### Vereinsmitglied-Dialog
 
-Datei: `index.html` in `develop` (Quellstand aktualisiert, DEV-Deployment noch ausstehend).
+Datei: `index.html` in `develop`; nach dem Push ist der DEV-Spiegel `jugendmannschaft-dev/main` mit identischem Blob-SHA synchronisiert. Manuelle Frontend-Prüfung noch offen.
 
 - Bei der bearbeiteten Person bleiben die Rollenfelder anderer Mannschaften gesperrt, sobald diese Person bereits einer Mannschaft zugeordnet ist.
 - Ein bislang nicht zugeordnetes Vereinsmitglied kann höchstens einer Mannschaft zugeordnet werden.
@@ -91,7 +91,7 @@ Vorbereitet ist daher ein Ersatz-Endpunkt, der außer OPTIONS jede Anfrage mit *
 - `after_apply_verification.sql` – rein lesende Prüfungen nach einer späteren Freigabe.
 - `supabase/functions/invite-member/index.ts` – angepasste Edge-Function-Quelle in `develop`, noch nicht deployed.
 - `supabase/functions/invite-trainer/index.ts` – 410-Gone-Ersatz in `develop`, noch nicht deployed.
-- `index.html` – Frontend-Anpassung in `develop`, noch nicht nach DEV deployed.
+- `index.html` – Frontend-Anpassung in `develop`, bereits in den DEV-Spiegel synchronisiert; Browser-/Praxistest offen.
 - `DB_MIGRATION_LOG.md`, `DB_CHANGELOG.md`, `PROJECT_CONTEXT.md`, `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md` und `docs/AP04-profile-management.md` – Befund und fachlich korrigierter Vorschlag.
 
 ## 7. Geplante Tests nach einer Freigabe
@@ -122,4 +122,4 @@ Vorbereitet ist daher ein Ersatz-Endpunkt, der außer OPTIONS jede Anfrage mit *
 7. `invite-member` aktualisieren, den alten `invite-trainer`-Endpunkt auf 410 Gone umstellen und diese Supabase-Laufzeitänderungen im `SUPABASE_CHANGELOG.md` dokumentieren.
 8. Security Advisor erneut prüfen und die Tests aus Abschnitt 7 durchführen.
 
-**Fachlich freigegeben am 04.11.2026:** Rollenmodell einschließlich nachträglicher Vergabe von Superadmin und/oder Vereinsadmin an ein bestehendes Mannschaftsmitglied bei unveränderter Mannschaftszuordnung. **Technischer Status:** SQL-Vorschlag, Frontend und Edge-Function-Quellen sind in `develop` versioniert. Frontend und Edge Functions sind noch nicht nach Supabase DEV deployed; die SQL-Migration ist noch nicht ausgeführt. Für SQL-Ausführung und Deployments in DEV sind separate ausdrückliche Freigaben erforderlich. PROD bleibt unverändert.
+**Fachlich freigegeben am 04.11.2026:** Rollenmodell einschließlich nachträglicher Vergabe von Superadmin und/oder Vereinsadmin an ein bestehendes Mannschaftsmitglied bei unveränderter Mannschaftszuordnung. **Technischer Status:** SQL-Vorschlag, Frontend und Edge-Function-Quellen sind in `develop` versioniert. Das Frontend wurde bereits in den DEV-Spiegel synchronisiert; manueller Browser-/Praxistest ist offen. Die Supabase-Edge-Functions sind live weiterhin Version 3 und noch nicht aktualisiert. Die SQL-Migration ist nicht ausgeführt. SQL-Ausführung und Supabase-Edge-Deployments benötigen separate ausdrückliche Freigaben. PROD bleibt unverändert.
