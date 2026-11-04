@@ -149,7 +149,7 @@ Die neue Einladungsfunktion und `admin_complete_member_invitation` enthalten ber
 
 **Aktueller DEV-Datenbestand (read-only geprüft):** keine Mehrfachzuordnungen; kein Superadmin mit Mannschaftszuordnung; keine widersprüchlichen Vereins-/Mannschaftszuordnungen.
 
-**Vorbereitete Korrektur:** Review-Branch `feature/dev-single-team-membership-guard-review`. Enthält zentrale Triggerabsicherung beider Mannschaftszuordnungstabellen, RPC-Vorprüfungen, bereinigte Kandidatenauswahl, UI-Einschränkungen, 410-Gone-Stilllegung des alten Einladungsendpunkts und Dokumentation.
+**Vorbereitete Korrektur:** Review-Branch `feature/dev-single-team-membership-guard-review`. Enthält zentrale Triggerabsicherung beider Mannschaftszuordnungstabellen, Rückwärtsschutz bei Superadmin-Hochstufung, RPC-Vorprüfungen, bereinigte Kandidatenauswahl, UI-Einschränkungen, 410-Gone-Stilllegung des alten Einladungsendpunkts und Dokumentation.
 
 **Freigabestatus:** Vorschlag zur Prüfung. Noch nicht in `develop` übernommen, nicht deployed, keine SQL-Ausführung und keine Edge-Function-Aktualisierung. PROD bleibt unverändert. Details: `docs/proposals/single-team-membership-guard/README.md`.
 
