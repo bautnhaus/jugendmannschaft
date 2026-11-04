@@ -1,7 +1,7 @@
 # Jugendmannschaft – Projektkontext
 
 **Dokumenttyp:** Zentrale Projektdokumentation  
-**Stand:** 03.11.2026  
+**Stand:** 04.11.2026  
 **Führende Quelle:** Branch `develop` im Repository `bautnhaus/jugendmannschaft`
 
 ## 1. Zweck und Dokumentationsprinzip
@@ -100,7 +100,11 @@ Die read-only Bestandsaufnahme ist abgeschlossen und die erste Umsetzung wurde n
 - Ein reines Vereinsmitglied ohne Mannschaft erhält einen eingeschränkten App-Einstieg statt eines Login-Abbruchs.
 - `develop` und das DEV-Repository `jugendmannschaft-dev/main` wurden nach dem Push auf denselben Commit gespiegelt; die ausgelieferte `index.html` stimmt im SHA überein.
 
-**Noch offen:** echte DEV-Praxistests der Einladungs-E-Mail, Rollen-/Mitgliedschaftszuordnung, Passwortannahme, bestehende bestätigte und unbestätigte Auth-Benutzer, Fehler- und Wiederholungsfälle. Custom SMTP wurde nicht aktiviert; der Supabase-Standardversand ist für externe Adressen eingeschränkt. Es wurde bislang keine reale Testeinladung versendet.
+**Praxistest 04.11.2026:** Ein realer DEV-End-to-End-Fall für eine Trainer-Einladung wurde erfolgreich durchgeführt: E-Mail empfangen, DEV-Link geöffnet, Passwort vergeben und Dashboard erreicht. Eine read-only Datenbankprüfung bestätigte Auth-Bestätigung, Profilname, Vereinsmitgliedschaft und Trainerrolle. Weitere Rollen-/Kontextfälle und Wiederholungs-/Fehlerfälle bleiben offen.
+
+**Aktueller Folgefehler:** In der Superadmin-Mitgliederliste erscheint die E-Mail statt des gespeicherten Profilnamens; beim Bearbeiten ist das Namensfeld leer. Read-only Analyse: `get_club_members_v2` liefert keine Profilfelder; direkter Profil-SELECT wird durch die aktuelle RLS-Regel im ausgewählten Superadmin-Vereinskontext blockiert und der Frontend-Fehler bisher ignoriert. Geplanter Fix: neue, kontextgebundene read-only RPC `get_club_members_v3` mit Profilname und Avatar; RLS und bestehende v2 bleiben unverändert. Vollständiger SQL-Entwurf ist als geplant (DB-MIG-2026-002 / DB-DEV-008) in `DB_MIGRATION_LOG.md` und `DB_CHANGELOG.md` dokumentiert. **Noch nicht ausgeführt; ausdrückliche Freigabe des konkreten SQL-Texts steht aus.**
+
+Weitere Rollen-/Kontextfälle, bestehende bestätigte und unbestätigte Auth-Benutzer sowie Fehler- und Wiederholungsfälle bleiben offen. Custom SMTP wurde nicht geändert.
 
 Ausführlicher Umsetzungsstand und Testmatrix: `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md`. Die Übergabe vom 02.11.2026 und der damalige Prompt bleiben historische Ausgangsdokumente, nicht der aktuelle technische Status. **PROD und `main` bleiben unangetastet; ein PROD-Release erfordert eine separate ausdrückliche Freigabe.**
 

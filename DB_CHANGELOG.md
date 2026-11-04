@@ -1,6 +1,6 @@
 # Jugendmannschaft – Datenbankänderungs- und Verifikationsprotokoll
 
-**Stand:** 03.11.2026  
+**Stand:** 04.11.2026  
 **Geltungsbereich:** Dokumentierte Änderungen und Prüfungen in Supabase DEV und PROD; die jeweilige Umgebung und Nachweisgrenze sind pro Eintrag maßgeblich.  
 **Führende Fassung:** Branch `develop`. Dieses Dokument beschreibt Datenbankobjekte, historische Änderungen und Verifikationsbefunde; es ist kein vollständiges Ausführungsjournal. Jede tatsächlich ausgeführte schreibende SQL-Anweisung – auch manuell im Supabase SQL Editor und unabhängig davon, ob eine Migrationsdatei existiert – muss zusätzlich mit eigenem Ausführungsnachweis in `DB_MIGRATION_LOG.md` erfasst werden. DEV und PROD sind getrennt zu dokumentieren. Dieses Protokoll ist kein Live-Schema-Dump und ersetzt weder Originalmigrationen noch aktuelle Abfragen der Zielumgebung.
 
@@ -450,3 +450,18 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 
 **Wichtige Abgrenzung:** Diese Funktion legt keine Auth-Benutzer an und versendet keine Einladungs-E-Mails. Beides verbleibt in der nachfolgenden Edge-Function-Verarbeitung. Bei einem späteren Rollback ist vor dem Löschen zu prüfen, dass keine aufrufenden Edge Functions oder anderen Datenbankobjekte mehr davon abhängen.
 
+
+
+## DB-DEV-008 – Vereinsmitglieder inklusive Profilnamen und Profilbilder auslesen (geplant)
+
+- **Umgebung:** Supabase DEV
+- **Status:** SQL vorbereitet und dokumentiert; noch nicht ausgeführt.
+- **Anlass:** `get_club_members_v2(uuid)` gibt derzeit nur Benutzer-ID, E-Mail, Vereinsadmin-Status und Mannschaftsrollen zurück. Die Superadmin-Kartenansicht fragt Profilnamen nicht ab. Der bestehende direkte Profil-Lesezugriff im Bearbeitungsdialog wird durch die aktuelle `profiles_select`-Policy im ausgewählten Vereinskontext nicht freigegeben; der Frontend-Abfragefehler wird bisher nicht sichtbar behandelt.
+- **Geplantes Objekt:** Neue Funktion `public.get_club_members_v3(p_club_id uuid)`.
+- **Rückgabe:** `user_id`, `email`, `display_name`, `avatar_url`, `is_club_admin`, `teams`.
+- **Sicherheitsmodell:** `SECURITY DEFINER`, fester `search_path = pg_catalog, public, auth`; vor jeder Rückgabe muss `auth.uid()` vorhanden sein und `public.can_manage_club_context(p_club_id)` erfolgreich sein. Profilfelder werden ausschließlich für Mitglieder des angegebenen Vereins zurückgegeben. EXECUTE wird explizit nur an `authenticated` vergeben; `PUBLIC` und `anon` werden entzogen.
+- **Abgrenzung:** `get_club_members_v2` bleibt unverändert. Keine Tabellen-/Datenänderung, keine Erweiterung der `profiles`-RLS-Policies und keine Änderung bestehender Profile.
+- **Frontend nach SQL-Freigabe:** Superadmin-Mitgliederliste zeigt `display_name` als Hauptzeile und E-Mail darunter; Avatar aus `avatar_url`; Bearbeitungsdialog nutzt die bereits geladene Profilinformation der Vereinsmitglied-RPC statt einer separaten, durch RLS blockierten Abfrage.
+- **Ausführungsnachweis:** Vorgesehen in `DB_MIGRATION_LOG.md`, ID DB-MIG-2026-002. Die Migrationsversion und Quelldatei unter `supabase/migrations/` werden erst nach erfolgreicher Ausführung ergänzt.
+- **PROD:** Nicht ausgeführt und nicht freigegeben.
+- **Verifikation:** Nach Ausführung Schema-/Rechteprüfung, positiver Test im berechtigten Vereinskontext und negativer Test auf fehlenden/fremden Kontext; Frontend-Praxistest bleibt gesondert auszuweisen.

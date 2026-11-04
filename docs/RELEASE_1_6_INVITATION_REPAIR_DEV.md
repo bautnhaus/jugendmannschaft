@@ -1,7 +1,7 @@
 # Release 1.6 – Mitglieder-/Trainer-Einladung (DEV-Arbeitsstand)
 
-**Stand:** 03.11.2026  
-**Status:** DEV-Implementierung vorhanden; Praxistests noch offen  
+**Stand:** 04.11.2026  
+**Status:** DEV-Einladungsablauf im ersten End-to-End-Fall erfolgreich; Profilanzeige in Superadmin-Mitgliederverwaltung noch offen  
 **Geltungsbereich:** ausschließlich Supabase DEV und GitHub `develop` / DEV-Deployment  
 **PROD:** unverändert; kein PROD-SQL, keine PROD-Konfiguration, kein PROD-Deployment.
 
@@ -70,22 +70,22 @@ Datei: `index.html`
 
 ## 4. Grenzen und noch offene Praxistests
 
-**Wichtig:** Bisher wurde keine echte Einladungs-E-Mail versendet und kein neuer Auth-Benutzer für diesen Release-Test angelegt. Die Backend-/Frontend-Implementierung ist statisch, über Deploymentstatus und Datenbankobjekte verifiziert; End-to-End-Verhalten ist noch nicht bestätigt.
+**End-to-End-Nachweis vom 04.11.2026:** Eine echte DEV-Einladung für die Rolle Trainer wurde aus der Vereinsverwaltung ausgelöst. Die Einladungs-E-Mail kam an, der Link öffnete DEV, die Passwortvergabe war erfolgreich und anschließend wurde das Dashboard mit dem eingeladenen Namen angezeigt. Eine read-only Prüfung bestätigte den Auth-Benutzer mit gesetztem `email_confirmed_at`, den gespeicherten `profiles.display_name`, die Vereinsmitgliedschaft sowie die Trainerrolle in `team_members` und den korrespondierenden Eintrag in `team_member_roles`. Dieser erfolgreiche Fall deckt ausschließlich einen Trainer-Testfall in einer Mannschaft ab; weitere Rollen- und Kontextkombinationen bleiben offen. Ein Folgefehler in der Superadmin-Mitgliederliste und im Mitglied-bearbeiten-Dialog ist separat identifiziert und unten dokumentiert.
 
 Mindestens folgende Tests sind noch auszuführen:
 
 | Test | Kontext/Rolle | Erwartung | Status |
 |---|---|---|---|
-| Neue E-Mail einladen | Super Admin → Vereinsmitglied | Auth-Einladung, Vereinsmitgliedschaft, persönlicher Name | Offen |
+| Neue E-Mail einladen | Super Admin → Vereinsmitglied | Auth-Einladung, Vereinsmitgliedschaft, persönlicher Name | Offen |\n| Neue E-Mail einladen | Vereinsverwaltung → Trainer (G-Junioren) | E-Mail, Passwort, Vereinsmitgliedschaft und Trainerrolle | Erfolgreich (04.11.2026; ein Testfall) |
 | Neue E-Mail einladen | Super Admin → Vereinsadmin | Vereinsmitgliedschaft + Vereinsadminrolle | Offen |
 | Neue E-Mail einladen | Vereinsadmin → Vereinsmitglied | Zuordnung im ausgewählten Verein | Offen |
 | Neue E-Mail einladen | Vereinsadmin → Mannschaftsadmin | Vereinsmitgliedschaft + Mannschaftsadminrolle | Offen |
 | Neue E-Mail einladen | Vereinsadmin → Trainer | Vereinsmitgliedschaft + Trainerrolle | Offen |
 | Neue E-Mail einladen | Mannschaftsadmin → Mannschaftsadmin | Automatische Vereinsmitgliedschaft + Mannschaftsadminrolle | Offen |
 | Neue E-Mail einladen | Mannschaftsadmin → Trainer | Automatische Vereinsmitgliedschaft + Trainerrolle | Offen |
-| Einladungslink | DEV | Öffnet DEV und zeigt Passwort-Erstellung | Offen |
-| Passwort setzen und Login | neue Einladung | Passwort wird gespeichert; nachgelagerter Kontextfehler wird nicht als Passwortfehler ausgegeben | Offen |
-| Persönlicher Name | alle Rollen | `profiles.display_name` wird an allen Stellen verwendet | Offen |
+| Einladungslink | DEV | Öffnet DEV und zeigt Passwort-Erstellung | Erfolgreich (04.11.2026; ein Testfall) |
+| Passwort setzen und Login | neue Einladung | Passwort wird gespeichert; anschließend Dashboard mit korrektem Kontext | Erfolgreich (04.11.2026; ein Testfall) |
+| Persönlicher Name | Einladung / Dashboard / Mein Bereich | Name wird gespeichert und dort angezeigt; Superadmin-Mitgliederliste/Bearbeitungsdialog noch fehlerhaft | Teilweise |
 | Bestehendes bestätigtes Konto | alle Kontexte | Keine zweite Einladung; zulässige Zuordnung wird ergänzt | Offen |
 | Offenes/unbestätigtes Auth-Konto | alle Kontexte | Bestehendes Konto übernehmen; keine neue Mail behaupten, wenn Supabase keine bestätigt; ursprünglichen Link prüfen | Offen |
 | Abweichender Verein | alle Kontexte | Kontrollierte Ablehnung | Offen |
@@ -115,3 +115,20 @@ Die Supabase-Dokumentation weist darauf hin, dass Invite-Links entsprechend der 
 ## 5. Nächster Schritt
 
 Mit dem Nutzer die DEV-Praxistests durchführen. Vor jedem echten E-Mail-Test Empfänger, Rolle und Verein/Mannschaft eindeutig bestimmen. Keine Testeinladung an reale externe Adressen ohne geeigneten Versandweg. PROD bleibt bis zu einer späteren separaten ausdrücklichen Freigabe unangetastet.
+
+
+## 6. Nachtrag 04.11.2026 – Profilnamen in der Superadmin-Mitgliederverwaltung
+
+### Beobachtung
+Der erste Einladungs-End-to-End-Test ist erfolgreich. Der eingegebene Name wird in `profiles.display_name` gespeichert und im Dashboard sowie unter „Mein Bereich“ angezeigt. In der Superadmin-Mitgliederliste wird dagegen noch die E-Mail-Adresse als Haupttext gezeigt; im Dialog „Mitglied bearbeiten“ ist das Namensfeld leer.
+
+### Read-only-Ursache
+- `get_club_members_v2(uuid)` gibt keine Profilfelder zurück.
+- Die Superadmin-Kartenansicht verwendet `m.email` als Haupttext und fragt Profile nicht ab.
+- Der Bearbeitungsdialog fragt `profiles` direkt ab. Die bestehende `profiles_select`-Policy deckt den ausgewählten Superadmin-Vereinskontext nicht ab; der Frontend-Code ignoriert den Fehler.
+- Das Profil selbst ist vorhanden. Es ist keine Datenkorrektur oder erneute Einladung erforderlich.
+
+### Geplanter Fix
+Neue read-only RPC `get_club_members_v3(uuid)` mit Profilname und Avatar, abgesichert über `auth.uid()` und `can_manage_club_context(p_club_id)`. Die bestehende RPC v2 und die RLS-Policies bleiben unverändert. Nach SQL-Freigabe werden Superadmin-Mitgliederliste, Vereinsmitgliederliste und Bearbeitungsdialog auf die neue RPC umgestellt.
+
+**SQL-Status:** Vollständiger Entwurf ist in `DB_MIGRATION_LOG.md`, geplant als DB-MIG-2026-002, dokumentiert. Noch nicht ausgeführt; es liegt noch keine neue Migration in der Supabase-Historie vor. PROD bleibt unverändert.

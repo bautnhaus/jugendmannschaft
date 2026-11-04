@@ -79,3 +79,24 @@ Die zweite Datei ist zwingend nach der ersten auszuführen.
 - Statischer JavaScript-Syntaxcheck für den aktualisierten `index.html` auf `develop`: erfolgreich. Die Datei wurde anschließend in `bautnhaus/jugendmannschaft-dev` auf `main` übertragen; der Deploy-Commit ist `a4bed23de0554e871dbc62d68714e00cafe10842`.
 - **Noch offen:** manueller Praxistest der Vereinsmitglied-Maske auf dem iPhone mit Vereinsadmin und Superadmin, einschließlich Name/Bild, Vereinsrolle, Teamrollen, eigenem Rollen-Schutz, letztem Vereins-/Mannschaftsadmin und falschem/fehlendem Kontext. Syntax- und Schema-Prüfungen ersetzen diese Laufzeittests nicht.
 - **PROD bleibt unverändert.** Diese Umsetzung und die drei Migrationen gelten ausschließlich für DEV.
+
+
+## Superadmin-Mitgliederliste – Profilfelder im Vereinskontext (04.11.2026, DEV – geplant)
+
+### Befund
+- Die Live-Funktion `get_club_members_v2(uuid)` liefert `user_id`, `email`, `is_club_admin` und `teams`, jedoch weder `display_name` noch `avatar_url`.
+- Die Superadmin-Kartenansicht verwendet deshalb die E-Mail-Adresse als Haupttext und bindet keine Profilfelder ein.
+- Der Bearbeitungsdialog fragt `profiles` separat ab. Die aktuelle `profiles_select`-Policy erlaubt Selbstzugriff und Teamadmin-Zugriff, aber keinen allgemeinen Lesezugriff für einen Superadmin im ausgewählten Vereinskontext. Der Abfragefehler wird bisher nicht ausgewertet; das Namensfeld bleibt dadurch leer.
+- Der gespeicherte Name selbst ist vorhanden und wird im Dashboard/Mein Bereich korrekt verwendet. Die Daten werden nicht neu geschrieben.
+
+### Geplante Lösung
+- Neue read-only RPC `public.get_club_members_v3(p_club_id uuid)` mit den bisherigen Mitglieds-/Rollenfeldern plus `profiles.display_name` und `profiles.avatar_url`.
+- Die RPC prüft `auth.uid()` und `can_manage_club_context(p_club_id)`; ein Superadmin benötigt damit weiterhin den ausdrücklich ausgewählten Vereinskontext. Vereinsadmins bleiben auf den eigenen Verein begrenzt.
+- `get_club_members_v2` und die bestehende `profiles_select`-Policy bleiben unverändert.
+- Die beiden Frontend-Mitgliederlisten verwenden nach Freigabe die neue RPC. Der Bearbeitungsdialog übernimmt Name und Avatar aus dem geladenen Mitgliedsdatensatz und braucht keinen zusätzlichen direkten Profil-SELECT.
+
+### SQL-Dokumentation und Status
+- Geplante Ausführungs-ID: `DB-MIG-2026-002`.
+- Vollständiger SQL-Entwurf und Pflichtfelder stehen im `DB_MIGRATION_LOG.md`; die Objekt-/Sicherheitsbeschreibung steht in `DB_CHANGELOG.md`, Eintrag DB-DEV-008.
+- **Noch nicht ausgeführt.** Keine Änderung an DEV-Datenbank oder RLS; PROD bleibt unverändert.
+- Nach ausdrücklicher Freigabe des vollständigen SQL-Texts: Migration in Supabase DEV ausführen, tatsächliche Migrationsversion ermitteln, unveränderte SQL-Datei unter `supabase/migrations/` ablegen und Ausführung/Verifikation/Rollback dokumentieren.

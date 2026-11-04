@@ -1,6 +1,6 @@
 # Jugendmannschaft – SQL-Migrations- und Ausführungsprotokoll
 
-**Stand:** 03.11.2026  
+**Stand:** 04.11.2026  
 **Führende Fassung:** Branch `develop`  
 **Geltungsbereich:** Supabase DEV und PROD – alle tatsächlich ausgeführten schreibenden SQL-Anweisungen und SQL-Eingriffe, unabhängig vom Ausführungsweg.
 
@@ -430,3 +430,142 @@ GRANT EXECUTE ON FUNCTION
 TO authenticated;
 ```
 
+
+
+------------------------------------------------------------------------
+
+### DB-MIG-2026-002 – Vereinsmitglieder inklusive Profilfeldern auslesen
+
+- **Migrations-ID:** DB-MIG-2026-002
+- **Ausführungsdatensatz:** DEV (geplant; noch nicht ausgeführt)
+- **Datum/Uhrzeit (mit Zeitzone):** Noch offen; erst nach tatsächlicher Ausführung eintragen.
+- **Umgebung:** Supabase DEV `pzazqvvoruqnqhcorbwx`
+- **Ausführungsweg:** Vorgesehen: Supabase-Migrationswerkzeug; noch nicht ausgeführt.
+- **Anlass/Zweck:** Die aktuelle `get_club_members_v2(uuid)` liefert keine Profilfelder. Der Superadmin-Mitgliederbereich zeigt deshalb E-Mail-Adressen statt persönlicher Namen. Der Bearbeitungsdialog liest `profiles` direkt; die bestehende SELECT-Policy erlaubt diesen Zugriff im ausgewählten Vereinskontext nicht. Die Frontend-Abfrage ignoriert den Lesefehler und das Namensfeld bleibt leer.
+- **Betroffene Objekte:** Neue read-only RPC `public.get_club_members_v3(uuid)`; lesender Zugriff auf `public.club_members`, `auth.users`, `public.profiles`, `public.club_member_roles`, `public.teams`, `public.team_member_roles` und `public.team_members`.
+- **Freigabe:** Der Nutzer hat den DEV-Fix einschließlich einer neuen SQL-RPC grundsätzlich freigegeben. Die ausdrückliche Freigabe des nachstehenden vollständigen SQL-Texts vor Ausführung steht noch aus.
+- **Ausführender:** Noch nicht ausgeführt.
+- **Status:** Geplant.
+- **Vorgesehenes SQL (vollständiger Entwurf; noch nicht ausgeführt):**
+
+```sql
+CREATE FUNCTION public.get_club_members_v3(p_club_id uuid)
+RETURNS TABLE (
+    user_id uuid,
+    email text,
+    display_name text,
+    avatar_url text,
+    is_club_admin boolean,
+    teams jsonb
+)
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path TO 'pg_catalog', 'public', 'auth'
+AS $function$
+BEGIN
+    IF auth.uid() IS NULL
+       OR NOT public.can_manage_club_context(p_club_id) THEN
+        RAISE EXCEPTION 'Nicht berechtigt oder kein ausgewählter Vereinskontext'
+            USING ERRCODE = '42501';
+    END IF;
+
+    RETURN QUERY
+    SELECT
+        cm.user_id,
+        au.email::text,
+        pr.display_name,
+        pr.avatar_url,
+        EXISTS (
+            SELECT 1
+            FROM public.club_member_roles AS cmr
+            WHERE cmr.user_id = cm.user_id
+              AND cmr.role = 'club_admin'
+        ) AS is_club_admin,
+        COALESCE(
+            (
+                SELECT jsonb_agg(
+                    jsonb_build_object(
+                        'team_id', team_rows.team_id,
+                        'team_name', team_rows.team_name,
+                        'roles', team_rows.roles
+                    )
+                    ORDER BY lower(team_rows.team_name)
+                )
+                FROM (
+                    SELECT
+                        t.id AS team_id,
+                        t.name AS team_name,
+                        COALESCE(
+                            (
+                                SELECT array_agg(
+                                    DISTINCT role_union.role
+                                    ORDER BY role_union.role
+                                )
+                                FROM (
+                                    SELECT tmr.role
+                                    FROM public.team_member_roles AS tmr
+                                    WHERE tmr.team_id = t.id
+                                      AND tmr.user_id = cm.user_id
+
+                                    UNION
+
+                                    SELECT tm.role
+                                    FROM public.team_members AS tm
+                                    WHERE tm.team_id = t.id
+                                      AND tm.user_id = cm.user_id
+                                ) AS role_union
+                            ),
+                            ARRAY[]::text[]
+                        ) AS roles
+                    FROM public.teams AS t
+                    WHERE t.club_id = p_club_id
+                      AND (
+                          EXISTS (
+                              SELECT 1
+                              FROM public.team_member_roles AS tmr
+                              WHERE tmr.team_id = t.id
+                                AND tmr.user_id = cm.user_id
+                          )
+                          OR EXISTS (
+                              SELECT 1
+                              FROM public.team_members AS tm
+                              WHERE tm.team_id = t.id
+                                AND tm.user_id = cm.user_id
+                          )
+                      )
+                ) AS team_rows
+            ),
+            '[]'::jsonb
+        ) AS teams
+    FROM public.club_members AS cm
+    JOIN auth.users AS au
+      ON au.id = cm.user_id
+    LEFT JOIN public.profiles AS pr
+      ON pr.id = cm.user_id
+    WHERE cm.club_id = p_club_id
+    ORDER BY
+        lower(COALESCE(NULLIF(btrim(pr.display_name), ''), au.email, '')),
+        cm.user_id;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.get_club_members_v3(uuid)
+    FROM PUBLIC, anon;
+
+GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
+    TO authenticated;
+```
+
+- **Ergebnis / Fehlermeldung:** Noch nicht ausgeführt; kein Ergebnis.
+- **Verifikation (nach Ausführung):**
+  1. `to_regprocedure('public.get_club_members_v3(uuid)')` muss die Funktion finden.
+  2. `pg_get_functiondef(...)`, `prosecdef`, `proconfig` und Owner read-only prüfen.
+  3. EXECUTE-Rechte prüfen: `authenticated = true`, `anon = false`, `PUBLIC = false`.
+  4. Positivtest mit Superadmin im ausdrücklich ausgewählten Verein sowie Vereinsadmin im eigenen Verein.
+  5. Negativtest ohne Anmeldung, ohne passenden Vereinskontext und für einen fremden Verein.
+  6. Frontendtest: Name/Avatar in Mitgliederliste und Bearbeitungsdialog; bestehende Mitgliedschafts-/Rollenanzeige bleibt erhalten.
+- **Rollback/Wiederherstellung:** Nach Rücknahme der Frontend-Aufrufe und Prüfung aller Abhängigkeiten: `DROP FUNCTION IF EXISTS public.get_club_members_v3(uuid);`. Keine Tabellen, Datensätze oder bestehenden Policies sollen verändert werden.
+- **Gegenstück in PROD:** Nicht ausgeführt; keine PROD-Änderung vorgesehen.
+- **GitHub-Datei und Commit-SHA:** Versionierte Datei unter `supabase/migrations/` wird nach erfolgreicher Ausführung mit der von Supabase tatsächlich vergebenen Migrationsversion angelegt. Dieser Eintrag ist bis dahin die vollständige geplante SQL-Quelle.
+- **Zusätzliche Hinweise / Nachweisgrenzen:** `get_club_members_v2` bleibt unverändert. Die bestehende RLS-Policy auf `profiles` wird nicht erweitert. Die neue RPC ist `SECURITY DEFINER`, prüft aber vor jeder Rückgabe `auth.uid()` und `can_manage_club_context(p_club_id)`; EXECUTE wird nur an `authenticated` vergeben. Supabase Security Advisor meldet allgemein authentifizierten Zugriff auf SECURITY DEFINER-RPCs; diese Funktion ist als eng begrenzte, kontextgebundene Lese-RPC vorgesehen. Die Warnung und tatsächlichen Rechte werden nach Ausführung separat dokumentiert.
