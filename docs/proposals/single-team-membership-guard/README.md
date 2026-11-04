@@ -1,6 +1,6 @@
 # DEV-Korrekturpaket: Ein-Mannschaft-Regel und kontextbasierte Rollen
 
-**Status:** fachlich freigegeben am 04.11.2026; diese Spezifikation ist in `develop` führend dokumentiert. Der technische Frontend-/Edge-Code liegt vorläufig im isolierten Review-Feature-Branch; nicht deployed und nicht in Supabase ausgeführt.  
+**Status:** fachlich freigegeben am 04.11.2026; diese Spezifikation und die vorbereiteten Frontend-/Edge-Quellen liegen in `develop`. Die Quellen sind noch nicht nach Supabase DEV deployed und die SQL-Migration ist noch nicht ausgeführt.  
 **Stand:** 04.11.2026  
 **Zielumgebung:** ausschließlich Supabase DEV (`pzazqvvoruqnqhcorbwx`)  
 **PROD:** unverändert, nicht geändert und nicht freigegeben.
@@ -58,13 +58,13 @@ Damit bestätigen die vorhandenen Kontextfunktionen bereits, dass Superadmins un
 
 ### Zentrale Einladung `invite-member`
 
-Die aktuelle DEV-Edge-Function weist ein bestehendes Superadmin-Konto bislang ausdrücklich als Zielperson zurück. Der vorbereitete Edge-Code entfernt diese Sperre. Die Prüfung auf eine bereits vorhandene andere Mannschaft bleibt bestehen.
+Die aktuell live ausgeführte DEV-Edge-Function weist ein bestehendes Superadmin-Konto bislang ausdrücklich als Zielperson zurück. Die in `develop` versionierte Quelle entfernt diese Sperre. Die Vorabprüfung auf eine bereits vorhandene andere Mannschaft bleibt bestehen.
 
 Zusammen mit der geänderten RPC `admin_complete_member_invitation` können Superadmins so auch Vereins- oder Mannschaftsrollen erhalten. Die globale Superadmin-Rolle wird nicht verändert.
 
 ### Vereinsmitglied-Dialog
 
-Datei: `index.html`
+Datei: `index.html` in `develop` (Quellstand aktualisiert, DEV-Deployment noch ausstehend).
 
 - Bei der bearbeiteten Person bleiben die Rollenfelder anderer Mannschaften gesperrt, sobald diese Person bereits einer Mannschaft zugeordnet ist.
 - Ein bislang nicht zugeordnetes Vereinsmitglied kann höchstens einer Mannschaft zugeordnet werden.
@@ -83,9 +83,9 @@ Vorbereitet ist daher ein Ersatz-Endpunkt, der außer OPTIONS jede Anfrage mit *
 
 - `migration.sql` – vollständiger SQL-Vorschlag, nicht ausgeführt.
 - `after_apply_verification.sql` – rein lesende Prüfungen nach einer späteren Freigabe.
-- `supabase/functions/invite-member/index.ts` – angepasste Edge-Function-Quelle, noch nicht deployed.
-- `supabase/functions/invite-trainer/index.ts` – vorbereiteter 410-Gone-Ersatz.
-- `index.html` – Frontend-Anpassung im Feature-Branch.
+- `supabase/functions/invite-member/index.ts` – angepasste Edge-Function-Quelle in `develop`, noch nicht deployed.
+- `supabase/functions/invite-trainer/index.ts` – 410-Gone-Ersatz in `develop`, noch nicht deployed.
+- `index.html` – Frontend-Anpassung in `develop`, noch nicht nach DEV deployed.
 - `DB_MIGRATION_LOG.md`, `DB_CHANGELOG.md`, `PROJECT_CONTEXT.md`, `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md` und `docs/AP04-profile-management.md` – Befund und fachlich korrigierter Vorschlag.
 
 ## 7. Geplante Tests nach einer Freigabe
@@ -116,4 +116,4 @@ Vorbereitet ist daher ein Ersatz-Endpunkt, der außer OPTIONS jede Anfrage mit *
 7. `invite-member` aktualisieren, den alten `invite-trainer`-Endpunkt auf 410 Gone umstellen und diese Supabase-Laufzeitänderungen im `SUPABASE_CHANGELOG.md` dokumentieren.
 8. Security Advisor erneut prüfen und die Tests aus Abschnitt 7 durchführen.
 
-**Fachlich freigegeben am 04.11.2026:** Rollenmodell einschließlich nachträglicher Vergabe von Superadmin und/oder Vereinsadmin an ein bestehendes Mannschaftsmitglied bei unveränderter Mannschaftszuordnung. **Technischer Status:** Korrekturpaket weiterhin nur im Review-Feature-Branch; noch nicht in `develop` übernommen, nicht deployed und nicht in Supabase ausgeführt. Für die SQL-Ausführung in DEV ist weiterhin eine separate ausdrückliche Ausführungsfreigabe erforderlich. PROD bleibt unverändert.
+**Fachlich freigegeben am 04.11.2026:** Rollenmodell einschließlich nachträglicher Vergabe von Superadmin und/oder Vereinsadmin an ein bestehendes Mannschaftsmitglied bei unveränderter Mannschaftszuordnung. **Technischer Status:** SQL-Vorschlag, Frontend und Edge-Function-Quellen sind in `develop` versioniert. Frontend und Edge Functions sind noch nicht nach Supabase DEV deployed; die SQL-Migration ist noch nicht ausgeführt. Für SQL-Ausführung und Deployments in DEV sind separate ausdrückliche Freigaben erforderlich. PROD bleibt unverändert.
