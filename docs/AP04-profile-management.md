@@ -96,10 +96,9 @@ Die zweite Datei ist zwingend nach der ersten auszuführen.
 - Beide Frontend-Mitgliederlisten verwenden jetzt die neue RPC. Die Superadmin-Karte zeigt den persönlichen Namen als Hauptzeile, E-Mail darunter und das Profilbild, falls vorhanden. Der Bearbeitungsdialog übernimmt Name und Avatar aus dem geladenen Mitgliedsdatensatz und führt keinen zusätzlichen direkten Profil-SELECT mehr aus.
 
 ### SQL-Dokumentation und Status
-- Geplante Ausführungs-ID: `DB-MIG-2026-002`.
-- Vollständiger SQL-Entwurf und Pflichtfelder stehen im `DB_MIGRATION_LOG.md`; die Objekt-/Sicherheitsbeschreibung steht in `DB_CHANGELOG.md`, Eintrag DB-DEV-008.
-- **SQL ausgeführt:** Migration `20261104113632_club_member_profiles_read_v3_dev`; siehe Ausführungsnachtrag unten. Die `profiles`-RLS bleibt unverändert; PROD bleibt unverändert.
-- Nach ausdrücklicher Freigabe des vollständigen SQL-Texts: Migration in Supabase DEV ausführen, tatsächliche Migrationsversion ermitteln, unveränderte SQL-Datei unter `supabase/migrations/` ablegen und Ausführung/Verifikation/Rollback dokumentieren.
+- **Ausführungs-ID:** `DB-MIG-2026-002`.
+- Vollständiges ausgeführtes SQL und Ausführungsnachweis stehen in `DB_MIGRATION_LOG.md`; die Objekt-/Sicherheitsbeschreibung steht in `DB_CHANGELOG.md`, Eintrag DB-DEV-008.
+- **SQL ausgeführt:** Migration `20261104113632_club_member_profiles_read_v3_dev`; versionierte SQL-Quelldatei und Verifikation sind im Ausführungsnachtrag unten dokumentiert. Die `profiles`-RLS bleibt unverändert; PROD bleibt unverändert.
 
 
 ### Ausführungsnachtrag 04.11.2026 – DB-DEV-008
@@ -123,3 +122,14 @@ Die zweite Datei ist zwingend nach der ersten auszuführen.
 - **Deployment:** [Deploy DEV #41822962197](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41822962197) erfolgreich. `jugendmannschaft-dev/main` steht auf demselben Commit; `index.html`-Blob-SHA in Quelle und DEV-Spiegel identisch.
 - **Noch offen:** visueller Praxistest durch den Nutzer mit Superadmin und Vereinsadmin, Name/Avatar in der Liste, Bearbeitungsdialog, Speichern/erneutes Laden sowie Berechtigungs-Negativtests.
 - **PROD:** Nicht verändert.
+
+
+### Manueller Superadmin-Praxistest 04.11.2026
+
+Der Nutzer hat nach dem DEV-Deployment beide Prüfpunkte bestätigt:
+- In der Superadmin-Vereinsmitgliederliste wird der persönliche Name als Haupttext statt der E-Mail-Adresse angezeigt.
+- Beim Öffnen von „Mitglied bearbeiten“ wird der gespeicherte persönliche Name korrekt in das Namensfeld übernommen.
+
+**Ergebnis:** Beide Prüfungen bestanden. Damit ist der gemeldete Fehler im Superadmin-Mitgliederbereich behoben.
+
+**Weiterhin offen:** Profilbildanzeige, Speichern und erneutes Laden einer Profiländerung, Prüfung mit Vereinsadmin im eigenen Vereinskontext sowie Negativtests ohne bzw. mit fremdem Vereinskontext. Keine weitere SQL-Änderung vorgenommen.

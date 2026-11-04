@@ -131,7 +131,7 @@ Der erste Einladungs-End-to-End-Test ist erfolgreich. Der eingegebene Name wird 
 ### Umgesetzter Fix
 Neue read-only RPC `get_club_members_v3(uuid)` mit Profilname und Avatar, abgesichert über `auth.uid()` und `can_manage_club_context(p_club_id)`. Die bestehende RPC v2 und die RLS-Policies bleiben unverändert. Beide Mitgliederlisten und der Bearbeitungsdialog wurden auf die neue RPC umgestellt; der direkte Profil-SELECT im Bearbeitungsdialog entfällt.
 
-**SQL-Status:** DB-MIG-2026-002 wurde in Supabase DEV erfolgreich ausgeführt (Version `20261104113632`). Vollständiger Ausführungsnachweis und SQL-Quelle stehen in `DB_MIGRATION_LOG.md` und `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql`. Die Frontend-Integration ist in `develop` umgesetzt und nach DEV deployed. Der manuelle UI-Praxistest und die Kontext-Negativtests stehen noch aus. PROD bleibt unverändert.
+**SQL-Status:** DB-MIG-2026-002 wurde in Supabase DEV erfolgreich ausgeführt (Version `20261104113632`). Vollständiger Ausführungsnachweis und SQL-Quelle stehen in `DB_MIGRATION_LOG.md` und `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql`. Die Frontend-Integration ist in `develop` umgesetzt und nach DEV deployed. Der Superadmin-Praxistest für Mitgliederliste und Bearbeitungsdialog ist am 04.11.2026 bestanden; weitere Kontext- und Profiltests bleiben offen. PROD bleibt unverändert.
 
 
 ## 7. Datenbank-Folgekorrektur – DB-DEV-008 (04.11.2026)
@@ -142,7 +142,8 @@ Neue read-only RPC `get_club_members_v3(uuid)` mit Profilname und Avatar, abgesi
 - **Zweck:** Profilnamen und Avatare für die berechtigte Vereinsmitgliederverwaltung bereitstellen.
 - **Sicherheitsgrenzen:** `auth.uid()` und `can_manage_club_context(p_club_id)` werden vor jeder Rückgabe geprüft. `PUBLIC` und `anon` besitzen kein EXECUTE-Recht. Die bisherige RPC v2 und die `profiles`-RLS-Policies bleiben unverändert.
 - **Umgesetzt:** Frontend-Aufrufe auf v3 umgestellt; Namen und Avatare in beiden Mitgliederlisten dargestellt; Bearbeitungsdialog übernimmt die bereits geladenen Profilfelder.
-- **Noch offen:** positive und negative Kontexttests sowie der manuelle Praxistest in der App.
+- **Manuell bestanden (04.11.2026):** Superadmin-Mitgliederliste zeigt den Profilnamen; „Mitglied bearbeiten“ übernimmt denselben Namen korrekt.
+- **Noch offen:** Vereinsadmin im eigenen Vereinskontext sowie positive/negative Berechtigungs- und Kontexttests, Profilbild und Speichern/erneutes Laden.
 - **PROD:** Unverändert.
 
 
@@ -150,8 +151,23 @@ Neue read-only RPC `get_club_members_v3(uuid)` mit Profilname und Avatar, abgesi
 
 - **Commit:** `cb0a5b943e3bb367a9f7c5bfafd693803ec39ea0`.
 - **Datei:** `index.html`, Blob-SHA `d58642e6a2903cd37722c161e34dcaff32e2d1e1`.
-- **Änderungen:** Die Superadmin- und Vereinsadmin-Mitgliederlisten verwenden `get_club_members_v3). Der Superadmin sieht den Profilnamen als Hauptzeile und die E-Mail darunter. Vorhandene Profilbilder werden verwendet. Der Bearbeitungsdialog bezieht Name und Avatar aus dem bereits geladenen Mitgliedsdatensatz; eine separate direkte Profilabfrage wird dort nicht mehr ausgeführt.
+- **Änderungen:** Die Superadmin- und Vereinsadmin-Mitgliederlisten verwenden `get_club_members_v3`. Der Superadmin sieht den Profilnamen als Hauptzeile und die E-Mail darunter. Vorhandene Profilbilder werden verwendet. Der Bearbeitungsdialog bezieht Name und Avatar aus dem bereits geladenen Mitgliedsdatensatz; eine separate direkte Profilabfrage wird dort nicht mehr ausgeführt.
 - **Statische Syntaxprüfung:** Die drei geänderten JavaScript-Blöcke (Superadmin-Mitgliederansicht, Vereinsmitgliederansicht und Mitglied-Bearbeiten-Dialog) wurden separat kompiliert; alle drei erfolgreich.
 - **Automatischer Deploy:** [Deploy DEV #41822962197](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41822962197) erfolgreich. DEV-Repository `bautnhaus/jugendmannschaft-dev/main` enthält denselben Commit. Der `index.html`-Blob-SHA stimmt zwischen `develop` und DEV-Spiegel überein.
-- **Noch nicht manuell bestätigt:** Name und Avatar in der Superadmin-Liste, Name im Bearbeitungsdialog, Speichern/erneutes Laden sowie Vereinsadmin- und Kontext-Negativtests.
+- **Manuell bestätigt (04.11.2026):** Name statt E-Mail in der Superadmin-Mitgliederliste; gespeicherter Name wird beim Öffnen des Bearbeitungsdialogs korrekt angezeigt.
+- **Noch offen:** Profilbildanzeige, Speichern/erneutes Laden von Profiländerungen sowie Vereinsadmin- und Kontext-Negativtests.
 - **PROD:** Unverändert.
+
+
+## 9. Manueller Praxistest – Superadmin-Profilanzeige (04.11.2026)
+
+Der Nutzer hat nach dem DEV-Deployment beide Prüfpunkte bestätigt:
+
+| Test | Erwartung | Ergebnis |
+|---|---|---|
+| Superadmin → Vereinsmitglieder | Persönlicher Name als Haupttext; E-Mail darunter | Bestanden |
+| Superadmin → Mitglied bearbeiten | Gespeicherter persönlicher Name wird im Namensfeld angezeigt | Bestanden |
+
+Damit ist der gemeldete Folgefehler im Superadmin-Kontext behoben.
+
+**Noch offen:** Vereinsadmin im eigenen Vereinskontext, Profilbildanzeige, Speichern/erneutes Laden einer Profiländerung und negative Kontexttests (kein Kontext bzw. fremder Verein). PROD wurde nicht verändert.
