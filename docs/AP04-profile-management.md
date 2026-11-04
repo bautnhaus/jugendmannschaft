@@ -133,3 +133,35 @@ Der Nutzer hat nach dem DEV-Deployment beide Prüfpunkte bestätigt:
 **Ergebnis:** Beide Prüfungen bestanden. Damit ist der gemeldete Fehler im Superadmin-Mitgliederbereich behoben.
 
 **Weiterhin offen:** Profilbildanzeige, Speichern und erneutes Laden einer Profiländerung, Prüfung mit Vereinsadmin im eigenen Vereinskontext sowie Negativtests ohne bzw. mit fremdem Vereinskontext. Keine weitere SQL-Änderung vorgenommen.
+
+
+## Folgeprüfung 04.11.2026 – Mannschaftsrollen im Vereinsmitglied-Dialog (DEV, Korrektur vorbereitet)
+
+### Read-only Befund
+
+Der aktuelle Vereinsmitglied-Bearbeitungsdialog bietet Rollenfelder für alle aktiven Mannschaften des Vereins. Die gespeicherten Mannschaftsrollen werden über `get_club_members_v3` geladen. Da `admin_add_team_role` bislang keine bestehende Mannschaftszuordnung des Zielbenutzers prüft, kann der Dialog eine zweite Zuordnung anfordern. Die RPC hat die Vereins-/Mannschaftsberechtigung des Handelnden geprüft, nicht aber die Ein-Mannschaft-Regel für die Zielperson.
+
+Weitere gefundene Schreibwege:
+- `admin_create_team` prüfte Superadmin-Neutralität, aber keine vorhandene Mannschaftszuordnung des gewählten Mannschaftsadmins.
+- `admin_list_team_admin_candidates` bot bereits zugeordnete Vereinsmitglieder weiterhin als Kandidaten an.
+- `admin_complete_member_invitation` enthält bereits eine Sperre des Auth-Benutzers und eine Prüfung auf andere Mannschaften.
+- Die aktuelle DEV-Datenprüfung ergab keine bestehenden Mehrfachzuordnungen und keine Superadmins mit Mannschaftszuordnung.
+
+### Vorbereitete Lösung
+
+Im Review-Branch `feature/dev-single-team-membership-guard-review` liegen:
+- zentrale Triggerprüfung auf `team_members` und `team_member_roles`, einschließlich Auth-Benutzerzeilensperre, Superadmin-Ausschluss und Ablehnung einer zweiten Mannschaft;
+- RPC-Vorprüfungen für `admin_add_team_role` und `admin_create_team`;
+- Kandidatenfilter für `admin_list_team_admin_candidates`;
+- UI-Sperre für Mannschaften außerhalb der bereits bestehenden Zuordnung und Validierung, dass bei bisher nicht zugeordneten Mitgliedern höchstens eine Mannschaft ausgewählt wird;
+- 410-Gone-Ersatz für den alten, vom Frontend nicht mehr verwendeten Endpunkt `invite-trainer`.
+
+Ein Mannschaftswechsel ist bewusst zweistufig vorgesehen: Erst alle Rollen der bisherigen Mannschaft entfernen und speichern; anschließend erneut öffnen und die neue Mannschaft zuordnen. So bleibt die Zwischenstufe frei von Mehrfachzuordnungen.
+
+### Status und Freigabe
+
+- SQL liegt als Vorschlag unter `docs/proposals/single-team-membership-guard/migration.sql`.
+- Read-only Nachprüfung nach einer späteren Ausführung: `docs/proposals/single-team-membership-guard/after_apply_verification.sql`.
+- **Keine SQL-Ausführung, kein DEV-Deployment und keine Edge-Function-Aktualisierung erfolgt.**
+- Bestehende RLS-Policies und PROD bleiben unangetastet.
+- Vor der Umsetzung ist das vollständige SQL ausdrücklich freizugeben. Danach sind RPC-, Vereinsdialog-, Team-Admin-Kandidaten- und Legacy-Endpoint-Tests in DEV erforderlich.
