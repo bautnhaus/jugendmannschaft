@@ -192,7 +192,7 @@ Die Bestandsprüfung vom 04.11.2026 ergab 0 Benutzer mit mehreren Mannschaftszuo
 
 Review-Branch: `feature/dev-single-team-membership-guard-review`.
 
-1. **Datenbank:** zentrale SECURITY-DEFINER-Triggerfunktion für `team_members` und `team_member_roles`, Auth-Benutzerzeilensperre mit `FOR UPDATE`, Superadmin-Ausschluss und Ablehnung einer zweiten Mannschaft. Ergänzende Vorprüfungen in `admin_add_team_role` und `admin_create_team`, Filter in `admin_list_team_admin_candidates` und Index für `team_member_roles(user_id)`.
+1. **Datenbank:** zentrale SECURITY-DEFINER-Triggerfunktionen für `team_members` und `team_member_roles` sowie ein Rückwärtsschutz auf `global_user_roles`. Auth-Benutzerzeilensperren mit `FOR UPDATE`, Superadmin-Neutralität in beide Richtungen und Ablehnung einer zweiten Mannschaft. Ergänzende Vorprüfungen in `admin_add_team_role` und `admin_create_team`, Filter in `admin_list_team_admin_candidates` und Index für `team_member_roles(user_id)`.
 2. **Frontend:** Rollenfelder anderer Mannschaften werden bei vorhandener Zuordnung gesperrt. Bei bisher nicht zugeordneten Mitgliedern erlaubt der Dialog maximal eine Mannschaft. Der Dialog entfernt den veralteten, unerreichbaren Altaufruf `admin_add_club_member_by_email`.
 3. **Legacy Edge Function:** vorbereiteter 410-Gone-Ersatz für `invite-trainer`. Das verbundene Werkzeug kann Edge Functions nicht physisch löschen; nach einem späteren Deploy bleibt der Endpunkt im Dashboard als ACTIVE sichtbar, weist aber alle Nicht-OPTIONS-Anfragen mit HTTP 410 ab. `invite-member` bleibt unverändert aktiv.
 4. **Verifikation:** separates read-only Prüfschema liegt unter `docs/proposals/single-team-membership-guard/after_apply_verification.sql`.
