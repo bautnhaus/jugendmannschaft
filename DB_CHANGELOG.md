@@ -509,3 +509,24 @@ Das freigegebene Rollenmodell trennt tatsächliche Mannschaftszuordnung und zus�
 **Advisor-Nachprüfung:** Security Advisor meldet weiterhin allgemeine SECURITY-DEFINER-Warnungen, Hinweise auf die absichtlich ohne direkte Policies betriebenen Kontexttabellen und den Auth-Passwortschutz. Performance Advisor meldet allgemeine RLS-Initplan-/Mehrfach-Policy-Hinweise; der frisch angelegte Index ist unmittelbar nach Erstellung noch ungenutzt. Diese Themen sind getrennt zu bewerten und wurden nicht pauschal durch DB-DEV-009 verändert.
 
 **Noch offen:** funktionale Positiv-/Negativtests über die App und manuelle Browserprüfung. Die beiden korrigierten Einladungs-Endpunkte wurden am 04.11.2026 separat in Supabase DEV auf Version 4 deployed; beide sind ACTIVE, verify_jwt=true, und die Live-Quelltexte stimmen bytegenau mit develop überein. Deployment-Nachweis: SUPABASE_CHANGELOG.md, SUPA-2026-001. PROD bleibt unverändert.
+
+
+## DB-TEST-2026-004 – Serverseitiger Negativtest der Ein-Mannschaft-Regel (04.11.2026)
+
+**Umgebung:** Supabase DEV, Projekt `pzazqvvoruqnqhcorbwx`. Kein PROD-Zugriff.
+
+**Anlass/Freigabe:** Der Nutzer hat den serverseitigen Negativtest S4 ausdrücklich freigegeben und verlangt die Dokumentation von SQL-Eingriffen.
+
+**Vorprüfung (read-only):**
+- Die Trigger `team_members_single_team_guard` und `team_member_roles_single_team_guard` sind aktiv und greifen jeweils bei INSERT/UPDATE.
+- Beide rufen `public.enforce_single_team_membership()` auf.
+- Das vorhandene DEV-Testkonto ist jeweils genau der Mannschaft „DEV Mannschaft“ zugeordnet.
+- „G-Junioren“ ist eine zweite Mannschaft desselben Vereins.
+
+**Testausführung:** Ein einzelner anonymer PL/pgSQL-Testblock führte je einen INSERT-Versuch in `public.team_members` und `public.team_member_roles` für dasselbe Testkonto und die zweite Mannschaft aus. Die erwartete Check-Violation wurde in je einem separaten Exception-Block abgefangen. Ein unerwartet erfolgreicher INSERT hätte den gesamten Test mit Fehler beendet. Die beiden INSERT-Versuche wurden durch den Trigger mit SQLSTATE `23514` und der Meldung „Benutzer gehört bereits einer anderen Mannschaft an. Eine zweite Mannschaftszuordnung ist nicht möglich.“ abgewiesen.
+
+**Nachprüfung (read-only):** In beiden Tabellen besteht weiterhin genau eine Zuordnung zur „DEV Mannschaft“; es besteht keine Zuordnung des Testkontos zu „G-Junioren“.
+
+**Ergebnis:** Serverseitige Ein-Mannschaft-Sperre in beiden Tabellen bestanden.
+
+**Änderungs-/Datenbilanz:** Keine Schemaänderung, keine Migration, keine dauerhafte Datenänderung, keine Rollenentfernung und keine Änderung bestehender Mitgliedschaftsdaten. Die SQL-Ausführung diente ausschließlich dem kontrollierten Negativtest. PROD und GitHub `main` blieben unangetastet.
