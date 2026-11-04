@@ -1,7 +1,7 @@
 # Release 1.6 – Mitglieder-/Trainer-Einladung (DEV-Arbeitsstand)
 
 **Stand:** 04.11.2026  
-**Status:** Erster Trainer-Einladungs-End-to-End-Test erfolgreich; bestehender Superadmin als Trainer und zusätzlich Vereinsadmin zugeordnet; DB-DEV-009 ausgeführt; beide korrigierten Edge Functions in DEV Version 4 deployed; Vereinsadmin-Kontextstart und Mitgliederlisten-Aktualisierung nach Rollenänderung korrigiert und im DEV-Spiegel deployed. Browser-Nachtest der zuletzt korrigierten Aktualisierung noch offen.  
+**Status:** Ein erster Trainer-Einladungs-End-to-End-Test ist erfolgreich; bestehender Superadmin wurde zusätzlich als Trainer und Vereinsadmin zugeordnet, ohne vorhandene Rollen zu verlieren. DB-DEV-009 ist in DEV ausgeführt; beide korrigierten Edge Functions sind in DEV Version 4 deployed. Die Frontend-Korrekturen für Vereinsadmin-Kontext, Mitgliederlisten und Mannschaftsübersicht sind im DEV-Browser nachgetestet und bestanden. Offen sind nur die gezielten Release-1.6-Abschlussprüfungen in Abschnitt 18.  
 **Geltungsbereich:** ausschließlich Supabase DEV und GitHub `develop` / DEV-Deployment  
 **PROD:** unverändert; kein PROD-SQL, keine PROD-Konfiguration, kein PROD-Deployment.
 
@@ -65,7 +65,7 @@ Datei: `index.html`
 - Bei beiden Abgleichen hatte `index.html` in `develop` und `jugendmannschaft-dev/main` denselben Blob-SHA: `2f6d90cf79cf235d4c82489dd693517f88a50785`.
 - Historischer Zwischenstand vor der Rollenmodell-Korrektur: Supabase DEV invite-member Version 3. Der aktuelle Deployment-Stand (Version 4) und der Live-Quelltextabgleich sind im Nachtrag 12 dokumentiert.
 - Die DEV Auth-Site-URL und Redirect-Allowlist wurden read-only anhand der vom Nutzer bereitgestellten Screenshots geprüft und enthalten die DEV-App-Adresse.
-- Das Invite-User-Template ist das Supabase-Standardtemplate. Custom SMTP wurde nicht aktiviert oder geändert.
+- Für den E-Mail-Versand ist Brevo bereits als SMTP-Lösung eingerichtet. Eine SMTP-Anbietereinrichtung ist kein offener Punkt dieses Releases. Die tatsächliche Zustellung bleibt Teil der End-to-End-Abschlussprüfung.
 
 ## 4. Grenzen und noch offene Praxistests
 
@@ -84,7 +84,7 @@ Mindestens folgende Tests sind noch auszuführen:
 | Neue E-Mail einladen | Mannschaftsadmin → Trainer | Automatische Vereinsmitgliedschaft + Trainerrolle | Offen |
 | Einladungslink | DEV | Öffnet DEV und zeigt Passwort-Erstellung | Erfolgreich (04.11.2026; ein Testfall) |
 | Passwort setzen und Login | neue Einladung | Passwort wird gespeichert; anschließend Dashboard mit korrektem Kontext | Erfolgreich (04.11.2026; ein Testfall) |
-| Persönlicher Name | Einladung / Dashboard / Mein Bereich | Name wird gespeichert und dort angezeigt; Superadmin-Mitgliederliste/Bearbeitungsdialog noch fehlerhaft | Teilweise |
+| Persönlicher Name | Einladung / Dashboard / Mein Bereich sowie Mitgliederliste/Bearbeitungsdialog | Im erfolgreichen Trainer-Einladungstest gespeichert und im Dashboard angezeigt; Mitgliederliste und Bearbeitungsdialog separat nachgetestet | Erfolgreich (04.11.2026) |
 | Bestehendes bestätigtes Konto | Vereinsadmin lädt vorhandenen Superadmin als Trainer ein | Bestehendes Konto wird zugeordnet; globale Superadmin-Rolle bleibt erhalten; keine zweite Mannschaft | Erfolgreich (04.11.2026; Datenbank read-only verifiziert) |
 | Offenes/unbestätigtes Auth-Konto | alle Kontexte | Bestehendes Konto übernehmen; keine neue Mail behaupten, wenn Supabase keine bestätigt; ursprünglichen Link prüfen | Offen |
 | Abweichender Verein | alle Kontexte | Kontrollierte Ablehnung | Offen |
@@ -92,11 +92,9 @@ Mindestens folgende Tests sind noch auszuführen:
 | Wiederholte Einladung | gleicher Empfänger | Keine doppelten Konten/Rollen; Warnung bei Teilfehlern | Offen |
 | Nicht autorisierte externe E-Mail | Standard-SMTP | Verständlicher Versandfehler; kein falscher Erfolg | Offen |
 
-### SMTP-Hinweis
+### SMTP / E-Mail-Zustellung
 
-Custom SMTP ist nicht aktiviert. Laut aktueller Supabase-Dokumentation sendet der Standardversand nur an vorab autorisierte E-Mail-Adressen der Supabase-Organisation und ist auf 2 E-Mails pro Stunde begrenzt. Ein Test an eine externe Adresse kann daher mit `email_address_not_authorized` scheitern, ohne dass der neue Einladungs-Code oder die Weiterleitung fehlerhaft ist. Siehe [Supabase – Custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp) und [Test Auth Flows](https://supabase.com/docs/guides/auth/testing-auth-flows). Für externe Einladungen wäre später ein eigener SMTP-Anbieter oder ein Send-Email-Auth-Hook nötig; das ist nicht Teil dieser bereits ausgeführten DEV-Änderungen und bedarf einer gesonderten Entscheidung.
-
-
+Brevo ist bereits als SMTP-Lösung eingerichtet. Es ist daher weder eine SMTP-Anbieterauswahl noch eine neue SMTP-Einrichtung als offener Release-Punkt zu führen. Die vorhandene Brevo-Konfiguration wird nicht im Rahmen dieser Abschlussrunde verändert. Im End-to-End-Test wird lediglich geprüft, dass eine Einladung an einen externen Testempfänger zugestellt wird und der Link den DEV-Passwortfluss korrekt öffnet.
 
 ### Offene/unbestätigte Einladungen
 
@@ -350,3 +348,22 @@ Der Nutzer soll für diesen Test keine bestehende Mannschaftsrolle entfernen. Ei
 - `main` und PROD unverändert.
 
 **Manueller DEV-Praxistest bestanden (04.11.2026):** Der Nutzer hat die DEV-App mit einem Vereinsadmin ohne Mannschaftszuordnung geprüft und bestätigt: „Ja funktioniert“. Damit ist die Korrektur zur direkten Aktualisierung nach dem Speichern sowie die Anzeige der gewünschten Mannschafts- und Vereinsinformationen im tatsächlichen Browser-Praxistest bestätigt. Der Nutzer musste die Seite nicht manuell neu laden. Der Test wurde vom Nutzer durchgeführt; es wurde kein automatisierter Browser-Test behauptet.
+
+
+## 18. Release-1.6-Abschlussprüfungen – bereinigter Restumfang (04.11.2026)
+
+Die folgenden Punkte sind die verbleibenden fachlichen und technischen Abschlussprüfungen. SMTP-Setup, grundlegender DEV-Einladungsfluss und die zuletzt korrigierten Mitglieder-/Kontextansichten gehören nicht mehr zu den offenen Implementierungsaufgaben.
+
+| Nr. | Abschlussprüfung | Erwartung | Status |
+|---|---|---|---|
+| 1 | Rollenkombinationen mit neuen Testadressen | Die noch nicht separat geprüften Einladungswege werden abgedeckt: Superadmin → Vereinsmitglied/Vereinsadmin; Vereinsadmin → Vereinsmitglied/Mannschaftsadmin/Trainer; Mannschaftsadmin → Mannschaftsadmin/Trainer. Jeweils korrekte Mitgliedschaft, Rolle und Namensspeicherung. Der bereits erfolgreiche Trainer-End-to-End-Fall wird nicht erneut als offen gezählt. | Offen |
+| 2 | Bereits vorhandenes, unbestätigtes Auth-Konto | Bestehendes Konto wird korrekt erkannt und zugeordnet. Keine falsche Erfolgsmeldung für eine nicht bestätigte neue E-Mail; Verhalten des ursprünglichen bzw. abgelaufenen Links wird nachvollziehbar angezeigt. | Offen |
+| 3 | Wiederholungseinladung | Erneuter Einladungsversuch erzeugt weder doppelte Konten noch doppelte Rollen oder inkonsistente Mitgliedschaften; Teilergebnisse werden korrekt gemeldet. | Offen |
+| 4 | Abweichender Verein | Ein Benutzer kann nicht versehentlich in einem nicht berechtigten bzw. abweichenden Vereinskontext zugeordnet werden; serverseitige Ablehnung ist nachvollziehbar. | Offen |
+| 5 | Ein-Mannschaft-Regel serverseitig | Neben dem bereits bestätigten UI-Schutz wird der authentifizierte serverseitige Ablehnungsweg für eine zweite Mannschaftszuordnung geprüft. Keine bestehende Rolle wird dafür entfernt. | Offen |
+| 6 | Legacy-Endpunkt `invite-trainer` | Authentifizierter Nicht-OPTIONS-Aufruf liefert HTTP 410 Gone und verweist auf `invite-member`; JWT-Prüfung bleibt aktiv. | Offen |
+| 7 | E-Mail-Zustellung über Brevo | Eine frische externe Testeinladung wird nachweislich zugestellt; Link öffnet DEV und führt zur Passwortvergabe. Dies prüft die bestehende Lösung, nicht deren Einrichtung. | Erfolgreich für den bisherigen Trainer-Testfall; weitere Rollenkombinationen offen |
+
+**Abschlusskriterium:** Die offenen Negativtests (Nr. 2–6) und die noch fehlenden Rollenfälle aus Nr. 1 sind mit nachvollziehbarem Ergebnis dokumentiert. Für jeden Test werden Empfänger-Testkonto, aufrufender Kontext, Zielrolle und das Ergebnis der read-only Datenbankkontrolle festgehalten. Keine Tests mit echten produktiven Einladungen; PROD bleibt unangetastet.
+
+**Arbeitsgrenze:** Diese Abschlussrunde umfasst keine neue SQL-Migration, keine Änderung an Supabase-Auth-/SMTP-Konfigurationen und keine Änderung an PROD oder GitHub `main`. Falls ein Fehler eine Code- oder Konfigurationsänderung erfordert, wird zuerst der Befund mit einem minimalen Fix- und Testvorschlag vorgelegt.
