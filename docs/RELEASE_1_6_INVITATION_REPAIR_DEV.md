@@ -171,3 +171,19 @@ Der Nutzer hat nach dem DEV-Deployment beide Prüfpunkte bestätigt:
 Damit ist der gemeldete Folgefehler im Superadmin-Kontext behoben.
 
 **Noch offen:** Vereinsadmin im eigenen Vereinskontext, Profilbildanzeige, Speichern/erneutes Laden einer Profiländerung und negative Kontexttests (kein Kontext bzw. fremder Verein). PROD wurde nicht verändert.
+
+
+## 10. Fachlich freigegebenes Rollenmodell – Ein-Mannschaft-Regel und Zusatzrollen (04.11.2026)
+
+Das Rollenmodell wurde am 04.11.2026 fachlich freigegeben. Die führende Spezifikation und der technische Vorschlag liegen in `develop` unter `docs/proposals/single-team-membership-guard/README.md`.
+
+Verbindlich gilt:
+- Ein Benutzer darf höchstens einer Mannschaft tatsächlich zugeordnet sein.
+- Ein bestehendes Mannschaftsmitglied kann nachträglich zusätzlich Superadmin und/oder Vereinsadmin werden.
+- Vorhandene Einträge und Rollen in `team_members` und `team_member_roles` bleiben dabei unverändert.
+- Superadmins und Vereinsadmins können in den Mannschaftskontexten ihres Berechtigungsbereichs administrieren, ohne dort tatsächliche Mitglieder zu sein.
+- Die Ein-Team-Regel beschränkt nur die Zuordnung der Zielperson, nicht den Handlungskontext des aufrufenden Administrators.
+
+**Technischer Status:** Die aktuelle DEV-Laufzeit weist Superadmin-Konten als Zielpersonen in den Einladungswegen noch zurück. Die vorbereitete SQL-, Frontend- und Edge-Function-Korrektur ist nicht ausgeführt und nicht deployed. Die fachliche Freigabe ist keine SQL- oder Deployment-Freigabe. Vor jeder Aktivierung sind die aktuellen DEV-Definitionen erneut zu prüfen und die konkrete Änderung separat freigeben zu lassen.
+
+**Dokumentationsführung:** `develop` ist führend. Der SQL-Entwurf und die Nachprüfung liegen unter `docs/proposals/single-team-membership-guard/`; die geplante Datenbankänderung ist in `DB_CHANGELOG.md` beschrieben. Tatsächliche SQL-Ausführung und Supabase-Deployments werden erst nach Durchführung in den jeweiligen Protokollen dokumentiert.
