@@ -171,3 +171,6 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 
 
 **Praxistest 04.11.2026 – bestehender Superadmin als Trainer eingeladen:** Nutzer bestätigte erfolgreiche Einladung über DEV. Read-only Supabase-Prüfung bestätigte: globale Rolle super_admin erhalten, Auth-Konto bereits bestätigt, genau eine Mannschaftszuordnung, Rolle trainer konsistent in team_members und team_member_roles, passende Vereinsmitgliedschaft. Weitere Einladungsrollen und Negativtest auf zweite Mannschaft noch offen. Release-Nachweis: docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md, Abschnitt 14.
+
+
+**Praxistest 04.11.2026 – zweite Mannschaftszuordnung:** Der Nutzer versuchte, das bestehende Superadmin-Trainerkonto zusätzlich einer zweiten Mannschaft zuzuordnen. Die Einladung stoppte bereits im Frontend wegen bestehender Vereinsmitgliedschaft; im Bearbeitungsdialog waren die Rollenfelder der anderen Mannschaft deaktiviert. Read-only geprüft: Superadmin-Rolle und Trainerzuordnung in DEV Mannschaft unverändert, keine Zuordnung zu G-Junioren, 0 Benutzer mit Mehrfachzuordnungen. UI-Schutz bestätigt; serverseitiger Negativaufruf nicht ausgelöst. Details: docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md, Abschnitt 15.
