@@ -1,6 +1,6 @@
 # DEV-Korrekturpaket: Ein-Mannschaft-Regel und kontextbasierte Rollen
 
-**Status:** fachlich freigegeben; Datenbankmigration DB-DEV-009 in Supabase DEV am 04.11.2026 erfolgreich ausgeführt (Version `20261104143331`). Das Frontend ist im DEV-Spiegel synchronisiert; manueller Browser-/Praxistest steht noch aus. Die Supabase-Edge-Functions sind noch nicht aktualisiert (live beide Version 3). PROD ist unverändert.  
+**Status:** fachlich freigegeben; DB-DEV-009 in Supabase DEV erfolgreich ausgeführt und read-only verifiziert (Version `20261104143331`). Das Frontend ist im DEV-Spiegel synchronisiert. invite-member und invite-trainer wurden am 04.11.2026 ausschließlich in Supabase DEV auf Version 4 deployed; beide sind ACTIVE und behalten verify_jwt=true. Die Live-Quelltexte stimmen bytegenau mit develop überein. Browser-/Rollen-Praxistests stehen noch aus. PROD ist unverändert.  
 **Stand:** 04.11.2026  
 **Zielumgebung:** ausschließlich Supabase DEV (`pzazqvvoruqnqhcorbwx`)  
 **PROD:** unverändert, nicht geändert und nicht freigegeben.
@@ -81,19 +81,22 @@ Datei: `index.html` in `develop`; nach dem Push ist der DEV-Spiegel `jugendmanns
 - **Superadmin:** Die Live-Tabelle `global_user_roles` ist für `authenticated` nur lesbar; direkte INSERT-/UPDATE-/DELETE-Rechte sind nicht vergeben. In den geprüften öffentlichen Datenbankfunktionen wurde kein Schreibweg zum Vergeben der globalen Superadmin-Rolle gefunden. Die Hochstufung wird durch die Ein-Mannschaft-Trigger nicht blockiert, ist aber aktuell kein Ablauf im Vereinsmitglied-Dialog. Dafür ist ein gesonderter, privilegierter und sicher freizugebender Vergabeprozess nötig. Eine UI/RPC für die globale Superadmin-Verwaltung ist nicht Teil dieses Korrekturpakets.
 
 
-## 5. Alte Edge Function `invite-trainer`
+## 5. Alte Edge Function invite-trainer
 
-Der aktuelle Frontend-Code verwendet `invite-member`; `invite-trainer` ist in DEV dennoch weiterhin ACTIVE (Version 3). Ein Lösch-/Deaktivierungswerkzeug für Edge Functions steht im verbundenen Supabase-Werkzeugbestand nicht zur Verfügung.
+Der Frontend-Code verwendet ausschließlich invite-member. Die alte Edge Function bleibt aus Gründen der Nachvollziehbarkeit technisch ACTIVE, ist aber seit dem DEV-Deployment am 04.11.2026 in Version 4 nur noch ein Legacy-Ersatzendpunkt.
 
-Vorbereitet ist daher ein Ersatz-Endpunkt, der außer OPTIONS jede Anfrage mit **410 Gone** und dem Hinweis auf `invite-member` beantwortet. Im Dashboard bleibt die Edge Function danach technisch als ACTIVE sichtbar; ihre alte Einladungsfunktionalität ist aber nicht mehr nutzbar. Die JWT-Prüfung bleibt aktiviert.
+- OPTIONS-Anfragen werden für CORS beantwortet.
+- Jede Nicht-OPTIONS-Anfrage erhält HTTP **410 Gone** und den Hinweis auf invite-member.
+- verify_jwt bleibt aktiviert.
+- Die alte Einladungslogik ist damit nicht mehr ausführbar.
 
 ## 6. Dateien
 
 - `supabase/migrations/20261104143331_db_dev_009_single_team_membership_guard.sql` – tatsächlich in Supabase DEV ausgeführte Migration.
 - `migration.sql` – Konzept-/Review-Entwurf der Migration.
 - `after_apply_verification.sql` – rein lesendes Verifikationsskript; nach Ausführung in DEV verwendet.
-- `supabase/functions/invite-member/index.ts` – angepasste Edge-Function-Quelle in `develop`, noch nicht deployed.
-- `supabase/functions/invite-trainer/index.ts` – 410-Gone-Ersatz in `develop`, noch nicht deployed.
+- `supabase/functions/invite-member/index.ts` – angepasste Quelle in `develop` und in Supabase DEV deployed (Version 4, JWT aktiv).
+- `supabase/functions/invite-trainer/index.ts` – 410-Gone-Ersatz in `develop` und in Supabase DEV deployed (Version 4, JWT aktiv).
 - `index.html` – Frontend-Anpassung in `develop`, bereits in den DEV-Spiegel synchronisiert; Browser-/Praxistest offen.
 - `DB_MIGRATION_LOG.md`, `DB_CHANGELOG.md`, `PROJECT_CONTEXT.md`, `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md` und `docs/AP04-profile-management.md` – Befund und fachlich korrigierter Vorschlag.
 
@@ -111,18 +114,17 @@ Vorbereitet ist daher ein Ersatz-Endpunkt, der außer OPTIONS jede Anfrage mit *
 10. Ein bestehendes Mannschaftsmitglied erhält nachträglich die Rolle Vereinsadmin; alle bestehenden Mannschaftszuordnungen und Teamrollen bleiben unverändert.
 11. Ein bestehendes Mannschaftsmitglied erhält nachträglich Superadmin und Vereinsadmin; beide zusätzlichen Rollen bleiben unabhängig von der bestehenden Mannschaftszuordnung bestehen.
 12. Das Entfernen von Superadmin und/oder Vereinsadmin verändert ebenfalls keine bestehende Mannschaftszuordnung.
-13. Die Einladung über `invite-member` funktioniert weiterhin für normale Konten und bestehende Superadmins.
-14. Der alte Edge-Endpunkt `invite-trainer` antwortet mit HTTP 410.
+13. Die aktualisierte invite-member-Version ist in DEV deployed und der Live-Quelltext entspricht develop; der End-to-End-Test mit einem bestehenden Superadmin als Zielperson ist noch auszuführen.
+14. Der alte Edge-Endpunkt invite-trainer ist in DEV auf Version 4 deployed; der Live-Quelltext enthält HTTP 410. Ein authentifizierter Request-Level-Test steht noch aus.
 
 ## 8. Freigabe- und Ausführungsreihenfolge
 
-1. Die freigegebene fachliche Regel gegen die aktuellen Live-Definitionen in DEV und alle betroffenen Schreibwege abschließend technisch prüfen.
-2. Vollständigen finalen SQL-Text, Zielprojekt DEV, Auswirkungen und Verifikationsplan vorlegen und eine separate ausdrückliche Freigabe zur SQL-Ausführung einholen.
-3. Nach dieser Ausführungsfreigabe eine finale Migrationsdatei mit realer Migrationsversion anlegen und ausschließlich in DEV ausführen.
-4. Migrationsergebnis und tatsächliche Versionsnummer unmittelbar in `DB_MIGRATION_LOG.md` nachweisen; technische Objektänderungen in `DB_CHANGELOG.md` aktualisieren.
-5. Trigger, Definitionen, ACLs, Index, Mehrfachzuordnungen, Erhalt bestehender Teamzuordnungen und Kontextfunktionen read-only prüfen.
-6. Frontend in `develop` übernehmen und nach DEV deployen.
-7. `invite-member` aktualisieren, den alten `invite-trainer`-Endpunkt auf 410 Gone umstellen und diese Supabase-Laufzeitänderungen im `SUPABASE_CHANGELOG.md` dokumentieren.
-8. Security Advisor erneut prüfen und die Tests aus Abschnitt 7 durchführen.
+1. Fachliches Rollenmodell und technische Umsetzung read-only prüfen. **Erledigt.**
+2. DB-DEV-009 versionieren, separat freigeben und ausschließlich in DEV ausführen. **Erledigt; Version 20261104143331.**
+3. Migrationsergebnis, ACLs, Trigger, Index und Datenintegrität nachprüfen und dokumentieren. **Erledigt; DB-MIG-2026-003.**
+4. Frontend in develop übernehmen und mit dem DEV-Spiegel abgleichen. **Erledigt; Blob-SHA identisch.**
+5. invite-member aktualisieren und invite-trainer auf 410 Gone umstellen. **Erledigt; beide DEV-Funktionen Version 4, JWT-Prüfung aktiv.**
+6. Deployment-Metadaten und Live-Quelltexte zurücklesen und in SUPABASE_CHANGELOG.md dokumentieren. **Erledigt; Live-Quellen bytegenau mit develop identisch.**
+7. Browser-/Rollen-Praxistests sowie Einladung eines bestehenden Superadmins durchführen. **Offen.**
 
-**Status am 04.11.2026:** Fachliches Rollenmodell freigegeben; DB-DEV-009 in Supabase DEV erfolgreich ausgeführt und read-only verifiziert. Frontend in DEV-Spiegel synchronisiert, Browser-/Praxistest offen. Edge Functions live weiterhin Version 3; Aktualisierung noch ausstehend und gesondert freizugeben. PROD bleibt unverändert.
+**Status am 04.11.2026:** Datenbankmigration DB-DEV-009 ausgeführt und read-only verifiziert. Frontend im DEV-Spiegel synchronisiert. Beide Edge Functions in Supabase DEV auf Version 4 deployed, ACTIVE, verify_jwt=true; Live-Quellen stimmen bytegenau mit develop überein. Die funktionalen Praxistests bleiben offen. PROD ist unverändert.
