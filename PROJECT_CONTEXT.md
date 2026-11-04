@@ -157,3 +157,12 @@ Die read-only Prüfung der DEV-Datenbank fand Schreibwege, die eine zweite Manns
 **Korrigierte Vorbereitung:** Review-Branch `feature/dev-single-team-membership-guard-review`. Der SQL-Vorschlag schützt beide Mannschaftszuordnungstabellen, lässt Superadmins als Zielpersonen zu, aktualisiert die Einladungs-RPC und -Edge-Function und erhält die Kontextprüfungen für handelnde Superadmins/Vereinsadmins. Das Frontend begrenzt nur die tatsächliche Mitgliedschaft der bearbeiteten Zielperson.
 
 **Freigabestatus:** Korrigierter Vorschlag zur Prüfung. Noch nicht in `develop` übernommen, nicht deployed, keine SQL-Ausführung und keine Edge-Function-Aktualisierung. PROD bleibt unverändert. Details: `docs/proposals/single-team-membership-guard/README.md`.
+
+### Read-only Kontextprüfung in Supabase DEV (04.11.2026)
+
+Die Berechtigungsfunktionen wurden mit vorhandenen Benutzeridentitäten und jeweils ausgewähltem Teamkontext simuliert. In beiden Fällen hatte der handelnde Benutzer **keine tatsächliche Mitgliedschaft in der ausgewählten Mannschaft**:
+
+- **Superadmin:** `has_selected_team_context(team_id) = true`, `can_manage_club_context(club_id) = true`, `is_super_admin() = true` und `is_team_admin(team_id) = true`.
+- **Vereinsadmin:** `has_selected_team_context(team_id) = true` und `can_manage_club_context(club_id) = true`; `is_team_admin(team_id)` war erwartungsgemäß false, da diese Person nicht tatsächlich Mannschaftsadmin ist. Die Berechtigung für administrative Schreibwege ergibt sich hier aus `can_manage_club_context`.
+
+Damit bestätigen die vorhandenen Kontextfunktionen bereits, dass Superadmins und Vereinsadmins andere Mannschaften verwalten können, ohne dort Mitglied zu sein. Dies ist ein read-only Funktions-/Kontextnachweis, kein vollständiger Frontend-Praxistest und kein schreibender Rollenänderungstest.
