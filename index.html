@@ -3377,12 +3377,15 @@ window.loadClubTeamOverviewData=async(clubId)=>{
  }
  return {activePlayerCounts,playerCountsAvailable,venueFacts};
 };
-window.renderClubTeamOverviewFacts=(team,overview)=>{
- const meta=[team.birth_cohorts||'',team.abbreviation||''].filter(Boolean).join(' · ');
+window.renderClubTeamOverviewFacts=(team,overview,seasonName='')=>{
+ const cohort=String(team.birth_cohorts||'').trim();
+ const season=String(seasonName||'').trim();
  const count=overview?.playerCountsAvailable?String(overview.activePlayerCounts?.[team.id]||0):'nicht verfügbar';
  const target=Math.max(1,Number(team.recommended_squad_size)||16);
  const venue=(overview?.venueFacts||[]).map(v=>'<span style="display:block">'+clubEsc(v.label)+': '+clubEsc(v.value)+'</span>').join('');
- return '<span class="muted small teamContextFacts" style="display:block;white-space:normal;margin-top:3px;line-height:1.35">'+(meta?'<span style="display:block">'+clubEsc(meta)+'</span>':'')+'<span style="display:block">Aktive Spieler: '+count+' · Zielkadergröße: '+target+'</span>'+venue+'</span>';
+ const seasonLine=season?'<span style="display:block">Saison '+clubEsc(season)+'</span>':'';
+ const cohortLine='<span style="display:block">Jahrgänge '+clubEsc(cohort||'Nicht hinterlegt')+'</span>';
+ return '<span class="muted small teamContextFacts" style="display:block;white-space:normal;margin-top:3px;line-height:1.35">'+seasonLine+cohortLine+'<span style="display:block">Aktive Spieler: '+count+' · Zielkadergröße: '+target+'</span>'+venue+'</span>';
 };
 window.refreshSelectedAdminTeamSummary=async(teamRow=window.selectedAdminTeam)=>{
  if(!teamRow?.id)return;
@@ -3391,8 +3394,9 @@ window.refreshSelectedAdminTeamSummary=async(teamRow=window.selectedAdminTeam)=>
  const overview=await window.loadClubTeamOverviewData(teamRow.club_id||currentClubId);
  window.selectedAdminTeam={...(window.selectedAdminTeam||{}),...teamRow};
  const name=$('superAdminTeamDetailName');if(name){name.textContent=teamRow.name||'Mannschaft';name.dataset.teamId=teamRow.id;}
- const meta=$('superAdminTeamDetailMeta');if(meta)meta.textContent=[teamRow.birth_cohorts||'',teamRow.abbreviation||'',seasonRows?.[0]?.name||''].filter(Boolean).join(' · ')||'Mannschaftsverwaltung';
- const info=$('superAdminTeamDetailInfo');if(info)info.innerHTML=window.renderClubTeamOverviewFacts(teamRow,overview);
+ const activeSeasonName=String(seasonRows?.[0]?.name||'').trim();
+ const meta=$('superAdminTeamDetailMeta');if(meta)meta.textContent=activeSeasonName?'Saison '+activeSeasonName:'Keine aktive Saison hinterlegt';
+ const info=$('superAdminTeamDetailInfo');if(info)info.innerHTML=window.renderClubTeamOverviewFacts(teamRow,overview,activeSeasonName);
 };
 window.renderSuperAdminClubTeamContextList=async(clubId,listId='superAdminClubTeamList',withEdit=false)=>{
  const list=$(listId);if(!list)return;list.innerHTML='<p class="muted small">Mannschaften werden geladen …</p>';
