@@ -601,7 +601,7 @@ Die read-only Bestandsprüfung ergab aktuell:
 
 ### Vorgeschlagene Änderung
 
-- Neue SECURITY-DEFINER-Triggerfunktion `public.enforce_single_team_membership()` mit festem `search_path = pg_catalog, public, auth`.
+- Neue SECURITY-DEFINER-Triggerfunktion `public.enforce_single_team_membership()` mit festem `search_path = pg_catalog, public, auth` sowie `public.prevent_super_admin_with_team_membership()` als Rückwärtsschutz bei Superadmin-Hochstufungen.
 - Trigger auf `team_members` und `team_member_roles` für INSERT sowie Änderungen an `user_id`/ `team_id`.
 - Vor der Prüfung wird die Auth-Benutzerzeile mit `FOR UPDATE` gesperrt. Damit werden konkurrierende Schreibwege für denselben Benutzer serialisiert.
 - Superadmins werden auf beiden Tabellen abgewiesen.
