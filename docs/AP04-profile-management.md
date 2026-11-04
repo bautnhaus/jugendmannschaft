@@ -185,3 +185,12 @@ Die frühere Annahme vollständiger Superadmin-Neutralität wurde ausdrücklich 
 Die Live-Kontextfunktionen wurden geprüft: `can_manage_club_context`, `has_selected_team_context` und `is_team_admin` unterstützen Verwaltung über ausgewählte Vereins-/Mannschaftskontexte, ohne dass der Handelnde jeder Mannschaft angehören muss.
 
 Die aktuelle DEV-Laufzeit lehnt bestehende Superadmins in `invite-member` und `admin_complete_member_invitation` als Zielpersonen noch ab. Die korrigierte Fassung im Review-Branch entfernt diese Ausschlüsse. Keine dieser Änderungen ist bisher deployed oder in Supabase ausgeführt.
+
+### Read-only Kontextprüfung in Supabase DEV (04.11.2026)
+
+Die Berechtigungsfunktionen wurden mit vorhandenen Benutzeridentitäten und jeweils ausgewähltem Teamkontext simuliert. In beiden Fällen hatte der handelnde Benutzer **keine tatsächliche Mitgliedschaft in der ausgewählten Mannschaft**:
+
+- **Superadmin:** `has_selected_team_context(team_id) = true`, `can_manage_club_context(club_id) = true`, `is_super_admin() = true` und `is_team_admin(team_id) = true`.
+- **Vereinsadmin:** `has_selected_team_context(team_id) = true` und `can_manage_club_context(club_id) = true`; `is_team_admin(team_id)` war erwartungsgemäß false, da diese Person nicht tatsächlich Mannschaftsadmin ist. Die Berechtigung für administrative Schreibwege ergibt sich hier aus `can_manage_club_context`.
+
+Damit bestätigen die vorhandenen Kontextfunktionen bereits, dass Superadmins und Vereinsadmins andere Mannschaften verwalten können, ohne dort Mitglied zu sein. Dies ist ein read-only Funktions-/Kontextnachweis, kein vollständiger Frontend-Praxistest und kein schreibender Rollenänderungstest.
