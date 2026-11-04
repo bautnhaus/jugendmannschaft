@@ -156,7 +156,7 @@ Die frühere ausführliche Fassung dieses Dokuments wurde unverändert archivier
 - Spezifikation und Status: `docs/proposals/single-team-membership-guard/README.md`
 - SQL-Entwurf: `docs/proposals/single-team-membership-guard/migration.sql`
 - Read-only Nachprüfung nach späterer Ausführung: `docs/proposals/single-team-membership-guard/after_apply_verification.sql`
-- Geplante Datenbankänderung: Planungsindex in `DB_MIGRATION_LOG.md` und DB-DEV-009 in `DB_CHANGELOG.md`
+- Geplante Datenbankänderung: DB-DEV-009 in `DB_CHANGELOG.md`; der `DB_MIGRATION_LOG.md` erhält erst nach einem tatsächlichen Ausführungsversuch den Ausführungsdatensatz
 - Supabase-Änderungsprozess: `docs/SUPABASE_CHANGE_CONTROL.md`; tatsächliche Nicht-SQL-Ausführungen in `SUPABASE_CHANGELOG.md`
 
-Der Feature-Branch `feature/dev-single-team-membership-guard-review` bleibt bis zur gezielten Übernahme ein isolierter technischer Arbeitsstand. Diese Projektdokumentation in `develop` ist die führende Quelle. Der Feature-Branch darf nicht als zweite parallele Dokumentationsbasis gepflegt oder vollständig ohne Prüfung gemerged werden.
+Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein historischer Review-Arbeitsstand und keine führende Quelle. Die gezielt geprüften Frontend-/Edge-Änderungen sind inzwischen nach `develop` übernommen. Weitere Änderungen erfolgen in `develop`; der Feature-Branch wird nicht als zweite Dokumentationsbasis gepflegt und nicht vollständig ohne Prüfung gemerged.
