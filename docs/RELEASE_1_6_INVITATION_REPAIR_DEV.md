@@ -238,3 +238,12 @@ Verbindlich gilt:
 - Ein bereits einem Team zugeordneter Benutzer darf nachträglich Superadmin werden; die Superadmin-Rolle hebt die bestehende Teammitgliedschaft nicht auf.
 
 Die aktuelle, aktive DEV-Version von `invite-member` und die Live-RPC `admin_complete_member_invitation` enthalten zum Prüfzeitpunkt noch die alte Sperre gegen Superadmins als Zielpersonen. Die korrigierte Quellfassung im Review-Branch entfernt diese Sperre. Erst nach einer späteren Freigabe und Deployment ist die neue Fachregel im DEV-Laufzeitverhalten aktiv.
+
+### Read-only Kontextprüfung in Supabase DEV (04.11.2026)
+
+Die Berechtigungsfunktionen wurden mit vorhandenen Benutzeridentitäten und jeweils ausgewähltem Teamkontext simuliert. In beiden Fällen hatte der handelnde Benutzer **keine tatsächliche Mitgliedschaft in der ausgewählten Mannschaft**:
+
+- **Superadmin:** `has_selected_team_context(team_id) = true`, `can_manage_club_context(club_id) = true`, `is_super_admin() = true` und `is_team_admin(team_id) = true`.
+- **Vereinsadmin:** `has_selected_team_context(team_id) = true` und `can_manage_club_context(club_id) = true`; `is_team_admin(team_id)` war erwartungsgemäß false, da diese Person nicht tatsächlich Mannschaftsadmin ist. Die Berechtigung für administrative Schreibwege ergibt sich hier aus `can_manage_club_context`.
+
+Damit bestätigen die vorhandenen Kontextfunktionen bereits, dass Superadmins und Vereinsadmins andere Mannschaften verwalten können, ohne dort Mitglied zu sein. Dies ist ein read-only Funktions-/Kontextnachweis, kein vollständiger Frontend-Praxistest und kein schreibender Rollenänderungstest.
