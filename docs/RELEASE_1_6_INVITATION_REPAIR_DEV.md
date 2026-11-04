@@ -319,3 +319,42 @@ Der Nutzer soll für diesen Test keine bestehende Mannschaftsrolle entfernen. Ei
 
 
 **Abschluss des manuellen Nachtests (04.11.2026):** Nutzer bestätigt, dass die Mitgliederliste nach Speichern des Bearbeitungsdialogs sofort aktualisiert wird und die Seite „Mitglieder und Rollen“ geöffnet bleibt. Kein manuelles Neuladen nötig. Abschnitt 16 ist damit für DEV abgeschlossen.
+
+
+## 17. Mannschaftsübersicht – direkte Aktualisierung und Vereinsinformationen auf den Mannschaftskacheln (04.11.2026)
+
+**Ausgangsfehler:** Beim Bearbeiten der Mannschaftsstammdaten wurde im Vereinsadmin-Kontext nach dem Speichern nur die Mannschaftsauswahl aktualisiert. Die sichtbare Mannschaftsübersicht blieb auf dem alten Stand, bis die Seite manuell neu geladen wurde.
+
+**Umsetzung in `develop/index.html`:**
+- Nach dem Speichern wird geprüft, welche Mannschaftsansicht gerade aktiv ist.
+- Die geöffnete Mannschaftsübersicht wird direkt neu aufgebaut. Bei Bearbeitung aus der Mannschaftsdetailansicht bleibt diese Ansicht geöffnet; Name, Saison und Informationsblock werden dort aktualisiert.
+- Die bisherige Mannschaftsauswahl des Vereinsadmins wird weiterhin neu geladen und behält die bearbeitete Mannschaft als Auswahl.
+- Die Mannschaftskacheln zeigen jetzt zusätzlich:
+  - Spielstätte und Trainingsstätte aus den Vereinsinformationen. Wenn beide gleich sind, erscheint eine gemeinsame Angabe.
+  - Anzahl der aktiven Spieler der jeweiligen Mannschaft.
+  - Zielkadergröße der Mannschaft.
+- Der Informationsblock der Mannschaftsdetailansicht verwendet dieselben konkreten Angaben statt des allgemeinen Hinweises, dass die Standorte aus dem Verein übernommen werden.
+
+**Datenbasis und Sicherheitsgrenzen:**
+- Standorte werden lesend aus `clubs` geladen.
+- Die aktiven Spielerzahlen werden über die bestehende berechtigungsgeschützte RPC `get_club_players(p_club_id)` ermittelt und nach Mannschaft gruppiert.
+- Die Zielkadergröße stammt aus `teams.recommended_squad_size`.
+- Es wurde keine Datenbankstruktur geändert und keine SQL-Migration ausgeführt.
+
+**Technischer Nachweis:**
+- Commit: `f8563de25be67b127884464f2c77a3eaa97ce677` – `fix: refresh team overview and show club team facts`.
+- Datei: `index.html`, Blob-SHA `38e0b7c950ed3c2f424b817359b920a2530799c4`.
+- DEV-Deployment: [Deploy DEV #414](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41899212678), erfolgreich.
+- DEV-Spiegel `jugendmannschaft-dev/main/index.html`: identischer Blob-SHA `38e0b7c950ed3c2f424b817359b920a2530799c4`.
+- JavaScript-Syntaxprüfung des Hauptmoduls nach Herausnahme des einzelnen externen ESM-Imports: bestanden.
+- `main` und PROD unverändert.
+
+**Manueller DEV-Praxistest noch offen:**
+1. Mit einem Vereinsadmin ohne Mannschaftszuordnung anmelden.
+2. Mannschaftsübersicht öffnen und eine Mannschaft bearbeiten, z. B. Name oder Zielkadergröße ändern.
+3. Speichern und prüfen, dass die Kachel ohne Neuladen sofort die neuen Daten zeigt.
+4. Spielstätte/Trainingsstätte, aktive Spielerzahl und Zielkadergröße auf der Kachel prüfen.
+5. Eine Mannschaft öffnen und kontrollieren, dass derselbe Informationsstand auch im Detailbereich erscheint.
+6. Prüfen, dass eine Mannschaft mit identischer Spiel- und Trainingsstätte nur eine gemeinsame Standortangabe zeigt und bei abweichendem Trainingsort beide Angaben getrennt angezeigt werden.
+
+Der technische DEV-Deploy ist abgeschlossen; ein erfolgreicher Browser-Praxistest ist damit noch nicht behauptet.
