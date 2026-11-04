@@ -472,19 +472,20 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 - **Status:** Korrigierter Entwurf im Review-Feature-Branch; keine Migration ausgeführt.
 - **Fachliche Regel:** Ein Benutzer darf höchstens einer Mannschaft tatsächlich zugeordnet sein. Die globale Rolle `super_admin` und die Vereinsrolle `club_admin` schließen eine solche Mitgliedschaft nicht aus.
 - **Mehrfachrollen:** Ein Superadmin kann zusätzlich Vereinsmitglied/Vereinsadmin sowie Mannschaftsadmin und Trainer derselben Mannschaft sein.
+- **Nachträgliche Höherstufung:** Ein bestehendes Mannschaftsmitglied kann zusätzlich `super_admin`, `club_admin` oder beide Rollen erhalten. Die bisherigen Einträge in `team_members` und `team_member_roles` und alle dort gespeicherten Mannschaftsrollen bleiben unverändert. Die Vergabe oder spätere Entfernung der übergeordneten Rollen darf keine Mannschaftszuordnung löschen, verschieben oder neu erzeugen.
 - **Kontextrechte:** Superadmins und Vereinsadmins dürfen andere Mannschaften in ihrem ausgewählten/eigenen Berechtigungsbereich verwalten, ohne dort selbst Mitglied zu sein. Die Prüfungen über `can_manage_club_context`, `has_selected_team_context` und `is_team_admin` bleiben erhalten.
 - **Geplante Objekte:** Triggerfunktion `public.enforce_single_team_membership()`; Trigger auf `public.team_members` und `public.team_member_roles`; überarbeitete RPCs `admin_add_team_role`, `admin_create_team`, `admin_list_team_admin_candidates` und `admin_complete_member_invitation`; Index `idx_team_member_roles_user`.
 - **Zentrale Absicherung:** Beide Mannschaftszuordnungstabellen erhalten BEFORE-Trigger auf INSERT sowie Änderungen an `user_id`/`team_id`. Die Funktion sperrt die jeweilige Auth-Benutzerzeile mit `FOR UPDATE` und weist nur eine zweite Mannschaftszuordnung ab. Die Superadmin-Rolle ist kein Ausschlusskriterium.
 - **Kandidatenliste:** `admin_list_team_admin_candidates` filtert bereits Mannschaftsmitglieder aus, nicht aber Superadmins allein aufgrund ihrer globalen Rolle.
 - **Einladung:** `invite-member` und `admin_complete_member_invitation` sollen Superadmins als Zielperson für Vereins-/Mannschaftsrollen zulassen. Die vorhandene Prüfung der maximal einen Mannschaft bleibt.
-- **Superadmin-Hochstufung:** Kein Trigger soll die Vergabe der globalen Superadmin-Rolle an ein bereits bestehendes Mannschaftsmitglied blockieren. Die globalen Tabellenrechte bleiben unverändert; es wird kein zusätzlicher öffentlicher Schreibweg geschaffen.
+- **Höherstufung:** Kein Mechanismus der Ein-Mannschaft-Absicherung darf die Vergabe von `super_admin` und/oder `club_admin` an ein bereits bestehendes Mannschaftsmitglied blockieren oder dessen Teamzuordnung verändern. Die globalen Tabellenrechte bleiben unverändert; es wird kein zusätzlicher öffentlicher Schreibweg geschaffen.
 - **Legacy:** `add_team_member_by_email` wird vom aktuellen Frontend nicht aufgerufen und hat kein EXECUTE-Recht für `authenticated`; die Tabellen-Trigger schützen die Zuordnung auch bei privilegierten Altaufrufen.
 - **Legacy Edge Function:** `invite-trainer` bleibt DEV-seitig ACTIVE (Version 3), wird aber nicht vom aktuellen Frontend verwendet. Vorgesehen ist ein 410-Gone-Ersatz, kein physisches Löschen.
 - **Live-Bestandsprüfung 04.11.2026:** 0 Benutzer mit mehreren Mannschaftszuordnungen. Der zum Prüfzeitpunkt fehlende Superadmin mit Teamzuordnung ist nur ein Bestandswert, keine fachliche Regel.
 - **SQL und Nachprüfung:** `docs/proposals/single-team-membership-guard/migration.sql` und `docs/proposals/single-team-membership-guard/after_apply_verification.sql`.
 - **PROD:** Nicht geprüft, nicht geändert und nicht freigegeben.
 
-Die frühere Vorschlagsfassung mit vollständiger Superadmin-Neutralität wurde verworfen, bevor sie ausgeführt wurde. Diese korrigierte Fassung ist weiterhin nur ein Lösungsvorschlag und kein Ausführungsnachweis.
+Die frühere Vorschlagsfassung mit vollständiger Superadmin-Neutralität wurde verworfen, bevor sie ausgeführt wurde. Das fachliche Rollenmodell einschließlich der nachträglichen Vergabe von Superadmin und/oder Vereinsadmin an bestehende Mannschaftsmitglieder bei unveränderter Mannschaftszuordnung wurde am 04.11.2026 freigegeben. Die technische Fassung bleibt ein Vorschlag; keine Migration wurde ausgeführt und keine Supabase-Laufzeitänderung vorgenommen. Für die SQL-Ausführung in DEV bleibt eine separate ausdrückliche Ausführungsfreigabe erforderlich.
 
 ### Read-only Kontextprüfung in Supabase DEV (04.11.2026)
 
