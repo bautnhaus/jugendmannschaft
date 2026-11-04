@@ -85,7 +85,7 @@ Mindestens folgende Tests sind noch auszuführen:
 | Einladungslink | DEV | Öffnet DEV und zeigt Passwort-Erstellung | Erfolgreich (04.11.2026; ein Testfall) |
 | Passwort setzen und Login | neue Einladung | Passwort wird gespeichert; anschließend Dashboard mit korrektem Kontext | Erfolgreich (04.11.2026; ein Testfall) |
 | Persönlicher Name | Einladung / Dashboard / Mein Bereich | Name wird gespeichert und dort angezeigt; Superadmin-Mitgliederliste/Bearbeitungsdialog noch fehlerhaft | Teilweise |
-| Bestehendes bestätigtes Konto | alle Kontexte | Keine zweite Einladung; zulässige Zuordnung wird ergänzt | Offen |
+| Bestehendes bestätigtes Konto | Vereinsadmin lädt vorhandenen Superadmin als Trainer ein | Bestehendes Konto wird zugeordnet; globale Superadmin-Rolle bleibt erhalten; keine zweite Mannschaft | Erfolgreich (04.11.2026; Datenbank read-only verifiziert) |
 | Offenes/unbestätigtes Auth-Konto | alle Kontexte | Bestehendes Konto übernehmen; keine neue Mail behaupten, wenn Supabase keine bestätigt; ursprünglichen Link prüfen | Offen |
 | Abweichender Verein | alle Kontexte | Kontrollierte Ablehnung | Offen |
 | Andere Mannschaft vorhanden | Teamrolle | Kontrollierte Ablehnung ohne zweite Mannschaftszuordnung | Offen |
@@ -212,7 +212,7 @@ Am 04.11.2026 hat der Nutzer das Deployment beider vorbereiteten Edge Functions 
 - invite-member: GitHub-Blob-SHA 23234ab65ae1c9ba85067cf8d72d1a290f5a486e; aktiver Deployment-SHA 84dd949d0952615cb59bd2e661d0c722de738bd94751d0989695e5d050f6e0ea.
 - invite-trainer: GitHub-Blob-SHA 004499fe27bef85d9896fd1f1c35883dd12ee0bc; aktiver Deployment-SHA 0f2e6e69caa730a80220e4e1f959ade5f1f218d00eb6d0a26f325e7608a323a7.
 
-**Noch offen:** Ein authentifizierter HTTP-Aufruf des Legacy-Endpunkts sowie der Browser-End-to-End-Test, bei dem ein bestehender Superadmin als Zielperson eingeladen wird. Ebenso bleiben die weiteren Rollen-/Kontext- und Ein-Mannschaft-Negativtests offen. Deployment und Quelltext-Rücklese sind kein Ersatz für diese Praxistests.
+**Erledigt am 04.11.2026:** Ein bestehendes, bestätigtes Superadmin-Konto wurde durch einen Vereinsadmin als Trainer eingeladen. Die read-only Prüfung bestätigte: globale Superadmin-Rolle weiterhin vorhanden, genau eine Mannschaftszuordnung, Rolle trainer konsistent in `team_members` und `team_member_roles`, Vereinsmitgliedschaft passend zur Mannschaft. Der Auth-Benutzer war bereits bestätigt. **Noch offen:** authentifizierter HTTP-Aufruf des Legacy-Endpunkts sowie weitere Rollen-/Kontext- und Ein-Mannschaft-Negativtests.
 
 **PROD:** unverändert; kein PROD-SQL, kein PROD-Deployment und keine Änderung an GitHub main.
 
@@ -245,3 +245,20 @@ Am 04.11.2026 hat der Nutzer das Deployment beider vorbereiteten Edge Functions 
 5. Abmelden und erneut anmelden. Erwartung: Der normale Einstieg beginnt wieder in der Vereinsverwaltung und übernimmt nicht ungefragt den vorherigen Mannschaftskontext.
 
 Der Code ist im DEV-Spiegel angekommen; das fachliche Verhalten ist erst nach diesem Browser-Praxistest als bestanden zu markieren.
+
+
+## 14. Nachtrag 04.11.2026 – Bestehenden Superadmin als Trainer eingeladen: erfolgreich
+
+Der Nutzer bestätigte den erfolgreichen Einladungsvorgang über die DEV-App. Anschließend wurden die relevanten Daten in Supabase DEV ausschließlich lesend geprüft.
+
+**Nachgewiesenes Ergebnis:**
+- Das globale Recht `super_admin` ist weiterhin vorhanden.
+- Der Auth-Benutzer ist bereits E-Mail-bestätigt.
+- Es besteht genau eine Mannschaftszuordnung.
+- Die Rolle `trainer` ist konsistent in `team_members` und `team_member_roles` für dieselbe Mannschaft gespeichert.
+- Die Vereinsmitgliedschaft passt zur Vereinszuordnung dieser Mannschaft.
+- Es wurde keine zusätzliche Mannschaftszuordnung gefunden.
+
+**Teststatus:** Erfolgreich für den konkreten Fall „Vereinsadmin ordnet ein bestehendes, bestätigtes Superadmin-Konto als Trainer in einer Mannschaft zu“. Die weiteren Einladungsrollen und der Negativtest gegen eine zweite Mannschaft bleiben separat offen.
+
+Die Prüfung hat keine Daten verändert. PROD und GitHub `main` blieben unangetastet.
