@@ -151,6 +151,7 @@ Weitere gefundene Schreibwege:
 
 Im Review-Branch `feature/dev-single-team-membership-guard-review` liegen:
 - zentrale Triggerprüfung auf `team_members` und `team_member_roles`, einschließlich Auth-Benutzerzeilensperre, Superadmin-Ausschluss und Ablehnung einer zweiten Mannschaft;
+- Rückwärtsschutz durch Trigger auf `global_user_roles`, damit ein bestehendes Mannschaftsmitglied nicht nachträglich Superadmin werden kann;
 - RPC-Vorprüfungen für `admin_add_team_role` und `admin_create_team`;
 - Kandidatenfilter für `admin_list_team_admin_candidates`;
 - UI-Sperre für Mannschaften außerhalb der bereits bestehenden Zuordnung und Validierung, dass bei bisher nicht zugeordneten Mitgliedern höchstens eine Mannschaft ausgewählt wird;
