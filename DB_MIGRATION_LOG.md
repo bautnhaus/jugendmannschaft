@@ -587,8 +587,8 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 ### Anlass und Live-Befund vom 04.11.2026
 
 Die Prüfung der tatsächlichen DEV-Definitionen ergab:
-1. `admin_add_team_role(uuid,uuid,text)` prüft die Berechtigung des Handelnden, die Zielmitgliedschaft aber nicht auf eine bereits bestehende Zuordnung zu einer anderen Mannschaft und nicht auf die globale Rolle `super_admin`.
-2. `admin_create_team(...)` verhindert bereits die Zuweisung eines Superadmins als Mannschaftsadmin, kontrolliert aber nicht, ob der ausgewählte Admin schon einer anderen Mannschaft angehört.
+1. `admin_add_team_role(uuid,uuid,text)` prüft die Berechtigung des Handelnden, die Zielmitgliedschaft aber nicht auf eine bereits bestehende Zuordnung zu einer anderen Mannschaft. Die Live-Funktion blockiert die globale Superadmin-Rolle als Zielperson nicht.
+2. `admin_create_team(...)` schließt Superadmins derzeit als Zielperson aus und kontrolliert nicht, ob der ausgewählte Admin schon einer anderen Mannschaft angehört. Der korrigierte Vorschlag entfernt den Superadmin-Ausschluss und prüft die tatsächliche Mannschaftszuordnung.
 3. `admin_list_team_admin_candidates(uuid)` bietet auch bereits Mannschaftsmitgliedern die Auswahl als Admin einer neu anzulegenden Mannschaft an.
 4. Der Vereinsmitglied-Bearbeitungsdialog zeigt die Rollenfelder mehrerer Mannschaften gleichzeitig.
 5. `invite-trainer` ist in Supabase DEV weiterhin ACTIVE (Version 3), wird vom aktuellen Frontend aber nicht mehr aufgerufen. Der Endpunkt verwendet noch den älteren Einladungsablauf.
@@ -596,7 +596,7 @@ Die Prüfung der tatsächlichen DEV-Definitionen ergab:
 
 Die read-only Bestandsprüfung ergab aktuell:
 - Benutzer mit Zuordnungen zu mehreren Mannschaften: **0**.
-- Superadmins mit Mannschaftszuordnung: **0**.
+- Superadmins mit Mannschaftszuordnung zum Prüfzeitpunkt: **0** (reiner Bestandswert, keine fachliche Sollvorgabe).
 - Widersprüchliche Vereins-/Mannschaftszuordnungen: **0**.
 
 ### Vorgeschlagene Änderung
@@ -647,3 +647,11 @@ Die zuvor ergänzte vollständige Superadmin-Neutralität war zu weit gefasst un
 
 Die korrigierte Umsetzung ist weiterhin nur Vorschlag im Review-Feature-Branch. Keine SQL-Ausführung, kein DEV-Deployment und keine PROD-Änderung.
 
+### Read-only Kontextprüfung in Supabase DEV (04.11.2026)
+
+Die Berechtigungsfunktionen wurden mit vorhandenen Benutzeridentitäten und jeweils ausgewähltem Teamkontext simuliert. In beiden Fällen hatte der handelnde Benutzer **keine tatsächliche Mitgliedschaft in der ausgewählten Mannschaft**:
+
+- **Superadmin:** `has_selected_team_context(team_id) = true`, `can_manage_club_context(club_id) = true`, `is_super_admin() = true` und `is_team_admin(team_id) = true`.
+- **Vereinsadmin:** `has_selected_team_context(team_id) = true` und `can_manage_club_context(club_id) = true`; `is_team_admin(team_id)` war erwartungsgemäß false, da diese Person nicht tatsächlich Mannschaftsadmin ist. Die Berechtigung für administrative Schreibwege ergibt sich hier aus `can_manage_club_context`.
+
+Damit bestätigen die vorhandenen Kontextfunktionen bereits, dass Superadmins und Vereinsadmins andere Mannschaften verwalten können, ohne dort Mitglied zu sein. Dies ist ein read-only Funktions-/Kontextnachweis, kein vollständiger Frontend-Praxistest und kein schreibender Rollenänderungstest.
