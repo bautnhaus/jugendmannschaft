@@ -165,3 +165,10 @@ Ein Mannschaftswechsel ist bewusst zweistufig vorgesehen: Erst alle Rollen der b
 - **Keine SQL-Ausführung, kein DEV-Deployment und keine Edge-Function-Aktualisierung erfolgt.**
 - Bestehende RLS-Policies und PROD bleiben unangetastet.
 - Vor der Umsetzung ist das vollständige SQL ausdrücklich freizugeben. Danach sind RPC-, Vereinsdialog-, Team-Admin-Kandidaten- und Legacy-Endpoint-Tests in DEV erforderlich.
+
+
+### Ergänzung: Superadmin-Neutralität in beide Richtungen
+
+Zusätzlich zur Sperre bei Mannschaftszuordnungen eines bestehenden Superadmins enthält die Migration einen Trigger auf `global_user_roles`. Er verhindert, dass ein bereits einer Mannschaft zugeordnetes Konto nachträglich die Rolle `super_admin` erhält. Auch diese Triggerfunktion sperrt die Auth-Benutzerzeile mit `FOR UPDATE` und besitzt keine EXECUTE-Freigabe für `PUBLIC`, `anon` oder `authenticated`.
+
+Die Live-Prüfung ergab, dass `global_user_roles` derzeit keine INSERT-/UPDATE-/DELETE-Rechte für `authenticated` besitzt und keine öffentliche RPC zum Schreiben dieser Tabelle existiert. Der zusätzliche Trigger sichert trotzdem künftige privilegierte Änderungen ab.
