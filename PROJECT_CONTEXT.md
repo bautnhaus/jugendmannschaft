@@ -151,13 +151,14 @@ Die frühere ausführliche Fassung dieses Dokuments wurde unverändert archivier
 - Die Regel gilt für die zugeordnete Zielperson; sie beschränkt nicht die Kontextrechte des handelnden Administrators.
 - Die Vereinsadmin-Rolle kann über `admin_set_club_member_role` ergänzt werden, ohne die Mannschaftszuordnung zu verändern. Die globale Superadmin-Rolle ist in der aktuellen App nicht über den Mitgliedereditor vergebbar; für `global_user_roles` besteht für angemeldete Nutzer kein Schreibrecht. Die Ein-Team-Regel blockiert eine vertrauenswürdige spätere Vergabe nicht; der Vergabeprozess ist separat zu klären.
 
-**Technischer Status (04.11.2026):** Das Frontend in `develop/index.html` wurde beim Push automatisch in den DEV-Spiegel `jugendmannschaft-dev/main` synchronisiert; der Blob-SHA stimmt mit `develop` überein (`ebf7363aa2df1f5b3fc465934e2fab8cea3ef0c1`). Der manuelle Browser-/Praxistest ist noch offen. Die Supabase-Edge-Function-Quellen liegen in `develop`, live sind `invite-member` und `invite-trainer` aber weiterhin Version 3; keine Edge Function wurde aktualisiert. Die SQL-Migration ist nicht ausgeführt. Für SQL-Ausführung und Supabase-Edge-Deployments bleiben separate ausdrückliche Freigaben erforderlich. PROD ist unverändert.
+**Technischer Status (04.11.2026):** DB-DEV-009 wurde ausschließlich in Supabase DEV erfolgreich ausgeführt (Migrationsversion `20261104143331`); beide Teamzuordnungstabellen haben aktive Ein-Mannschaft-Trigger, Index und vier angepasste RPCs sind read-only verifiziert. Es bestehen 0 Benutzer mit Mehrfachzuordnungen; keine RLS-Policies und keine vorhandenen Mitgliedschaftsdaten wurden durch die Migration verändert. Vollständige Nachweise: `DB_MIGRATION_LOG.md` (DB-MIG-2026-003) und `DB_CHANGELOG.md` (DB-DEV-009). Das Frontend in `develop/index.html` wurde in den DEV-Spiegel `jugendmannschaft-dev/main` synchronisiert; Blob-SHA `ebf7363aa2df1f5b3fc465934e2fab8cea3ef0c1`; manueller Browser-/Praxistest offen. Die Supabase-Edge-Function-Quellen liegen in `develop`, live sind `invite-member` und `invite-trainer` aber weiterhin Version 3; keine Edge Function wurde aktualisiert. Für die beiden Edge-Deployments ist separate ausdrückliche Freigabe erforderlich. PROD ist unverändert.
 
 **Zentrale Ablage in `develop`:**
 - Spezifikation und Status: `docs/proposals/single-team-membership-guard/README.md`
-- SQL-Entwurf: `docs/proposals/single-team-membership-guard/migration.sql`
-- Read-only Nachprüfung nach späterer Ausführung: `docs/proposals/single-team-membership-guard/after_apply_verification.sql`
-- Geplante Datenbankänderung: DB-DEV-009 in `DB_CHANGELOG.md`; der `DB_MIGRATION_LOG.md` erhält erst nach einem tatsächlichen Ausführungsversuch den Ausführungsdatensatz
+- Ausgeführte SQL-Migration: `supabase/migrations/20261104143331_db_dev_009_single_team_membership_guard.sql`
+- Konzept-/Review-Entwurf: `docs/proposals/single-team-membership-guard/migration.sql`
+- Read-only Nachprüfung: `docs/proposals/single-team-membership-guard/after_apply_verification.sql`
+- Ausführungsnachweis: DB-MIG-2026-003 in `DB_MIGRATION_LOG.md`; technische Objektbeschreibung: DB-DEV-009 in `DB_CHANGELOG.md`
 - Supabase-Änderungsprozess: `docs/SUPABASE_CHANGE_CONTROL.md`; tatsächliche Nicht-SQL-Ausführungen in `SUPABASE_CHANGELOG.md`
 
 Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein historischer Review-Arbeitsstand und keine führende Quelle. Die gezielt geprüften Frontend-/Edge-Änderungen sind inzwischen nach `develop` übernommen. Weitere Änderungen erfolgen in `develop`; der Feature-Branch wird nicht als zweite Dokumentationsbasis gepflegt und nicht vollständig ohne Prüfung gemerged.
