@@ -258,21 +258,9 @@ Deno.serve(async (req: Request) => {
     }
 
     if (targetUser) {
-      const { data: globalRoles, error: globalRoleError } = await adminClient
-        .from("global_user_roles")
-        .select("role")
-        .eq("user_id", targetUser.id);
-
-      if (globalRoleError) {
-        console.error("Globale Benutzerrollen konnten nicht geprüft werden:", globalRoleError);
-        return respond({ error: "Die globalen Rollen des bestehenden Kontos konnten nicht geprüft werden." }, 500);
-      }
-
-      if ((globalRoles || []).some((row: any) => row.role === "super_admin")) {
-        return respond({ error: "Ein Super Admin kann nicht als Vereins- oder Mannschaftsmitglied zugeordnet werden." }, 409);
-      }
-
-
+      // Eine globale Superadmin-Rolle schließt eine zusätzliche Vereinsrolle
+      // oder genau eine Mannschaftsmitgliedschaft nicht aus. Die zentrale
+      // Datenbankfunktion prüft die Ein-Mannschaft-Regel transaktional.
       try {
         await preflightExistingAssignments(adminClient, targetUser.id, clubId, invitedRole, teamId);
       } catch (preflightError) {
