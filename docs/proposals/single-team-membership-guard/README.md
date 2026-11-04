@@ -44,6 +44,15 @@ Die Live-Definitionen wurden read-only geprüft:
 
 Die Berechtigungsprüfungen für den handelnden Benutzer bleiben in den RPCs bestehen. Die Migration fügt keine Voraussetzung hinzu, dass der handelnde Superadmin/Vereinsadmin Mitglied jeder verwalteten Mannschaft sein muss.
 
+### Read-only Kontextprüfung in Supabase DEV (04.11.2026)
+
+Die Berechtigungsfunktionen wurden mit vorhandenen Benutzeridentitäten und jeweils ausgewähltem Teamkontext simuliert. In beiden Fällen hatte der handelnde Benutzer **keine tatsächliche Mitgliedschaft in der ausgewählten Mannschaft**:
+
+- **Superadmin:** `has_selected_team_context(team_id) = true`, `can_manage_club_context(club_id) = true`, `is_super_admin() = true` und `is_team_admin(team_id) = true`.
+- **Vereinsadmin:** `has_selected_team_context(team_id) = true` und `can_manage_club_context(club_id) = true`; `is_team_admin(team_id)` war erwartungsgemäß false, da diese Person nicht tatsächlich Mannschaftsadmin ist. Die Berechtigung für administrative Schreibwege ergibt sich hier aus `can_manage_club_context`.
+
+Damit bestätigen die vorhandenen Kontextfunktionen bereits, dass Superadmins und Vereinsadmins andere Mannschaften verwalten können, ohne dort Mitglied zu sein. Dies ist ein read-only Funktions-/Kontextnachweis, kein vollständiger Frontend-Praxistest und kein schreibender Rollenänderungstest.
+
 ## 4. Einladung und Frontend
 
 ### Zentrale Einladung `invite-member`
