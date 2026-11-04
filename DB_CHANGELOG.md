@@ -467,6 +467,8 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 - **Verifikation:** Funktion vorhanden; Owner `postgres`; `SECURITY DEFINER`; `STABLE`; fester `search_path`; EXECUTE für `authenticated` (zusätzlich postgres/service_role), nicht für anon/PUBLIC. Bestehende `profiles`-Policies unverändert. Authentifizierte Positiv-/Negativtests und Frontend-Praxistest bleiben offen.
 
 
+
+**Bereits versionierte Anwendungsschicht (noch nicht deployed):** `index.html` begrenzt den Vereinsmitglieder-Dialog auf eine tatsächliche Mannschaft und bewahrt bestehende Zuordnungen; `supabase/functions/invite-member/index.ts` lässt bestehende Superadmins als Zielpersonen zu; `supabase/functions/invite-trainer/index.ts` antwortet als Legacy-Endpunkt mit HTTP 410. Die Quellen liegen in `develop`. Diese Änderungen sind noch nicht in Supabase DEV aktiviert; daher gibt es dafür noch keinen Deployment-Nachweis in `SUPABASE_CHANGELOG.md`.
 ## DB-DEV-009 – Ein-Mannschaft-Regel und zusätzliche Verwaltungsrollen
 
 **Status: fachlich freigegeben am 04.11.2026; technische Umsetzung vorbereitet, aber noch nicht ausgeführt.** Ziel wäre ausschließlich Supabase DEV. PROD ist unverändert.
