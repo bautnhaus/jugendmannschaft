@@ -465,3 +465,25 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 - **Ausführungsnachweis:** `DB_MIGRATION_LOG.md`, ID DB-MIG-2026-002. Supabase bestätigte die erfolgreiche Migration; versionierte Quelle: `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql`.
 - **PROD:** Nicht ausgeführt und nicht freigegeben.
 - **Verifikation:** Funktion vorhanden; Owner `postgres`; `SECURITY DEFINER`; `STABLE`; fester `search_path`; EXECUTE für `authenticated` (zusätzlich postgres/service_role), nicht für anon/PUBLIC. Bestehende `profiles`-Policies unverändert. Authentifizierte Positiv-/Negativtests und Frontend-Praxistest bleiben offen.
+
+
+## DB-DEV-009 – Ein-Mannschaft-Regel und zusätzliche Verwaltungsrollen
+
+**Status: fachlich freigegeben am 04.11.2026; technische Umsetzung vorbereitet, aber noch nicht ausgeführt.** Ziel wäre ausschließlich Supabase DEV. PROD ist unverändert.
+
+Das freigegebene Rollenmodell trennt tatsächliche Mannschaftszuordnung und zusätzliche Verwaltungsrechte:
+
+- Ein Benutzer darf höchstens einer Mannschaft tatsächlich zugeordnet sein.
+- Ein bereits bestehendes Mannschaftsmitglied kann nachträglich Superadmin, Vereinsadmin oder beides werden.
+- Vorhandene Zuordnungen und Mannschaftsrollen bleiben bei Vergabe oder Entfernung dieser Zusatzrollen unverändert.
+- Superadmins und Vereinsadmins dürfen in Mannschaftskontexten ihres Berechtigungsbereichs administrieren, ohne dort selbst Mitglied zu sein.
+- Die Ein-Team-Regel beschränkt die Zuordnung der Zielperson, nicht den Handlungskontext des aufrufenden Administrators.
+
+**Technischer Vorschlag:** zentrale Prüfung beider Mannschaftszuordnungstabellen, Anpassungen an den Verwaltungs- und Einladungs-RPCs sowie eine passende Frontend-Prüfung. Bestehende RLS-Regeln sollen nicht pauschal verändert werden. Es ist kein Mechanismus vorgesehen, der die spätere Vergabe der Superadmin-Rolle an ein Mannschaftsmitglied verhindert.
+
+**Führende Spezifikation und Entwürfe in develop:**
+- `docs/proposals/single-team-membership-guard/README.md`
+- `docs/proposals/single-team-membership-guard/migration.sql`
+- `docs/proposals/single-team-membership-guard/after_apply_verification.sql`
+
+Die SQL-Datei ist ein Entwurf, keine ausgeführte Migration. Der tatsächliche Ausführungsnachweis wird erst nach Ausführung in DEV im `DB_MIGRATION_LOG.md` mit der finalen Migrationsversion ergänzt. Die Live-Definitionen und Abhängigkeiten sind vor der Ausführung erneut zu prüfen. Eine separate ausdrückliche SQL-Ausführungsfreigabe bleibt erforderlich.
