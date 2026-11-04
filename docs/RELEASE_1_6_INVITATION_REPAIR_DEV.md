@@ -419,8 +419,21 @@ Es bleiben nur:
 - DEV-Deployment: [Deploy DEV #424](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41908308622), erfolgreich.
 - DEV-Spiegel `jugendmannschaft-dev/main/index.html`: identischer Blob-SHA `ba849c4eb8c959df7c7eb3088466e0150e1d4174`.
 
-**Manueller Nachtest:** Noch offen. Der Nutzer soll im DEV-Browser auf dem iPhone die E-Mail-Kürzung in der Mitglieder-/Rollenliste, die kompakte Einladungsschaltfläche sowie die Trainer-Anwesenheitsliste in einem Training und einem Spieltag prüfen. Erwartung: Ein reiner Mannschaftsadmin ist in beiden Anwesenheitsbereichen nicht mehr sichtbar; ein Nutzer mit Trainerrolle bleibt sichtbar.
+**Manueller Nachtest:** Am 04.11.2026 vom Nutzer im DEV-Browser bestätigt: Alle drei Änderungen sind sichtbar und scheinen wie vorgesehen zu funktionieren – E-Mail-Kürzung, kompakter Einladen-Button und Trainerfilter bei Training/Spieltag. Damit ist Paket A im Praxistest bestätigt.
 
 ### Noch nicht umgesetzt – Designabstimmung
 
-Der dunkelblaue Header und die Begrüßung wurden bewusst nicht verändert. Vor der Umsetzung wird ein Entwurf abgestimmt: Header nur mit dem App-Namen „KADAssist“; der Begrüßungsbereich soll Vereinswappen/-name, Mannschaft, Saison und die aktive Rolle enthalten. Es wird erst nach fachlicher Zustimmung implementiert.
+Der dunkelblaue Header und die Begrüßung wurden bewusst noch nicht verändert. Der Designentwurf wurde am 04.11.2026 weiter präzisiert: Der Header zeigt ausschließlich „KADAssist“. Im Begrüßungsbereich stehen Wappen links und rechts daneben zuerst der Vereinsname in etwas größerer Schrift; Mannschaft und Saison folgen gemeinsam in einer Zeile in kleinerer Schrift; darunter werden die aktive(n) Rolle(n) nochmals kleiner und zurückhaltend dargestellt. Die genaue Ausgestaltung wird vor der Frontend-Umsetzung final abgestimmt.
+
+
+## 20. Header und Begrüßungsbereich – Designstand nach Feedback (04.11.2026)
+
+**Noch nicht implementiert.** Die folgenden Anforderungen sind die abgestimmte Designrichtung für den nächsten Entwurf:
+
+- Dunkelblauer Header zeigt ausschließlich den App-Namen **KADAssist**. Keine Mannschaft, Saison, Rolle oder Kontextmetadaten und vorerst kein Logo.
+- Die Begrüßung nennt den Nutzer („Hallo, [Vorname]!“).
+- Darunter ein kompakter Kontextblock: Vereinswappen links; rechts daneben Vereinsname als optisch größte Kontextzeile.
+- Mannschaft und Saison stehen gemeinsam in einer Zeile, z. B. „F-Jugend 2 · Saison 2026/2027“, in kleinerer Schrift als der Vereinsname.
+- Darunter folgen die aktive(n) Rolle(n) nochmals kleiner und zurückhaltend.
+- Das Layout muss unterschiedliche Kontexte abbilden: Trainer, Mannschaftsadmin, kombinierte Rollen, Vereinsadmin ohne Mannschaft und Superadmin mit/ohne ausgewählten Kontext.
+- Vor einer Änderung an `index.html` wird der endgültige Entwurf nochmals fachlich bestätigt.
