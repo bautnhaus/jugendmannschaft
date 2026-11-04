@@ -70,7 +70,7 @@ Datei: `index.html`
 
 ## 4. Grenzen und noch offene Praxistests
 
-**End-to-End-Nachweis vom 04.11.2026:** Eine echte DEV-Einladung für die Rolle Trainer wurde aus der Vereinsverwaltung ausgelöst. Die Einladungs-E-Mail kam an, der Link öffnete DEV, die Passwortvergabe war erfolgreich und anschließend wurde das Dashboard mit dem eingeladenen Namen angezeigt. Eine read-only Prüfung bestätigte den Auth-Benutzer mit gesetztem `email_confirmed_at`, den gespeicherten `profiles.display_name`, die Vereinsmitgliedschaft sowie die Trainerrolle in `team_members` und den korrespondierenden Eintrag in `team_member_roles`. Dieser erfolgreiche Fall deckt ausschließlich einen Trainer-Testfall in einer Mannschaft ab; weitere Rollen- und Kontextkombinationen bleiben offen. Ein Folgefehler in der Superadmin-Mitgliederliste und im Mitglied-bearbeiten-Dialog ist separat identifiziert und unten dokumentiert.
+**End-to-End-Nachweis vom 04.11.2026:** Eine echte DEV-Einladung für die Rolle Trainer wurde aus der Vereinsverwaltung ausgelöst. Die Einladungs-E-Mail kam an, der Link öffnete DEV, die Passwortvergabe war erfolgreich und anschließend wurde das Dashboard mit dem eingeladenen Namen angezeigt. Eine read-only Prüfung bestätigte den Auth-Benutzer mit gesetztem `email_confirmed_at`, den gespeicherten `profiles.display_name`, die Vereinsmitgliedschaft sowie die Trainerrolle in `team_members` und den korrespondierenden Eintrag in `team_member_roles`. Dieser erfolgreiche Fall deckt ausschließlich einen Trainer-Testfall in einer Mannschaft ab; weitere Rollen- und Kontextkombinationen bleiben offen. Der nachgelagerte Darstellungsfehler in der Superadmin-Mitgliederliste und im Mitglied-bearbeiten-Dialog wurde separat behoben; beide UI-Punkte wurden am 04.11.2026 manuell bestätigt.
 
 Mindestens folgende Tests sind noch auszuführen:
 
@@ -85,7 +85,7 @@ Mindestens folgende Tests sind noch auszuführen:
 | Neue E-Mail einladen | Mannschaftsadmin → Trainer | Automatische Vereinsmitgliedschaft + Trainerrolle | Offen |
 | Einladungslink | DEV | Öffnet DEV und zeigt Passwort-Erstellung | Erfolgreich (04.11.2026; ein Testfall) |
 | Passwort setzen und Login | neue Einladung | Passwort wird gespeichert; anschließend Dashboard mit korrektem Kontext | Erfolgreich (04.11.2026; ein Testfall) |
-| Persönlicher Name | Einladung / Dashboard / Mein Bereich | Name wird gespeichert und dort angezeigt; Superadmin-Mitgliederliste/Bearbeitungsdialog noch fehlerhaft | Teilweise |
+| Persönlicher Name | Einladung / Dashboard / Mein Bereich / Superadmin-Mitgliederliste / Bearbeitungsdialog | Name wird gespeichert und angezeigt; Superadmin-Liste und Dialog am 04.11.2026 bestätigt; Avatar- und Änderungs-/Neuladefälle noch offen | Teilweise |
 | Bestehendes bestätigtes Konto | alle Kontexte | Keine zweite Einladung; zulässige Zuordnung wird ergänzt | Offen |
 | Offenes/unbestätigtes Auth-Konto | alle Kontexte | Bestehendes Konto übernehmen; keine neue Mail behaupten, wenn Supabase keine bestätigt; ursprünglichen Link prüfen | Offen |
 | Abweichender Verein | alle Kontexte | Kontrollierte Ablehnung | Offen |
