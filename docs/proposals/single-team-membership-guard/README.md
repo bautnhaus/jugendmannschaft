@@ -102,7 +102,7 @@ Der Frontend-Code verwendet ausschließlich invite-member. Die alte Edge Functio
 
 ## 7. Noch ausstehende funktionale Tests
 
-1. Bestehendes Mitglied mit Trainerrolle in Team A kann dort weiterhin bearbeitet werden; Zuweisung zu Team B wird im UI und serverseitig abgewiesen.
+1. Bestehendes Mitglied mit Trainerrolle in Team A kann dort weiterhin bearbeitet werden; Zuweisung zu Team B wird im UI verhindert. **UI-Negativtest bestanden (04.11.2026):** Das Einladungsformular stoppt bereits Vereinsmitglieder; der Bearbeitungsdialog deaktiviert die Rollenfelder einer anderen Mannschaft. Die read-only Datenprüfung bestätigt weiterhin genau eine Mannschaftszuordnung und 0 Mehrfachzuordnungen. Der serverseitige Negativpfad wurde durch diesen UI-Test nicht aufgerufen und bleibt als eigener Laufzeittest offen.
 2. Mannschaftsadmin aus Team A kann über seinen eigenen Team-Kontext in Team A arbeiten; keine Mitgliedschaft in Team B wird dafür angelegt.
 3. Vereinsadmin kann im eigenen Vereinskontext Verwaltungsaufgaben in mehreren Teams durchführen, ohne selbst in jedem Team Mitglied zu sein.
 4. Superadmin kann nach Auswahl eines anderen Team-Kontexts dort Verwaltungsaufgaben durchführen, ohne in diesem Team Mitglied zu sein.
