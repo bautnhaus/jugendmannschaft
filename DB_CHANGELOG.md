@@ -455,7 +455,7 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 ## DB-DEV-008 – Vereinsmitglieder inklusive Profilnamen und Profilbilder auslesen
 
 - **Umgebung:** Supabase DEV
-- **Status:** In Supabase DEV ausgeführt; Funktions- und Rechteverifikation erfolgreich. Funktionaler Frontendtest noch offen.
+- **Status:** In Supabase DEV ausgeführt; Funktions- und Rechteverifikation erfolgreich. Superadmin-Mitgliederliste und Mitglied-bearbeiten-Dialog am 04.11.2026 manuell bestätigt; weitere Profil-/Vereinsadmin- und Negativtests noch offen.
 - **Anlass:** `get_club_members_v2(uuid)` gibt derzeit nur Benutzer-ID, E-Mail, Vereinsadmin-Status und Mannschaftsrollen zurück. Die Superadmin-Kartenansicht fragt Profilnamen nicht ab. Der bestehende direkte Profil-Lesezugriff im Bearbeitungsdialog wird durch die aktuelle `profiles_select`-Policy im ausgewählten Vereinskontext nicht freigegeben; der Frontend-Abfragefehler wird bisher nicht sichtbar behandelt.
 - **Objekt:** Neue Funktion `public.get_club_members_v3(p_club_id uuid)`. Migration `20261104113632` (`club_member_profiles_read_v3_dev`).
 - **Rückgabe:** `user_id`, `email`, `display_name`, `avatar_url`, `is_club_admin`, `teams`.
@@ -464,7 +464,7 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 - **Frontend nach SQL-Freigabe:** Superadmin-Mitgliederliste zeigt `display_name` als Hauptzeile und E-Mail darunter; Avatar aus `avatar_url`; Bearbeitungsdialog nutzt die bereits geladene Profilinformation der Vereinsmitglied-RPC statt einer separaten, durch RLS blockierten Abfrage.
 - **Ausführungsnachweis:** `DB_MIGRATION_LOG.md`, ID DB-MIG-2026-002. Supabase bestätigte die erfolgreiche Migration; versionierte Quelle: `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql`.
 - **PROD:** Nicht ausgeführt und nicht freigegeben.
-- **Verifikation:** Funktion vorhanden; Owner `postgres`; `SECURITY DEFINER`; `STABLE`; fester `search_path`; EXECUTE für `authenticated` (zusätzlich postgres/service_role), nicht für anon/PUBLIC. Bestehende `profiles`-Policies unverändert. Authentifizierte Positiv-/Negativtests und Frontend-Praxistest bleiben offen.
+- **Verifikation:** Funktion vorhanden; Owner `postgres`; `SECURITY DEFINER`; `STABLE`; fester `search_path`; EXECUTE für `authenticated` (zusätzlich postgres/service_role), nicht für anon/PUBLIC. Bestehende `profiles`-Policies unverändert. Der Nutzer hat am 04.11.2026 die Namensanzeige in der Superadmin-Mitgliederliste und die Übernahme des gespeicherten Namens im Bearbeitungsdialog bestätigt. Weiter offen: Vereinsadmin-Kontext, Profilbild- und Speichern/Neuladen-Tests sowie negative Kontexttests.
 
 
 ## DB-DEV-009 – Zentrale Ein-Mannschaft-Regel (Vorschlag, nicht ausgeführt)
