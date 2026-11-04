@@ -537,6 +537,6 @@ Die bisherige Metazeile vermischte Jahrgänge, Mannschaftskürzel und Saison ohn
 - Datei: `index.html`, Blob-SHA `ac776db7223a89d73c03cf1be8e8c05fe96dd213`.
 - JavaScript-Syntaxprüfung: beide Script-Blöcke erfolgreich geparst.
 - DEV-Deployment: [Deploy DEV #435](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41916157072), erfolgreich.
-- Manueller iPhone-Praxistest: noch ausstehend.
+- Manueller iPhone-Praxistest: Am 04.11.2026 vom Nutzer bestätigt („Passt“). Die getrennte Beschriftung von Saison und Jahrgängen in Kopfzeile und Informationskachel entspricht der Erwartung.
 
 **PROD:** Nicht geändert. GitHub `main` bleibt unverändert.
