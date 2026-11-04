@@ -536,4 +536,64 @@ REVOKE ALL ON FUNCTION public.admin_list_team_admin_candidates(uuid)
 GRANT EXECUTE ON FUNCTION public.admin_list_team_admin_candidates(uuid)
     TO authenticated;
 
+-- 7) Neutralität des Superadmins auch in Gegenrichtung absichern:
+--    Ein bereits einer Mannschaft zugeordnetes Konto darf nicht zum
+--    Superadmin hochgestuft werden, bevor die Mannschaftszuordnung entfernt ist.
+CREATE OR REPLACE FUNCTION public.prevent_super_admin_with_team_membership()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'pg_catalog', 'public', 'auth'
+AS $function$
+BEGIN
+    IF NEW.role IS DISTINCT FROM 'super_admin' THEN
+        RETURN NEW;
+    END IF;
+
+    IF NEW.user_id IS NULL THEN
+        RAISE EXCEPTION 'Benutzer muss angegeben werden'
+            USING ERRCODE = '22023';
+    END IF;
+
+    PERFORM 1
+    FROM auth.users AS u
+    WHERE u.id = NEW.user_id
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Auth-Benutzer nicht gefunden'
+            USING ERRCODE = '23503';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM public.team_members AS tm
+        WHERE tm.user_id = NEW.user_id
+    )
+    OR EXISTS (
+        SELECT 1
+        FROM public.team_member_roles AS tmr
+        WHERE tmr.user_id = NEW.user_id
+    ) THEN
+        RAISE EXCEPTION
+            'Ein Mannschaftsmitglied kann nicht zum Super Admin gemacht werden. Entferne zuerst alle Mannschaftsrollen.'
+            USING ERRCODE = '23514';
+    END IF;
+
+    RETURN NEW;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.prevent_super_admin_with_team_membership()
+    FROM PUBLIC, anon, authenticated;
+
+DROP TRIGGER IF EXISTS global_user_roles_no_team_assignment
+    ON public.global_user_roles;
+
+CREATE TRIGGER global_user_roles_no_team_assignment
+BEFORE INSERT OR UPDATE OF user_id, role
+ON public.global_user_roles
+FOR EACH ROW
+EXECUTE FUNCTION public.prevent_super_admin_with_team_membership();
+
 -- Ende des Vorschlags. Keine Aussage über tatsächliche Ausführung.
