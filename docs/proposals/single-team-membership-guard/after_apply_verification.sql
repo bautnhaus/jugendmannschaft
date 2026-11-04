@@ -13,7 +13,8 @@ JOIN pg_namespace AS n ON n.oid = c.relnamespace
 WHERE n.nspname = 'public'
   AND t.tgname IN (
       'team_members_single_team_guard',
-      'team_member_roles_single_team_guard'
+      'team_member_roles_single_team_guard',
+      'global_user_roles_no_team_assignment'
   )
   AND NOT t.tgisinternal
 ORDER BY c.relname, t.tgname;
@@ -28,7 +29,7 @@ SELECT
 FROM pg_proc AS p
 JOIN pg_namespace AS n ON n.oid = p.pronamespace
 WHERE n.nspname = 'public'
-  AND p.proname = 'enforce_single_team_membership'
+  AND p.proname IN ('enforce_single_team_membership', 'prevent_super_admin_with_team_membership')
   AND pg_get_function_identity_arguments(p.oid) = '';
 
 -- 3) Benutzer mit mehr als einer Mannschaftszuordnung (Erwartung: 0).
@@ -77,6 +78,8 @@ FROM pg_proc AS p
 JOIN pg_namespace AS n ON n.oid = p.pronamespace
 WHERE n.nspname = 'public'
   AND p.proname IN (
+      'enforce_single_team_membership',
+      'prevent_super_admin_with_team_membership',
       'admin_add_team_role',
       'admin_create_team',
       'admin_list_team_admin_candidates'
