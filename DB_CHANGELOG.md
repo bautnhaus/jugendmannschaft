@@ -360,7 +360,7 @@ Nicht übertragen. Für PROD ist eine separate, geprüfte Release-Migration erfo
 - `admin_list_team_admin_candidates(p_club_id)`: Liefert nur Mitglieder des angegebenen Vereins; der Zugriff ist auf Super Admins mit ausgewähltem Vereinskontext oder echte Vereinsadmins dieses Vereins begrenzt.
 - `admin_create_club(..., p_club_admin_user_id)`: verlangt einen gültigen, noch keinem Verein zugeordneten Benutzer und legt Verein, Vereinsmitgliedschaft sowie Rolle `club_admin` atomar an.
 - `admin_create_team(..., p_team_admin_user_id)`: verlangt ein Mitglied des ausgewählten Vereins und legt Mannschaft sowie `admin`-Rollen in `team_members` und `team_member_roles` atomar an.
-- Super Admins bleiben neutral und können nicht als Vereins- oder Mannschaftsadmin zugewiesen werden.
+- Historischer Ausgangsstand dieser Einladungsversion: Superadmins wurden als Zielpersonen für Vereins-/Mannschaftsmitgliedschaften ausgeschlossen. Diese damalige Regel ist durch die Nutzerentscheidung vom 04.11.2026 überholt; die korrigierte DEV-Folgeänderung ist unter DB-DEV-009 dokumentiert.
 - Ausführungsrechte der neuen/angepassten RPCs: `authenticated`; `anon` und `PUBLIC` sind explizit ausgeschlossen.
 
 ### Frontend
@@ -467,27 +467,21 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 - **Verifikation:** Funktion vorhanden; Owner `postgres`; `SECURITY DEFINER`; `STABLE`; fester `search_path`; EXECUTE für `authenticated` (zusätzlich postgres/service_role), nicht für anon/PUBLIC. Bestehende `profiles`-Policies unverändert. Der Nutzer hat am 04.11.2026 die Namensanzeige in der Superadmin-Mitgliederliste und die Übernahme des gespeicherten Namens im Bearbeitungsdialog bestätigt. Weiter offen: Vereinsadmin-Kontext, Profilbild- und Speichern/Neuladen-Tests sowie negative Kontexttests.
 
 
-## DB-DEV-009 – Zentrale Ein-Mannschaft-Regel (Vorschlag, nicht ausgeführt)
+## DB-DEV-009 – Ein-Mannschaft-Regel bei unabhängigen Verwaltungsrollen (Vorschlag, nicht ausgeführt)
 
-- **Status:** Entwurf im Review-Feature-Branch; keine Migration ausgeführt.
-- **Geplante Objekte:** Triggerfunktionen `public.enforce_single_team_membership()` und `public.prevent_super_admin_with_team_membership()`; Trigger auf `public.team_members`, `public.team_member_roles` und `public.global_user_roles`; überarbeitete RPCs `admin_add_team_role`, `admin_create_team` und `admin_list_team_admin_candidates`; Index `idx_team_member_roles_user`.
-- **Fachliche Regel:** Ein Benutzer darf höchstens einer Mannschaft zugeordnet sein. Ein globaler Superadmin bleibt neutral und darf keiner Mannschaft zugeordnet werden.
-- **Zentrale Absicherung:** Beide Tabellen, in denen Mannschaftszuordnungen gespeichert werden, erhalten BEFORE-Trigger auf INSERT sowie Änderungen an den Zuordnungsschlüsseln. Die Triggerfunktion sperrt die jeweilige Zeile in `auth.users` mit `FOR UPDATE`, prüft globale Superadmin-Rolle und Zuordnungen in beiden Tabellen und weist eine zweite Mannschaft ab.
-- **RPC-Vorprüfung:** `admin_add_team_role` und `admin_create_team` prüfen dieselbe Regel vor den Schreibvorgängen. `admin_list_team_admin_candidates` listet nur noch Vereinsmitglieder ohne vorhandene Mannschaftszuordnung.
-- **Index:** `team_member_roles(user_id)` unterstützt die Suche nach bestehenden Rollen eines Benutzers.
-- **ACL / Sicherheit:** Die Triggerfunktion ist `SECURITY DEFINER`, hat einen festen Suchpfad und soll keine EXECUTE-Freigabe für `PUBLIC`, `anon` oder `authenticated` erhalten. Die bestehenden RPC-Rechte für die regulären Aufrufer bleiben erhalten.
-- **Bestehende Einladung:** `admin_complete_member_invitation` sperrt bereits den Zielbenutzer und verhindert eine zweite Mannschaft. Die neuen Trigger sichern diesen und die weiteren Schreibwege zusätzlich ab.
-- **Altbestand:** `add_team_member_by_email` wird im aktuellen Frontend nicht aufgerufen und hat kein EXECUTE-Recht für `authenticated`; die Trigger sichern die Tabellen dennoch bei privilegierten Aufrufen ab.
-- **Legacy Edge Function:** `invite-trainer` ist DEV-seitig noch ACTIVE (Version 3), wird aber vom aktuellen Frontend nicht mehr verwendet. Vorgesehen ist ein 410-Gone-Ersatz, nicht eine Behauptung physischer Löschung.
-- **Live-Datenprüfung 04.11.2026:** 0 Benutzer mit mehreren Mannschaftszuordnungen; 0 Superadmins mit Mannschaftszuordnung; 0 widersprüchliche Vereins-/Mannschaftszuordnungen.
-- **SQL-Entwurf und read-only Verifikation:** `docs/proposals/single-team-membership-guard/migration.sql` und `docs/proposals/single-team-membership-guard/after_apply_verification.sql`.
-- **PROD:** nicht geprüft, nicht geändert, nicht freigegeben.
+- **Status:** Korrigierter Entwurf im Review-Feature-Branch; keine Migration ausgeführt.
+- **Fachliche Regel:** Ein Benutzer darf höchstens einer Mannschaft tatsächlich zugeordnet sein. Die globale Rolle `super_admin` und die Vereinsrolle `club_admin` schließen eine solche Mitgliedschaft nicht aus.
+- **Mehrfachrollen:** Ein Superadmin kann zusätzlich Vereinsmitglied/Vereinsadmin sowie Mannschaftsadmin und Trainer derselben Mannschaft sein.
+- **Kontextrechte:** Superadmins und Vereinsadmins dürfen andere Mannschaften in ihrem ausgewählten/eigenen Berechtigungsbereich verwalten, ohne dort selbst Mitglied zu sein. Die Prüfungen über `can_manage_club_context`, `has_selected_team_context` und `is_team_admin` bleiben erhalten.
+- **Geplante Objekte:** Triggerfunktion `public.enforce_single_team_membership()`; Trigger auf `public.team_members` und `public.team_member_roles`; überarbeitete RPCs `admin_add_team_role`, `admin_create_team`, `admin_list_team_admin_candidates` und `admin_complete_member_invitation`; Index `idx_team_member_roles_user`.
+- **Zentrale Absicherung:** Beide Mannschaftszuordnungstabellen erhalten BEFORE-Trigger auf INSERT sowie Änderungen an `user_id`/`team_id`. Die Funktion sperrt die jeweilige Auth-Benutzerzeile mit `FOR UPDATE` und weist nur eine zweite Mannschaftszuordnung ab. Die Superadmin-Rolle ist kein Ausschlusskriterium.
+- **Kandidatenliste:** `admin_list_team_admin_candidates` filtert bereits Mannschaftsmitglieder aus, nicht aber Superadmins allein aufgrund ihrer globalen Rolle.
+- **Einladung:** `invite-member` und `admin_complete_member_invitation` sollen Superadmins als Zielperson für Vereins-/Mannschaftsrollen zulassen. Die vorhandene Prüfung der maximal einen Mannschaft bleibt.
+- **Superadmin-Hochstufung:** Kein Trigger soll die Vergabe der globalen Superadmin-Rolle an ein bereits bestehendes Mannschaftsmitglied blockieren. Die globalen Tabellenrechte bleiben unverändert; es wird kein zusätzlicher öffentlicher Schreibweg geschaffen.
+- **Legacy:** `add_team_member_by_email` wird vom aktuellen Frontend nicht aufgerufen und hat kein EXECUTE-Recht für `authenticated`; die Tabellen-Trigger schützen die Zuordnung auch bei privilegierten Altaufrufen.
+- **Legacy Edge Function:** `invite-trainer` bleibt DEV-seitig ACTIVE (Version 3), wird aber nicht vom aktuellen Frontend verwendet. Vorgesehen ist ein 410-Gone-Ersatz, kein physisches Löschen.
+- **Live-Bestandsprüfung 04.11.2026:** 0 Benutzer mit mehreren Mannschaftszuordnungen. Der zum Prüfzeitpunkt fehlende Superadmin mit Teamzuordnung ist nur ein Bestandswert, keine fachliche Regel.
+- **SQL und Nachprüfung:** `docs/proposals/single-team-membership-guard/migration.sql` und `docs/proposals/single-team-membership-guard/after_apply_verification.sql`.
+- **PROD:** Nicht geprüft, nicht geändert und nicht freigegeben.
 
-Diese Beschreibung ist ein Lösungsvorschlag und kein Ausführungsnachweis. Erst nach ausdrücklicher Freigabe darf eine finale Migration nach `supabase/migrations/` übernommen und in Supabase DEV ausgeführt werden.
-
-
-### Ergänzung: Superadmin-Neutralität in beide Richtungen
-
-Zusätzlich zur Sperre bei Mannschaftszuordnungen eines bestehenden Superadmins enthält die Migration einen Trigger auf `global_user_roles`. Er verhindert, dass ein bereits einer Mannschaft zugeordnetes Konto nachträglich die Rolle `super_admin` erhält. Auch diese Triggerfunktion sperrt die Auth-Benutzerzeile mit `FOR UPDATE` und besitzt keine EXECUTE-Freigabe für `PUBLIC`, `anon` oder `authenticated`.
-
-Die Live-Prüfung ergab, dass `global_user_roles` derzeit keine INSERT-/UPDATE-/DELETE-Rechte für `authenticated` besitzt und keine öffentliche RPC zum Schreiben dieser Tabelle existiert. Der zusätzliche Trigger sichert trotzdem künftige privilegierte Änderungen ab.
+Die frühere Vorschlagsfassung mit vollständiger Superadmin-Neutralität wurde verworfen, bevor sie ausgeführt wurde. Diese korrigierte Fassung ist weiterhin nur ein Lösungsvorschlag und kein Ausführungsnachweis.
