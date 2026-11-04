@@ -1,6 +1,6 @@
 # DEV-Korrekturpaket: Ein-Mannschaft-Regel und kontextbasierte Rollen
 
-**Status:** fachlich freigegeben; DB-DEV-009 in Supabase DEV erfolgreich ausgeführt und read-only verifiziert (Version `20261104143331`). Das Frontend ist im DEV-Spiegel synchronisiert. invite-member und invite-trainer wurden am 04.11.2026 ausschließlich in Supabase DEV auf Version 4 deployed; beide sind ACTIVE und behalten verify_jwt=true. Die Live-Quelltexte stimmen bytegenau mit develop überein. Browser-/Rollen-Praxistests stehen noch aus. PROD ist unverändert.  
+**Status:** fachlich freigegeben; DB-DEV-009 in Supabase DEV erfolgreich ausgeführt und read-only verifiziert (Version `20261104143331`). Das Frontend ist im DEV-Spiegel synchronisiert. invite-member und invite-trainer wurden am 04.11.2026 ausschließlich in Supabase DEV auf Version 4 deployed; beide sind ACTIVE und behalten verify_jwt=true. Die Live-Quelltexte stimmen bytegenau mit develop überein. Browser-/Rollen-Praxistests stehen noch aus. PROD ist unverändert. Der Login-/Kontextstart für Vereinsadmins mit zusätzlicher Mannschaftsrolle wurde im Frontend-Commit `81f9ca9cc0294177e89910b0b8ffa158bdc02c44` korrigiert und nach DEV gespiegelt; Praxistest noch offen.  
 **Stand:** 04.11.2026  
 **Zielumgebung:** ausschließlich Supabase DEV (`pzazqvvoruqnqhcorbwx`)  
 **PROD:** unverändert, nicht geändert und nicht freigegeben.
@@ -116,6 +116,7 @@ Der Frontend-Code verwendet ausschließlich invite-member. Die alte Edge Functio
 12. Das Entfernen von Superadmin und/oder Vereinsadmin verändert ebenfalls keine bestehende Mannschaftszuordnung.
 13. Die aktualisierte invite-member-Version ist in DEV deployed und der Live-Quelltext entspricht develop; der End-to-End-Test mit einem bestehenden Superadmin als Zielperson ist noch auszuführen.
 14. Der alte Edge-Endpunkt invite-trainer ist in DEV auf Version 4 deployed; der Live-Quelltext enthält HTTP 410. Ein authentifizierter Request-Level-Test steht noch aus.
+15. Ein Vereinsadmin mit zusätzlicher Mannschaftsrolle startet zuerst in der Vereinsverwaltung; ein ausdrücklich ausgewählter Teamkontext überschreibt eine Mitgliedschaft in einer anderen Mannschaft. Frontend-Fix am 04.11.2026 in DEV deployed; manueller Browser-Test steht noch aus.
 
 ## 8. Freigabe- und Ausführungsreihenfolge
 
