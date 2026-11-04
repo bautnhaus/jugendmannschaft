@@ -151,7 +151,7 @@ Die frühere ausführliche Fassung dieses Dokuments wurde unverändert archivier
 - Die Regel gilt für die zugeordnete Zielperson; sie beschränkt nicht die Kontextrechte des handelnden Administrators.
 - Die Vereinsadmin-Rolle kann über `admin_set_club_member_role` ergänzt werden, ohne die Mannschaftszuordnung zu verändern. Die globale Superadmin-Rolle ist in der aktuellen App nicht über den Mitgliedereditor vergebbar; für `global_user_roles` besteht für angemeldete Nutzer kein Schreibrecht. Die Ein-Team-Regel blockiert eine vertrauenswürdige spätere Vergabe nicht; der Vergabeprozess ist separat zu klären.
 
-**Technischer Status:** SQL-, Frontend- und Edge-Function-Vorschlag ist fachlich freigegeben, technisch aber noch nicht in Supabase DEV ausgeführt und nicht deployed. Eine separate Ausführungsfreigabe für die konkrete DEV-Migration und separate Deployment-Freigaben bleiben erforderlich.
+**Technischer Status (04.11.2026):** Das Frontend in `develop/index.html` wurde beim Push automatisch in den DEV-Spiegel `jugendmannschaft-dev/main` synchronisiert; der Blob-SHA stimmt mit `develop` überein (`ebf7363aa2df1f5b3fc465934e2fab8cea3ef0c1`). Der manuelle Browser-/Praxistest ist noch offen. Die Supabase-Edge-Function-Quellen liegen in `develop`, live sind `invite-member` und `invite-trainer` aber weiterhin Version 3; keine Edge Function wurde aktualisiert. Die SQL-Migration ist nicht ausgeführt. Für SQL-Ausführung und Supabase-Edge-Deployments bleiben separate ausdrückliche Freigaben erforderlich. PROD ist unverändert.
 
 **Zentrale Ablage in `develop`:**
 - Spezifikation und Status: `docs/proposals/single-team-membership-guard/README.md`
