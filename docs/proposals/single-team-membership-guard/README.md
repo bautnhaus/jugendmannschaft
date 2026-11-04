@@ -73,6 +73,12 @@ Datei: `index.html` in `develop` (Quellstand aktualisiert, DEV-Deployment noch a
 - Diese UI-Regel betrifft nur die tatsächliche Zuordnung der bearbeiteten Zielperson. Sie sperrt **nicht** die Arbeit des aktuellen Superadmins oder Vereinsadmins in anderen Mannschaftskontexten.
 - Der unerreichbare Altaufruf `admin_add_club_member_by_email` wurde aus `saveClubMemberEditor` entfernt. Neue Konten werden weiterhin über „Mitglied einladen“ angelegt.
 
+### Vergabe der übergeordneten Rollen
+
+- **Vereinsadmin:** Die vorhandene Funktion `admin_set_club_member_role` ergänzt oder entfernt `club_admin` in `club_member_roles`. Sie löscht oder ändert keine Datensätze in `team_members` oder `team_member_roles`. Damit kann ein bestehendes Mannschaftsmitglied Vereinsadmin werden und seine Mannschaftszuordnung behalten.
+- **Superadmin:** Die Live-Tabelle `global_user_roles` ist für `authenticated` nur lesbar; direkte INSERT-/UPDATE-/DELETE-Rechte sind nicht vergeben. In den geprüften öffentlichen Datenbankfunktionen wurde kein Schreibweg zum Vergeben der globalen Superadmin-Rolle gefunden. Die Hochstufung wird durch die Ein-Mannschaft-Trigger nicht blockiert, ist aber aktuell kein Ablauf im Vereinsmitglied-Dialog. Dafür ist ein gesonderter, privilegierter und sicher freizugebender Vergabeprozess nötig. Eine UI/RPC für die globale Superadmin-Verwaltung ist nicht Teil dieses Korrekturpakets.
+
+
 ## 5. Alte Edge Function `invite-trainer`
 
 Der aktuelle Frontend-Code verwendet `invite-member`; `invite-trainer` ist in DEV dennoch weiterhin ACTIVE (Version 3). Ein Lösch-/Deaktivierungswerkzeug für Edge Functions steht im verbundenen Supabase-Werkzeugbestand nicht zur Verfügung.
