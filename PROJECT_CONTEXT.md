@@ -203,3 +203,6 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 
 
 **DEV-Nachtrag 04.11.2026 – Mannschaftsübersicht Saison/Jahrgänge:** Die Metazeile unter dem Mannschaftsnamen zeigt jetzt nur „Saison [Jahr]“. In der Kachel „Mannschaftsinformationen“ werden aktive Saison („Saison [Jahr]“) und Jahrgang („Jahrgänge [Werte aus teams.birth_cohorts]“) getrennt beschriftet. Das zusätzliche Mannschaftskürzel wird aus diesen Metazeilen entfernt, bleibt jedoch im Mannschaftsnamen erhalten. Die aktive Saison wird aus dem bereits geladenen `seasons.name` verwendet; keine neue Datenbankabfrage und keine SQL-/Schemaänderung. Commit `bcb35846abf2c2888341b1ac7d2b6014cd8bbf80`, Syntaxprüfung bestanden, DEV-Deploy #435 erfolgreich. Manueller iPhone-Test steht aus. PROD und `main` unverändert.
+
+
+**Manueller iPhone-Nachtest bestätigt (04.11.2026):** Nutzer hat die aktualisierte Mannschaftsübersicht geprüft und mit „Passt“ freigegeben. Die getrennten Beschriftungen „Saison [Jahr]“ und „Jahrgänge [Werte]“ in Kopfzeile und Informationskachel sind damit fachlich und visuell bestätigt.
