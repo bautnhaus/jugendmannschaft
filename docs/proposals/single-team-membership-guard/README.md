@@ -1,78 +1,105 @@
-# DEV-Korrekturpaket: Ein-Mannschaft-Regel und alte Einladungsschnittstelle
+# DEV-Korrekturpaket: Ein-Mannschaft-Regel und kontextbasierte Rollen
 
-**Status:** vorbereitet auf Feature-Branch; noch nicht in develop, nicht deployed und nicht in Supabase ausgeführt.  
+**Status:** vorbereitet auf Review-Feature-Branch; noch nicht in `develop`, nicht deployed und nicht in Supabase ausgeführt.  
 **Stand:** 04.11.2026  
-**Zielumgebung:** ausschließlich Supabase DEV (pzazqvvoruqnqhcorbwx)  
-**PROD:** ausdrücklich unverändert.
+**Zielumgebung:** ausschließlich Supabase DEV (`pzazqvvoruqnqhcorbwx`)  
+**PROD:** unverändert, nicht geändert und nicht freigegeben.
 
-## Anlass
+## 1. Verbindliche fachliche Regel
 
-Die read-only Prüfung vom 04.11.2026 zeigte, dass die aktuelle Einladung über invite-member und admin_complete_member_invitation eine zweite Mannschaftszuordnung verhindert. Andere Schreibwege hatten diese Prüfung nicht durchgängig:
+Die Korrektur trennt tatsächliche Mannschaftsmitgliedschaften von Verwaltungsberechtigungen:
 
-- admin_add_team_role prüfte die bestehende Mannschaftszuordnung des Zielbenutzers nicht.
-- admin_create_team schloss Superadmins aus, prüfte aber nicht, ob der ausgewählte Mannschaftsadmin bereits einer Mannschaft angehört.
-- admin_list_team_admin_candidates zeigte Vereinsmitglieder auch dann an, wenn sie bereits einer Mannschaft zugeordnet waren.
-- Der Vereinsmitglied-Bearbeitungsdialog zeigte Rollenfelder für alle Mannschaften.
-- Die alte Edge Function invite-trainer war in Supabase DEV weiterhin ACTIVE (Version 3), obwohl das aktuelle Frontend sie nicht mehr aufruft.
+1. Ein Benutzer darf höchstens **einer Mannschaft tatsächlich zugeordnet** sein. Die Prüfung umfasst die Tabellen `team_members` und `team_member_roles` gemeinsam.
+2. Eine globale Rolle `super_admin` schließt eine Vereinsmitgliedschaft, Vereinsadminrolle oder eine Mannschaftsrolle **nicht** aus.
+3. Ein Benutzer kann daher beispielsweise gleichzeitig Superadmin, Vereinsadmin eines Vereins sowie Mannschaftsadmin und Trainer derselben Mannschaft sein.
+4. Superadmins und Vereinsadmins dürfen in den Mannschaften ihres ausgewählten bzw. eigenen Berechtigungsbereichs Verwaltungsaufgaben übernehmen, ohne dort jeweils als Mannschaftsmitglied eingetragen zu sein.
+5. Die Ein-Mannschaft-Regel betrifft ausschließlich die Person, der eine Mannschaftsrolle tatsächlich zugeordnet wird. Sie darf nicht die Handlungsmöglichkeiten des aufrufenden Superadmins oder Vereinsadmins einschränken.
+6. Ist eine Person bereits Trainer oder Mannschaftsadmin in Mannschaft A, darf sie nicht zusätzlich Mannschaft B zugeordnet werden. Sie kann in B trotzdem über einen berechtigten Verwaltungs-Kontext handeln, soweit die Rollen-/Kontextregeln das erlauben.
 
-Die aktuelle DEV-Datenbank weist bei der Bestandsprüfung keine Benutzer mit mehreren Mannschaftszuordnungen und keine Superadmins mit Mannschaftszuordnung auf. Die Korrektur muss daher keine bestehenden Mitgliedschaftsdaten bereinigen.
+Die frühere Annahme, Superadmins müssten vollständig neutral und ohne Vereins-/Mannschaftsmitgliedschaften bleiben, ist durch die Nutzerentscheidung vom 04.11.2026 ausdrücklich überholt.
 
-## Umfang des Pakets
+## 2. Was die vorbereitete Datenbankmigration macht
 
-### A. Datenbank – migration.sql
+Datei: `migration.sql`
 
-Die vorgeschlagene Migration:
+- Vorabprüfung: bricht ab, falls ein Benutzer bereits mehreren unterschiedlichen Mannschaften zugeordnet ist. Bestehende Daten werden nicht automatisch bereinigt.
+- Ergänzt einen Index auf `team_member_roles(user_id)`.
+- Legt die zentrale SECURITY-DEFINER-Triggerfunktion `public.enforce_single_team_membership()` mit festem `search_path` an.
+- Setzt die Funktion als BEFORE-Trigger auf INSERT sowie Änderungen an `user_id`/`team_id` in `team_members` und `team_member_roles`.
+- Die Triggerfunktion sperrt die Auth-Benutzerzeile mit `FOR UPDATE`, damit konkurrierende Schreibwege desselben Benutzers nicht gleichzeitig unterschiedliche Mannschaftszuordnungen anlegen.
+- Sie prüft ausschließlich die Ein-Mannschaft-Regel. Sie weist einen Benutzer **nicht** aufgrund der globalen Rolle `super_admin` ab.
+- Überarbeitet `admin_add_team_role` und `admin_create_team`, damit direkte Schreibwege dieselbe Zuordnungsregel prüfen. Ein Superadmin darf Zielperson sein, sofern er noch keiner anderen Mannschaft zugeordnet ist.
+- Überarbeitet `admin_list_team_admin_candidates`: Personen mit bestehender Mannschaftszuordnung werden ausgefiltert. Ein Superadmin wird nicht allein wegen seiner globalen Rolle ausgefiltert.
+- Überarbeitet `admin_complete_member_invitation`: Superadmins dürfen zusätzlich Vereinsmitglied, Vereinsadmin, Mannschaftsadmin oder Trainer werden. Die bestehende Ein-Verein- und Ein-Mannschaft-Prüfung bleibt erhalten.
 
-1. bricht vor Änderungen ab, falls bereits Mehrfachzuordnungen oder Mannschaftszuordnungen von Superadmins gefunden werden;
-2. ergänzt einen Index auf team_member_roles(user_id);
-3. setzt eine zentrale SECURITY-DEFINER-Triggerfunktion mit festem search_path auf beide Zuordnungstabellen;
-4. sperrt bei jeder neuen/verschobenen Zuordnung die betroffene Auth-Benutzerzeile mit FOR UPDATE, damit konkurrierende Schreibwege desselben Benutzers serialisiert werden;
-5. weist Superadmins und bereits anderweitig zugeordnete Benutzer ab;
-6. ergänzt klare Vorabprüfungen in admin_add_team_role und admin_create_team;
-7. filtert bereits zugeordnete Personen aus admin_list_team_admin_candidates.
+Es gibt in dieser korrigierten Fassung **keinen Trigger auf `global_user_roles`**, der die spätere Vergabe der Superadmin-Rolle an ein Mannschaftsmitglied blockieren würde.
 
-admin_complete_member_invitation enthält bereits eine Sperre der Auth-Benutzerzeile und eine Prüfung auf eine andere Mannschaft. Die neuen Trigger schützen diesen Weg zusätzlich und sichern auch ältere bzw. direkte Schreibwege ab.
+## 3. Kontextberechtigungen bleiben eigenständig
 
-add_team_member_by_email hat nach Live-Prüfung kein EXECUTE-Recht für authenticated und wird vom aktuellen Frontend nicht aufgerufen. Die zentralen Trigger schützen die Tabellen dennoch, falls ein privilegierter interner/administrativer Aufrufer diese alte Funktion verwendet.
+Die Live-Definitionen wurden read-only geprüft:
 
-### B. Frontend – index.html
+- `can_manage_club_context(p_club_id)`: Superadmin mit genau ausgewähltem Vereinskontext oder Vereinsadmin des betreffenden Vereins.
+- `has_selected_team_context(p_team_id)`: Superadmin oder Vereinsadmin mit genau ausgewähltem Mannschaftskontext.
+- `is_team_admin(p_team_id)`: tatsächlicher Mannschaftsadmin oder Superadmin mit ausgewähltem Mannschaftskontext.
 
-- Bei einem Mitglied mit bestehender Mannschaftszuordnung bleiben die Rollenfelder anderer Mannschaften gesperrt.
-- Ein Mitglied ohne Mannschaft kann über den Vereinsdialog höchstens einer Mannschaft zugeordnet werden.
-- Vor dem Speichern wird geprüft, dass nicht mehrere Mannschaften ausgewählt wurden.
-- Ein Mannschaftswechsel erfolgt bewusst in zwei Schritten: zunächst alle Rollen der bisherigen Mannschaft entfernen und speichern, dann den Dialog erneut öffnen und eine neue Mannschaft wählen.
-- Bereits widersprüchliche Mehrfachzuordnungen werden nicht stillschweigend verändert; die Oberfläche zeigt einen Hinweis und blockiert die Rollenbearbeitung.
-- Der unerreichbare Altaufruf admin_add_club_member_by_email wurde aus saveClubMemberEditor entfernt. Neue Konten werden weiter ausschließlich über „Mitglied einladen“ angelegt.
+Die Berechtigungsprüfungen für den handelnden Benutzer bleiben in den RPCs bestehen. Die Migration fügt keine Voraussetzung hinzu, dass der handelnde Superadmin/Vereinsadmin Mitglied jeder verwalteten Mannschaft sein muss.
 
-### C. Alte Edge Function – invite-trainer
+## 4. Einladung und Frontend
 
-Ein Lösch-/Deaktivierungswerkzeug für Edge Functions steht im verbundenen Supabase-Werkzeugbestand nicht zur Verfügung. Der vorbereitete sichere Stilllegungsweg ist daher ein Ersatz der alten Funktion durch einen kleinen HTTP-Endpunkt, der außer OPTIONS jede Anfrage mit **410 Gone** und dem Hinweis auf invite-member beantwortet.
+### Zentrale Einladung `invite-member`
 
-Technisch bleibt die Edge Function im Dashboard als ACTIVE sichtbar; die alte Funktionalität ist nach Deploy aber nicht mehr nutzbar. Die JWT-Prüfung bleibt aktiviert. Die neuere Funktion invite-member bleibt unverändert aktiv.
+Die aktuelle DEV-Edge-Function weist ein bestehendes Superadmin-Konto bislang ausdrücklich als Zielperson zurück. Der vorbereitete Edge-Code entfernt diese Sperre. Die Prüfung auf eine bereits vorhandene andere Mannschaft bleibt bestehen.
 
-## Dateien
+Zusammen mit der geänderten RPC `admin_complete_member_invitation` können Superadmins so auch Vereins- oder Mannschaftsrollen erhalten. Die globale Superadmin-Rolle wird nicht verändert.
 
-- migration.sql – vollständiger SQL-Vorschlag, nicht ausgeführt.
-- after_apply_verification.sql – rein lesende Prüfungen für einen später freigegebenen DEV-Lauf.
-- supabase/functions/invite-trainer/index.ts – vorbereiteter 410-Gone-Ersatz für den alten Endpunkt.
-- index.html – Frontend-Anpassung im Feature-Branch.
-- DB_MIGRATION_LOG.md, DB_CHANGELOG.md, PROJECT_CONTEXT.md, docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md und docs/AP04-profile-management.md – nachgeführte Vorschlags-/Befunddokumentation.
+### Vereinsmitglied-Dialog
 
-## Reihenfolge nach ausdrücklicher Freigabe
+Datei: `index.html`
 
-1. Migration in DEV anwenden.
-2. Definitionen, Trigger, ACLs, Index und Bestandsintegrität mit after_apply_verification.sql read-only prüfen.
-3. Neue index.html nach develop übernehmen und DEV deployen.
-4. invite-trainer durch den 410-Gone-Ersatz ersetzen.
-5. Supabase Security Advisor erneut prüfen.
-6. DEV-Praxistests durchführen: ein vorhandenes Mitglied; ein bisher nicht zugeordnetes Vereinsmitglied; Neuanlage einer Mannschaft mit zulässigem/ungeeignetem Mannschaftsadmin; Versuch einer zweiten Mannschaftszuordnung über den Mannschaftsbereich; alter Endpunkt liefert 410; Einladung über invite-member funktioniert weiterhin.
-7. Tatsächliche Migration-ID, Deploy-Commit, Edge-Version und alle Prüfergebnisse in den laufenden Dokumenten nachtragen.
+- Bei der bearbeiteten Person bleiben die Rollenfelder anderer Mannschaften gesperrt, sobald diese Person bereits einer Mannschaft zugeordnet ist.
+- Ein bislang nicht zugeordnetes Vereinsmitglied kann höchstens einer Mannschaft zugeordnet werden.
+- Ein Mannschaftswechsel erfolgt bewusst in zwei Schritten: bisherige Rollen entfernen und speichern; anschließend erneut öffnen und der neuen Mannschaft zuordnen.
+- Bereits widersprüchliche Mehrfachzuordnungen werden nicht stillschweigend verändert; der Dialog zeigt einen Hinweis und blockiert die Rollenänderung.
+- Diese UI-Regel betrifft nur die tatsächliche Zuordnung der bearbeiteten Zielperson. Sie sperrt **nicht** die Arbeit des aktuellen Superadmins oder Vereinsadmins in anderen Mannschaftskontexten.
+- Der unerreichbare Altaufruf `admin_add_club_member_by_email` wurde aus `saveClubMemberEditor` entfernt. Neue Konten werden weiterhin über „Mitglied einladen“ angelegt.
 
-**Wichtig:** Die Reihenfolge für Frontend und Datenbank ist bewusst so zu koordinieren, dass die UI erst nach aktiver DB-Absicherung freigegeben wird. Kein PROD-Schritt ist Teil dieses Pakets.
+## 5. Alte Edge Function `invite-trainer`
 
+Der aktuelle Frontend-Code verwendet `invite-member`; `invite-trainer` ist in DEV dennoch weiterhin ACTIVE (Version 3). Ein Lösch-/Deaktivierungswerkzeug für Edge Functions steht im verbundenen Supabase-Werkzeugbestand nicht zur Verfügung.
 
-### Ergänzung: Superadmin-Neutralität in beide Richtungen
+Vorbereitet ist daher ein Ersatz-Endpunkt, der außer OPTIONS jede Anfrage mit **410 Gone** und dem Hinweis auf `invite-member` beantwortet. Im Dashboard bleibt die Edge Function danach technisch als ACTIVE sichtbar; ihre alte Einladungsfunktionalität ist aber nicht mehr nutzbar. Die JWT-Prüfung bleibt aktiviert.
 
-Zusätzlich zur Sperre bei Mannschaftszuordnungen eines bestehenden Superadmins enthält die Migration einen Trigger auf `global_user_roles`. Er verhindert, dass ein bereits einer Mannschaft zugeordnetes Konto nachträglich die Rolle `super_admin` erhält. Auch diese Triggerfunktion sperrt die Auth-Benutzerzeile mit `FOR UPDATE` und besitzt keine EXECUTE-Freigabe für `PUBLIC`, `anon` oder `authenticated`.
+## 6. Dateien
 
-Die Live-Prüfung ergab, dass `global_user_roles` derzeit keine INSERT-/UPDATE-/DELETE-Rechte für `authenticated` besitzt und keine öffentliche RPC zum Schreiben dieser Tabelle existiert. Der zusätzliche Trigger sichert trotzdem künftige privilegierte Änderungen ab.
+- `migration.sql` – vollständiger SQL-Vorschlag, nicht ausgeführt.
+- `after_apply_verification.sql` – rein lesende Prüfungen nach einer späteren Freigabe.
+- `supabase/functions/invite-member/index.ts` – angepasste Edge-Function-Quelle, noch nicht deployed.
+- `supabase/functions/invite-trainer/index.ts` – vorbereiteter 410-Gone-Ersatz.
+- `index.html` – Frontend-Anpassung im Feature-Branch.
+- `DB_MIGRATION_LOG.md`, `DB_CHANGELOG.md`, `PROJECT_CONTEXT.md`, `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md` und `docs/AP04-profile-management.md` – Befund und fachlich korrigierter Vorschlag.
+
+## 7. Geplante Tests nach einer Freigabe
+
+1. Bestehendes Mitglied mit Trainerrolle in Team A kann dort weiterhin bearbeitet werden; Zuweisung zu Team B wird im UI und serverseitig abgewiesen.
+2. Mannschaftsadmin aus Team A kann über seinen eigenen Team-Kontext in Team A arbeiten; keine Mitgliedschaft in Team B wird dafür angelegt.
+3. Vereinsadmin kann im eigenen Vereinskontext Verwaltungsaufgaben in mehreren Teams durchführen, ohne selbst in jedem Team Mitglied zu sein.
+4. Superadmin kann nach Auswahl eines anderen Team-Kontexts dort Verwaltungsaufgaben durchführen, ohne in diesem Team Mitglied zu sein.
+5. Superadmin, der noch keiner Mannschaft zugeordnet ist, kann als Zielperson Vereinsadmin, Mannschaftsadmin oder Trainer werden.
+6. Superadmin, der bereits einer Mannschaft zugeordnet ist, kann zusätzliche Vereinsrollen erhalten und bleibt in dieser einen Mannschaft berechtigt; eine zweite Mannschaftszuordnung wird abgewiesen.
+7. Ein bestehender Mannschaftsadmin/Trainer wird nicht als Kandidat für die Anlage einer weiteren Mannschaft angeboten.
+8. Ein bereits in Team A zugeordneter Benutzer wird durch `admin_create_team`, `admin_add_team_role` oder `invite-member` nicht zusätzlich Team B zugeordnet.
+9. Ein Mannschaftsmitglied kann nachträglich Superadmin werden; die vorhandene Teamzuordnung bleibt bestehen.
+10. Die Einladung über `invite-member` funktioniert weiterhin für normale Konten und bestehende Superadmins.
+11. Der alte Edge-Endpunkt `invite-trainer` antwortet mit HTTP 410.
+
+## 8. Freigabe- und Ausführungsreihenfolge
+
+1. Den korrigierten SQL- und Quellcode-Vorschlag prüfen und ausdrücklich freigeben lassen.
+2. Nach Freigabe eine finale Migrationsdatei mit realer Migrationsversion anlegen und ausschließlich in DEV ausführen.
+3. Migrationsergebnis und tatsächliche Versionsnummer in `DB_MIGRATION_LOG.md` nachweisen.
+4. Trigger, Definitionen, ACLs, Index, Mehrfachzuordnungen und Kontextfunktionen read-only prüfen.
+5. Frontend in `develop` übernehmen und nach DEV deployen.
+6. `invite-member` aktualisieren und den alten `invite-trainer`-Endpunkt auf 410 Gone umstellen.
+7. Security Advisor erneut prüfen und die Tests aus Abschnitt 7 durchführen.
+
+**Aktueller Status: Korrigierter Vorschlag – noch nicht freigegeben, nicht in `develop` übernommen, nicht deployed und nicht in Supabase ausgeführt.** PROD bleibt unverändert.
