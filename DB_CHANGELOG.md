@@ -470,7 +470,7 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 ## DB-DEV-009 – Zentrale Ein-Mannschaft-Regel (Vorschlag, nicht ausgeführt)
 
 - **Status:** Entwurf im Review-Feature-Branch; keine Migration ausgeführt.
-- **Geplante Objekte:** Triggerfunktion `public.enforce_single_team_membership()`; Trigger auf `public.team_members` und `public.team_member_roles`; überarbeitete RPCs `admin_add_team_role`, `admin_create_team` und `admin_list_team_admin_candidates`; Index `idx_team_member_roles_user`.
+- **Geplante Objekte:** Triggerfunktionen `public.enforce_single_team_membership()` und `public.prevent_super_admin_with_team_membership()`; Trigger auf `public.team_members`, `public.team_member_roles` und `public.global_user_roles`; überarbeitete RPCs `admin_add_team_role`, `admin_create_team` und `admin_list_team_admin_candidates`; Index `idx_team_member_roles_user`.
 - **Fachliche Regel:** Ein Benutzer darf höchstens einer Mannschaft zugeordnet sein. Ein globaler Superadmin bleibt neutral und darf keiner Mannschaft zugeordnet werden.
 - **Zentrale Absicherung:** Beide Tabellen, in denen Mannschaftszuordnungen gespeichert werden, erhalten BEFORE-Trigger auf INSERT sowie Änderungen an den Zuordnungsschlüsseln. Die Triggerfunktion sperrt die jeweilige Zeile in `auth.users` mit `FOR UPDATE`, prüft globale Superadmin-Rolle und Zuordnungen in beiden Tabellen und weist eine zweite Mannschaft ab.
 - **RPC-Vorprüfung:** `admin_add_team_role` und `admin_create_team` prüfen dieselbe Regel vor den Schreibvorgängen. `admin_list_team_admin_candidates` listet nur noch Vereinsmitglieder ohne vorhandene Mannschaftszuordnung.
