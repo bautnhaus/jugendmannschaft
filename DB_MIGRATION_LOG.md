@@ -572,3 +572,63 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Gegenstück in PROD:** Nicht ausgeführt; keine PROD-Änderung vorgesehen.
 - **GitHub-Datei:** `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql` (identischer SQL-Text); zusammen mit diesem Ausführungsnachtrag committed. Der Commit ist in der Repository-Historie nachvollziehbar.
 - **Zusätzliche Hinweise / Nachweisgrenzen:** `get_club_members_v2` bleibt unverändert. Die bestehende RLS-Policy auf `profiles` wird nicht erweitert. Die neue RPC ist `SECURITY DEFINER`, prüft aber vor jeder Rückgabe `auth.uid()` und `can_manage_club_context(p_club_id)`; EXECUTE wird nur an `authenticated` vergeben. Die generische Security-Advisor-Warnung wird bewusst nicht pauschal entfernt; Kontextprüfung, fester Suchpfad und ACL sind Teil der Sicherheitsbegründung. Es wurden keine Nutzerdaten verändert. Frontend-Anbindung in Commit `cb0a5b943e3bb367a9f7c5bfafd693803ec39ea0`; Deploy DEV #41822962197 erfolgreich. Statische Syntaxprüfung der drei geänderten Blöcke bestanden; manuelle UI- und Kontexttests offen.
+
+
+## DB-MIG-2026-003 – Ein-Mannschaft-Regel zentral absichern (Vorschlag, nicht ausgeführt)
+
+- **Status:** Vorbereitung zur Prüfung; keine SQL-Ausführung und keine Freigabe zur Ausführung erfolgt.
+- **Umgebung:** ausschließlich vorgesehen für Supabase DEV `pzazqvvoruqnqhcorbwx`.
+- **PROD:** nicht geprüft, nicht geändert und nicht freigegeben.
+- **Vorgeschlagene SQL-Quelle:** `docs/proposals/single-team-membership-guard/migration.sql`.
+- **Read-only Verifikationsskript:** `docs/proposals/single-team-membership-guard/after_apply_verification.sql`.
+- **Migrationsversion:** noch nicht vergeben. Nach einer späteren Freigabe wird die finale Version/Datei mit der tatsächlichen Ausführung synchronisiert.
+- **Ausführungshistorie:** keine. Dieses Vorbereitungsdokument ist ausdrücklich kein Ausführungsnachweis.
+
+### Anlass und Live-Befund vom 04.11.2026
+
+Die Prüfung der tatsächlichen DEV-Definitionen ergab:
+1. `admin_add_team_role(uuid,uuid,text)` prüft die Berechtigung des Handelnden, die Zielmitgliedschaft aber nicht auf eine bereits bestehende Zuordnung zu einer anderen Mannschaft und nicht auf die globale Rolle `super_admin`.
+2. `admin_create_team(...)` verhindert bereits die Zuweisung eines Superadmins als Mannschaftsadmin, kontrolliert aber nicht, ob der ausgewählte Admin schon einer anderen Mannschaft angehört.
+3. `admin_list_team_admin_candidates(uuid)` bietet auch bereits Mannschaftsmitgliedern die Auswahl als Admin einer neu anzulegenden Mannschaft an.
+4. Der Vereinsmitglied-Bearbeitungsdialog zeigt die Rollenfelder mehrerer Mannschaften gleichzeitig.
+5. `invite-trainer` ist in Supabase DEV weiterhin ACTIVE (Version 3), wird vom aktuellen Frontend aber nicht mehr aufgerufen. Der Endpunkt verwendet noch den älteren Einladungsablauf.
+6. `add_team_member_by_email(text,text,uuid)` wird im aktuellen Frontend nicht aufgerufen und hat nach aktueller ACL-Prüfung kein EXECUTE-Recht für `authenticated`.
+
+Die read-only Bestandsprüfung ergab aktuell:
+- Benutzer mit Zuordnungen zu mehreren Mannschaften: **0**.
+- Superadmins mit Mannschaftszuordnung: **0**.
+- Widersprüchliche Vereins-/Mannschaftszuordnungen: **0**.
+
+### Vorgeschlagene Änderung
+
+- Neue SECURITY-DEFINER-Triggerfunktion `public.enforce_single_team_membership()` mit festem `search_path = pg_catalog, public, auth`.
+- Trigger auf `team_members` und `team_member_roles` für INSERT sowie Änderungen an `user_id`/ `team_id`.
+- Vor der Prüfung wird die Auth-Benutzerzeile mit `FOR UPDATE` gesperrt. Damit werden konkurrierende Schreibwege für denselben Benutzer serialisiert.
+- Superadmins werden auf beiden Tabellen abgewiesen.
+- Bereits bestehende Zuordnungen in einer anderen Mannschaft werden auf beiden Tabellen abgewiesen.
+- `admin_add_team_role` und `admin_create_team` erhalten zusätzliche Vorabprüfungen und verständliche Fehlermeldungen.
+- `admin_list_team_admin_candidates` bietet nur noch Vereinsmitglieder ohne Mannschaftszuordnung an.
+- Ein Index auf `team_member_roles(user_id)` unterstützt die benutzerbezogene Prüfung.
+- Der Vereinsmitglied-Dialog sperrt Rollenfelder anderer Mannschaften und prüft vor dem Speichern, dass höchstens eine Mannschaft ausgewählt ist.
+- Die alte Edge Function `invite-trainer` soll durch einen 410-Gone-Endpunkt ersetzt werden. Das verbundene Werkzeug kann Edge Functions nicht physisch löschen; der vorbereitete Endpunkt bleibt daher im Dashboard als ACTIVE sichtbar, nimmt aber keine Einladungsanfragen mehr an. Die JWT-Prüfung bleibt aktiviert.
+
+### Sicherheits- und Datenabgrenzung
+
+- Die zentrale Regel gilt für beide Zuordnungstabellen und schützt dadurch auch ältere oder interne Schreibwege, selbst wenn sie nicht vom Frontend aufgerufen werden.
+- `admin_complete_member_invitation` besitzt bereits eine Zielbenutzer-Sperre und prüft eine zweite Mannschaft. Die neuen Trigger bilden zusätzlich eine gemeinsame Rückfallebene.
+- Die Migration enthält eine Vorabprüfung und bricht ab, falls Mehrfachzuordnungen oder Superadmin-Mannschaftszuordnungen vorliegen. Sie bereinigt keine bestehenden Datensätze.
+- Bestehende RLS-Policies werden nicht geändert.
+- Die Triggerfunktion erhält keine EXECUTE-Freigabe für `PUBLIC`, `anon` oder `authenticated`; sie ist ausschließlich trigger-intern.
+- SQL, Frontend, Edge-Stub und Dokumentation liegen nur auf dem Review-Feature-Branch. Kein DEV-Deployment, keine Edge-Function-Aktualisierung und keine Datenbankänderung.
+
+### Freigabe- und Ausführungsreihenfolge
+
+1. Vollständiges SQL und Quellcode prüfen und ausdrücklich freigeben lassen.
+2. Finale Migrationsdatei mit realer Migrationsversion anlegen und SQL in DEV ausführen.
+3. SQL-Ausführung und Ergebnis sofort als echten Ausführungsnachweis dokumentieren.
+4. Funktionsdefinitionen, Trigger, ACLs, Index und Bestandsintegrität read-only prüfen.
+5. Frontend in `develop` übernehmen und DEV deployen.
+6. Legacy Edge Function durch den vorbereiteten 410-Gone-Code ersetzen.
+7. Security Advisor erneut prüfen und die vorgesehenen DEV-Praxistests durchführen.
+
+**Bis zu einer separaten Freigabe bleibt der Status „Vorschlag – nicht ausgeführt“.**
