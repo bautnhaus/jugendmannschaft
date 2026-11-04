@@ -12,9 +12,10 @@ Die Korrektur trennt tatsächliche Mannschaftsmitgliedschaften von Verwaltungsbe
 1. Ein Benutzer darf höchstens **einer Mannschaft tatsächlich zugeordnet** sein. Die Prüfung umfasst die Tabellen `team_members` und `team_member_roles` gemeinsam.
 2. Eine globale Rolle `super_admin` schließt eine Vereinsmitgliedschaft, Vereinsadminrolle oder eine Mannschaftsrolle **nicht** aus.
 3. Ein Benutzer kann daher beispielsweise gleichzeitig Superadmin, Vereinsadmin eines Vereins sowie Mannschaftsadmin und Trainer derselben Mannschaft sein.
-4. Superadmins und Vereinsadmins dürfen in den Mannschaften ihres ausgewählten bzw. eigenen Berechtigungsbereichs Verwaltungsaufgaben übernehmen, ohne dort jeweils als Mannschaftsmitglied eingetragen zu sein.
-5. Die Ein-Mannschaft-Regel betrifft ausschließlich die Person, der eine Mannschaftsrolle tatsächlich zugeordnet wird. Sie darf nicht die Handlungsmöglichkeiten des aufrufenden Superadmins oder Vereinsadmins einschränken.
-6. Ist eine Person bereits Trainer oder Mannschaftsadmin in Mannschaft A, darf sie nicht zusätzlich Mannschaft B zugeordnet werden. Sie kann in B trotzdem über einen berechtigten Verwaltungs-Kontext handeln, soweit die Rollen-/Kontextregeln das erlauben.
+4. Ein bereits bestehendes Mannschaftsmitglied kann nachträglich zusätzlich Superadmin und/oder Vereinsadmin werden. Die vorhandene Mannschaftszuordnung und alle bestehenden Mannschaftsrollen bleiben dabei erhalten. Das Hinzufügen oder Entfernen dieser übergeordneten Rollen darf die Einträge in `team_members` und `team_member_roles` nicht löschen, ersetzen oder auf eine andere Mannschaft verschieben.
+5. Superadmins und Vereinsadmins dürfen in den Mannschaften ihres ausgewählten bzw. eigenen Berechtigungsbereichs Verwaltungsaufgaben übernehmen, ohne dort jeweils als Mannschaftsmitglied eingetragen zu sein.
+6. Die Ein-Mannschaft-Regel betrifft ausschließlich die Person, der eine Mannschaftsrolle tatsächlich zugeordnet wird. Sie darf nicht die Handlungsmöglichkeiten des aufrufenden Superadmins oder Vereinsadmins einschränken.
+7. Ist eine Person bereits Trainer oder Mannschaftsadmin in Mannschaft A, darf sie nicht zusätzlich Mannschaft B zugeordnet werden. Sie kann in B trotzdem über einen berechtigten Verwaltungs-Kontext handeln, soweit die Rollen-/Kontextregeln das erlauben.
 
 Die frühere Annahme, Superadmins müssten vollständig neutral und ohne Vereins-/Mannschaftsmitgliedschaften bleiben, ist durch die Nutzerentscheidung vom 04.11.2026 ausdrücklich überholt.
 
@@ -97,18 +98,22 @@ Vorbereitet ist daher ein Ersatz-Endpunkt, der außer OPTIONS jede Anfrage mit *
 6. Superadmin, der bereits einer Mannschaft zugeordnet ist, kann zusätzliche Vereinsrollen erhalten und bleibt in dieser einen Mannschaft berechtigt; eine zweite Mannschaftszuordnung wird abgewiesen.
 7. Ein bestehender Mannschaftsadmin/Trainer wird nicht als Kandidat für die Anlage einer weiteren Mannschaft angeboten.
 8. Ein bereits in Team A zugeordneter Benutzer wird durch `admin_create_team`, `admin_add_team_role` oder `invite-member` nicht zusätzlich Team B zugeordnet.
-9. Ein Mannschaftsmitglied kann nachträglich Superadmin werden; die vorhandene Teamzuordnung bleibt bestehen.
-10. Die Einladung über `invite-member` funktioniert weiterhin für normale Konten und bestehende Superadmins.
-11. Der alte Edge-Endpunkt `invite-trainer` antwortet mit HTTP 410.
+9. Ein bestehendes Mannschaftsmitglied erhält nachträglich die Rolle Superadmin; alle bestehenden Mannschaftszuordnungen und Teamrollen bleiben unverändert.
+10. Ein bestehendes Mannschaftsmitglied erhält nachträglich die Rolle Vereinsadmin; alle bestehenden Mannschaftszuordnungen und Teamrollen bleiben unverändert.
+11. Ein bestehendes Mannschaftsmitglied erhält nachträglich Superadmin und Vereinsadmin; beide zusätzlichen Rollen bleiben unabhängig von der bestehenden Mannschaftszuordnung bestehen.
+12. Das Entfernen von Superadmin und/oder Vereinsadmin verändert ebenfalls keine bestehende Mannschaftszuordnung.
+13. Die Einladung über `invite-member` funktioniert weiterhin für normale Konten und bestehende Superadmins.
+14. Der alte Edge-Endpunkt `invite-trainer` antwortet mit HTTP 410.
 
 ## 8. Freigabe- und Ausführungsreihenfolge
 
-1. Den korrigierten SQL- und Quellcode-Vorschlag prüfen und ausdrücklich freigeben lassen.
-2. Nach Freigabe eine finale Migrationsdatei mit realer Migrationsversion anlegen und ausschließlich in DEV ausführen.
-3. Migrationsergebnis und tatsächliche Versionsnummer in `DB_MIGRATION_LOG.md` nachweisen.
-4. Trigger, Definitionen, ACLs, Index, Mehrfachzuordnungen und Kontextfunktionen read-only prüfen.
-5. Frontend in `develop` übernehmen und nach DEV deployen.
-6. `invite-member` aktualisieren und den alten `invite-trainer`-Endpunkt auf 410 Gone umstellen.
-7. Security Advisor erneut prüfen und die Tests aus Abschnitt 7 durchführen.
+1. Die freigegebene fachliche Regel gegen die aktuellen Live-Definitionen in DEV und alle betroffenen Schreibwege abschließend technisch prüfen.
+2. Vollständigen finalen SQL-Text, Zielprojekt DEV, Auswirkungen und Verifikationsplan vorlegen und eine separate ausdrückliche Freigabe zur SQL-Ausführung einholen.
+3. Nach dieser Ausführungsfreigabe eine finale Migrationsdatei mit realer Migrationsversion anlegen und ausschließlich in DEV ausführen.
+4. Migrationsergebnis und tatsächliche Versionsnummer unmittelbar in `DB_MIGRATION_LOG.md` nachweisen; technische Objektänderungen in `DB_CHANGELOG.md` aktualisieren.
+5. Trigger, Definitionen, ACLs, Index, Mehrfachzuordnungen, Erhalt bestehender Teamzuordnungen und Kontextfunktionen read-only prüfen.
+6. Frontend in `develop` übernehmen und nach DEV deployen.
+7. `invite-member` aktualisieren, den alten `invite-trainer`-Endpunkt auf 410 Gone umstellen und diese Supabase-Laufzeitänderungen im `SUPABASE_CHANGELOG.md` dokumentieren.
+8. Security Advisor erneut prüfen und die Tests aus Abschnitt 7 durchführen.
 
-**Aktueller Status: Korrigierter Vorschlag – noch nicht freigegeben, nicht in `develop` übernommen, nicht deployed und nicht in Supabase ausgeführt.** PROD bleibt unverändert.
+**Fachlich freigegeben am 04.11.2026:** Rollenmodell einschließlich nachträglicher Vergabe von Superadmin und/oder Vereinsadmin an ein bestehendes Mannschaftsmitglied bei unveränderter Mannschaftszuordnung. **Technischer Status:** Korrekturpaket weiterhin nur im Review-Feature-Branch; noch nicht in `develop` übernommen, nicht deployed und nicht in Supabase ausgeführt. Für die SQL-Ausführung in DEV ist weiterhin eine separate ausdrückliche Ausführungsfreigabe erforderlich. PROD bleibt unverändert.
