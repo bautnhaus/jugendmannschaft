@@ -1,7 +1,7 @@
 # Release 1.6 – Mitglieder-/Trainer-Einladung (DEV-Arbeitsstand)
 
 **Stand:** 04.11.2026  
-**Status:** DEV-Einladungsablauf im ersten End-to-End-Fall erfolgreich; Profilanzeige in Superadmin-Mitgliederverwaltung noch offen  
+**Status:** Erster DEV-Einladungs-End-to-End-Fall erfolgreich; Superadmin-Profilanzeige manuell bestätigt; Korrekturpaket zur Ein-Mannschaft-Regel vorbereitet, noch nicht freigegeben oder ausgeführt  
 **Geltungsbereich:** ausschließlich Supabase DEV und GitHub `develop` / DEV-Deployment  
 **PROD:** unverändert; kein PROD-SQL, keine PROD-Konfiguration, kein PROD-Deployment.
 
@@ -12,7 +12,7 @@
 1. **Super Admin und Vereinsadmin:** dürfen im ausdrücklich ausgewählten Vereinskontext ein Vereinsmitglied, einen Vereinsadmin, einen Mannschaftsadmin oder einen Trainer einladen.
 2. **Mannschaftsadmin:** darf innerhalb der eigenen Mannschaft einen Mannschaftsadmin oder Trainer einladen. Die Vereinsmitgliedschaft im Verein der Mannschaft wird automatisch hergestellt.
 
-Ein Mannschaftsmitglied wird derzeit höchstens einer Mannschaft zugeordnet, weil der normale App-Einstieg Mehrfachzuordnungen ausdrücklich noch nicht unterstützt.
+Ein Mannschaftsmitglied darf derzeit höchstens einer Mannschaft zugeordnet werden. Die zentrale Datenbankabsicherung für sämtliche Schreibwege ist als separates DEV-Korrekturpaket vorbereitet, aber noch nicht ausgeführt.
 
 ### Persönlicher Name
 
@@ -46,7 +46,7 @@ Neue Funktion: `invite-member`
 - JWT-Prüfung: aktiviert
 - Aufgabe: Anmeldenden und Kontext prüfen, bestehende Auth-Benutzer ermitteln, existierende Vereins-/Mannschaftszuordnungen prüfen, DEV-Redirect aus Projektkennung wählen, Einladungsversand bzw. bestehendes Konto behandeln und danach die transaktionale Datenbankfunktion aufrufen.
 - Ein Zielkonto mit globaler Rolle `super_admin` wird vor dem Versand anhand `global_user_roles` abgelehnt.
-- Die alte Funktion `invite-trainer` (DEV Version 3) bleibt vorerst aktiv, wird aber vom aktualisierten Frontend nicht mehr aufgerufen. Sie wird erst nach abgeschlossener Testphase separat stillgelegt.
+- Die alte Funktion `invite-trainer` ist in DEV weiterhin ACTIVE (Version 3), wird vom aktuellen Frontend aber nicht mehr aufgerufen. Ein 410-Gone-Ersatz ist im Review-Feature-Branch vorbereitet, jedoch noch nicht deployed.
 
 ### Frontend
 
@@ -171,3 +171,43 @@ Der Nutzer hat nach dem DEV-Deployment beide Prüfpunkte bestätigt:
 Damit ist der gemeldete Folgefehler im Superadmin-Kontext behoben.
 
 **Noch offen:** Vereinsadmin im eigenen Vereinskontext, Profilbildanzeige, Speichern/erneutes Laden einer Profiländerung und negative Kontexttests (kein Kontext bzw. fremder Verein). PROD wurde nicht verändert.
+
+
+## 10. Read-only Sicherheitsprüfung und Korrekturpaket – Ein-Mannschaft-Regel (04.11.2026)
+
+### Read-only Befund
+
+Die aktuelle Einladungsfunktion `invite-member` und die Datenbankfunktion `admin_complete_member_invitation` prüfen bereits vorhandene Vereins-/Mannschaftszuordnungen. Die Prüfung hat jedoch weitere Schreibwege gefunden:
+
+- `admin_add_team_role` prüfte bisher nicht, ob der Zielbenutzer bereits einer anderen Mannschaft angehört oder globaler Superadmin ist.
+- `admin_create_team` schloss Superadmins bereits aus, prüfte aber nicht auf eine andere Mannschaftszuordnung des ausgewählten Admins.
+- `admin_list_team_admin_candidates` filterte bereits Mannschaftsmitglieder nicht aus.
+- Der Vereinsmitglied-Bearbeitungsdialog zeigte Rollenfelder mehrerer Mannschaften gleichzeitig.
+- `invite-trainer` ist DEV-seitig weiterhin ACTIVE (Version 3), wird vom aktuellen Frontend aber nicht mehr aufgerufen.
+- `add_team_member_by_email` hat kein EXECUTE-Recht für `authenticated` und keine aktuelle Frontend-Verwendung. Die neue Tabellenabsicherung soll auch privilegierte interne Altaufrufe abdecken.
+
+Die Bestandsprüfung vom 04.11.2026 ergab 0 Benutzer mit mehreren Mannschaftszuordnungen, 0 Superadmins mit Mannschaftszuordnung und 0 widersprüchliche Vereins-/Mannschaftszuordnungen. Es ist keine Datenbereinigung erforderlich.
+
+### Technisches Korrekturpaket – vorbereitet, noch nicht freigegeben
+
+Review-Branch: `feature/dev-single-team-membership-guard-review`.
+
+1. **Datenbank:** zentrale SECURITY-DEFINER-Triggerfunktion für `team_members` und `team_member_roles`, Auth-Benutzerzeilensperre mit `FOR UPDATE`, Superadmin-Ausschluss und Ablehnung einer zweiten Mannschaft. Ergänzende Vorprüfungen in `admin_add_team_role` und `admin_create_team`, Filter in `admin_list_team_admin_candidates` und Index für `team_member_roles(user_id)`.
+2. **Frontend:** Rollenfelder anderer Mannschaften werden bei vorhandener Zuordnung gesperrt. Bei bisher nicht zugeordneten Mitgliedern erlaubt der Dialog maximal eine Mannschaft. Der Dialog entfernt den veralteten, unerreichbaren Altaufruf `admin_add_club_member_by_email`.
+3. **Legacy Edge Function:** vorbereiteter 410-Gone-Ersatz für `invite-trainer`. Das verbundene Werkzeug kann Edge Functions nicht physisch löschen; nach einem späteren Deploy bleibt der Endpunkt im Dashboard als ACTIVE sichtbar, weist aber alle Nicht-OPTIONS-Anfragen mit HTTP 410 ab. `invite-member` bleibt unverändert aktiv.
+4. **Verifikation:** separates read-only Prüfschema liegt unter `docs/proposals/single-team-membership-guard/after_apply_verification.sql`.
+
+**Wichtig:** Keine SQL-Ausführung, kein Supabase-Deploy, keine Änderung der aktiven Edge Functions und keine Änderung an `develop` oder PROD. Die vollständigen Vorschläge stehen unter `docs/proposals/single-team-membership-guard/`; die geplante DB-Änderung ist in DB_MIGRATION_LOG.md als nicht ausgeführter Vorschlag vermerkt.
+
+### Geplante DEV-Praxistests nach einer Freigabe
+
+- Bestehendes Mitglied kann Rollen innerhalb seiner bisherigen Mannschaft ändern.
+- Andere Mannschaften bleiben im Vereinsdialog gesperrt.
+- Vereinsmitglied ohne Mannschaft kann maximal einer Mannschaft zugeordnet werden.
+- Eine zweite Mannschaftszuordnung über den Mannschaftsbereich wird serverseitig abgewiesen.
+- Neuanlage einer Mannschaft bietet keine bereits zugeordneten Mitglieder als Admin-Kandidaten an.
+- Ein bereits zugeordneter Benutzer wird bei einem direkten Aufruf von `admin_create_team` als Mannschaftsadmin abgewiesen.
+- Der alte Edge-Endpunkt `invite-trainer` antwortet mit HTTP 410.
+- Der aktuelle Einladungsweg `invite-member` funktioniert weiterhin.
+
+PROD bleibt unverändert.
