@@ -477,3 +477,34 @@ Der dunkelblaue Header und die Begrüßung wurden bewusst noch nicht verändert.
 Zusätzlich bitte kurz prüfen, ob Header und Begrüßung auf der Dashboardseite den oberen sichtbaren Bereich kompakt halten und das Wappen korrekt geladen wird.
 
 **PROD:** Nicht geändert. GitHub `main` bleibt unverändert.
+
+
+## 22. iPhone-Feinschliff Header, Wappen, Rollenhinweis und Statistik (04.11.2026)
+
+### Nutzerfeedback und Umsetzung in DEV
+
+1. **App-Name:** „KADAssist“ wurde im dunkelblauen Header von 20 px auf 24 px vergrößert.
+2. **Vereinswappen:** Die Kachelkontur, der Hintergrund und die abgerundete Umrandung wurden entfernt. Das Wappen steht ohne Rahmen auf transparentem Hintergrund und streckt sich auf die Höhe des gesamten textlichen Kontextblocks. Auf schmalen Geräten wird die Breite leicht reduziert.
+3. **Rollenanzeige / Superadmin-Berechtigung:** Der Chip „Nur Ansicht“ wird beim Superadmin im ausdrücklich ausgewählten Mannschaftskontext vollständig weggelassen. Der Superadmin-Chip bleibt bestehen. Für einen Vereinsadmin, der im Mannschaftskontext tatsächlich nur lesend arbeitet, wird „Nur Ansicht in diesem Mannschaftskontext“ als kleiner Text neben der Rollenkennzeichnung angezeigt, nicht als Chip.
+4. **Statistik-Kachel:** Die Kennzahlenkarte für Spieler, Trainings und Spieltage wurde kompakter gestaltet: weniger Innenabstand, kleinere Labels und 21-px-Kennzahlen. Ziel ist, auf dem iPhone mehr vom nächsten Spieltag im sichtbaren Bereich zu halten.
+
+### Prüfung der Superadmin-Supportrechte
+
+Read-only geprüft und für den ausgewählten Teamkontext bestätigt:
+- Frontend-Guard `adminGuard()` lässt Superadmins im explizit ausgewählten Kontext trotz des internen Markers `contextReadOnly` durch.
+- Die DEV-Datenbankfunktion `public.is_team_admin(p_team_id uuid)` erkennt einen Nutzer als Teamadmin, wenn er entweder die Mannschaftsadminrolle hat oder Superadmin ist und für diese Mannschaft ein ausgewählter Teamkontext über `has_selected_team_context(p_team_id)` besteht.
+- Die Datenbankfunktion `has_selected_team_context` prüft den angemeldeten Nutzer und den ausgewählten Teamkontext.
+- Es wurde keine Berechtigungslogik geändert. Die Änderung entfernt nur die irreführende UI-Kennzeichnung; der explizite Supportkontext bleibt Voraussetzung.
+
+### Technischer Nachweis
+
+- Commit: `9694f5ab6b4e22a4f431d7042fab6425a7d35e3e` – `fix: refine dashboard context and summary spacing`.
+- Datei: `index.html`, Blob-SHA `41dfb3cf6dabcea87a49f4ca6607e81be9f4e469`.
+- JavaScript-Syntaxprüfung: beide Script-Blöcke erfolgreich geparst.
+- DEV-Deployment: [Deploy DEV #432](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41913740751), erfolgreich.
+- DEV-Spiegel `jugendmannschaft-dev/main/index.html`: identischer Blob-SHA `41dfb3cf6dabcea87a49f4ca6607e81be9f4e469`.
+- Keine SQL-/Schemaänderung, keine Migration, keine Änderung an RLS, Auth oder SMTP.
+
+**Manueller Nachtest:** Nach dem Deploy noch ausstehend. Insbesondere Wappenhöhe/-darstellung, der entfernte Superadmin-„Nur Ansicht“-Chip und die kompaktere Statistik-Karte sollen auf dem iPhone visuell geprüft werden.
+
+**PROD:** Nicht geändert. GitHub `main` bleibt unverändert.
