@@ -75,7 +75,7 @@ Neue Funktionen und Features werden grundsätzlich in einer abgestimmten Konzept
 |---|---|
 | `PROJECT_CONTEXT.md` | Projektüberblick, aktueller Stand, Regeln und Verweise |
 | `docs/SUPABASE_CHANGE_CONTROL.md` | Verbindlicher Ablauf und Dokumentationspflicht für alle Supabase-Änderungen |
-| `docs/proposals/single-team-membership-guard/README.md` | Führende Spezifikation des freigegebenen Rollenmodells und seines noch nicht ausgeführten DEV-Änderungsvorschlags |
+| `docs/proposals/single-team-membership-guard/README.md` | Führende Spezifikation des freigegebenen Rollenmodells, der ausgeführten DEV-Migration und der offenen Edge-/Praxistests |
 | `DB_CHANGELOG.md` | Technische Datenbankobjekte, Änderungen, Definitionen und Prüfungen |
 | `DB_MIGRATION_LOG.md` | Chronologischer Ausführungsnachweis aller schreibenden SQL-Eingriffe |
 | `SUPABASE_CHANGELOG.md` | Chronologischer Nachweis tatsächlicher nicht-SQL-basierter Supabase-Laufzeit- und Konfigurationsänderungen |
@@ -106,7 +106,7 @@ Die read-only Bestandsaufnahme ist abgeschlossen und die erste Umsetzung wurde n
 
 **Praxistest 04.11.2026:** Ein realer DEV-End-to-End-Fall für eine Trainer-Einladung wurde erfolgreich durchgeführt: E-Mail empfangen, DEV-Link geöffnet, Passwort vergeben und Dashboard erreicht. Eine read-only Datenbankprüfung bestätigte Auth-Bestätigung, Profilname, Vereinsmitgliedschaft und Trainerrolle. Weitere Rollen-/Kontextfälle und Wiederholungs-/Fehlerfälle bleiben offen.
 
-**Aktueller Folgefehler:** In der Superadmin-Mitgliederliste erscheint die E-Mail statt des gespeicherten Profilnamens; beim Bearbeiten ist das Namensfeld leer. Read-only Analyse: `get_club_members_v2` liefert keine Profilfelder; direkter Profil-SELECT wird durch die aktuelle RLS-Regel im ausgewählten Superadmin-Vereinskontext blockiert und der Frontend-Fehler bisher ignoriert. Geplanter Fix: neue, kontextgebundene read-only RPC `get_club_members_v3` mit Profilname und Avatar; RLS und bestehende v2 bleiben unverändert. Vollständiger SQL-Entwurf ist als geplant (DB-MIG-2026-002 / DB-DEV-008) in `DB_MIGRATION_LOG.md` und `DB_CHANGELOG.md` dokumentiert. **Noch nicht ausgeführt; ausdrückliche Freigabe des konkreten SQL-Texts steht aus.**
+**Historischer Folgefehler – behoben am 04.11.2026:** In der Superadmin-Mitgliederliste erschien zunächst die E-Mail statt des gespeicherten Profilnamens; das Namensfeld im Bearbeitungsdialog war leer. Ursache war, dass `get_club_members_v2` keine Profilfelder lieferte und ein direkter Profil-SELECT durch die damalige RLS-Regel im ausgewählten Superadmin-Vereinskontext blockiert wurde. Die kontextgebundene read-only RPC `get_club_members_v3` wurde als DB-DEV-008 erfolgreich ausgeführt und die Frontend-Anbindung wurde im DEV-Spiegel manuell bestätigt. Die genaue Ausführung und verbleibende Profilbild-/Speicher-/Kontextprüfungen sind in `DB_MIGRATION_LOG.md`, `DB_CHANGELOG.md` und `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md` dokumentiert.
 
 Weitere Rollen-/Kontextfälle, bestehende bestätigte und unbestätigte Auth-Benutzer sowie Fehler- und Wiederholungsfälle bleiben offen. Custom SMTP wurde nicht geändert.
 
