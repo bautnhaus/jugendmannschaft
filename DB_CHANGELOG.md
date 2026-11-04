@@ -508,4 +508,4 @@ Das freigegebene Rollenmodell trennt tats채chliche Mannschaftszuordnung und zus�
 
 **Advisor-Nachpr체fung:** Security Advisor meldet weiterhin allgemeine SECURITY-DEFINER-Warnungen, Hinweise auf die absichtlich ohne direkte Policies betriebenen Kontexttabellen und den Auth-Passwortschutz. Performance Advisor meldet allgemeine RLS-Initplan-/Mehrfach-Policy-Hinweise; der frisch angelegte Index ist unmittelbar nach Erstellung noch ungenutzt. Diese Themen sind getrennt zu bewerten und wurden nicht pauschal durch DB-DEV-009 ver채ndert.
 
-**Noch offen:** funktionale Positiv-/Negativtests 체ber die App, Edge-Function-Aktualisierung und manuelle Browserpr체fung. Die Migration allein aktiviert noch nicht die korrigierten Einladungs-Endpunkte.
+**Noch offen:** funktionale Positiv-/Negativtests 체ber die App und manuelle Browserpr체fung. Die beiden korrigierten Einladungs-Endpunkte wurden am 04.11.2026 separat in Supabase DEV auf Version 4 deployed; beide sind ACTIVE, verify_jwt=true, und die Live-Quelltexte stimmen bytegenau mit develop 체berein. Deployment-Nachweis: SUPABASE_CHANGELOG.md, SUPA-2026-001. PROD bleibt unver채ndert.
