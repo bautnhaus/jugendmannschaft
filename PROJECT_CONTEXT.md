@@ -177,3 +177,6 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 
 
 **Praxistest und UX-Korrektur 04.11.2026 – Vereinsadmin zusätzlich zu Trainer:** Der bestehende Superadmin wurde über „Bearbeiten“ zusätzlich zum Vereinsadmin gemacht. Read-only Prüfung bestätigte: super_admin und club_admin vorhanden, Trainerrolle in der bisherigen Mannschaft erhalten, genau eine Mannschaftszuordnung. Zusätzlich wurde der Fehler behoben, dass die sichtbare Vereinsmitgliederliste nach Speichern nicht aktualisiert wurde: `saveClubMemberEditor` erkennt die aktive Unterseite und lädt sie direkt neu, ohne Navigation eine Ebene höher. DEV-Deploy #407 erfolgreich; `develop/index.html` und DEV-Spiegel identischer Blob-SHA `55cc89958375a5d4d1bac2ed61e1c3fcae75b23c`. Manueller Browser-Nachtest der direkten Aktualisierung noch offen. Details: `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md`, Abschnitt 16.
+
+
+**UX-Nachtest 04.11.2026 bestanden:** Nach Speichern des Mitglieder-Bearbeitungsdialogs aktualisiert sich die sichtbare Vereinsmitgliederliste sofort; der Nutzer bleibt auf „Mitglieder und Rollen“. Kein Seitenneuladen oder Zurückspringen in die übergeordnete Verwaltung erforderlich. Der Nachtest ist in `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md`, Abschnitt 16, dokumentiert.
