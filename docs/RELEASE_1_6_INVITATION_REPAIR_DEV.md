@@ -88,7 +88,7 @@ Mindestens folgende Tests sind noch auszuführen:
 | Bestehendes bestätigtes Konto | Vereinsadmin lädt vorhandenen Superadmin als Trainer ein | Bestehendes Konto wird zugeordnet; globale Superadmin-Rolle bleibt erhalten; keine zweite Mannschaft | Erfolgreich (04.11.2026; Datenbank read-only verifiziert) |
 | Offenes/unbestätigtes Auth-Konto | alle Kontexte | Bestehendes Konto übernehmen; keine neue Mail behaupten, wenn Supabase keine bestätigt; ursprünglichen Link prüfen | Offen |
 | Abweichender Verein | alle Kontexte | Kontrollierte Ablehnung | Offen |
-| Andere Mannschaft vorhanden | Teamrolle | Kontrollierte Ablehnung ohne zweite Mannschaftszuordnung | Offen |
+| Andere Mannschaft vorhanden | Bestehendes Superadmin-Konto mit Trainerrolle in DEV Mannschaft soll zusätzlich G-Junioren erhalten | Einladung wird durch vorhandene Vereinsmitgliedschaft auf UI-Ebene gestoppt; Bearbeitungsdialog zeigt andere Mannschaft, deaktiviert deren Rollenfelder und erklärt den zweistufigen Wechsel | UI-Schutz bestätigt (04.11.2026); serverseitiger Negativaufruf nicht ausgelöst |
 | Wiederholte Einladung | gleicher Empfänger | Keine doppelten Konten/Rollen; Warnung bei Teilfehlern | Offen |
 | Nicht autorisierte externe E-Mail | Standard-SMTP | Verständlicher Versandfehler; kein falscher Erfolg | Offen |
 
@@ -262,3 +262,24 @@ Der Nutzer bestätigte den erfolgreichen Einladungsvorgang über die DEV-App. An
 **Teststatus:** Erfolgreich für den konkreten Fall „Vereinsadmin ordnet ein bestehendes, bestätigtes Superadmin-Konto als Trainer in einer Mannschaft zu“. Die weiteren Einladungsrollen und der Negativtest gegen eine zweite Mannschaft bleiben separat offen.
 
 Die Prüfung hat keine Daten verändert. PROD und GitHub `main` blieben unangetastet.
+
+
+## 15. Nachtrag 04.11.2026 – Versuch einer zweiten Mannschaftszuordnung: UI-Schutz greift
+
+Der Nutzer versuchte, das bereits als Trainer in „DEV Mannschaft“ geführte Superadmin-Konto zusätzlich „G-Junioren“ zuzuordnen.
+
+**Beobachtetes Frontend-Verhalten:**
+- Der Einladungsdialog meldet: „Dieses Konto ist bereits Vereinsmitglied. Bitte öffne den vorhandenen Eintrag über ‚Bearbeiten‘.“ Der Frontend-Vorabcheck erkennt die E-Mail in der bereits geladenen Vereinsmitgliederliste und ruft invite-member in diesem Fall nicht auf.
+- Im Dialog „Mitglied bearbeiten“ werden die Rollenoptionen der anderen Mannschaft angezeigt, sind aber deaktiviert. Der aktuelle Code setzt `disabled`, sobald das Mitglied bereits genau einer anderen Mannschaft zugeordnet ist.
+- Der Hinweistext erklärt den vorgesehenen zweistufigen Mannschaftswechsel: bisherige Rollen entfernen und speichern; danach den Dialog erneut öffnen und der anderen Mannschaft zuordnen.
+
+**Read-only Datenbankkontrolle nach dem Versuch:**
+- Globale Rolle super_admin weiterhin vorhanden.
+- Trainerrolle weiterhin ausschließlich in „DEV Mannschaft“.
+- Entsprechende Zeilen in `team_members` und `team_member_roles` weiterhin konsistent.
+- Keine Zuordnung zu „G-Junioren“.
+- Mehrfachzuordnungen über die beiden Mannschaftstabellen: 0 Benutzer.
+
+**Testbewertung:** Der Frontend-Schutz gegen eine zweite Mannschaftszuordnung ist im konkreten Fall bestätigt; es wurde keine schreibende Änderung vorgenommen. Der serverseitige Negativpfad (Aufruf von `admin_add_team_role` bzw. des Datenbanktriggers mit einer zweiten Mannschaft) wurde durch diesen UI-Test nicht ausgeführt. Quelltext und Triggerdefinition sind technisch geprüft; ein authentifizierter Laufzeittest des serverseitigen Ablehnungswegs bleibt separat offen.
+
+Der Nutzer soll für diesen Test keine bestehende Mannschaftsrolle entfernen. Ein echter Mannschaftswechsel wäre eine Datenänderung und ist nicht Teil dieses Negativtests.
