@@ -350,20 +350,45 @@ Der Nutzer soll für diesen Test keine bestehende Mannschaftsrolle entfernen. Ei
 **Manueller DEV-Praxistest bestanden (04.11.2026):** Der Nutzer hat die DEV-App mit einem Vereinsadmin ohne Mannschaftszuordnung geprüft und bestätigt: „Ja funktioniert“. Damit ist die Korrektur zur direkten Aktualisierung nach dem Speichern sowie die Anzeige der gewünschten Mannschafts- und Vereinsinformationen im tatsächlichen Browser-Praxistest bestätigt. Der Nutzer musste die Seite nicht manuell neu laden. Der Test wurde vom Nutzer durchgeführt; es wurde kein automatisierter Browser-Test behauptet.
 
 
-## 18. Release-1.6-Abschlussprüfungen – bereinigter Restumfang (04.11.2026)
+## 18. Release-1.6-Abschlussprüfungen – aktueller Status (04.11.2026)
 
-Die folgenden Punkte sind die verbleibenden fachlichen und technischen Abschlussprüfungen. SMTP-Setup, grundlegender DEV-Einladungsfluss und die zuletzt korrigierten Mitglieder-/Kontextansichten gehören nicht mehr zu den offenen Implementierungsaufgaben.
+Die Rollen- und Einladungstests wurden anhand der Rückmeldung des Nutzers aktualisiert. Der serverseitige Negativtest zur Ein-Mannschaft-Regel wurde nach ausdrücklicher Freigabe ausschließlich in DEV ausgeführt. Die Ergebnisse dieses Abschnitts ersetzen die zuvor offenen Statusangaben.
 
-| Nr. | Abschlussprüfung | Erwartung | Status |
+| Nr. | Abschlussprüfung | Ergebnis | Status |
 |---|---|---|---|
-| 1 | Rollenkombinationen mit neuen Testadressen | Die noch nicht separat geprüften Einladungswege werden abgedeckt: Superadmin → Vereinsmitglied/Vereinsadmin; Vereinsadmin → Vereinsmitglied/Mannschaftsadmin/Trainer; Mannschaftsadmin → Mannschaftsadmin/Trainer. Jeweils korrekte Mitgliedschaft, Rolle und Namensspeicherung. Der bereits erfolgreiche Trainer-End-to-End-Fall wird nicht erneut als offen gezählt. | Offen |
-| 2 | Bereits vorhandenes, unbestätigtes Auth-Konto | Bestehendes Konto wird korrekt erkannt und zugeordnet. Keine falsche Erfolgsmeldung für eine nicht bestätigte neue E-Mail; Verhalten des ursprünglichen bzw. abgelaufenen Links wird nachvollziehbar angezeigt. | Offen |
-| 3 | Wiederholungseinladung | Erneuter Einladungsversuch erzeugt weder doppelte Konten noch doppelte Rollen oder inkonsistente Mitgliedschaften; Teilergebnisse werden korrekt gemeldet. | Offen |
-| 4 | Abweichender Verein | Ein Benutzer kann nicht versehentlich in einem nicht berechtigten bzw. abweichenden Vereinskontext zugeordnet werden; serverseitige Ablehnung ist nachvollziehbar. | Offen |
-| 5 | Ein-Mannschaft-Regel serverseitig | Neben dem bereits bestätigten UI-Schutz wird der authentifizierte serverseitige Ablehnungsweg für eine zweite Mannschaftszuordnung geprüft. Keine bestehende Rolle wird dafür entfernt. | Offen |
-| 6 | Legacy-Endpunkt `invite-trainer` | Authentifizierter Nicht-OPTIONS-Aufruf liefert HTTP 410 Gone und verweist auf `invite-member`; JWT-Prüfung bleibt aktiv. | Offen |
-| 7 | E-Mail-Zustellung über Brevo | Eine frische externe Testeinladung wird nachweislich zugestellt; Link öffnet DEV und führt zur Passwortvergabe. Dies prüft die bestehende Lösung, nicht deren Einrichtung. | Erfolgreich für den bisherigen Trainer-Testfall; weitere Rollenkombinationen offen |
+| 1 | Rollenkombinationen: Superadmin → Vereinsmitglied/Vereinsadmin; Vereinsadmin → Vereinsmitglied/Mannschaftsadmin/Trainer; Mannschaftsadmin → Mannschaftsadmin/Trainer | Nutzer bestätigt alle Kombinationen als erfolgreich. Die Zuordnungen und Rollen funktionieren in den geprüften Einladungskontexten. | Bestanden |
+| 2 | Bereits vorhandenes, unbestätigtes Auth-Konto | Getestet wurde der Fall einer Zieladresse, die bereits als Vereinsmitglied geführt wird. Die App verhindert eine erneute Einladung und weist auf den vorhandenen Eintrag unter „Bearbeiten“ hin. Der davon getrennte Fall eines unbestätigten Auth-Kontos ohne bestehende Vereinsmitgliedschaft wurde dadurch nicht nachgewiesen. | Teilweise geprüft |
+| 3 | Wiederholungseinladung | Beim erneuten Versuch wird derselbe Hinweis auf die bereits bestehende Vereinsmitgliedschaft angezeigt; der Nutzer soll den bestehenden Eintrag bearbeiten. | App-Verhalten bestätigt |
+| 4 | Abweichender Verein | In DEV existiert aktuell nur ein Verein. Eine zweite Vereinsanlage ist in der App noch nicht verfügbar; deshalb kann die Abweisung einer vereinsübergreifenden Zuordnung derzeit nicht praktisch getestet werden. | Derzeit nicht testbar |
+| 5 | Ein-Mannschaft-Regel serverseitig | Nach ausdrücklicher Freigabe wurden direkte INSERT-Versuche in beide Zuordnungstabellen gegen eine zweite Mannschaft ausgeführt. Beide wurden durch den aktiven Trigger mit SQLSTATE 23514 und der erwarteten Fehlermeldung abgewiesen. Die anschließende read-only Prüfung bestätigte, dass das Testkonto weiterhin ausschließlich der „DEV Mannschaft“ zugeordnet ist. | Bestanden |
+| 6 | Legacy-Endpunkt `invite-trainer` | Supabase DEV meldet den Endpoint ACTIVE, Version 4, `verify_jwt=true`. Der zurückgelesene Live-Quelltext liefert für Nicht-OPTIONS-Aufrufe HTTP 410 Gone und verweist auf `invite-member`; OPTIONS liefert 200. Ein authentifizierter HTTP-Aufruf wurde nicht ausgeführt, daher ist die 410-Antwort im Laufzeitaufruf nicht separat protokolliert. | Live-Code/Deployment geprüft; HTTP-Laufzeittest offen |
+| 7 | E-Mail-Zustellung über Brevo | Die Brevo-Zustellung, der DEV-Einladungslink und die Passwortvergabe waren bereits im erfolgreichen Trainer-End-to-End-Test bestätigt. | Bestanden für den bisherigen E2E-Test |
 
-**Abschlusskriterium:** Die offenen Negativtests (Nr. 2–6) und die noch fehlenden Rollenfälle aus Nr. 1 sind mit nachvollziehbarem Ergebnis dokumentiert. Für jeden Test werden Empfänger-Testkonto, aufrufender Kontext, Zielrolle und das Ergebnis der read-only Datenbankkontrolle festgehalten. Keine Tests mit echten produktiven Einladungen; PROD bleibt unangetastet.
+### Nachweis S4 – serverseitige Ein-Mannschaft-Sperre (04.11.2026)
 
-**Arbeitsgrenze:** Diese Abschlussrunde umfasst keine neue SQL-Migration, keine Änderung an Supabase-Auth-/SMTP-Konfigurationen und keine Änderung an PROD oder GitHub `main`. Falls ein Fehler eine Code- oder Konfigurationsänderung erfordert, wird zuerst der Befund mit einem minimalen Fix- und Testvorschlag vorgelegt.
+**Umgebung:** ausschließlich Supabase DEV, Projekt `pzazqvvoruqnqhcorbwx`.
+
+**Testaufbau:** Das vorhandene DEV-Testkonto war in beiden Tabellen jeweils genau der Mannschaft „DEV Mannschaft“ zugeordnet. Als zweite Mannschaft wurde „G-Junioren“ desselben Vereins verwendet.
+
+**Ausgeführte Prüfung:** Innerhalb eines anonymen PL/pgSQL-Testblocks wurde je ein INSERT-Versuch in `public.team_member_roles` und `public.team_members` mit der Zielmannschaft „G-Junioren“ ausgelöst. Die erwartete Trigger-Ausnahme wurde je in einem eigenen Exception-Block abgefangen. Ein unerwartet erfolgreicher INSERT hätte den Test mit einem Fehler abgebrochen. Damit wurden keine Testzuordnungen dauerhaft gespeichert.
+
+**Ergebnis:** Beide Versuche wurden durch `enforce_single_team_membership()` mit SQLSTATE `23514` und der Meldung „Benutzer gehört bereits einer anderen Mannschaft an. Eine zweite Mannschaftszuordnung ist nicht möglich.“ abgewiesen. Die nachfolgende read-only Abfrage zeigte in beiden Tabellen weiterhin genau die bestehende Zuordnung zur „DEV Mannschaft“ und keine Zeile für „G-Junioren“.
+
+**Änderungsumfang:** Keine Schemaänderung, keine Migration, keine Änderung an Rollen oder Mitgliedschaftsdaten. Es handelte sich um einen kontrollierten Negativtest; der SQL-Test und die Nachprüfung sind zusätzlich in `DB_CHANGELOG.md` unter DB-TEST-2026-004 dokumentiert.
+
+### Einordnung der noch nicht vollständig nachgewiesenen Fälle
+
+- **Unbestätigtes Auth-Konto ohne Vereinsmitgliedschaft:** bleibt als eigener Auth-Sonderfall offen. Der getestete Hinweis „Dieses Konto ist bereits Vereinsmitglied“ verhindert den erneuten Einladungsweg bereits vor diesem Sonderpfad.
+- **Abweichender Verein:** bleibt mangels zweitem Verein und mangels Vereinsanlage-Funktion nicht testbar. Es wurde hierfür keine künstliche zweite Vereinsstruktur erzeugt.
+- **Legacy-Endpunkt:** Live-Version, JWT-Einstellung und Quelltext sind geprüft. Ein authentifizierter HTTP-Laufzeitaufruf ist mangels verfügbarer authentifizierter Testmöglichkeit nicht erfolgt. Die erwartete HTTP-410-Antwort wird daher nicht als Laufzeittest bestanden ausgegeben.
+
+### Aktueller Abschlussstand
+
+Die vier zusätzlichen Rollenkombinationen, die bestehenden Superadmin-Fälle, der Wiederholungsschutz und die serverseitige Ein-Mannschaft-Sperre sind bestätigt. Brevo ist eingerichtet und der Einladungs-E2E-Fluss wurde bereits erfolgreich durchlaufen.
+
+Es bleiben nur:
+1. der eigenständige Sonderfall eines unbestätigten Auth-Kontos ohne Vereinsmitgliedschaft,
+2. der authentifizierte HTTP-Laufzeittest für `invite-trainer`,
+3. der vereinsübergreifende Negativtest, sobald eine zweite Vereinsanlage in DEV verfügbar ist.
+
+**Arbeitsgrenzen:** Keine neue SQL-Migration wurde erstellt. Es gab keine Änderung an Supabase-Auth-/SMTP-Konfigurationen, keine Änderung an PROD und keine Änderung an GitHub `main`.  
