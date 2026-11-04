@@ -1,6 +1,6 @@
 # DEV-Korrekturpaket: Ein-Mannschaft-Regel und kontextbasierte Rollen
 
-**Status:** fachlich freigegeben am 04.11.2026; Spezifikation und Quellen liegen in `develop`. Das Frontend wurde beim Push nach `develop` in den DEV-Spiegel `jugendmannschaft-dev/main` synchronisiert (Blob-SHA `ebf7363aa2df1f5b3fc465934e2fab8cea3ef0c1`); der manuelle Browser-/Praxistest steht noch aus. Die Supabase-Edge-Functions sind weiterhin nicht aktualisiert (live beide Version 3); die SQL-Migration ist nicht ausgeführt.  
+**Status:** fachlich freigegeben; Datenbankmigration DB-DEV-009 in Supabase DEV am 04.11.2026 erfolgreich ausgeführt (Version `20261104143331`). Das Frontend ist im DEV-Spiegel synchronisiert; manueller Browser-/Praxistest steht noch aus. Die Supabase-Edge-Functions sind noch nicht aktualisiert (live beide Version 3). PROD ist unverändert.  
 **Stand:** 04.11.2026  
 **Zielumgebung:** ausschließlich Supabase DEV (`pzazqvvoruqnqhcorbwx`)  
 **PROD:** unverändert, nicht geändert und nicht freigegeben.
@@ -19,9 +19,9 @@ Die Korrektur trennt tatsächliche Mannschaftsmitgliedschaften von Verwaltungsbe
 
 Die frühere Annahme, Superadmins müssten vollständig neutral und ohne Vereins-/Mannschaftsmitgliedschaften bleiben, ist durch die Nutzerentscheidung vom 04.11.2026 ausdrücklich überholt.
 
-## 2. Was die vorbereitete Datenbankmigration macht
+## 2. Umgesetzte Datenbankmigration
 
-Datei: `migration.sql`
+Ausgeführt: `supabase/migrations/20261104143331_db_dev_009_single_team_membership_guard.sql` (Version `20261104143331`). Konzeptentwurf: `docs/proposals/single-team-membership-guard/migration.sql`.
 
 - Vorabprüfung: bricht ab, falls ein Benutzer bereits mehreren unterschiedlichen Mannschaften zugeordnet ist. Bestehende Daten werden nicht automatisch bereinigt.
 - Ergänzt einen Index auf `team_member_roles(user_id)`.
@@ -34,6 +34,8 @@ Datei: `migration.sql`
 - Überarbeitet `admin_complete_member_invitation`: Superadmins dürfen zusätzlich Vereinsmitglied, Vereinsadmin, Mannschaftsadmin oder Trainer werden. Die bestehende Ein-Verein- und Ein-Mannschaft-Prüfung bleibt erhalten.
 
 Es gibt in dieser korrigierten Fassung **keinen Trigger auf `global_user_roles`**, der die spätere Vergabe der Superadmin-Rolle an ein Mannschaftsmitglied blockieren würde.
+
+**Ausführung und Read-only Nachprüfung (04.11.2026):** Supabase meldete `success: true`; Migrationshistorie bestätigt Version `20261104143331`. Beide Trigger sind vorhanden und aktiviert, der Index ist vorhanden, und die Mehrfachzuordnungsprüfung über beide Teamtabellen ergibt 0 Benutzer. Die vier angepassten RPCs wurden mit festem Suchpfad und den erwarteten EXECUTE-Rechten zurückgelesen. RLS-Policies wurden nicht geändert. Der vollständige Nachweis steht in `DB_MIGRATION_LOG.md` (DB-MIG-2026-003) und `DB_CHANGELOG.md` (DB-DEV-009). Die Security-/Performance-Advisor-Hinweise sind dort ebenfalls zusammengefasst.
 
 ## 3. Kontextberechtigungen bleiben eigenständig
 
@@ -87,14 +89,15 @@ Vorbereitet ist daher ein Ersatz-Endpunkt, der außer OPTIONS jede Anfrage mit *
 
 ## 6. Dateien
 
-- `migration.sql` – vollständiger SQL-Vorschlag, nicht ausgeführt.
-- `after_apply_verification.sql` – rein lesende Prüfungen nach einer späteren Freigabe.
+- `supabase/migrations/20261104143331_db_dev_009_single_team_membership_guard.sql` – tatsächlich in Supabase DEV ausgeführte Migration.
+- `migration.sql` – Konzept-/Review-Entwurf der Migration.
+- `after_apply_verification.sql` – rein lesendes Verifikationsskript; nach Ausführung in DEV verwendet.
 - `supabase/functions/invite-member/index.ts` – angepasste Edge-Function-Quelle in `develop`, noch nicht deployed.
 - `supabase/functions/invite-trainer/index.ts` – 410-Gone-Ersatz in `develop`, noch nicht deployed.
 - `index.html` – Frontend-Anpassung in `develop`, bereits in den DEV-Spiegel synchronisiert; Browser-/Praxistest offen.
 - `DB_MIGRATION_LOG.md`, `DB_CHANGELOG.md`, `PROJECT_CONTEXT.md`, `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md` und `docs/AP04-profile-management.md` – Befund und fachlich korrigierter Vorschlag.
 
-## 7. Geplante Tests nach einer Freigabe
+## 7. Noch ausstehende funktionale Tests
 
 1. Bestehendes Mitglied mit Trainerrolle in Team A kann dort weiterhin bearbeitet werden; Zuweisung zu Team B wird im UI und serverseitig abgewiesen.
 2. Mannschaftsadmin aus Team A kann über seinen eigenen Team-Kontext in Team A arbeiten; keine Mitgliedschaft in Team B wird dafür angelegt.
@@ -122,4 +125,4 @@ Vorbereitet ist daher ein Ersatz-Endpunkt, der außer OPTIONS jede Anfrage mit *
 7. `invite-member` aktualisieren, den alten `invite-trainer`-Endpunkt auf 410 Gone umstellen und diese Supabase-Laufzeitänderungen im `SUPABASE_CHANGELOG.md` dokumentieren.
 8. Security Advisor erneut prüfen und die Tests aus Abschnitt 7 durchführen.
 
-**Fachlich freigegeben am 04.11.2026:** Rollenmodell einschließlich nachträglicher Vergabe von Superadmin und/oder Vereinsadmin an ein bestehendes Mannschaftsmitglied bei unveränderter Mannschaftszuordnung. **Technischer Status:** SQL-Vorschlag, Frontend und Edge-Function-Quellen sind in `develop` versioniert. Das Frontend wurde bereits in den DEV-Spiegel synchronisiert; manueller Browser-/Praxistest ist offen. Die Supabase-Edge-Functions sind live weiterhin Version 3 und noch nicht aktualisiert. Die SQL-Migration ist nicht ausgeführt. SQL-Ausführung und Supabase-Edge-Deployments benötigen separate ausdrückliche Freigaben. PROD bleibt unverändert.
+**Status am 04.11.2026:** Fachliches Rollenmodell freigegeben; DB-DEV-009 in Supabase DEV erfolgreich ausgeführt und read-only verifiziert. Frontend in DEV-Spiegel synchronisiert, Browser-/Praxistest offen. Edge Functions live weiterhin Version 3; Aktualisierung noch ausstehend und gesondert freizugeben. PROD bleibt unverändert.
