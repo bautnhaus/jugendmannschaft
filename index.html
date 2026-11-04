@@ -1861,8 +1861,22 @@ async function loadApp(){
   isSuperAdmin=(globalRoles||[]).some(x=>x.role==='super_admin');
   let {data:members,error:me}=await c.from('team_member_roles').select('team_id,user_id,role').eq('user_id',currentUser.id);
   if(me)throw me;
-  // Ein Super Admin im bewusst geöffneten Mannschaftskontext bleibt als Kontextverwaltung markiert,
-  // auch wenn er selbst bereits eine team_member_roles-Zuordnung besitzt.
+  // Vereinsadmins starten grundsätzlich in der Vereinsverwaltung, auch wenn sie
+  // zusätzlich Trainer- oder Mannschaftsadmin-Rollen besitzen. Eine Mannschaft
+  // wird erst nach ausdrücklicher Auswahl als Arbeitskontext geöffnet.
+  let clubAdminHome=false;
+  if(!isSuperAdmin&&!openingAdminContext&&!adminContextActive){
+    const {data:clubRows,error:clubRowsError}=await c.from('club_members').select('club_id').eq('user_id',currentUser.id);
+    if(clubRowsError)throw clubRowsError;
+    const candidateClubIds=[...new Set((clubRows||[]).map(x=>x.club_id).filter(Boolean))];
+    if(candidateClubIds.length===1){
+      const {data:clubAdminFlag,error:clubAdminError}=await c.rpc('is_club_admin',{p_club_id:candidateClubIds[0]});
+      if(clubAdminError)throw clubAdminError;
+      clubAdminHome=clubAdminFlag===true;
+      if(clubAdminHome)members=[];
+    }
+  }
+  // Ein Super Admin im bewusst geöffneten Mannschaftskontext bleibt als Kontextverwaltung markiert.
   contextReadOnly=!!(isSuperAdmin&&(openingAdminContext||adminContextActive));
   // Ein Super Admin startet immer in der Plattformverwaltung. Ein vorhandener
   // Kontext darf erst nach bewusster Auswahl in dieser Sitzung geöffnet werden.
@@ -1871,7 +1885,26 @@ async function loadApp(){
     if(clearError)console.warn('Vorheriger Mannschaftskontext konnte nicht zurückgesetzt werden:',clearError.message);
     members=[];
   }
-  if(!members?.length&&(!isSuperAdmin||openingAdminContext||adminContextActive)){
+  // Bei einer ausdrücklich geöffneten Mannschaft hat der gespeicherte Kontext
+  // Vorrang vor einer Mitgliedschaft in einer anderen Mannschaft.
+  if(openingAdminContext||adminContextActive){
+    const {data:selectedContext,error:selectedContextError}=await c.rpc('get_selected_team_context');
+    if(selectedContextError)throw selectedContextError;
+    if(!selectedContext?.length)throw new Error('Der ausgewählte Mannschaftskontext konnte nicht bestätigt werden. Bitte Verein und Mannschaft erneut auswählen.');
+    const selectedTeamId=selectedContext[0].team_id;
+    const membershipsInSelectedTeam=(members||[]).filter(m=>m.team_id===selectedTeamId);
+    if(membershipsInSelectedTeam.length){
+      members=membershipsInSelectedTeam;
+      contextReadOnly=!!isSuperAdmin;
+    }else{
+      members=[{team_id:selectedTeamId,role:isSuperAdmin?'admin':'trainer'}];
+      contextReadOnly=true;
+    }
+    currentClubId=selectedContext[0].club_id;
+  }
+  // Ein Vereinsadmin-Kontext darf einen zuvor gespeicherten Mannschaftskontext
+  // nicht automatisch wiederherstellen; die Auswahl erfolgt bewusst im Vereinsbereich.
+  if(!members?.length&&(!isSuperAdmin||openingAdminContext||adminContextActive)&&!clubAdminHome){
     const {data:selectedContext,error:selectedContextError}=await c.rpc('get_selected_team_context');
     if(selectedContextError)throw selectedContextError;
     if(selectedContext?.length){
