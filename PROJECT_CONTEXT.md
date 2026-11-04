@@ -149,6 +149,7 @@ Die frühere ausführliche Fassung dieses Dokuments wurde unverändert archivier
 - Ein Mannschaftsmitglied darf weiterhin keiner zweiten Mannschaft zugeordnet werden.
 - Superadmins und Vereinsadmins können in den Mannschaftskontexten ihres ausgewählten/eigenen Berechtigungsbereichs administrieren, ohne dort jeweils Mitglied zu sein.
 - Die Regel gilt für die zugeordnete Zielperson; sie beschränkt nicht die Kontextrechte des handelnden Administrators.
+- Die Vereinsadmin-Rolle kann über `admin_set_club_member_role` ergänzt werden, ohne die Mannschaftszuordnung zu verändern. Die globale Superadmin-Rolle ist in der aktuellen App nicht über den Mitgliedereditor vergebbar; für `global_user_roles` besteht für angemeldete Nutzer kein Schreibrecht. Die Ein-Team-Regel blockiert eine vertrauenswürdige spätere Vergabe nicht; der Vergabeprozess ist separat zu klären.
 
 **Technischer Status:** SQL-, Frontend- und Edge-Function-Vorschlag ist fachlich freigegeben, technisch aber noch nicht in Supabase DEV ausgeführt und nicht deployed. Eine separate Ausführungsfreigabe für die konkrete DEV-Migration und separate Deployment-Freigaben bleiben erforderlich.
 
