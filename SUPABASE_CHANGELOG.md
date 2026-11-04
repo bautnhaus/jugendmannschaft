@@ -53,6 +53,6 @@ Schreibende SQL-Änderungen bleiben zusätzlich und verbindlich in `DB_MIGRATION
 
 ## 4. Neue Einträge
 
-Für die am 04.11.2026 vorbereitete Rollenmodell-Korrektur wurde keine Supabase-Laufzeit- oder Konfigurationsänderung ausgeführt. Die geänderte Quelle für `invite-member` und der 410-Gone-Ersatz für `invite-trainer` befinden sich ausschließlich im Review-Feature-Branch und sind nicht deployed. Die aktuelle Live-Version bleibt unverändert; der ausführlichere Status steht in `docs/proposals/single-team-membership-guard/README.md` und `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md`.
+Für die am 04.11.2026 vorbereitete Rollenmodell-Korrektur wurde noch keine Supabase-Laufzeit- oder Konfigurationsänderung ausgeführt. Die geänderten Quellen für `invite-member` und den 410-Gone-Ersatz `invite-trainer` liegen in `develop` unter `supabase/functions/` und sind nicht deployed. Die aktuellen Live-Versionen bleiben unverändert (DEV: beide Funktionen weiterhin ACTIVE, Version 3, JWT-Prüfung aktiv). Auch der geänderte Frontend-Stand in `develop/index.html` ist noch nicht nach DEV deployed. Der vollständige Status steht in `docs/proposals/single-team-membership-guard/README.md` und `docs/RELEASE_1_6_INVITATION_REPAIR_DEV.md`.
 
 Künftige tatsächliche Deployments und Konfigurationsänderungen werden ab diesem Protokoll mit dem Eintragsmuster aus Abschnitt 3 dokumentiert. Historische Änderungen werden nicht ohne Beleg rückwirkend rekonstruiert.
