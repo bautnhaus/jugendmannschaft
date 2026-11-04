@@ -3203,7 +3203,6 @@ window.renderClubMembers=async()=>{const box=$('clubMemberList');if(!box)return;
 window.openClubMemberEditor=async userId=>{
   if(!canManageClub||!currentClubId){showStatus('Bitte zuerst einen berechtigten Vereinskontext öffnen.','error');return;}
   if(!userId){window.openClubMemberInvite();return;}
-  const editing=true;
   const member=clubMembersCache.find(m=>m.user_id===userId);
   if(!member){showStatus('Mitglied wurde nicht gefunden. Bitte Liste aktualisieren.','error');return;}
   const profile={
