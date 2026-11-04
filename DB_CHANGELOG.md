@@ -471,7 +471,7 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 **Bereits versionierte Anwendungsschicht:** `index.html` ist in `develop` committed und wurde in den DEV-Spiegel `jugendmannschaft-dev/main` synchronisiert (Blob-SHA `ebf7363aa2df1f5b3fc465934e2fab8cea3ef0c1`); manueller UI-Test offen. `supabase/functions/invite-member/index.ts` und `supabase/functions/invite-trainer/index.ts` sind in `develop` versioniert, aber in Supabase DEV noch nicht deployed. Diese Anwendungsschicht ändert den Datenbankstatus nicht. `index.html` begrenzt den Vereinsmitglieder-Dialog auf eine tatsächliche Mannschaft und bewahrt bestehende Zuordnungen; `supabase/functions/invite-member/index.ts` lässt bestehende Superadmins als Zielpersonen zu; `supabase/functions/invite-trainer/index.ts` antwortet als Legacy-Endpunkt mit HTTP 410. Die Quellen liegen in `develop`. Diese Änderungen sind noch nicht in Supabase DEV aktiviert; daher gibt es dafür noch keinen Deployment-Nachweis in `SUPABASE_CHANGELOG.md`.
 ## DB-DEV-009 – Ein-Mannschaft-Regel und zusätzliche Verwaltungsrollen
 
-**Status: fachlich freigegeben am 04.11.2026; technische Umsetzung vorbereitet, aber noch nicht ausgeführt.** Ziel wäre ausschließlich Supabase DEV. PROD ist unverändert.
+**Status: in Supabase DEV erfolgreich ausgeführt am 04.11.2026.** Supabase-Migrationsversion `20261104143331`, Name `db_dev_009_single_team_membership_guard`. PROD wurde nicht geändert und ist nicht freigegeben. Ausführungsnachweis: `DB_MIGRATION_LOG.md`, DB-MIG-2026-003.
 
 Das freigegebene Rollenmodell trennt tatsächliche Mannschaftszuordnung und zusätzliche Verwaltungsrechte:
 
@@ -481,11 +481,31 @@ Das freigegebene Rollenmodell trennt tatsächliche Mannschaftszuordnung und zus�
 - Superadmins und Vereinsadmins dürfen in Mannschaftskontexten ihres Berechtigungsbereichs administrieren, ohne dort selbst Mitglied zu sein.
 - Die Ein-Team-Regel beschränkt die Zuordnung der Zielperson, nicht den Handlungskontext des aufrufenden Administrators.
 
-**Technischer Vorschlag:** zentrale Prüfung beider Mannschaftszuordnungstabellen, Anpassungen an den Verwaltungs- und Einladungs-RPCs sowie eine passende Frontend-Prüfung. Bestehende RLS-Regeln sollen nicht pauschal verändert werden. Es ist kein Mechanismus vorgesehen, der die spätere Vergabe der Superadmin-Rolle an ein Mannschaftsmitglied verhindert.
+**Umgesetzte Datenbankänderungen:**
+- Neue SECURITY-DEFINER-Triggerfunktion `public.enforce_single_team_membership()` mit festem `search_path = pg_catalog, public, auth`.
+- Trigger `team_members_single_team_guard` und `team_member_roles_single_team_guard`, jeweils BEFORE INSERT OR UPDATE OF `user_id, team_id`.
+- Neuer Index `idx_team_member_roles_user` auf `public.team_member_roles(user_id)`.
+- Überarbeitete RPCs `admin_add_team_role`, `admin_create_team`, `admin_list_team_admin_candidates` und `admin_complete_member_invitation`.
+- Der Schutz prüft beide Mannschaftszuordnungstabellen gemeinsam und sperrt die Auth-Benutzerzeile, um konkurrierende Zuordnungsversuche desselben Benutzers zu serialisieren.
+- Bestehende RLS-Policies wurden nicht geändert. Es gibt keinen Trigger auf `global_user_roles`; die Vergabe von `super_admin` wird nicht durch den Teamzuordnungsschutz blockiert.
+- Ein bestehendes Mannschaftsmitglied kann zusätzlich Vereinsadmin werden; bestehende Teamzuordnungen werden durch die Vereinsrollenfunktion nicht verändert. Eine UI/RPC zur Vergabe der globalen Superadmin-Rolle ist eine separate Aufgabe und nicht Bestandteil dieser Migration.
 
 **Führende Spezifikation und Entwürfe in develop:**
 - `docs/proposals/single-team-membership-guard/README.md`
 - `docs/proposals/single-team-membership-guard/migration.sql`
 - `docs/proposals/single-team-membership-guard/after_apply_verification.sql`
 
-Die SQL-Datei ist ein Entwurf, keine ausgeführte Migration. Der tatsächliche Ausführungsnachweis wird erst nach Ausführung in DEV im `DB_MIGRATION_LOG.md` mit der finalen Migrationsversion ergänzt. Die Live-Definitionen und Abhängigkeiten sind vor der Ausführung erneut zu prüfen. Eine separate ausdrückliche SQL-Ausführungsfreigabe bleibt erforderlich.
+**Versionierte SQL-Quelle:** `supabase/migrations/20261104143331_db_dev_009_single_team_membership_guard.sql` (GitHub-Blob-SHA `b73af4ef0e45ce0d475f0498eb4bf8db31d0a09a`). Der separate Konzeptentwurf bleibt unter `docs/proposals/single-team-membership-guard/migration.sql`.
+
+**Read-only Verifikation in DEV:**
+- Beide neuen Trigger vorhanden und aktiviert; bestehende Audit- und Letzter-Admin-Trigger unverändert vorhanden.
+- Index vorhanden.
+- Mehrfachzuordnungen über beide Teamtabellen: 0 Benutzer.
+- Angepasste RPCs besitzen `SECURITY DEFINER`, festen Suchpfad, EXECUTE für `authenticated`, kein EXECUTE für `anon`; die bestehenden Service-Role-Rechte bleiben erhalten.
+- Triggerfunktion: EXECUTE für `anon` und `authenticated` entzogen; `service_role` besitzt weiterhin EXECUTE. Der Anwendungsclient ruft die Funktion nicht direkt auf; sie wird von den beiden Triggern verwendet.
+- Keine RLS-Policy-Definition wurde durch die Migration geändert.
+- Die aktuellen Tabellenbestände nach Ausführung sind in DB-MIG-2026-003 dokumentiert; die Migration selbst enthält keine Datenbereinigung oder Änderung bestehender Mitgliedschaftszeilen.
+
+**Advisor-Nachprüfung:** Security Advisor meldet weiterhin allgemeine SECURITY-DEFINER-Warnungen, Hinweise auf die absichtlich ohne direkte Policies betriebenen Kontexttabellen und den Auth-Passwortschutz. Performance Advisor meldet allgemeine RLS-Initplan-/Mehrfach-Policy-Hinweise; der frisch angelegte Index ist unmittelbar nach Erstellung noch ungenutzt. Diese Themen sind getrennt zu bewerten und wurden nicht pauschal durch DB-DEV-009 verändert.
+
+**Noch offen:** funktionale Positiv-/Negativtests über die App, Edge-Function-Aktualisierung und manuelle Browserprüfung. Die Migration allein aktiviert noch nicht die korrigierten Einladungs-Endpunkte.
