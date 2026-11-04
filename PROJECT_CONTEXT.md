@@ -73,8 +73,10 @@ Neue Funktionen und Features werden grundsätzlich in einer abgestimmten Konzept
 | Dokument | Zuständigkeit |
 |---|---|
 | `PROJECT_CONTEXT.md` | Projektüberblick, aktueller Stand, Regeln und Verweise |
+| `docs/SUPABASE_CHANGE_CONTROL.md` | Verbindlicher Ablauf und Dokumentationspflicht für alle Supabase-Änderungen |
 | `DB_CHANGELOG.md` | Technische Datenbankobjekte, Änderungen, Definitionen und Prüfungen |
 | `DB_MIGRATION_LOG.md` | Chronologischer Ausführungsnachweis aller schreibenden SQL-Eingriffe |
+| `SUPABASE_CHANGELOG.md` | Chronologischer Nachweis nicht-SQL-basierter Supabase-Laufzeit-/Konfigurationsänderungen (z. B. Edge Functions, Auth, Storage-Konfiguration) |
 | `RELEASE_NOTES_*.md` | Fachlicher und technischer Umfang einer veröffentlichten Version |
 | `docs/AP01-03_RELEASE_KATALOG_2026-11-01.md` | AP01–AP03-Releaseumfang, Abhängigkeiten und Freigabeblocker |
 | `docs/AP01-03_MIGRATION_TEST_MAPPING_2026-11-01.md` | Zuordnung der Migrationen, Tests und offenen Nachweise |
@@ -151,12 +153,13 @@ Die read-only Prüfung der DEV-Datenbank fand Schreibwege, die eine zweite Manns
 - Superadmins und Vereinsadmins dürfen andere Mannschaften im ausgewählten/eigenen Berechtigungsbereich verwalten, ohne dort jeweils Mitglied zu sein.
 - Die Ein-Mannschaft-Regel begrenzt nur die tatsächliche Zuordnung der Zielperson; sie begrenzt nicht den Handlungskontext des aufrufenden Administrators.
 - Eine bestehende Mannschaftsmitgliedschaft darf die spätere Vergabe der Superadmin-Rolle nicht verhindern.
+- Ein bestehendes Mannschaftsmitglied kann nachträglich zusätzlich Superadmin und/oder Vereinsadmin werden. Die vorhandenen Mannschaftszuordnungen und Mannschaftsrollen bleiben dabei vollständig erhalten; die zusätzlichen Rollen verändern die Ein-Team-Zuordnung nicht.
 
 **Aktueller DEV-Datenbestand (read-only):** keine Benutzer mit mehreren Mannschaftszuordnungen. Dass zum Prüfzeitpunkt kein Superadmin eine Mannschaftszuordnung hatte, ist ein Bestandswert und keine fachliche Sollregel.
 
 **Korrigierte Vorbereitung:** Review-Branch `feature/dev-single-team-membership-guard-review`. Der SQL-Vorschlag schützt beide Mannschaftszuordnungstabellen, lässt Superadmins als Zielpersonen zu, aktualisiert die Einladungs-RPC und -Edge-Function und erhält die Kontextprüfungen für handelnde Superadmins/Vereinsadmins. Das Frontend begrenzt nur die tatsächliche Mitgliedschaft der bearbeiteten Zielperson.
 
-**Freigabestatus:** Korrigierter Vorschlag zur Prüfung. Noch nicht in `develop` übernommen, nicht deployed, keine SQL-Ausführung und keine Edge-Function-Aktualisierung. PROD bleibt unverändert. Details: `docs/proposals/single-team-membership-guard/README.md`.
+**Freigabestatus (04.11.2026):** Das fachliche Rollenmodell einschließlich nachträglicher Vergabe von Superadmin und/oder Vereinsadmin an bestehende Mannschaftsmitglieder bei unveränderter Mannschaftszuordnung ist freigegeben. Der technische Vorschlag liegt weiterhin nur im Review-Feature-Branch; noch nicht in `develop` übernommen, nicht deployed, keine SQL-Ausführung und keine Edge-Function-Aktualisierung. Für die SQL-Ausführung in DEV ist eine separate ausdrückliche Ausführungsfreigabe erforderlich. PROD bleibt unverändert. Details: `docs/proposals/single-team-membership-guard/README.md`.
 
 ### Read-only Kontextprüfung in Supabase DEV (04.11.2026)
 
@@ -166,3 +169,6 @@ Die Berechtigungsfunktionen wurden mit vorhandenen Benutzeridentitäten und jewe
 - **Vereinsadmin:** `has_selected_team_context(team_id) = true` und `can_manage_club_context(club_id) = true`; `is_team_admin(team_id)` war erwartungsgemäß false, da diese Person nicht tatsächlich Mannschaftsadmin ist. Die Berechtigung für administrative Schreibwege ergibt sich hier aus `can_manage_club_context`.
 
 Damit bestätigen die vorhandenen Kontextfunktionen bereits, dass Superadmins und Vereinsadmins andere Mannschaften verwalten können, ohne dort Mitglied zu sein. Dies ist ein read-only Funktions-/Kontextnachweis, kein vollständiger Frontend-Praxistest und kein schreibender Rollenänderungstest.
+
+
+**Supabase-Änderungssteuerung (04.11.2026):** Sämtliche tatsächlichen SQL-Schreibzugriffe werden vor Ausführung versioniert und nach Ausführung einzeln in `DB_MIGRATION_LOG.md` dokumentiert; technische Datenbankobjekte und Prüfergebnisse werden zusätzlich in `DB_CHANGELOG.md` gepflegt. Nicht-SQL-basierte Änderungen an Supabase-Laufzeit oder -Konfiguration (insbesondere Edge Functions, Auth-/Redirect-Konfiguration und Storage-Konfiguration) werden in `SUPABASE_CHANGELOG.md` festgehalten. Verbindlicher Ablauf: `docs/SUPABASE_CHANGE_CONTROL.md`. Kein PROD-Eingriff ohne separate Freigabe und dokumentierten DEV-/PROD-Abgleich.
