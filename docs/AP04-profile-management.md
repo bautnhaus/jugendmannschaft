@@ -135,41 +135,53 @@ Der Nutzer hat nach dem DEV-Deployment beide Prüfpunkte bestätigt:
 **Weiterhin offen:** Profilbildanzeige, Speichern und erneutes Laden einer Profiländerung, Prüfung mit Vereinsadmin im eigenen Vereinskontext sowie Negativtests ohne bzw. mit fremdem Vereinskontext. Keine weitere SQL-Änderung vorgenommen.
 
 
-## Folgeprüfung 04.11.2026 – Mannschaftsrollen im Vereinsmitglied-Dialog (DEV, Korrektur vorbereitet)
+## Folgeprüfung 04.11.2026 – Ein-Mannschaft-Regel bei unabhängigen Verwaltungsrechten
 
 ### Read-only Befund
 
-Der aktuelle Vereinsmitglied-Bearbeitungsdialog bietet Rollenfelder für alle aktiven Mannschaften des Vereins. Die gespeicherten Mannschaftsrollen werden über `get_club_members_v3` geladen. Da `admin_add_team_role` bislang keine bestehende Mannschaftszuordnung des Zielbenutzers prüft, kann der Dialog eine zweite Zuordnung anfordern. Die RPC hat die Vereins-/Mannschaftsberechtigung des Handelnden geprüft, nicht aber die Ein-Mannschaft-Regel für die Zielperson.
+Der Vereinsmitglied-Bearbeitungsdialog bietet Rollenfelder für alle aktiven Mannschaften des Vereins. `admin_add_team_role` prüfte bislang nicht, ob die Zielperson bereits einer anderen Mannschaft angehört. `admin_create_team` und `admin_list_team_admin_candidates` boten weitere unzureichend abgesicherte Schreib-/Auswahlwege.
 
-Weitere gefundene Schreibwege:
-- `admin_create_team` prüfte Superadmin-Neutralität, aber keine vorhandene Mannschaftszuordnung des gewählten Mannschaftsadmins.
-- `admin_list_team_admin_candidates` bot bereits zugeordnete Vereinsmitglieder weiterhin als Kandidaten an.
-- `admin_complete_member_invitation` enthält bereits eine Sperre des Auth-Benutzers und eine Prüfung auf andere Mannschaften.
-- Die aktuelle DEV-Datenprüfung ergab keine bestehenden Mehrfachzuordnungen und keine Superadmins mit Mannschaftszuordnung.
+Die Einladungs-Edge-Function `invite-member` und `admin_complete_member_invitation` lehnen aktuell bestehende Superadmins als Zielperson ab. Diese Sperre widerspricht der am 04.11.2026 präzisierten Fachregel und wird im Korrekturvorschlag entfernt.
 
-### Vorbereitete Lösung
+### Verbindliche Fachregel
+
+- Eine Person darf höchstens einer Mannschaft tatsächlich zugeordnet sein.
+- Superadmin und Vereinsadmin dürfen zusätzlich Vereins-/Mannschaftsrollen besitzen.
+- Ein Superadmin kann Vereinsadmin eines Vereins sowie Mannschaftsadmin und Trainer derselben Mannschaft sein.
+- Superadmins und Vereinsadmins dürfen weitere Mannschaften in ihren ausgewählten/eigenen Berechtigungskontexten verwalten, ohne dort Mitglied zu sein.
+- Die Ein-Mannschaft-Regel betrifft ausschließlich die Zielperson einer tatsächlichen Zuordnung; sie darf nicht den handelnden Administrator einschränken.
+- Eine bereits zugeordnete Person darf keiner zweiten Mannschaft zugeordnet werden, unabhängig von ihren globalen/vereinsbezogenen Rollen.
+- Ein bestehendes Mannschaftsmitglied kann nachträglich Superadmin werden.
+
+### Korrigierte Vorbereitung
 
 Im Review-Branch `feature/dev-single-team-membership-guard-review` liegen:
-- zentrale Triggerprüfung auf `team_members` und `team_member_roles`, einschließlich Auth-Benutzerzeilensperre, Superadmin-Ausschluss und Ablehnung einer zweiten Mannschaft;
-- Rückwärtsschutz durch Trigger auf `global_user_roles`, damit ein bestehendes Mannschaftsmitglied nicht nachträglich Superadmin werden kann;
-- RPC-Vorprüfungen für `admin_add_team_role` und `admin_create_team`;
-- Kandidatenfilter für `admin_list_team_admin_candidates`;
-- UI-Sperre für Mannschaften außerhalb der bereits bestehenden Zuordnung und Validierung, dass bei bisher nicht zugeordneten Mitgliedern höchstens eine Mannschaft ausgewählt wird;
-- 410-Gone-Ersatz für den alten, vom Frontend nicht mehr verwendeten Endpunkt `invite-trainer`.
-
-Ein Mannschaftswechsel ist bewusst zweistufig vorgesehen: Erst alle Rollen der bisherigen Mannschaft entfernen und speichern; anschließend erneut öffnen und die neue Mannschaft zuordnen. So bleibt die Zwischenstufe frei von Mehrfachzuordnungen.
+- zentrale Triggerprüfung auf `team_members` und `team_member_roles`, die nur Mehrfachzuordnungen abweist und Superadmins zulässt;
+- Vorprüfungen in `admin_add_team_role` und `admin_create_team`;
+- Kandidatenfilter, der bereits Mannschaftszugeordnete ausblendet, Superadmins aber nicht allein wegen der globalen Rolle ausschließt;
+- angepasste `admin_complete_member_invitation` und Edge-Function-Quelle `invite-member`, die Superadmins als Zielpersonen zulassen;
+- UI-Sperre der anderen Mannschaftszuordnungen für eine bereits zugeordnete Zielperson, ohne den Handlungskontext des aktuellen Administrators zu beschränken;
+- 410-Gone-Ersatz für den alten, nicht mehr vom Frontend genutzten Endpunkt `invite-trainer`.
 
 ### Status und Freigabe
 
-- SQL liegt als Vorschlag unter `docs/proposals/single-team-membership-guard/migration.sql`.
-- Read-only Nachprüfung nach einer späteren Ausführung: `docs/proposals/single-team-membership-guard/after_apply_verification.sql`.
+- SQL-Vorschlag: `docs/proposals/single-team-membership-guard/migration.sql`.
+- Read-only Prüfung nach einer späteren Freigabe: `docs/proposals/single-team-membership-guard/after_apply_verification.sql`.
 - **Keine SQL-Ausführung, kein DEV-Deployment und keine Edge-Function-Aktualisierung erfolgt.**
 - Bestehende RLS-Policies und PROD bleiben unangetastet.
-- Vor der Umsetzung ist das vollständige SQL ausdrücklich freizugeben. Danach sind RPC-, Vereinsdialog-, Team-Admin-Kandidaten- und Legacy-Endpoint-Tests in DEV erforderlich.
+- Vor der Umsetzung ist der korrigierte SQL- und Quellcodeumfang ausdrücklich freizugeben.
+### Fachliche Präzisierung 04.11.2026 – Ein-Mannschaft-Regel und Verwaltungsrechte
 
+Die frühere Annahme vollständiger Superadmin-Neutralität wurde ausdrücklich korrigiert.
 
-### Ergänzung: Superadmin-Neutralität in beide Richtungen
+- Höchstens eine tatsächliche Mannschaftsmitgliedschaft pro Benutzer.
+- Superadmin und Vereinsadmin schließen Vereins-/Mannschaftsmitgliedschaften nicht aus.
+- Ein Superadmin kann Vereinsadmin eines Vereins sowie Mannschaftsadmin und Trainer derselben Mannschaft sein.
+- Superadmins und Vereinsadmins dürfen andere Mannschaften im berechtigten ausgewählten/eigenen Kontext verwalten, ohne dort selbst Mitglied zu sein.
+- Die Ein-Mannschaft-Regel betrifft die Zielperson einer tatsächlichen Teamzuordnung, nicht die Handlungsmöglichkeiten des aufrufenden Administrators.
+- Ein Benutzer, der bereits einer Mannschaft zugeordnet ist, darf keiner zweiten Mannschaft zugeordnet werden – auch nicht als Superadmin oder Vereinsadmin.
+- Ein bereits zugeordnetes Mannschaftsmitglied kann nachträglich Superadmin werden; die Teammitgliedschaft bleibt erhalten.
 
-Zusätzlich zur Sperre bei Mannschaftszuordnungen eines bestehenden Superadmins enthält die Migration einen Trigger auf `global_user_roles`. Er verhindert, dass ein bereits einer Mannschaft zugeordnetes Konto nachträglich die Rolle `super_admin` erhält. Auch diese Triggerfunktion sperrt die Auth-Benutzerzeile mit `FOR UPDATE` und besitzt keine EXECUTE-Freigabe für `PUBLIC`, `anon` oder `authenticated`.
+Die Live-Kontextfunktionen wurden geprüft: `can_manage_club_context`, `has_selected_team_context` und `is_team_admin` unterstützen Verwaltung über ausgewählte Vereins-/Mannschaftskontexte, ohne dass der Handelnde jeder Mannschaft angehören muss.
 
-Die Live-Prüfung ergab, dass `global_user_roles` derzeit keine INSERT-/UPDATE-/DELETE-Rechte für `authenticated` besitzt und keine öffentliche RPC zum Schreiben dieser Tabelle existiert. Der zusätzliche Trigger sichert trotzdem künftige privilegierte Änderungen ab.
+Die aktuelle DEV-Laufzeit lehnt bestehende Superadmins in `invite-member` und `admin_complete_member_invitation` als Zielpersonen noch ab. Die korrigierte Fassung im Review-Branch entfernt diese Ausschlüsse. Keine dieser Änderungen ist bisher deployed oder in Supabase ausgeführt.
