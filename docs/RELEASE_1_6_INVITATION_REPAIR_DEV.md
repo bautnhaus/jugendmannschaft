@@ -508,3 +508,35 @@ Read-only geprüft und für den ausgewählten Teamkontext bestätigt:
 **Manueller Nachtest:** Nach dem Deploy noch ausstehend. Insbesondere Wappenhöhe/-darstellung, der entfernte Superadmin-„Nur Ansicht“-Chip und die kompaktere Statistik-Karte sollen auf dem iPhone visuell geprüft werden.
 
 **PROD:** Nicht geändert. GitHub `main` bleibt unverändert.
+
+
+## 23. Beschriftung von Saison und Jahrgängen in der Mannschaftsübersicht (04.11.2026)
+
+### Nutzeranforderung
+
+Die bisherige Metazeile vermischte Jahrgänge, Mannschaftskürzel und Saison ohne erklärende Beschriftung (z. B. `2018/2019 · DEV · 2026/2027`). In der Mannschaftsinformationskachel war nur Jahrgang/Kürzel zu sehen.
+
+### Umsetzung in DEV
+
+- Unter dem Mannschaftsnamen steht jetzt ausschließlich die aktive Saison mit eindeutiger Beschriftung, z. B. **„Saison 2026/2027“**. Jahrgang und internes Mannschaftskürzel entfallen dort.
+- In der Kachel „Mannschaftsinformationen“ werden Saison und Jahrgänge getrennt und beschriftet dargestellt:
+  - **„Saison 2026/2027“**
+  - **„Jahrgänge 2018/2019“** (der konkrete Wert kommt unverändert aus `teams.birth_cohorts`).
+- Das interne Kürzel wie „DEV“ wird nicht mehr zusätzlich in diesen Metazeilen gezeigt; es bleibt Bestandteil des Mannschaftsnamens, sofern dort hinterlegt.
+- Ist keine aktive Saison vorhanden, zeigt die Kopfzeile „Keine aktive Saison hinterlegt“. Eine fehlende Jahrgangsangabe wird als „Jahrgänge Nicht hinterlegt“ kenntlich gemacht.
+
+### Technische Grundlage
+
+- Die aktive Saison wird bereits in `refreshSelectedAdminTeamSummary` aus `seasons.name` geladen; dieselbe geladene Information wird nun sowohl für die Kopfzeile als auch für die Informationskachel verwendet.
+- Die Jahrgänge stammen weiterhin aus `teams.birth_cohorts`.
+- Keine neue Datenbankabfrage, keine Schema-/SQL-Änderung, keine Migration und keine Änderung von RLS/Auth.
+
+### Nachweis
+
+- Commit: `bcb35846abf2c2888341b1ac7d2b6014cd8bbf80` – `fix: label team season and birth cohorts`.
+- Datei: `index.html`, Blob-SHA `ac776db7223a89d73c03cf1be8e8c05fe96dd213`.
+- JavaScript-Syntaxprüfung: beide Script-Blöcke erfolgreich geparst.
+- DEV-Deployment: [Deploy DEV #435](https://github.com/bautnhaus/jugendmannschaft/actions/runs/41916157072), erfolgreich.
+- Manueller iPhone-Praxistest: noch ausstehend.
+
+**PROD:** Nicht geändert. GitHub `main` bleibt unverändert.
