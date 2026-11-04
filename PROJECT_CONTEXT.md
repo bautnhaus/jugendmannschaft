@@ -102,7 +102,7 @@ Die read-only Bestandsaufnahme ist abgeschlossen und die erste Umsetzung wurde n
 
 **Praxistest 04.11.2026:** Ein realer DEV-End-to-End-Fall für eine Trainer-Einladung wurde erfolgreich durchgeführt: E-Mail empfangen, DEV-Link geöffnet, Passwort vergeben und Dashboard erreicht. Eine read-only Datenbankprüfung bestätigte Auth-Bestätigung, Profilname, Vereinsmitgliedschaft und Trainerrolle. Weitere Rollen-/Kontextfälle und Wiederholungs-/Fehlerfälle bleiben offen.
 
-**Aktueller Folgefehler:** In der Superadmin-Mitgliederliste erscheint die E-Mail statt des gespeicherten Profilnamens; beim Bearbeiten ist das Namensfeld leer. Read-only Analyse: `get_club_members_v2` liefert keine Profilfelder; direkter Profil-SELECT wird durch die aktuelle RLS-Regel im ausgewählten Superadmin-Vereinskontext blockiert und der Frontend-Fehler bisher ignoriert. Geplanter Fix: neue, kontextgebundene read-only RPC `get_club_members_v3` mit Profilname und Avatar; RLS und bestehende v2 bleiben unverändert. Vollständiger SQL-Entwurf ist als geplant (DB-MIG-2026-002 / DB-DEV-008) in `DB_MIGRATION_LOG.md` und `DB_CHANGELOG.md` dokumentiert. **Noch nicht ausgeführt; ausdrückliche Freigabe des konkreten SQL-Texts steht aus.**
+**Profilanzeige-Korrektur (04.11.2026):** Die neue read-only RPC get_club_members_v3 wurde in DEV ausgeführt und das Frontend darauf umgestellt. Der Nutzer hat bestätigt, dass der Superadmin-Mitgliederbereich den persönlichen Namen anzeigt und der Bearbeitungsdialog den gespeicherten Namen übernimmt. Ausführungsnachweise: DB_MIGRATION_LOG.md (DB-MIG-2026-002) und DB_CHANGELOG.md (DB-DEV-008).
 
 Weitere Rollen-/Kontextfälle, bestehende bestätigte und unbestätigte Auth-Benutzer sowie Fehler- und Wiederholungsfälle bleiben offen. Custom SMTP wurde nicht geändert.
 
@@ -134,3 +134,21 @@ Die frühere ausführliche Fassung dieses Dokuments wurde unverändert archivier
 
 
 **Praxistest 04.11.2026 – Superadmin-Profilanzeige:** Nach dem DEV-Deployment hat der Nutzer beide Prüfungen bestätigt: In der Vereinsmitgliederliste erscheint der persönliche Name statt der E-Mail-Adresse; beim Öffnen von „Mitglied bearbeiten“ wird der gespeicherte Name korrekt übernommen. Der Folgefehler ist im Superadmin-Kontext behoben. Weiterhin offen sind Profilbildanzeige, Speichern/Neuladen, Vereinsadmin-Kontext und negative Kontexttests. Keine weitere SQL-Änderung; PROD unverändert.
+
+
+## 10. Sicherheitsbefund 04.11.2026 – Ein-Mannschaft-Regel (DEV, Vorschlag)
+
+Eine read-only Prüfung der DEV-Datenbank hat einen bislang nicht vollständig abgesicherten Schreibweg für Mannschaftsrollen gefunden:
+- `admin_add_team_role` prüfte bisher keine bestehende Mannschaftszuordnung des Zielbenutzers.
+- `admin_create_team` prüfte bei der ausgewählten Admin-Person nicht auf eine bereits vorhandene Mannschaftszuordnung.
+- `admin_list_team_admin_candidates` filterte bereits zugeordnete Personen nicht aus.
+- Der Vereinsmitglied-Bearbeitungsdialog bot Rollenfelder für mehrere Mannschaften gleichzeitig.
+- Die alte Edge Function `invite-trainer` ist DEV-seitig weiterhin ACTIVE, wird aber vom aktuellen Frontend nicht mehr verwendet.
+
+Die neue Einladungsfunktion und `admin_complete_member_invitation` enthalten bereits die Mehrfachzuordnungsprüfung. Die Lücke betrifft andere Schreibwege.
+
+**Aktueller DEV-Datenbestand (read-only geprüft):** keine Mehrfachzuordnungen; kein Superadmin mit Mannschaftszuordnung; keine widersprüchlichen Vereins-/Mannschaftszuordnungen.
+
+**Vorbereitete Korrektur:** Review-Branch `feature/dev-single-team-membership-guard-review`. Enthält zentrale Triggerabsicherung beider Mannschaftszuordnungstabellen, RPC-Vorprüfungen, bereinigte Kandidatenauswahl, UI-Einschränkungen, 410-Gone-Stilllegung des alten Einladungsendpunkts und Dokumentation.
+
+**Freigabestatus:** Vorschlag zur Prüfung. Noch nicht in `develop` übernommen, nicht deployed, keine SQL-Ausführung und keine Edge-Function-Aktualisierung. PROD bleibt unverändert. Details: `docs/proposals/single-team-membership-guard/README.md`.
