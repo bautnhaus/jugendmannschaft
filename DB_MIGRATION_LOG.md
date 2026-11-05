@@ -1,6 +1,6 @@
 # Jugendmannschaft – SQL-Migrations- und Ausführungsprotokoll
 
-**Stand:** 04.11.2026  
+**Stand:** 05.11.2026  
 **Führende Fassung:** Branch `develop`  
 **Geltungsbereich:** Supabase DEV und PROD – alle tatsächlich ausgeführten schreibenden SQL-Anweisungen und SQL-Eingriffe, unabhängig vom Ausführungsweg.
 
@@ -635,5 +635,5 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
   - Migrationshistorie bestätigt den Eintrag.
 - **Rollback/Wiederherstellung:** Neue Funktion. Nach Prüfung abhängiger Aufrufer wäre ein Rückbau über `DROP FUNCTION IF EXISTS public.admin_complete_member_invitation(uuid,text,uuid,text,uuid);` möglich. Vor einem Rollback ist sicherzustellen, dass keine Edge Function oder sonstiger Aufrufer davon abhängt. Kein Rollback ausgeführt.
 - **Gegenstück in DEV:** DEV-Migration `20261103203047` / `r16_member_invitation_transaction_dev` ist vorhanden; separate DEV-Funktion und Praxistest bleiben zu beachten.
-- **GitHub-Datei und Commit-SHA:** `supabase/migrations/20261105091350_r16_member_invitation_transaction_prod.sql` sowie dieses Protokoll; Commit-SHAs werden nach dem GitHub-Commit ergänzt.
+- **GitHub-Datei und Commit-SHA:** `supabase/migrations/20261105091350_r16_member_invitation_transaction_prod.sql` – Commit `4a4f456246525db0bbaf1489511fc95e503d803e`.
 - **Zusätzliche Hinweise / Nachweisgrenzen:** Die Migration verändert keine bestehenden Mitgliedschafts- oder Rollendatensätze und keine RLS-Policies. Sie stellt die Backend-Funktion bereit, versendet aber selbst keine Einladungs-E-Mails und legt keine Auth-Benutzer an. Die spätere Einbindung der Edge Functions und der Ende-zu-Ende-Einladungstest sind nicht Bestandteil dieses Ausführungsschritts. DB-DEV-008 und DB-DEV-009 wurden nicht ausgeführt; die neue Ein-Team-Triggerabsicherung aus DB-DEV-009 ist in PROD noch nicht vorhanden.
