@@ -73,3 +73,16 @@ Bei Problemen kann die vorherige Version 4 der Funktion als Referenz wiederherge
 ## Geltungsbereich
 
 Diese Dokumentation beschreibt ausschließlich die DEV-Anpassung vom 05.11.2026. Eine entsprechende Änderung in PROD ist **nicht** erfolgt und benötigt eine separate Prüfung und ausdrückliche Freigabe.
+
+
+## DEV-GitHub-Pages-Korrektur (05.11.2026)
+
+Ursache: Die gemeinsame Quelle `develop` enthält `CNAME = kadassist.de`. Der DEV-Spiegelworkflow übertrug diesen Wert unverändert nach `jugendmannschaft-dev/main` und überschrieb dadurch die DEV-Domainzuordnung.
+
+Korrektur: `.github/workflows/deploy-dev.yml` setzt vor dem Spiegeln `CNAME = dev.kadassist.de` und erstellt dafür einen temporären Commit. Der Quellbranch `develop` bleibt unverändert (`CNAME = kadassist.de`), damit PROD seine eigene Domain behält.
+
+Technisch wirksamer Workflow-Commit: `a91f7fddadd76a974605eac794332859d27b7452`.
+Erfolgreicher DEV-Lauf: `42097376832`.
+Verifiziert: `jugendmannschaft-dev/main/CNAME` enthält `dev.kadassist.de`; `jugendmannschaft/develop/CNAME` bleibt `kadassist.de`. PROD wurde nicht geändert.
+
+Hinweis: GitHub Pages Settings > Pages muss geprüft werden. Falls Custom domain noch leer ist, `dev.kadassist.de` dort eintragen und speichern.
