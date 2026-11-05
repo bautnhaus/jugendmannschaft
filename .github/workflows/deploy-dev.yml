@@ -18,6 +18,10 @@ jobs:
       - name: Set DEV custom domain
         run: |
           printf '%s\n' "dev.kadassist.de" > CNAME
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CNAME
+          git commit -m "chore: set DEV custom domain"
 
       - name: Push develop to DEV repository
         env:
