@@ -15,6 +15,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set DEV custom domain
+        run: |
+          printf '%s\n' "dev.kadassist.de" > CNAME
+
       - name: Push develop to DEV repository
         env:
           DEV_DEPLOY_SSH_KEY: ${{ secrets.DEV_DEPLOY_SSH_KEY }}
