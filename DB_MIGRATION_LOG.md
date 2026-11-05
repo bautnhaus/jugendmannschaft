@@ -609,3 +609,31 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Rollback/Wiederherstellung:** Ein Zurückbau müsste die beiden neuen Trigger entfernen, die ursprünglichen vier Funktionsdefinitionen aus dem dokumentierten Vorher-Stand wiederherstellen und den neuen Index sowie die Triggerfunktion erst nach Abhängigkeitsprüfung entfernen. Die vorherigen Live-Funktionsdefinitionen sind im Arbeitsverlauf read-only ausgelesen worden; ein automatischer Rollback wurde nicht ausgeführt. Vor einem Rollback ist eine neue, geprüfte Rücknahmemigration erforderlich.
 - **Gegenstück in PROD:** Nicht ausgeführt, nicht freigegeben. PROD bleibt unverändert.
 - **Zusätzliche Hinweise / Nachweisgrenzen:** Die Migration wurde ausschließlich in DEV ausgeführt. Ein echter App-Aufruf zum Hinzufügen/Entfernen von Rollen und ein Negativtest für eine zweite Mannschaftszuordnung wurden noch nicht ausgeführt. Ebenso sind die aktualisierten Edge Functions noch nicht deployed.
+
+
+### DB-MIG-2026-004 – Gemeinsamer Abschluss der Mitglieder-/Trainer-Einladung (PROD)
+
+- **Ausführungsdatensatz:** PROD
+- **Supabase-Migrationsversion:** `20261105091350`
+- **Migrationsname:** `r16_member_invitation_transaction_prod`
+- **Datum/Uhrzeit (Europe/Berlin):** 05.11.2026, 10:13:50 (aus Supabase-Migrationsversion 09:13:50 UTC; Berlin = UTC+1).
+- **Umgebung:** Supabase PROD – Projekt `qdugtpzgefpswnnqbusd`
+- **Ausführungsweg:** Verbundenes Supabase-Migrationswerkzeug (`apply_migration`)
+- **Anlass/Zweck:** Transaktionaler Abschluss der Profil- und Mitgliedschaftszuordnung als Backend-Grundlage für die Einladung in Vereins- und Mannschaftskontexten.
+- **Betroffene Objekte:** Funktion `public.admin_complete_member_invitation(uuid,text,uuid,text,uuid)`; EXECUTE-Rechte für `authenticated`; EXECUTE für `PUBLIC` und `anon` entzogen.
+- **Freigabe:** Ausdrückliche Nutzerfreigabe am 05.11.2026 für DB-DEV-007 auf PROD.
+- **Ausführender:** ChatGPT über das verbundene Supabase-Migrationswerkzeug, auf ausdrückliche Nutzerfreigabe.
+- **Status:** Erfolgreich ausgeführt; Struktur- und Rechteverifikation erfolgreich. Funktionaler End-to-End-Test noch offen.
+- **Tatsächlich ausgeführtes SQL:** `supabase/migrations/20261105091350_r16_member_invitation_transaction_prod.sql` (vollständiger SQL-Text, identisch mit dem lokal bereitgestellten Skript DB-DEV-007).
+- **Ergebnis:** Supabase meldete `success: true`. Die PROD-Migrationshistorie enthält Version `20261105091350` mit dem Namen `r16_member_invitation_transaction_prod`.
+- **Verifikation (read-only):**
+  - Funktion `admin_complete_member_invitation(uuid,text,uuid,text,uuid)` ist vorhanden.
+  - `prosecdef = true`; fester `search_path = pg_catalog, public, auth`.
+  - ACL: `postgres`, `service_role` und `authenticated` besitzen EXECUTE; `anon` besitzt kein EXECUTE. Kein PUBLIC-EXECUTE-Eintrag vorhanden.
+  - `has_function_privilege`: `authenticated = true`, `anon = false`.
+  - Die erwartete Prüfung auf eine abweichende Mannschaftszuordnung ist in der gespeicherten Funktionsdefinition vorhanden.
+  - Migrationshistorie bestätigt den Eintrag.
+- **Rollback/Wiederherstellung:** Neue Funktion. Nach Prüfung abhängiger Aufrufer wäre ein Rückbau über `DROP FUNCTION IF EXISTS public.admin_complete_member_invitation(uuid,text,uuid,text,uuid);` möglich. Vor einem Rollback ist sicherzustellen, dass keine Edge Function oder sonstiger Aufrufer davon abhängt. Kein Rollback ausgeführt.
+- **Gegenstück in DEV:** DEV-Migration `20261103203047` / `r16_member_invitation_transaction_dev` ist vorhanden; separate DEV-Funktion und Praxistest bleiben zu beachten.
+- **GitHub-Datei und Commit-SHA:** `supabase/migrations/20261105091350_r16_member_invitation_transaction_prod.sql` sowie dieses Protokoll; Commit-SHAs werden nach dem GitHub-Commit ergänzt.
+- **Zusätzliche Hinweise / Nachweisgrenzen:** Die Migration verändert keine bestehenden Mitgliedschafts- oder Rollendatensätze und keine RLS-Policies. Sie stellt die Backend-Funktion bereit, versendet aber selbst keine Einladungs-E-Mails und legt keine Auth-Benutzer an. Die spätere Einbindung der Edge Functions und der Ende-zu-Ende-Einladungstest sind nicht Bestandteil dieses Ausführungsschritts. DB-DEV-008 und DB-DEV-009 wurden nicht ausgeführt; die neue Ein-Team-Triggerabsicherung aus DB-DEV-009 ist in PROD noch nicht vorhanden.
