@@ -636,4 +636,66 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Rollback/Wiederherstellung:** Neue Funktion. Nach Prüfung abhängiger Aufrufer wäre ein Rückbau über `DROP FUNCTION IF EXISTS public.admin_complete_member_invitation(uuid,text,uuid,text,uuid);` möglich. Vor einem Rollback ist sicherzustellen, dass keine Edge Function oder sonstiger Aufrufer davon abhängt. Kein Rollback ausgeführt.
 - **Gegenstück in DEV:** DEV-Migration `20261103203047` / `r16_member_invitation_transaction_dev` ist vorhanden; separate DEV-Funktion und Praxistest bleiben zu beachten.
 - **GitHub-Datei und Commit-SHA:** `supabase/migrations/20261105091350_r16_member_invitation_transaction_prod.sql` – Commit `4a4f456246525db0bbaf1489511fc95e503d803e`.
-- **Zusätzliche Hinweise / Nachweisgrenzen:** Die Migration verändert keine bestehenden Mitgliedschafts- oder Rollendatensätze und keine RLS-Policies. Sie stellt die Backend-Funktion bereit, versendet aber selbst keine Einladungs-E-Mails und legt keine Auth-Benutzer an. Die spätere Einbindung der Edge Functions und der Ende-zu-Ende-Einladungstest sind nicht Bestandteil dieses Ausführungsschritts. DB-DEV-008 und DB-DEV-009 wurden nicht ausgeführt; die neue Ein-Team-Triggerabsicherung aus DB-DEV-009 ist in PROD noch nicht vorhanden.
+- **Zusätzliche Hinweise / Nachweisgrenzen:** Die Migration verändert keine bestehenden Mitgliedschafts- oder Rollendatensätze und keine RLS-Policies. Sie stellt die Backend-Funktion bereit, versendet aber selbst keine Einladungs-E-Mails und legt keine Auth-Benutzer an. Die spätere Einbindung der Edge Functions und der Ende-zu-Ende-Einladungstest sind nicht Bestandteil dieses Ausführungsschritts. **Historischer Stand zum Zeitpunkt dieser Migration:** DB-DEV-008 und DB-DEV-009 waren noch nicht in PROD ausgeführt. Beide wurden am 05.11.2026 nach separater Prüfung und Freigabe nachgezogen; siehe die folgenden Ausführungsdatensätze DB-MIG-2026-005 und DB-MIG-2026-006.
+
+
+## DB-MIG-2026-005 – Vereinsmitglieder-RPC mit Profilnamen und Profilbildern (PROD)
+
+- **Migrations-ID:** DB-MIG-2026-005 (fachlicher Vorgang DB-DEV-008)
+- **Ausführungsdatensatz:** PROD
+- **Datum:** 05.11.2026
+- **Uhrzeit:** Vom Ausführungswerkzeug nicht separat und verlässlich zurückgegeben; keine Uhrzeit aus Dateinamen oder Chat-Zeitstempeln abgeleitet.
+- **Umgebung:** Supabase PROD – Projekt `qdugtpzgefpswnnqbusd`
+- **Ausführungsweg:** Verbundenes Supabase-Migrationswerkzeug (`apply_migration`)
+- **Anlass/Zweck:** Vereinsmitgliederliste um Profilnamen und Profilbilder ergänzen, ohne die bestehende RPC `get_club_members_v2` oder die Profile-RLS-Policies zu verändern.
+- **Betroffene Objekte:** Neue Funktion `public.get_club_members_v3(uuid)`; Rückgabe `user_id, email, display_name, avatar_url, is_club_admin, teams`.
+- **Freigabe:** Ausdrückliche Nutzerfreigabe am 05.11.2026 für DB-DEV-008 auf PROD.
+- **Ausführender:** ChatGPT über das verbundene Supabase-Migrationswerkzeug, auf ausdrückliche Nutzerfreigabe.
+- **Status:** Erfolgreich ausgeführt; Struktur-, Funktionsmetadaten- und Rechteverifikation erfolgreich. Authentifizierte Positiv-/Negativtests und Frontend-Praxistest bleiben offen.
+- **Supabase-Migrationsversion:** Vom Ausführungswerkzeug nicht zuverlässig zurückgegeben; deshalb hier bewusst nicht angegeben.
+- **Tatsächlich ausgeführtes SQL bzw. Backup:** Vollständiges SQL-Backup lokal bereitgestellt als `DB-DEV-008_get_club_members_v3.sql`; SHA-256 `e0be1e9b0b04bb064ba921cc43efb6a45541d4b4c6ea5c135ea20eaf6a2a6b00`. Ein GitHub-Migrationsdateipfad wird erst eingetragen, wenn der tatsächlich ausgeführte PROD-SQL-Text bytegenau in `develop` versioniert wurde.
+- **Ergebnis:** Supabase-Migrationswerkzeug meldete `success: true`.
+- **Verifikation (read-only):**
+  1. `to_regprocedure('public.get_club_members_v3(uuid)')` bestätigt die Existenz.
+  2. Rückgabetyp enthält die sechs vereinbarten Felder.
+  3. Funktion ist `SECURITY DEFINER`, `STABLE`, Owner `postgres`, fester `search_path = pg_catalog, public, auth`.
+  4. EXECUTE für `authenticated` vorhanden; `anon` und `PUBLIC` nicht berechtigt; ACL enthält außerdem `postgres` und `service_role`.
+  5. Bestehende Funktion `get_club_members_v2` bleibt erhalten.
+  6. Keine Tabellen-, Mitgliedschafts- oder Profildatenänderung und keine RLS-Policy-Änderung Bestandteil der Migration.
+- **Rollback/Wiederherstellung:** Nach Prüfung aller Aufrufer und Abhängigkeiten könnte die neue Funktion mit `DROP FUNCTION IF EXISTS public.get_club_members_v3(uuid);` entfernt werden. Kein Rollback ausgeführt.
+- **Gegenstück in DEV:** DEV-Funktion `get_club_members_v3(uuid)` aus DB-DEV-008 ist vorhanden; der Superadmin-Frontendtest in DEV war bereits erfolgreich. Weitere Vereinsadmin-/Negativ-/Profilbildtests bleiben offen.
+- **Zusätzliche Hinweise / Nachweisgrenzen:** Die Funktionsdefinition wurde read-only geprüft. Ein tatsächlicher Aufruf mit authentifizierten Benutzern unterschiedlicher Berechtigungen sowie ein vollständiger UI-Test sind noch nicht erfolgt.
+
+## DB-MIG-2026-006 – Ein-Mannschaft-Absicherung und Rollen-RPCs (PROD)
+
+- **Migrations-ID:** DB-MIG-2026-006 (fachlicher Vorgang DB-DEV-009)
+- **Ausführungsdatensatz:** PROD
+- **Supabase-Migrationsversion:** `20261105093559`
+- **Migrationsname:** `db_dev_009_single_team_membership_guard_prod`
+- **Datum/Uhrzeit (Europe/Berlin):** 05.11.2026, 10:35:59 (Migrationsversion 09:35:59 UTC; Berlin = UTC+1).
+- **Umgebung:** Supabase PROD – Projekt `qdugtpzgefpswnnqbusd`
+- **Ausführungsweg:** Verbundenes Supabase-Migrationswerkzeug (`apply_migration`)
+- **Anlass/Zweck:** Serverseitige Durchsetzung der Ein-Mannschaft-Regel in beiden Zuordnungstabellen und Angleichung der Rollen-RPCs an das freigegebene Rollenmodell. Superadmins dürfen zusätzlich Vereins- oder Mannschaftsrollen besitzen; die globale Superadmin-Rolle bleibt erhalten.
+- **Freigabe:** Ausdrückliche Nutzerfreigabe am 05.11.2026 nach Vorlage der vollständigen PROD-Release-SQL und der geprüften Bestands-/Definitionsunterschiede.
+- **Ausführender:** ChatGPT über das verbundene Supabase-Migrationswerkzeug, auf ausdrückliche Nutzerfreigabe.
+- **Status:** Erfolgreich ausgeführt; Struktur-, Funktions-, Rechte-, Index-, Trigger- und Bestandsverifikation erfolgreich. Funktionale Positivtests der Rollen-RPCs und vollständiger Einladungstest stehen noch aus.
+- **Tatsächlich ausgeführtes SQL bzw. unveränderlicher Verweis:** PROD-Release-Backup `DB-DEV-009_PROD_final_single_team_membership_guard.sql`, 605 Zeilen / 22.897 Bytes, SHA-256 `6bcba806a3c37aff54a67ff59b5337ea8117d9e86ee90eeaee2e3e87e8602fbd`. Das an Supabase übergebene SQL wurde aus dieser geprüften Datei rekonstruiert; die SQL-Anweisungen und ihre Semantik entsprechen dem Backup, Kommentare wurden beim Aufruf nicht vollständig mitübergeben. Die Datei enthält im Kopf noch einen historischen Vorbereitungsvermerk („NICHT ausgeführt“); dieser Vermerk ist kein Statusnachweis und muss vor einer späteren GitHub-Versionierung korrigiert werden. Eine bytegenaue GitHub-Migrationsdatei wird erst nach dieser Korrektur angelegt.
+- **Betroffene Objekte:**
+  - Neue Triggerfunktion `public.enforce_single_team_membership()`.
+  - Neue BEFORE-Trigger `team_members_single_team_guard` und `team_member_roles_single_team_guard` auf `public.team_members` bzw. `public.team_member_roles`.
+  - Neuer Index `idx_team_member_roles_user` auf `public.team_member_roles(user_id)`.
+  - Überarbeitete RPCs `admin_add_team_role`, `admin_create_team`, `admin_list_team_admin_candidates` und `admin_complete_member_invitation`.
+- **Ergebnis:** Supabase meldete `success: true`; Migrationshistorie bestätigt Version `20261105093559`.
+- **Verifikation (read-only):**
+  1. Beide neuen Trigger sind vorhanden und aktiv; Definition jeweils BEFORE INSERT OR UPDATE OF `user_id, team_id`.
+  2. Alle fünf Funktionen (Triggerfunktion plus vier RPCs) sind vorhanden, `SECURITY DEFINER` und besitzen den festen Suchpfad `pg_catalog, public, auth`.
+  3. Die vier RPCs sind für `authenticated` ausführbar, nicht für `anon` oder `PUBLIC`; die Triggerfunktion ist nicht für `anon` oder `authenticated` ausführbar und bleibt triggerorientiert.
+  4. Index `idx_team_member_roles_user` ist vorhanden.
+  5. Bestehender Trigger `prevent_last_team_admin_removal` und Funktion `admin_remove_team_role` sind weiterhin vorhanden.
+  6. Die bestehenden RLS-Policies auf `team_members` und `team_member_roles` blieben unangetastet; die geprüfte Policy-Anzahl beträgt zusammen fünf.
+  7. Mehrfachzuordnungen über beide Mannschaftstabellen: **0 Benutzer**.
+  8. Tabellenbestand nach Migration: `team_members` 5 Zeilen, `team_member_roles` 5 Zeilen.
+- **Datenbilanz:** Die Migration führte keine Bereinigung oder Löschung bestehender Mitgliedschaftszeilen aus. Die geprüften Tabellenbestände nach Ausführung sind 5 bzw. 5 Zeilen. Ein eigenständiger Vorher-/Nachher-Datenexport wurde nicht erstellt.
+- **Rollback/Wiederherstellung:** Kein automatischer Rollback. Ein Rückbau erfordert eine neue, geprüfte Rücknahmemigration, die die vorherigen vier PROD-Funktionsdefinitionen wiederherstellt und die beiden Trigger sowie den Index und die Triggerfunktion nach Abhängigkeitsprüfung entfernt. Bestehende Admin-Schutz- und Auditmechanismen müssen erhalten bleiben.
+- **Gegenstück in DEV:** DEV-Migration `20261104143331` / `db_dev_009_single_team_membership_guard` vorhanden. PROD-Fassung enthält notwendige PROD-Legacy-Synchronisierung und wurde nicht blind aus DEV wiederholt.
+- **Zusätzliche Hinweise / Nachweisgrenzen:** Die Migration ersetzt vier Funktionsdefinitionen und ergänzt Trigger/Index; sie ändert keine RLS-Policies. Die tatsächliche Einladung über die Edge Functions sowie positive Rollen- und UI-Tests sind noch offen. Die Einladungsstrecke bleibt bis zum Edge-Function-Deployment und den Praxistests deaktiviert.
