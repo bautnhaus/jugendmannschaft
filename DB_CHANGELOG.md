@@ -463,7 +463,7 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 - **Abgrenzung:** `get_club_members_v2` bleibt unverändert. Keine Tabellen-/Datenänderung, keine Erweiterung der `profiles`-RLS-Policies und keine Änderung bestehender Profile.
 - **Frontend nach SQL-Freigabe:** Superadmin-Mitgliederliste zeigt `display_name` als Hauptzeile und E-Mail darunter; Avatar aus `avatar_url`; Bearbeitungsdialog nutzt die bereits geladene Profilinformation der Vereinsmitglied-RPC statt einer separaten, durch RLS blockierten Abfrage.
 - **Ausführungsnachweis:** `DB_MIGRATION_LOG.md`, ID DB-MIG-2026-002. Supabase bestätigte die erfolgreiche Migration; versionierte Quelle: `supabase/migrations/20261104113632_club_member_profiles_read_v3_dev.sql`.
-- **PROD:** Nicht ausgeführt und nicht freigegeben.
+- **PROD:** Am 05.11.2026 nach separater Prüfung und Freigabe ebenfalls ausgeführt; Details siehe DB-MIG-2026-005 in `DB_MIGRATION_LOG.md`.
 - **Verifikation:** Funktion vorhanden; Owner `postgres`; `SECURITY DEFINER`; `STABLE`; fester `search_path`; EXECUTE für `authenticated` (zusätzlich postgres/service_role), nicht für anon/PUBLIC. Bestehende `profiles`-Policies unverändert. Authentifizierte Positiv-/Negativtests und Frontend-Praxistest bleiben offen.
 
 
@@ -471,7 +471,7 @@ Der Nutzer bestätigt, dass alle 43 Anfragen in PROD erfolgreich ausgeführt und
 **Bereits versionierte Anwendungsschicht:** `index.html` ist in `develop` committed und wurde in den DEV-Spiegel `jugendmannschaft-dev/main` synchronisiert (Blob-SHA `ebf7363aa2df1f5b3fc465934e2fab8cea3ef0c1`); manueller UI-Test offen. `supabase/functions/invite-member/index.ts` und `supabase/functions/invite-trainer/index.ts` sind in `develop` versioniert, aber in Supabase DEV noch nicht deployed. Diese Anwendungsschicht ändert den Datenbankstatus nicht. `index.html` begrenzt den Vereinsmitglieder-Dialog auf eine tatsächliche Mannschaft und bewahrt bestehende Zuordnungen; `supabase/functions/invite-member/index.ts` lässt bestehende Superadmins als Zielpersonen zu; `supabase/functions/invite-trainer/index.ts` antwortet als Legacy-Endpunkt mit HTTP 410. Die Quellen liegen in `develop`. Diese Änderungen sind noch nicht in Supabase DEV aktiviert; daher gibt es dafür noch keinen Deployment-Nachweis in `SUPABASE_CHANGELOG.md`.
 ## DB-DEV-009 – Ein-Mannschaft-Regel und zusätzliche Verwaltungsrollen
 
-**Status: in Supabase DEV erfolgreich ausgeführt am 04.11.2026.** Supabase-Migrationsversion `20261104143331`, Name `db_dev_009_single_team_membership_guard`. PROD wurde nicht geändert und ist nicht freigegeben. Ausführungsnachweis: `DB_MIGRATION_LOG.md`, DB-MIG-2026-003.
+**DEV-Ausführung:** in Supabase DEV erfolgreich ausgeführt am 04.11.2026. Supabase-Migrationsversion `20261104143331`, Name `db_dev_009_single_team_membership_guard`. **PROD-Ausführung:** separat am 05.11.2026 nach eigener Prüfung und Freigabe; Supabase-Migrationsversion `20261105093559`, Name `db_dev_009_single_team_membership_guard_prod`. Ausführungsnachweise: `DB_MIGRATION_LOG.md`, DB-MIG-2026-003 (DEV) und DB-MIG-2026-006 (PROD).
 
 Das freigegebene Rollenmodell trennt tatsächliche Mannschaftszuordnung und zusätzliche Verwaltungsrechte:
 
@@ -541,5 +541,17 @@ Das freigegebene Rollenmodell trennt tatsächliche Mannschaftszuordnung und zus�
 - Read-only Verifikation bestätigt Funktion, Funktionssicherheit, Suchpfad und Rechte.
 - Keine bestehenden Mitgliedschafts-/Rollendaten und keine RLS-Policies verändert.
 - Die Funktion ist zunächst nur die Datenbankgrundlage. Die Einladung über die Edge Functions ist noch nicht freigegeben/deployed.
-- **Noch nicht ausgeführt:** DB-DEV-008 und DB-DEV-009. Insbesondere ist die Trigger-basierte Ein-Mannschaft-Absicherung aus DB-DEV-009 in PROD noch nicht vorhanden. Der neue Einladungsablauf darf daher erst nach Abschluss der vereinbarten Datenbank- und Edge-Function-Schritte aktiviert werden.
+- **Historischer Stand zum Zeitpunkt dieser Migration:** DB-DEV-008 und DB-DEV-009 waren noch nicht in PROD ausgeführt. Beide wurden am 05.11.2026 nach separater Prüfung und Freigabe nachgezogen (DB-MIG-2026-005 und DB-MIG-2026-006 in `DB_MIGRATION_LOG.md`). Der neue Einladungsablauf bleibt dennoch bis zum Edge-Function-Deployment und den Praxistests deaktiviert.
 - Versionierte SQL-Quelle: `supabase/migrations/20261105091350_r16_member_invitation_transaction_prod.sql`.
+
+
+## PROD-Nachtrag 05.11.2026 – DB-DEV-008 und DB-DEV-009
+
+Die PROD-Datenbankgrundlage für die Mitglieder-/Trainer-Einladung wurde am 05.11.2026 vervollständigt:
+
+- **DB-DEV-008 / DB-MIG-2026-005:** `public.get_club_members_v3(uuid)` wurde in PROD angelegt und read-only auf Existenz, Rückgabetyp, SECURITY DEFINER, festen Suchpfad und ACL geprüft. `get_club_members_v2` und die bestehenden Profile-RLS-Policies blieben erhalten. Die Supabase-Migrationsversion wurde vom Werkzeug nicht zuverlässig zurückgegeben und wird deshalb nicht behauptet.
+- **DB-DEV-009 / DB-MIG-2026-006:** Ein-Mannschaft-Trigger für `team_members` und `team_member_roles`, Index sowie vier angepasste Rollen-/Einladungs-RPCs wurden in PROD ausgeführt. Supabase-Migrationsversion `20261105093559`. Die Legacy-Rollenpriorität in `team_members.role` blieb erhalten. `admin_remove_team_role`, `prevent_last_team_admin_removal`, Audit-Trigger und bestehende RLS-Policies wurden nicht ersetzt.
+- **Read-only Kontrolle:** beide Trigger und alle fünf Funktionen vorhanden; Rechte wie vorgesehen; Index vorhanden; bestehender Schutz des letzten Mannschaftsadmins weiterhin vorhanden; fünf bestehende RLS-Policies; keine Mehrfachzuordnungen; Tabellenbestand nach Migration: 5 Zeilen in `team_members` und 5 in `team_member_roles`.
+- **Noch offen:** Deployment der Edge Functions in PROD und End-to-End-/UI-Praxistests. Bis dahin bleibt die neue Einladungsstrecke deaktiviert.
+
+Die vollständigen Ausführungsdetails, Freigaben, SQL-Backup-Prüfsummen, Verifikationen und Nachweisgrenzen stehen in `DB_MIGRATION_LOG.md` unter DB-MIG-2026-005 und DB-MIG-2026-006.
