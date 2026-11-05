@@ -530,3 +530,16 @@ Das freigegebene Rollenmodell trennt tatsächliche Mannschaftszuordnung und zus�
 **Ergebnis:** Serverseitige Ein-Mannschaft-Sperre in beiden Tabellen bestanden.
 
 **Änderungs-/Datenbilanz:** Keine Schemaänderung, keine Migration, keine dauerhafte Datenänderung, keine Rollenentfernung und keine Änderung bestehender Mitgliedschaftsdaten. Die SQL-Ausführung diente ausschließlich dem kontrollierten Negativtest. PROD und GitHub `main` blieben unangetastet.
+
+## DB-MIG-2026-004 – Gemeinsamer Abschluss der Mitglieder-/Trainer-Einladung (PROD)
+
+**Status: in Supabase PROD erfolgreich ausgeführt am 05.11.2026.** Supabase-Migrationsversion `20261105091350`, Name `r16_member_invitation_transaction_prod`. Ausführungsnachweis: `DB_MIGRATION_LOG.md`, DB-MIG-2026-004.
+
+- Neue Funktion: `public.admin_complete_member_invitation(uuid,text,uuid,text,uuid)`.
+- `SECURITY DEFINER`, fester `search_path = pg_catalog, public, auth`.
+- EXECUTE für `authenticated` erteilt; EXECUTE für `PUBLIC` und `anon` entzogen.
+- Read-only Verifikation bestätigt Funktion, Funktionssicherheit, Suchpfad und Rechte.
+- Keine bestehenden Mitgliedschafts-/Rollendaten und keine RLS-Policies verändert.
+- Die Funktion ist zunächst nur die Datenbankgrundlage. Die Einladung über die Edge Functions ist noch nicht freigegeben/deployed.
+- **Noch nicht ausgeführt:** DB-DEV-008 und DB-DEV-009. Insbesondere ist die Trigger-basierte Ein-Mannschaft-Absicherung aus DB-DEV-009 in PROD noch nicht vorhanden. Der neue Einladungsablauf darf daher erst nach Abschluss der vereinbarten Datenbank- und Edge-Function-Schritte aktiviert werden.
+- Versionierte SQL-Quelle: `supabase/migrations/20261105091350_r16_member_invitation_transaction_prod.sql`.
