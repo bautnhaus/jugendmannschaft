@@ -1,21 +1,31 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://bautnhaus.github.io",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+const ALLOWED_ORIGINS = new Set([
+  "https://dev.kadassist.de",
+  "https://bautnhaus.github.io",
+]);
 
-const respond = (data: unknown, status = 200) =>
+function corsHeadersFor(req: Request) {
+  const origin = req.headers.get("Origin") || "";
+  const allowedOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "";
+  return {
+    ...(allowedOrigin ? { "Access-Control-Allow-Origin": allowedOrigin } : {}),
+    "Vary": "Origin",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
+}
+
+const respond = (req: Request, data: unknown, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...corsHeadersFor(req), "Content-Type": "application/json" },
   });
 
 // The project reference determines the application URL. The caller cannot
 // supply an arbitrary redirect URL. DEV and PROD remain explicitly separated.
 const APP_URL_BY_PROJECT_REF: Record<string, string> = {
-  "pzazqvvoruqnqhcorbwx": "https://bautnhaus.github.io/jugendmannschaft-dev/",
+  "pzazqvvoruqnqhcorbwx": "https://dev.kadassist.de/",
   "qdugtpzgefpswnnqbusd": "https://bautnhaus.github.io/jugendmannschaft/",
 };
 
@@ -90,11 +100,11 @@ async function preflightExistingAssignments(
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { status: 200, headers: corsHeaders });
+    return new Response("ok", { status: 200, headers: corsHeadersFor(req) });
   }
 
   if (req.method !== "POST") {
-    return respond({ error: "Nur POST-Anfragen sind erlaubt." }, 405);
+    return respond(req, { error: "Nur POST-Anfragen sind erlaubt." }, 405);
   }
 
   try {
@@ -112,36 +122,36 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!url || !anonKey || !secretKeysRaw) {
-      return respond({ error: "Die Einladungsfunktion ist nicht korrekt konfiguriert." }, 500);
+      return respond(req, { error: "Die Einladungsfunktion ist nicht korrekt konfiguriert." }, 500);
     }
 
     let projectRef = "";
     try {
       projectRef = new URL(url).hostname.split(".")[0];
     } catch {
-      return respond({ error: "Die Supabase-Projektadresse ist ungültig." }, 500);
+      return respond(req, { error: "Die Supabase-Projektadresse ist ungültig." }, 500);
     }
 
     const redirectTo = APP_URL_BY_PROJECT_REF[projectRef];
     if (!redirectTo) {
-      return respond({ error: "Für diese Supabase-Umgebung ist keine freigegebene App-Weiterleitung hinterlegt." }, 500);
+      return respond(req, { error: "Für diese Supabase-Umgebung ist keine freigegebene App-Weiterleitung hinterlegt." }, 500);
     }
 
     let secretKeys: Record<string, string>;
     try {
       secretKeys = JSON.parse(secretKeysRaw);
     } catch {
-      return respond({ error: "Der Supabase Secret Key hat kein gültiges Format." }, 500);
+      return respond(req, { error: "Der Supabase Secret Key hat kein gültiges Format." }, 500);
     }
 
     const secretKey = secretKeys.default;
     if (!secretKey) {
-      return respond({ error: "Der Supabase Secret Key fehlt." }, 500);
+      return respond(req, { error: "Der Supabase Secret Key fehlt." }, 500);
     }
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return respond({ error: "Nicht angemeldet." }, 401);
+      return respond(req, { error: "Nicht angemeldet." }, 401);
     }
 
     const userClient = createClient(url, anonKey, {
@@ -156,7 +166,7 @@ Deno.serve(async (req: Request) => {
     const { data: userData, error: userError } = await userClient.auth.getUser();
     const inviter = userData?.user;
     if (userError || !inviter) {
-      return respond({ error: "Die Anmeldung konnte nicht bestätigt werden." }, 401);
+      return respond(req, { error: "Die Anmeldung konnte nicht bestätigt werden." }, 401);
     }
 
     let body: {
@@ -170,7 +180,7 @@ Deno.serve(async (req: Request) => {
     try {
       body = await req.json();
     } catch {
-      return respond({ error: "Ungültige Anfrage-Daten." }, 400);
+      return respond(req, { error: "Ungültige Anfrage-Daten." }, 400);
     }
 
     const email = String(body.email || "").trim().toLowerCase();
@@ -180,24 +190,24 @@ Deno.serve(async (req: Request) => {
     const teamId = body.team_id ? String(body.team_id).trim() : null;
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return respond({ error: "Bitte eine gültige E-Mail-Adresse angeben." }, 400);
+      return respond(req, { error: "Bitte eine gültige E-Mail-Adresse angeben." }, 400);
     }
 
     if (!displayName || displayName.length > 120) {
-      return respond({ error: "Bitte einen persönlichen Namen mit maximal 120 Zeichen eingeben." }, 400);
+      return respond(req, { error: "Bitte einen persönlichen Namen mit maximal 120 Zeichen eingeben." }, 400);
     }
 
     if (!clubId) {
-      return respond({ error: "Der Vereinskontext fehlt." }, 400);
+      return respond(req, { error: "Der Vereinskontext fehlt." }, 400);
     }
 
     if (!["member", "club_admin", "team_admin", "trainer"].includes(invitedRole)) {
-      return respond({ error: "Die ausgewählte Einladungsrolle ist ungültig." }, 400);
+      return respond(req, { error: "Die ausgewählte Einladungsrolle ist ungültig." }, 400);
     }
 
     const isTeamRole = invitedRole === "team_admin" || invitedRole === "trainer";
     if (isTeamRole !== Boolean(teamId)) {
-      return respond({
+      return respond(req, {
         error: isTeamRole
           ? "Für einen Mannschaftsadmin oder Trainer muss eine Mannschaft ausgewählt werden."
           : "Für eine reine Vereinsrolle darf keine Mannschaft angegeben werden.",
@@ -210,7 +220,7 @@ Deno.serve(async (req: Request) => {
 
     if (clubPermissionError) {
       console.error("Vereinsberechtigung konnte nicht geprüft werden:", clubPermissionError);
-      return respond({ error: "Die Vereinsberechtigung konnte nicht geprüft werden." }, 500);
+      return respond(req, { error: "Die Vereinsberechtigung konnte nicht geprüft werden." }, 500);
     }
 
     let canManageTeam = false;
@@ -220,13 +230,13 @@ Deno.serve(async (req: Request) => {
 
       if (teamPermissionError) {
         console.error("Mannschaftsberechtigung konnte nicht geprüft werden:", teamPermissionError);
-        return respond({ error: "Die Mannschaftsberechtigung konnte nicht geprüft werden." }, 500);
+        return respond(req, { error: "Die Mannschaftsberechtigung konnte nicht geprüft werden." }, 500);
       }
       canManageTeam = teamAdmin === true;
     }
 
     if (canManageClub !== true && !(isTeamRole && canManageTeam)) {
-      return respond({ error: "Keine Berechtigung für diese Einladung oder kein passender Vereins-/Mannschaftskontext." }, 403);
+      return respond(req, { error: "Keine Berechtigung für diese Einladung oder kein passender Vereins-/Mannschaftskontext." }, 403);
     }
 
     if (teamId) {
@@ -238,11 +248,11 @@ Deno.serve(async (req: Request) => {
 
       if (teamError) {
         console.error("Mannschaft konnte nicht geprüft werden:", teamError);
-        return respond({ error: "Die ausgewählte Mannschaft konnte nicht geprüft werden." }, 500);
+        return respond(req, { error: "Die ausgewählte Mannschaft konnte nicht geprüft werden." }, 500);
       }
 
       if (!team || team.active !== true || team.club_id !== clubId) {
-        return respond({ error: "Die ausgewählte Mannschaft gehört nicht zum Verein oder ist nicht aktiv." }, 400);
+        return respond(req, { error: "Die ausgewählte Mannschaft gehört nicht zum Verein oder ist nicht aktiv." }, 400);
       }
     }
 
@@ -250,11 +260,11 @@ Deno.serve(async (req: Request) => {
     try {
       targetUser = await findAuthUserByEmail(adminClient, email);
     } catch (lookupError) {
-      return respond({ error: lookupError instanceof Error ? lookupError.message : "Benutzerprüfung fehlgeschlagen." }, 500);
+      return respond(req, { error: lookupError instanceof Error ? lookupError.message : "Benutzerprüfung fehlgeschlagen." }, 500);
     }
 
     if (targetUser?.id === inviter.id) {
-      return respond({ error: "Du kannst dich nicht selbst einladen." }, 400);
+      return respond(req, { error: "Du kannst dich nicht selbst einladen." }, 400);
     }
 
     if (targetUser) {
@@ -264,7 +274,7 @@ Deno.serve(async (req: Request) => {
       try {
         await preflightExistingAssignments(adminClient, targetUser.id, clubId, invitedRole, teamId);
       } catch (preflightError) {
-        return respond({ error: preflightError instanceof Error ? preflightError.message : "Bestehende Zuordnungen konnten nicht geprüft werden." }, 409);
+        return respond(req, { error: preflightError instanceof Error ? preflightError.message : "Bestehende Zuordnungen konnten nicht geprüft werden." }, 409);
       }
     }
 
@@ -286,7 +296,7 @@ Deno.serve(async (req: Request) => {
         const racedUser = await findAuthUserByEmail(adminClient, email).catch(() => null);
 
         if (!racedUser) {
-          return respond({
+          return respond(req, {
             error: inviteError?.message || "Die Einladungs-E-Mail konnte nicht versendet werden.",
             invitation_email_sent: false,
           }, 502);
@@ -301,7 +311,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!targetUser?.id) {
-      return respond({ error: "Auth-Benutzer konnte nicht ermittelt werden.", invitation_email_sent: invitationEmailSent }, 500);
+      return respond(req, { error: "Auth-Benutzer konnte nicht ermittelt werden.", invitation_email_sent: invitationEmailSent }, 500);
     }
 
     // Confirmed accounts already have a working login; do not send an invite email.
@@ -318,7 +328,7 @@ Deno.serve(async (req: Request) => {
 
     if (assignmentError || assignment?.success !== true) {
       console.error("Mitgliedschaft konnte nicht vollständig gespeichert werden:", assignmentError);
-      return respond({
+      return respond(req, {
         error: invitationEmailSent
           ? "Die Einladung wurde versendet, aber Profil und Rollen konnten nicht vollständig gespeichert werden. Bitte denselben Vorgang mit derselben E-Mail-Adresse erneut ausführen; es wird kein zweites Konto angelegt."
           : "Profil und Rollen konnten nicht vollständig gespeichert werden: " + (assignmentError?.message || "Datenbankbestätigung fehlt."),
@@ -336,7 +346,7 @@ Deno.serve(async (req: Request) => {
       message = "Die Zuordnung wurde gespeichert. Eine erneute Einladungs-E-Mail konnte nicht bestätigt werden.";
     }
 
-    return respond({
+    return respond(req, {
       success: true,
       existing_user: existingUser,
       invitation_email_sent: invitationEmailSent,
@@ -347,7 +357,7 @@ Deno.serve(async (req: Request) => {
     });
   } catch (error) {
     console.error("invite-member:", error);
-    return respond({
+    return respond(req, {
       error: error instanceof Error
         ? error.message
         : "Bei der Einladung ist ein unerwarteter Fehler aufgetreten.",
