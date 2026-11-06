@@ -1,8 +1,41 @@
 # Jugendmannschaft – Projektkontext
 
 **Dokumenttyp:** Zentrale Projektdokumentation  
-**Stand:** 04.11.2026  
+**Stand:** 06.11.2026  
 **Führende Quelle:** Branch `develop` im Repository `bautnhaus/jugendmannschaft`
+
+## Aktueller Stand – verbindliche Aktualisierung vom 06.11.2026
+
+Dieser Abschnitt hat Vorrang vor älteren datierten Zwischenständen weiter unten in dieser Datei. Historische Einträge bleiben als Verlauf erhalten und sind nicht automatisch der aktuelle Status.
+
+### Aktueller Release- und Branchstand
+- PROD Release 1.5.2 wurde am 02.11.2026 vom Nutzer als deployed bestätigt.
+- AP05 / Mitgliedereinladung ist in DEV und PROD bereitgestellt. DEV `invite-member` Version 5 ACTIVE; PROD `invite-member` Version 1 ACTIVE; PROD Legacy-Funktion `invite-trainer` Version 3 ACTIVE und liefert HTTP 410 mit Verweis auf `invite-member`. JWT-Verifikation ist jeweils aktiviert.
+- Nutzer hat den PROD-Web-Deploy und den vollständigen Standard-Einladungsablauf in PROD erfolgreich bestätigt. Die Auth-Site-URL und Redirect-URL wurden vom Nutzer im Dashboard auf `https://kadassist.de` bzw. `https://kadassist.de/` gesetzt.
+- AP05 Standardabläufe DEV und PROD sind abgeschlossen. Optionale Randfalltests (zweite Mannschaftszuordnung, nicht erlaubte CORS-Origin, erneute Einladung bestätigter Konten) bleiben separat offen und blockieren den dokumentierten Standardablauf nicht.
+- Am 06.11.2026 wurden `main` und `develop` nach dem PROD-Deploy als vollständig identisch bestätigt: Commit `dd0cd8f405673e488ed20c2daf724d2583f7be0d`, 0 Commits voraus/zurück, keine abweichenden Dateien. Spätere Dokumentationsänderungen auf `develop` erzeugen wieder einen temporären Vorsprung; nach Abschluss der Dokumentation kann der bestehende PROD-Workflow erneut ausgeführt werden, um beide Branches zu synchronisieren.
+- Maßgeblicher Detailnachweis: `docs/AP05_INVITE_MEMBER_DEV_DOMAIN_2026-11-05.md` und `SUPABASE_CHANGELOG.md` (SUPA-2026-002).
+
+### Domains, Hosting und DNS
+| Zweck | Adresse / Zuständigkeit |
+|---|---|
+| PROD-App | `https://kadassist.de` |
+| DEV-App | `https://dev.kadassist.de` |
+| Hosting | GitHub Pages |
+| Domainregistrar | STRATO – Domainregistrierung und Vertragsverwaltung für `kadassist.de` |
+| DNS-Verwaltung | Cloudflare – DNS-Zone und DNS-Einträge für die Domain |
+| Cloudflare-Tarif | Free Plan (0 €); keine kostenpflichtige Cloudflare-Option als Voraussetzung dokumentiert |
+
+STRATO bleibt Registrar; Cloudflare verwaltet die DNS-Zone. Die Rollen nicht verwechseln: Änderungen an DNS-Einträgen erfolgen in Cloudflare, Domainvertrag/Verlängerung beim Registrar STRATO. Die Domain-/DNS-Verwaltung ist von GitHub-Branch-Deployments und Supabase-Konfiguration getrennt. Keine DNS-, Nameserver- oder Registraränderung ohne konkreten Anlass und ausdrückliche Freigabe. Es wurden im Rahmen des AP05-Abschlusses keine STRATO- oder Cloudflare-Einstellungen geändert.
+
+### Abgeschlossene Themen nicht erneut aufrollen
+- AP05 Standard-Einladungsablauf DEV/PROD einschließlich Domain-Redirect, Passwortvergabe und Anmeldung: abgeschlossen und vom Nutzer bestätigt.
+- PROD-Deployment des Webstands nach der AP05-Funktionsbereitstellung: vom Nutzer bestätigt.
+- GitHub-Synchronität nach dem letzten regulären PROD-Deploy: am 06.11.2026 mit `identical` bestätigt.
+- Diese Prüfungen nicht routinemäßig wiederholen. Nur bei einem konkreten Fehler, einer neuen Änderung mit direkter Auswirkung oder einem nachvollziehbaren Widerspruch gezielt erneut prüfen.
+
+### Nächstes Vorhaben
+Das nächste Backlog-Thema wird vom Nutzer erst im Folgechat ausgewählt. Vor der Auswahl keine Umsetzung und keine vorsorgliche Komplettprüfung des Backlogs starten. Nach Auswahl nur den betroffenen Backlog-Eintrag und dessen maßgebliche Dokumente/aktuellen DEV-Stand gezielt heranziehen.
 
 ## 1. Zweck und Dokumentationsprinzip
 
