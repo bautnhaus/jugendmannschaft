@@ -4,7 +4,7 @@
 **Testabschluss:** 06.11.2026  
 **Umgebung:** Supabase DEV und PROD  
 **Edge Function:** `invite-member`  
-**Status:** DEV Version 5 und PROD Version 1 bereitgestellt; DEV-Standardablauf erfolgreich getestet; PROD-End-to-End-Test nach Website-Deploy offen.
+**Status:** DEV Version 5 und PROD Version 1 bereitgestellt; DEV- und PROD-Standardablauf erfolgreich getestet; PROD-Web-Deploy und Einladungstest vom Nutzer bestätigt.
 
 ## Ziel
 
@@ -108,7 +108,7 @@ Hinweis: GitHub Pages Settings > Pages muss geprüft werden. Falls Custom domain
 
 ## PROD-Erweiterung – Mitgliedereinladung (06.11.2026)
 
-**Status:** Edge Functions in PROD bereitgestellt und technisch verifiziert. Der Web-Deploy auf die PROD-Website steht noch aus. Ein vollständiger End-to-End-Test über die PROD-Oberfläche ist deshalb noch offen.
+**Status:** Edge Functions und Web-App in PROD bereitgestellt. Der Nutzer hat den vollständigen PROD-Einladungsablauf nach dem Web-Deploy erfolgreich durchgeführt und bestätigt.
 
 ### 1. PROD-spezifischer Quelltext
 
@@ -175,21 +175,27 @@ Die PROD-Funktion ruft weiterhin die vorhandene RPC `admin_complete_member_invit
 
 Daher ist für diese Bereitstellungen kein neuer Eintrag im SQL-Migrationsprotokoll und kein Datenbank-Changelog-Eintrag erforderlich.
 
-### 6. PROD-Web-Deploy und noch ausstehende Tests
+### 6. PROD-Web-Deploy und End-to-End-Test
 
-Der PROD-Web-Deploy wurde zum Stand dieser Dokumentation **noch nicht ausgeführt**. Der Nutzer führt ihn nach Abschluss der Dokumentation selbst aus.
+Der Nutzer hat den PROD-Web-Deploy über GitHub Actions selbst ausgeführt und dessen erfolgreichen Abschluss am 06.11.2026 im Chat bestätigt. Anschließend hat der Nutzer auch den vollständigen Einladungsablauf über die PROD-Oberfläche erfolgreich getestet und bestätigt.
 
-Nach erfolgreichem Web-Deploy sind mindestens folgende Praxistests durchzuführen:
+| Prüfschritt | Ergebnis |
+|---|---|
+| Trainer-Einladung aus `https://kadassist.de` auslösen | Vom Nutzer als erfolgreich bestätigt |
+| Einladungs-E-Mail erhalten | Vom Nutzer als erfolgreich bestätigt |
+| Einladungslink öffnen und Rückkehr auf `https://kadassist.de/` | Vom Nutzer als erfolgreich bestätigt |
+| Passwortvergabe und anschließende Anmeldung | Vom Nutzer als erfolgreich bestätigt |
+| Einladungsvorgang über die PROD-Oberfläche abschließen | Vom Nutzer als erfolgreich bestätigt |
 
-1. Trainer-Einladung aus `https://kadassist.de` auslösen.
-2. Prüfen, ob die E-Mail eintrifft.
-3. Einladungslink öffnen und sicherstellen, dass er auf `https://kadassist.de/` zurückführt.
-4. Passwortvergabe und anschließende Anmeldung durchführen.
-5. Prüfen, ob Name, Rolle, Verein und Mannschaft korrekt gespeichert wurden.
-6. Prüfen, dass eine bereits bestehende Zuordnung zu einer anderen Mannschaft eine zweite Mannschaftszuordnung verhindert.
-7. Optional: erneute Einladung eines bereits bestätigten Benutzers sowie CORS-Ablehnung einer nicht freigegebenen Origin prüfen.
+**Nachweisgrenze:** Die Ergebnisse beruhen auf der praktischen Durchführung und Bestätigung durch den Nutzer. Ein unabhängiger technischer Readback des GitHub-Actions-Laufs oder eine Einsicht in das neu angelegte Konto wurde nicht vorgenommen.
 
-**Wichtig:** Bis diese Tests erfolgreich abgeschlossen sind, gilt der PROD-Einladungsprozess als bereitgestellt, aber noch nicht vollständig im Frontend end-to-end abgenommen.
+### Noch offene optionale Randfalltests
+
+1. Erneute Einladung eines Benutzers mit bereits bestehender Mannschaftszuordnung; eine zweite Mannschaftszuordnung muss abgewiesen werden.
+2. CORS-Ablehnung einer nicht freigegebenen Origin.
+3. Erneute Einladung eines bereits bestätigten Benutzers.
+
+Diese Randfälle sind keine Voraussetzung für die dokumentierte erfolgreiche Standardabnahme. Sie bleiben als separate Prüfungen offen.
 
 ### 7. Rollback- und Betriebsgrenzen
 
