@@ -49,13 +49,19 @@ jobs:
           path.write_text(text)
           PY
 
-      - name: Push tested develop state to main
+      - name: Fast-forward main to tested develop state
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
 
-          git checkout -B main
-          git push origin main --force
+          # main must be an ancestor of the tested develop commit.
+          # If main has independent commits, stop instead of overwriting them.
+          git merge-base --is-ancestor origin/main HEAD || {
+            echo "PROD main has commits that are not contained in develop. Deployment stopped."
+            exit 1
+          }
+
+          # GitHub accepts this only as a fast-forward update.
+          git push origin HEAD:main
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
