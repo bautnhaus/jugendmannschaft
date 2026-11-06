@@ -1,10 +1,10 @@
-# AP05 – DEV-Domainanpassung der Mitgliedereinladung
+# AP05 – Mitgliedereinladung: DEV-Domainanpassung und PROD-Bereitstellung
 
 **Änderungsdatum:** 05.11.2026  
 **Testabschluss:** 06.11.2026  
-**Umgebung:** Supabase DEV  
+**Umgebung:** Supabase DEV und PROD  
 **Edge Function:** `invite-member`  
-**Status:** Version 5 veröffentlicht; grundlegender DEV-Einladungsprozess erfolgreich getestet.
+**Status:** DEV Version 5 und PROD Version 1 bereitgestellt; DEV-Standardablauf erfolgreich getestet; PROD-End-to-End-Test nach Website-Deploy offen.
 
 ## Ziel
 
@@ -88,7 +88,7 @@ Bei Problemen kann die vorherige Version 4 der Funktion als Referenz wiederherge
 
 ## Geltungsbereich
 
-Diese Dokumentation beschreibt ausschließlich die DEV-Anpassung vom 05.11.2026. Eine entsprechende Änderung in PROD ist **nicht** erfolgt und benötigt eine separate Prüfung und ausdrückliche Freigabe.
+Dieser Abschnitt dokumentiert die ursprüngliche DEV-Anpassung vom 05.11.2026. Die danach erfolgte PROD-Bereitstellung ist im ergänzten PROD-Abschnitt weiter unten dokumentiert.
 
 
 ## DEV-GitHub-Pages-Korrektur (05.11.2026)
