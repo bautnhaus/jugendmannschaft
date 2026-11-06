@@ -1,7 +1,9 @@
 # Jugendmannschaft
 
 ## Zentrale Dokumentation
-- [Projektkontext und verbindliche Arbeitsregeln](PROJECT_CONTEXT.md)
+- [Projektkontext, aktueller Status, Hosting/DNS und verbindliche Arbeitsregeln](PROJECT_CONTEXT.md)
+- [Aktuelle Übergabe für den nächsten Backlog-Chat](docs/UEBERGABE_NEUER_CHAT_2026-11-06.md)
+- [Kopierprompt für den nächsten Backlog-Chat](docs/PROMPT_NEUER_CHAT_BACKLOG_2026-11-06.txt)
 - [Datenbank-Changelog](DB_CHANGELOG.md) – technische Datenbankobjekte, Änderungen und Prüfungen
 - [SQL-Migrationsprotokoll](DB_MIGRATION_LOG.md) – tatsächliche Ausführungsnachweise für schreibende SQL-Anweisungen
 
@@ -20,12 +22,13 @@
 - Die Datei `CNAME` in `develop` ordnet die PROD-Website der Domain `kadassist.de` zu. Der DEV-Spiegelworkflow muss dagegen `dev.kadassist.de` setzen.
 - Ein erfolgreicher Edge-Function-Deploy ist nicht gleichbedeutend mit einem erfolgreichen Website-Deploy oder einem bestandenen End-to-End-Test.
 
-## Aktuell offene Arbeitsübergabe
-- [Übergabedokument – Mitglieder-/Trainer-Einladung](docs/UEBERGABE_NEUER_CHAT_2026-11-02.md)
-- [Kopierprompt für einen Folgechat](docs/PROMPT_NEUER_CHAT_MITGLIEDEREINLADUNG_2026-11-02.txt)
+## Aktuelle Arbeitsübergabe
+- Die Einladungsthematik AP05 ist abgeschlossen; die Dokumente vom 02.11.2026 sind historische Übergaben und kein offener Arbeitsauftrag.
+- [Aktuelle Übergabe für den nächsten Backlog-Chat](docs/UEBERGABE_NEUER_CHAT_2026-11-06.md)
+- [Kopierprompt für den nächsten Backlog-Chat](docs/PROMPT_NEUER_CHAT_BACKLOG_2026-11-06.txt)
 
 ## Archive
 - [Archivübersicht](docs/archive/README.md)
 - [Historische PROD-SQL-Anfragen 1–43](docs/database/archive/PROD_Migrationen_01-43/README.md)
 
-Nach einem regulären PROD-Release sollen `develop` und `main` denselben Dokumentationsstand enthalten. Archivierte Dokumente bleiben zur Nachvollziehbarkeit erhalten und gelten nicht automatisch als aktueller Arbeitsstand.
+Nach einem regulären PROD-Release sollen `develop` und `main` denselben Dokumentationsstand enthalten. Die aktuelle Dokumentationspflege erfolgt zunächst ausschließlich in `develop`; danach kann der Nutzer den bestehenden Deploy-PROD-Workflow ausführen. Archivierte Dokumente bleiben zur Nachvollziehbarkeit erhalten und gelten nicht automatisch als aktueller Arbeitsstand. Domainrollen: STRATO ist Registrar, Cloudflare verwaltet die DNS-Zone; Details und URLs stehen in `PROJECT_CONTEXT.md`.
