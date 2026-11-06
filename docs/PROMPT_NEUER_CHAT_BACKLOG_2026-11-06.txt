@@ -1,0 +1,26 @@
+Wir setzen die Entwicklung von KADAssist fort. Bitte lies zuerst die angehängte bzw. verlinkte aktuelle Übergabedokumentation und beachte sie als verbindlichen Projektkontext.
+
+**Das nächste Backlog-Thema werde ich selbst benennen. Warte darauf.** Wähle nicht eigenständig ein Thema aus und beginne bis dahin keine Analyse oder Umsetzung.
+
+Besonders wichtig:
+- Abgeschlossene Themen werden nicht erneut aufgewärmt.
+- Bereits durchgeführte und bestandene Prüfungen, Deployments und Branch-Abgleiche werden nicht routinemäßig wiederholt. Nur bei einem konkreten Fehler, einer neuen Änderung mit direkter Auswirkung oder einem nachvollziehbaren Widerspruch gezielt nachprüfen.
+- AP05 – Standard-Einladungsablauf in DEV und PROD – ist abgeschlossen. PROD-Web-Deploy und vollständiger PROD-Einladungstest wurden von mir bestätigt. Der Branchvergleich nach diesem Deploy war `identical` (Commit `dd0cd8f405673e488ed20c2daf724d2583f7be0d`). Die optionalen AP05-Randfalltests sind separat offen, aber kein Anlass, den Standardablauf erneut zu prüfen.
+- Maßgebliche aktuelle Dokumente sind `PROJECT_CONTEXT.md`, `docs/AP05_INVITE_MEMBER_DEV_DOMAIN_2026-11-05.md` und `SUPABASE_CHANGELOG.md`. Ältere Übergabe-/Einladungsdokumente sind historische Artefakte.
+- STRATO ist Registrar der Domain `kadassist.de`; Cloudflare verwaltet die DNS-Zone (Free Plan, 0 €); GitHub Pages hostet die App. PROD: `https://kadassist.de`; DEV: `https://dev.kadassist.de`. Diese Ebenen nicht verwechseln.
+- `develop` ist Entwicklungs- und Dokumentationsquelle, `main` ist PROD. Dokumentationsänderungen zunächst in develop. Der bestehende Deploy-PROD-Workflow synchronisiert nach Nutzerfreigabe per Fast-forward. Keine Force-Pushes.
+- Ausschließlich DEV entwickeln und testen. Keine PROD-, SQL-, Supabase-Auth-/Edge-, GitHub-main-, DNS- oder Registraränderung ohne separate ausdrückliche Freigabe.
+- Vor SQL-Schreibzugriff vollständiges SQL, Zweck und Zielumgebung nennen und ausdrückliche Zustimmung einholen. Vorher tatsächliche Definitionen und Zielzustand read-only prüfen. Keine Migration ohne Freigabe.
+- Vor Codeänderungen Originaldateien frisch aus GitHub holen. Keine Definitionen oder Code aus dem Gedächtnis rekonstruieren. Daten, Rollen, RLS und bestehende Sicherheitslogik erhalten.
+- Ich bin kein Programmierer. Übernimm die technische Prüfung und Bewertung selbst, erkläre Ergebnisse verständlich und gib mir klare Schritt-für-Schritt-Anweisungen – immer nur den nächsten sinnvollen Schritt.
+- Ich möchte keine unnötigen Prüfschleifen. Nutze die vorhandenen Nachweise und konzentriere dich auf die noch offenen Punkte des ausgewählten Themas.
+- Neue Features immer in dieser Reihenfolge: Anforderungen klären → Userflow/Wireframe/Low Fidelity abstimmen → High-Fidelity-UI-Konzept abstimmen → DEV-Umsetzung → DEV-Praxistest.
+- KADAssist bleibt sportartneutral, iPhone-first, mit neutralem Blau. Bestehende Komponenten wiederverwenden. „Dashboard“ heißt Dashboard, nicht Übersicht.
+
+Sobald ich das Thema nenne, ordne es dem bestehenden Backlog zu, lies nur die dafür relevanten aktuellen GitHub-Dokumente und den betroffenen DEV-Stand und fasse zuerst zusammen:
+1. Was fachlich bereits entschieden ist,
+2. Was nachweislich bereits umgesetzt und getestet wurde,
+3. Was tatsächlich noch offen ist,
+4. Was der nächste konkrete Schritt ist.
+
+Beginne nicht mit einer vollständigen Projektprüfung und stelle keine Fragen zu bereits dokumentierten oder bestätigten Punkten.
