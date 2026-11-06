@@ -8,7 +8,7 @@
 
 ## Ziel
 
-Die Einladungsfunktion soll von der neuen DEV-App-Domain `https://dev.kadassist.de` aus aufrufbar sein. Einladungslinks für Benutzer in DEV sollen ebenfalls auf diese Domain führen. PROD bleibt von dieser Änderung unberührt.
+Die Einladungsfunktion ist für DEV und PROD jeweils domain- und projektbezogen konfiguriert. DEV verwendet `https://dev.kadassist.de`, PROD verwendet `https://kadassist.de`. Die produktiven Änderungen sind in Abschnitt „PROD-Erweiterung“ dokumentiert.
 
 ## Durchgeführte Änderung
 
@@ -28,7 +28,7 @@ Die projektbezogene Redirect-Zuordnung lautet:
 | Supabase-Projekt | Redirect URL |
 |---|---|
 | DEV (`pzazqvvoruqnqhcorbwx`) | `https://dev.kadassist.de/` |
-| PROD (`qdugtpzgefpswnnqbusd`) | `https://bautnhaus.github.io/jugendmannschaft/` (unverändert im DEV-Funktionsquelltext) |
+| PROD (`qdugtpzgefpswnnqbusd`) | `https://kadassist.de/` (eigener PROD-Quelltext; siehe unten) |
 
 Die DEV-Auth-URL-Konfiguration wurde separat angepasst:
 
@@ -88,7 +88,7 @@ Bei Problemen kann die vorherige Version 4 der Funktion als Referenz wiederherge
 
 ## Geltungsbereich
 
-Dieser Abschnitt dokumentiert die ursprüngliche DEV-Anpassung vom 05.11.2026. Die danach erfolgte PROD-Bereitstellung ist im ergänzten PROD-Abschnitt weiter unten dokumentiert.
+Dieser Abschnitt dokumentiert die ursprüngliche DEV-Anpassung vom 05.11.2026. Die danach erfolgte PROD-Bereitstellung ist im ergänzten PROD-Abschnitt weiter unten dokumentiert. Aussagen zu PROD, die hier ausdrücklich als unverändert oder nicht betroffen bezeichnet werden, beziehen sich ausschließlich auf den damaligen DEV-Änderungsschritt und nicht auf den späteren PROD-Cutover.
 
 
 ## DEV-GitHub-Pages-Korrektur (05.11.2026)
@@ -203,3 +203,15 @@ Diese Randfälle sind keine Voraussetzung für die dokumentierte erfolgreiche St
 - Bei Problemen zuerst Fehlerbild und Logs prüfen; nicht pauschal auf ältere Funktionsversionen zurückrollen.
 - `invite-trainer` bleibt stillgelegt. Eine Reaktivierung der alten Schreiblogik ist nicht vorgesehen.
 - PROD-Daten, Rollen und RLS-Regeln wurden durch diese Funktionsbereitstellungen nicht verändert.
+
+
+## Aktueller Abschlussstatus und Referenz (06.11.2026)
+
+- DEV `invite-member`: Version 5 ACTIVE, `verify_jwt=true`; Standard-Einladungsablauf vom Nutzer erfolgreich getestet.
+- PROD `invite-member`: Version 1 ACTIVE, `verify_jwt=true`; eigener PROD-Quelltext mit ausschließlich `https://kadassist.de` als erlaubter Origin und PROD-Redirect.
+- PROD `invite-trainer`: Version 3 ACTIVE, `verify_jwt=true`; Legacy-Endpunkt beantwortet Nicht-OPTIONS-Aufrufe mit HTTP 410 und verweist auf `invite-member`.
+- Der GitHub-Actions-Workflow „Deploy PROD“ wurde vom Nutzer nach den Änderungen ausgeführt; der vollständige PROD-Einladungsablauf wurde anschließend vom Nutzer erfolgreich bestätigt.
+- Am 06.11.2026 wurde `main` gegen `develop` verglichen. Ergebnis: `identical`, 0 Commits voraus/zurück, keine abweichenden Dateien. Beide Branches standen auf `dd0cd8f405673e488ed20c2daf724d2583f7be0d`.
+- Nach der jetzt folgenden Dokumentationsaktualisierung auf `develop` entsteht erwartungsgemäß wieder ein temporärer Dokumentationsvorsprung von `develop`. Ein erneuter regulärer PROD-Deploy ist erforderlich, wenn `main` wieder identisch sein soll.
+
+Die Standardabläufe gelten als abgeschlossen. Die optionalen Randfalltests aus Abschnitt 6 bleiben separat offen; sie sind kein Anlass, den erfolgreichen Standardablauf erneut zu testen.
