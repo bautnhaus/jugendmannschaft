@@ -1,6 +1,6 @@
 # Supabase-Laufzeit- und Konfigurationsänderungsprotokoll
 
-**Stand:** 04.11.2026  
+**Stand:** 06.11.2026  
 **Geltungsbereich:** Nicht-SQL-basierte Änderungen in Supabase DEV und Supabase PROD.  
 **Führende Prozessdokumentation:** `docs/SUPABASE_CHANGE_CONTROL.md`
 
@@ -79,3 +79,24 @@ Schreibende SQL-Änderungen bleiben zusätzlich und verbindlich in `DB_MIGRATION
 - **PROD-Gegenstück:** Nicht ausgeführt und nicht freigegeben. PROD bleibt unverändert.
 
 Künftige tatsächliche Deployments und Konfigurationsänderungen werden ab diesem Protokoll mit dem Eintragsmuster aus Abschnitt 3 dokumentiert. Historische Änderungen werden nicht ohne Beleg rückwirkend rekonstruiert.
+
+
+### SUPA-2026-002 – PROD: Einladung auf kadassist.de bereitgestellt
+
+- **Datum:** 06.11.2026
+- **Umgebung:** ausschließlich Supabase PROD
+- **Supabase-Projektkennung:** qdugtpzgefpswnnqbusd
+- **Änderungstyp:** Edge Functions und Auth-URL-Konfiguration
+- **Anlass/Zweck:** Domaingetrennte Einladung für die PROD-App unter https://kadassist.de; Stilllegung des historischen Einladungsendpunkts.
+- **Freigabe:** Ausdrückliche Nutzerfreigabe für die jeweiligen PROD-Deployments und die Auth-URL-Anpassung.
+- **Quellpfade und Commits in GitHub develop:**
+  - `supabase/functions/invite-member-prod/index.ts` – PROD-Variante auf Basis der getesteten DEV-Version 5; Commit `0fd6bab357cbb31e8715d745b672f4091e5ca658`.
+  - `supabase/functions/invite-trainer-prod/index.ts` – dokumentierter Legacy-Ersatz; Commit `acb3a5ca85aefa4e7ab9dd1b5d0778a27ce0c994`.
+- **invite-member:** Version 1 ACTIVE, `verify_jwt=true`; CORS-Origin ausschließlich `https://kadassist.de`; Redirect für PROD-Projekt auf `https://kadassist.de/`. Deployment und Status wurden nach dem Deploy read-only zurückgelesen.
+- **invite-trainer:** Version 3 ACTIVE, `verify_jwt=true`; OPTIONS-Preflight wird beantwortet, alle anderen Aufrufe liefern HTTP 410 Gone mit Verweis auf `invite-member`. Deployment und Status wurden nach dem Deploy read-only zurückgelesen.
+- **Auth-URL-Konfiguration:** Der Nutzer hat Site URL `https://kadassist.de` und Redirect URL `https://kadassist.de/` im Supabase-Dashboard gesetzt und im Chat bestätigt. Kein unabhängiger API-Readback.
+- **PROD-Web-Deploy:** Nutzer hat den GitHub-Actions-Workflow „Deploy PROD“ erfolgreich ausgeführt und bestätigt.
+- **End-to-End-Verifikation:** Nutzer hat danach den vollständigen Standard-Einladungsablauf über die PROD-Oberfläche (Einladung, E-Mail, Link, Passwortvergabe, Anmeldung) erfolgreich getestet und bestätigt. Keine unabhängige Einsicht in das neu angelegte Konto.
+- **Datenbankumfang:** Keine SQL-Migration, keine Tabellen-/Daten-/RLS-/RPC-/Trigger-Änderung und keine Änderung von Supabase-Secrets im Rahmen dieses Arbeitsschritts.
+- **Offene optionale Randfälle:** Ablehnung einer zweiten Mannschaftszuordnung bei erneuter Einladung, CORS-Ablehnung einer nicht erlaubten Origin und erneute Einladung eines bereits bestätigten Benutzers. Der Standardablauf ist abgeschlossen; diese optionalen Tests dürfen nicht mit einem offenen Standardablauf verwechselt werden.
+- **PROD-Gegenstück:** Dies ist der PROD-Nachweis; DEV ist separat in SUPA-2026-001 und AP05 dokumentiert.
