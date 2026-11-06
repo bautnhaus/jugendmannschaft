@@ -1,9 +1,10 @@
 # AP05 – DEV-Domainanpassung der Mitgliedereinladung
 
-**Datum:** 05.11.2026  
+**Änderungsdatum:** 05.11.2026  
+**Testabschluss:** 06.11.2026  
 **Umgebung:** Supabase DEV  
 **Edge Function:** `invite-member`  
-**Status:** Version 5 veröffentlicht; Funktionstests nach Veröffentlichung noch ausstehend.
+**Status:** Version 5 veröffentlicht; grundlegender DEV-Einladungsprozess erfolgreich getestet.
 
 ## Ziel
 
@@ -55,16 +56,31 @@ Die DEV-Auth-URL-Konfiguration wurde separat angepasst:
 - `verify_jwt`: `true`
 - SHA-256 des veröffentlichten Quellcodes: `4746862f9dd3d214acb778b6cb7b2c5f1b1028f0a303672e12b3835f8e8904b0`
 
-## Noch ausstehende DEV-Praxistests
+## DEV-Praxistest – Ergebnis vom 06.11.2026
 
-Die Veröffentlichung ist bestätigt. Folgende Funktionstests müssen noch durchgeführt werden; sie gelten nicht allein durch das Deployment als bestanden:
+Der Nutzer hat den vollständigen Einladungsablauf in DEV praktisch getestet und bestätigt:
 
-1. Einladung eines neuen Trainers über `https://dev.kadassist.de`.
-2. Prüfen, dass der Einladungslink auf die neue DEV-Domain führt.
-3. Einladung abschließen und Name sowie Rollen-/Mitgliedschaftsdaten kontrollieren.
-4. Erneute Einladung eines Benutzers mit bereits bestehender Mannschaftszuordnung prüfen; die zweite Mannschaftszuordnung muss abgewiesen werden.
-5. CORS-Verhalten für eine nicht freigegebene Origin prüfen.
-6. Optional prüfen, dass die alte GitHub-Pages-Origin während der Übergangsphase weiterhin funktioniert.
+| Prüfschritt | Ergebnis |
+|---|---|
+| Einladung eines neuen Trainers über `https://dev.kadassist.de` auslösen | Bestanden |
+| Einladungs-E-Mail erhalten | Bestanden |
+| Einladungslink öffnen | Bestanden |
+| Rückkehr auf `https://dev.kadassist.de` | Bestanden |
+| Passwortvergabe durchführen | Bestanden |
+| Anmeldung mit dem neuen Trainerkonto | Bestanden |
+| Name korrekt gespeichert | Bestanden |
+| Vorgesehene Rolle korrekt zugewiesen | Bestanden |
+| Mannschaftszuordnung korrekt | Bestanden |
+
+**Ergebnis:** Der grundlegende Einladungs- und Registrierungsprozess über die neue DEV-Domain funktioniert.
+
+### Noch nicht separat geprüfte Randfälle
+
+1. Erneute Einladung eines Benutzers mit bereits bestehender Mannschaftszuordnung; die zweite Mannschaftszuordnung muss abgewiesen werden.
+2. CORS-Verhalten bei einer nicht freigegebenen Origin.
+3. Optional: Kompatibilität der alten GitHub-Pages-Origin während der Übergangsphase.
+
+Diese Randfälle sind nicht Bestandteil des oben bestätigten erfolgreichen Standardablaufs und bleiben offen.
 
 ## Rollback-Hinweis
 
