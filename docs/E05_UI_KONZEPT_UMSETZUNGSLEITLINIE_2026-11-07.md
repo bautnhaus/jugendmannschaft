@@ -151,6 +151,38 @@ Die Supabase-DEV-Struktur wurde ausschließlich lesend geprüft (Projekt `pzazqv
 
 **Folgerung:** Die AP05-Ereignis- und Sperrenlogik ist in der DEV-Datenbank nach diesem Erstbefund noch nicht angelegt. Vor einer Frontend-Integration müssen das tatsächliche Ziel-Datenmodell, die RLS-/Rollenregeln, serverseitigen Funktionen und Audit-/Duplikatmechanismen im Detail geprüft und als vollständiger Vorschlag vorgelegt werden. Es wurde kein SQL ausgeführt, das Daten oder Schema verändert.
 
+## 8.1 Vertiefte read-only Prüfung der DEV-Datenbank (07.11.2026)
+
+### Relevante Bestandsstruktur
+- `trainings`: Team-/Saisonbezug, Datum, Status (`planned`, `done`, `cancelled`), Trainingsserie und Notiz.
+- `attendance`: zusammengesetzter Primärschlüssel aus `training_id` und `player_id`, boolesches Feld `present`.
+- `training_responses`: Rückmeldestatus `open`, `yes`, `no`; getrennt von tatsächlicher Anwesenheit.
+- `matchdays`: Team-/Saisonbezug, Datum, Gegner, Spielart, Status (`planned`, `done`, `cancelled`).
+- `matchday_players`: Kaderzuordnung; `matchday_attendance`: tatsächliche Anwesenheit; Empfehlung wird getrennt über `matchday_recommendation_runs` und `matchday_recommendation_players` gespeichert.
+- `players.team_id` ist durch `prevent_player_team_change` gegen direkte Teamänderung geschützt. Das ist für die AP05-Regel wichtig, dass Ereignisse/Sperren historisch an ihrem ursprünglichen Team hängen bleiben.
+
+### Relevante bestehende Regeln
+- Die geprüften Trainings-, Anwesenheits-, Spieltags-, Spieler- und Teamtabellen haben RLS aktiviert.
+- Bestehende Policies verwenden u. a. `is_team_member(team_id)`, `is_team_admin(team_id)` und `has_selected_team_context(team_id)`; Superadmins arbeiten damit nur im gewählten Teamkontext. Club-Admins haben gezielte Leserechte, nicht pauschal dieselben Schreibrechte wie Trainer/Admins.
+- Trainings-/Spieltagstabellen haben bestehende teambezogene Policies. Anwesenheits- und Zuordnungs-Policies prüfen teils zusätzlich, dass Training/Spieltag und Spieler derselben Mannschaft angehören.
+- `save_matchday_recommendation(uuid, uuid[])` prüft Teammitgliedschaft, aktive Spieler, Teamzugehörigkeit und doppelte IDs. Die Funktion ist aktuell keine SECURITY DEFINER-Funktion; sie speichert die Empfehlung über die vorhandenen Tabellen.
+- Bestehende Trigger schützen u. a. aktive Spielerzuordnungen, Aktualisierungszeitstempel und Spieler-Teamwechsel. Die neuen AP05-Regeln müssen diese Schutzmechanismen respektieren.
+- Die aktuellen Primär-/Fremdschlüssel enthalten an mehreren Stellen `ON DELETE CASCADE`. AP05-Audit-/Historienobjekte dürfen deshalb nicht unbedacht an Spieler-/Trainings-/Teamobjekte mit Cascade gebunden werden, wenn die beschlossene Historienaufbewahrung dadurch verloren gehen könnte. Lösch- und Archivierungsverhalten muss ausdrücklich spezifiziert werden.
+
+### Auswirkungen für AP05 – offene technische Klärpunkte
+1. **Anwesenheit als Voraussetzung:** Ereignisse im Trainingsbereich `Ereignisse` dürfen nur für tatsächlich anwesende Spieler erfasst werden. Server-seitig muss die Anwesenheit zum Schreibzeitpunkt geprüft werden; eine reine UI-Filterung reicht nicht.
+2. **Training abgeschlossen / Status:** Der Status `done` ist vorhanden. Es muss geklärt werden, ob Ereignisse vor/nach Abschluss bearbeitbar sind und wie spätere Korrekturen revisionssicher erfolgen. AP05 verlangt kontrollierte Korrektur/Storno statt Hard Delete.
+3. **Team-/Saisonbezug:** Ereignis- und Sperrenzeilen müssen den ursprünglichen Team- und Saisonbezug dauerhaft speichern; ein Join ausschließlich über die aktuelle Spieler-Teamzuordnung wäre fachlich falsch.
+4. **Sperrrelevante Spieltage:** `matchdays.status` kennt `planned`, `done`, `cancelled`. Die Zuordnung erlaubter Spielarten muss konfigurierbar sein (Club-Standard mit vollständigem Team-Override), wie in AP05.2 beschlossen.
+5. **Empfehlung:** Sperren müssen vor der Empfehlung serverseitig in die Eligibility einfließen. Die bestehende Speicherfunktion allein implementiert diese Eligibility nicht; der konkrete Berechnungsort im aktuellen Frontend/Backend ist separat zu prüfen.
+6. **Berechtigungen:** Bestehende Teamrollen liegen in `team_member_roles` und `team_members`. Schreibrechte für Trainer müssen serverseitig explizit validiert werden; Club-Admins dürfen keine Ereignisse vergeben oder Sperren bearbeiten, sofern AP05 nichts anderes vorsieht.
+7. **Audit und Integrität:** DB-seitige Eindeutigkeit (maximal eine Karte gesamt und maximal ein Stern pro Spieler/Training), atomare Vergabe, Audit vor/nach Änderung, reason-required Korrekturen und Verhinderung von Hard Deletes sind zwingend zu planen.
+
+### Befund zu Grants / Triggern
+- Für die geprüften Kernobjekte besitzen `authenticated` und `service_role` die üblichen Tabellenprivilegien; RLS-Policies bleiben die maßgebliche zeilenbezogene Kontrolle. Jede neue Tabelle braucht eine explizite Minimalvergabe und RLS-Policies.
+- Bestehende Trigger umfassen u. a. `set_updated_at()`, `require_active_player_for_new_assignment()`, `prevent_player_team_change()`, `protect_player_active_status()` und die Bereinigung der Kaderempfehlung vor Spieler-Löschung.
+- Dies ist eine gezielte Prüfung der E05-relevanten Tabellen/Objekte, kein vollständiger Sicherheits-Audit der gesamten Datenbank.
+
 ## 9. Sicherheits- und Freigabegrenzen
 
 - Ausschließlich `develop` und Supabase DEV als Arbeitsumgebung.
