@@ -34,6 +34,13 @@ STRATO bleibt Registrar; Cloudflare verwaltet die DNS-Zone. Die Rollen nicht ver
 - GitHub-Synchronität nach dem letzten regulären PROD-Deploy: am 06.11.2026 mit `identical` bestätigt.
 - Diese Prüfungen nicht routinemäßig wiederholen. Nur bei einem konkreten Fehler, einer neuen Änderung mit direkter Auswirkung oder einem nachvollziehbaren Widerspruch gezielt erneut prüfen.
 
+### E05 / AP05.3 – Kaderplanung und Kaderempfehlung
+- AP05.3a bis AP05.3d sind fachlich abgestimmt und abgeschlossen.
+- Maßgebliche Detaildokumentation: `docs/AP05_3_USERFLOWS_UI_KONZEPT_2026-11-07.md`.
+- AP05.2 bleibt die maßgebliche Quelle für Datenmodell, Karten-/Sperrlogik und Empfehlungseinfluss.
+- AP05.3 enthält ausschließlich fachliche Userflow-/UI-Entscheidungen. Es wurden keine Code-, SQL-, Datenbank-, Supabase- oder PROD-Änderungen vorgenommen.
+- Nächster Schritt ist die vom Nutzer gesteuerte Auswahl des folgenden AP bzw. die separate Freigabe der nächsten Konzept-/Umsetzungsphase. Keine technische Umsetzung ohne entsprechende Freigabe.
+
 ### Nächstes Vorhaben
 Das nächste Backlog-Thema wird vom Nutzer erst im Folgechat ausgewählt. Vor der Auswahl keine Umsetzung und keine vorsorgliche Komplettprüfung des Backlogs starten. Nach Auswahl nur den betroffenen Backlog-Eintrag und dessen maßgebliche Dokumente/aktuellen DEV-Stand gezielt heranziehen.
 
