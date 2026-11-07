@@ -139,7 +139,19 @@ Die Umsetzung wird in kleinen, prüfbaren Schritten erfolgen:
 4. **DEV-Implementierung:** zuerst die kleinste vertikale Funktionseinheit, anschließend Integration in die bestehenden Seiten.
 5. **Praxistest in DEV:** Berechtigungen, Mehrfachaktionen, Korrekturen, Sperrenlebenszyklus, Ausnahmen, Kaderempfehlung, Light/Dark Mode und iPhone-Layout prüfen.
 
-## 8. Sicherheits- und Freigabegrenzen
+## 8. Read-only DEV-Datenbank-Erstbefund (07.11.2026)
+
+Die Supabase-DEV-Struktur wurde ausschließlich lesend geprüft (Projekt `pzazqvvoruqnqhcorbwx`):
+
+- Vorhandene Kernobjekte für Training und Spieltag sind vorhanden, darunter `trainings`, `attendance`, `training_responses`, `matchdays`, `matchday_players`, `matchday_attendance` und `matchday_recommendation_runs` / `matchday_recommendation_players`.
+- Die geprüften Tabellen im Schema `public` haben RLS aktiviert. Es bestehen bereits teambezogene Policies sowie gesonderte Policies für ausgewählte Superadmin-/Teamkontexte und Club-Admins. Diese Sicherheitslogik ist bei jeder Erweiterung zu erhalten und im Detail für neue Objekte abzugleichen.
+- In der Tabellenübersicht wurden keine AP05-Ereignis-/Sperrentabellen wie `training_behavior_events`, `training_behavior_event_audit`, `training_suspensions`, `training_suspension_exceptions` oder `training_suspension_audit` gefunden.
+- In den gezielt nach Ereignis-/Sperrenbegriffen gefilterten Routinen und Triggern wurden keine passenden AP05-Funktionen oder Trigger gefunden. Vorhanden sind u. a. `save_matchday_recommendation` sowie bestehende Aktualisierungs- und Aktivspieler-Trigger.
+- Die Bestandsaufnahme ist ein read-only Erstbefund, keine vollständige Freigabeprüfung aller Policies/Funktionen und keine Änderung an der Datenbank.
+
+**Folgerung:** Die AP05-Ereignis- und Sperrenlogik ist in der DEV-Datenbank nach diesem Erstbefund noch nicht angelegt. Vor einer Frontend-Integration müssen das tatsächliche Ziel-Datenmodell, die RLS-/Rollenregeln, serverseitigen Funktionen und Audit-/Duplikatmechanismen im Detail geprüft und als vollständiger Vorschlag vorgelegt werden. Es wurde kein SQL ausgeführt, das Daten oder Schema verändert.
+
+## 9. Sicherheits- und Freigabegrenzen
 
 - Ausschließlich `develop` und Supabase DEV als Arbeitsumgebung.
 - `main`, PROD, Produktivdaten, DNS und Registrar bleiben unverändert.
