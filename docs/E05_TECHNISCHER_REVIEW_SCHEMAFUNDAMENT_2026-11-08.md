@@ -169,3 +169,40 @@ Um die fehlende Testinstanz ohne Änderung an Supabase DEV/PROD zu ersetzen, wur
 
 Der Workflow ist auf Push-Änderungen an SQL-Entwurf/Testdateien in `develop` und manuell per `workflow_dispatch` konfiguriert. Der aktuelle GitHub-Statusabruf hat für die Test-Commits noch keine auslesbaren Statusmeldungen geliefert. **Ein erfolgreicher Lauf wird daher ausdrücklich noch nicht behauptet.** Vor einer Freigabe muss ein grüner Lauf in GitHub Actions tatsächlich verifiziert und sein Run-/Commit-Nachweis in diesem Review dokumentiert werden.
 
+
+
+---
+
+## 9. Gezielt korrigierte Revision 4 – Audit-Schutz und API-Schreibrechte
+
+**Stand:** 08.11.2026, nach Review Revision 3  
+**Branch:** `develop`  
+**Status:** Korrekturen committed; isolierter PostgreSQL-Testlauf für Revision 4 noch ausstehend. Weiterhin nicht zur Supabase-Ausführung freigegeben.
+
+### 9.1 Umgesetzte Korrekturen
+
+1. **Audit-TRUNCATE-Schutz:** Für alle drei Audit-Tabellen wurden zusätzliche `BEFORE TRUNCATE`-Statement-Trigger ergänzt. Die vorhandenen `BEFORE UPDATE OR DELETE`-Trigger bleiben bestehen.
+2. **Triggerfunktion gekapselt:** Direkte `EXECUTE`-Rechte auf `public.e05_reject_audit_mutation()` werden für `PUBLIC`, `anon`, `authenticated` und `service_role` entzogen.
+3. **Keine direkten API-Schreibrechte:** `service_role` erhält auf den zehn Foundation-Tabellen nur noch `SELECT`, kein direktes `INSERT`, `UPDATE` oder `DELETE`. Auch `anon` und `authenticated` erhalten keine Schreibrechte.
+4. **Atomare spätere Schreibwege:** Domänenänderungen und Audit-Inserts sind für spätere, separat geprüfte RPCs vorgesehen. Die Foundation selbst stellt noch keine Schreib-RPCs bereit.
+
+### 9.2 Erweiterte Assertions
+
+- ACL-Prüfung erwartet für `service_role` ausschließlich `SELECT`.
+- Assertions versuchen `TRUNCATE` auf jeder der drei Audit-Tabellen und erwarten SQLSTATE `55000`.
+- Assertions prüfen, dass API-Rollen die Audit-Triggerfunktion nicht direkt ausführen dürfen.
+
+### 9.3 Noch nicht durch diese Korrektur gelöst
+
+- Die Actor-Snapshot-Felder sind nicht durchgängig als `NOT NULL` modelliert. Die späteren Schreib-RPCs müssen bei jeder fachlichen Aktion einen nachvollziehbaren Actor-Snapshot erzwingen; Systemaktionen benötigen eine explizite Systemidentität.
+- Die Team-/Saison-/Training-/Spieler-/Spieltag-Konsistenz bleibt Aufgabe der späteren atomaren RPCs gemäß Revision 3 des Zieldatenmodells.
+- Die bestehende GitHub-Test-Fixture verwendet weiterhin vereinfachte Ersatzfunktionen für Team-/Clubkontext. Der echte DEV-Kontextabgleich steht separat aus.
+- Rollback-/Restore-Nachweis und vollständiger RLS-/ACL-Abgleich mit den realen DEV-Funktionen stehen weiterhin aus.
+
+### 9.4 Änderungen und Ausführungsgrenzen
+
+- Geänderte Dateien: `docs/E05_SCHEMA_MIGRATION_DRAFT_2026-11-08.sql`, `docs/e05-test/assertions.sql`, dieses Review.
+- Keine Datei unter `supabase/migrations/` erstellt.
+- Keine SQL-Anweisung gegen Supabase DEV oder PROD ausgeführt.
+- Keine bestehenden Tabellen, Funktionen, Policies, Trigger oder Daten in Supabase geändert.
+- Kein Eintrag als ausgeführte Migration in `DB_MIGRATION_LOG.md` oder `DB_CHANGELOG.md`; dies wäre sachlich falsch.
