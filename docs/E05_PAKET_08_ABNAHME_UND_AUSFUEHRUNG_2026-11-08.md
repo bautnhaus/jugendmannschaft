@@ -126,3 +126,65 @@ Der read-only Abgleich hat bestätigt:
 - Tests und synthetische Testdaten werden ausschließlich nach Freigabe in DEV ausgeführt. PROD bleibt unverändert.
 
 **Dieses Paket ist vollständig zur fachlichen und technischen Freigabe vorbereitet, wurde aber noch nicht in Supabase ausgeführt.**
+
+
+## 8. Tatsächliche Umsetzung in DEV
+
+- **Freigabe:** ausdrücklich erteilt.
+- **Ausführung:** 08.11.2026 in Supabase DEV, Projekt \`pzazqvvoruqnqhcorbwx\`.
+- **Methode:** direkte SQL-Ausführung in DEV innerhalb einer Transaktion; bei SQL-Fehlern wäre die Transaktion abgebrochen worden.
+- **PROD:** nicht verändert.
+
+### Implementierte Objekte
+
+- Tabellen \`matchday_early_suspension_resets\` und \`matchday_early_suspension_reset_audit\`
+- RPCs \`schedule_early_suspension_reset\` und \`cancel_early_suspension_reset\`
+- interne Statusübergangsfunktion \`e05_transition_early_reset\`
+- automatische Stornierung bei späterer Nominierung
+- automatische Stornierung bei Spieltagsabsage
+- automatische Anwendung bei Spieltagsstatus \`done\`
+- Erweiterung von \`award_training_behavior_event\`: Das aktive gelbe Kartenkonto berücksichtigt jetzt sowohl den Zeitpunkt der letzten abgeleisteten gelben Sperre als auch den Zeitpunkt des letzten angewendeten Sperrausgleichs.
+
+### Zusätzliche Berechtigungskorrektur
+
+Die beiden Triggerfunktionen wurden nach der ersten Berechtigungsprüfung zusätzlich von direkter Ausführung durch \`PUBLIC\`, \`anon\`, \`authenticated\` und \`service_role\` ausgeschlossen. Sie sind ausschließlich als Datenbanktrigger vorgesehen. Die beiden fachlichen RPCs sind nur für \`authenticated\` ausführbar; \`anon\` und \`PUBLIC\` haben keine Ausführungsrechte. Direkte Schreibrechte auf den beiden neuen Tabellen sind für \`authenticated\` nicht erteilt.
+
+### Positivtests – alle bestanden
+
+| Test | Ergebnis |
+|---|---|
+| Vormerkung erzeugt Status \`pending\` | Bestanden |
+| Spieltag wechselt auf \`done\`; Reset wird \`applied\` | Bestanden |
+| Vier historische gelbe Karten bleiben Historie und zählen nach Reset nicht mehr zum aktiven Konto | Bestanden |
+| Vier neue gelbe Karten nach Reset lösen keine Sperre aus | Bestanden |
+| Fünfte neue gelbe Karte nach Reset löst genau eine gelbe Sperre aus | Bestanden |
+| Spätere Nominierung storniert den pending Reset | Bestanden |
+| Spieltagsabsage storniert den pending Reset | Bestanden |
+| Audit für Vormerken, Anwenden und Stornieren | Bestanden |
+
+### Negativ- und Berechtigungstests – alle bestanden
+
+| Test | Ergebnis |
+|---|---|
+| Benutzer ohne Teamrolle kann keinen Reset vormerken | Abgewiesen |
+| Leere Begründung | Abgewiesen |
+| Bereits nominierter Spieler | Abgewiesen |
+| \`anon\` kann die fachlichen RPCs nicht ausführen | Abgewiesen |
+| Direkte INSERT/UPDATE/DELETE-Rechte auf Reset- und Audit-Tabellen fehlen | Bestanden |
+| Audit-Manipulation wird durch den Append-only-Trigger verhindert | Abgewiesen |
+| Triggerfunktionen sind nicht direkt ausführbar | Bestanden |
+
+### Testdaten und Rollback
+
+Alle Positiv- und Negativtests wurden mit synthetischen Spielern, Trainings, Spieltagen und Karten innerhalb von Transaktionen ausgeführt und zurückgerollt. Die anschließende DEV-Kontrolle ergab:
+- Reset-Datensätze: 0
+- Reset-Audit-Datensätze: 0
+- synthetische Spieler: 0
+- synthetische Trainings: 0
+- synthetische Spieltage: 0
+
+Die ersten Testläufe zeigten zwei Anpassungsbedarfe im Testskript: PostgreSQLs \`now()\` bleibt innerhalb einer Transaktion konstant, weshalb der Testzeitpunkt des angewendeten Resets für die Kartenkonto-Regressionsprüfung angepasst werden musste; außerdem umfasst das erwartete Audit sechs Einträge (jeweils Vormerken plus Statusübergang). Nach diesen Testkorrekturen liefen sämtliche Prüfungen erfolgreich. An der produktiven Funktionslogik war dafür keine weitere Änderung erforderlich.
+
+### Ergebnis
+
+**Paket 8 ist in DEV umgesetzt. Die positiven, negativen, Berechtigungs- und Regressionstests sind bestanden.** PROD blieb unangetastet.
