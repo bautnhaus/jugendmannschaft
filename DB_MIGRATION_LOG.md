@@ -720,3 +720,27 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Gegenstück in PROD:** Nicht ausgeführt; keine PROD-Freigabe.
 - **GitHub-Datei und Commit-SHA:** SQL-Entwurf in develop, Commit `b8837c36b4a42ae756c4cc8566dff0b3d6c05db8`.
 - **Zusätzliche Hinweise / Nachweisgrenzen:** Der Entwurf ist nur die erste Schemaetappe. Audit-Trigger/RPCs und die vollständige Sperren-/Empfehlungslogik fehlen noch. Er ist daher ausdrücklich kein vollständiges, ausführbares E05-Featurepaket und noch nicht zur Ausführung freigegeben.
+
+
+## 8. E05 – vorbereitete, nicht ausgeführte Schema-Migration (08.11.2026)
+
+### DB-MIG-E05-001 – Karten-/Sperren-/Sperrausgleich-Schema (Entwurf)
+
+- **Ausführungsdatensatz:** DEV – geplant, nicht ausgeführt
+- **Datum der Vorbereitung:** 08.11.2026 (Europe/Berlin)
+- **Umgebung:** Supabase DEV, Projektkennung `pzazqvvoruqnqhcorbwx`
+- **Ausführungsweg:** keiner; es wurde keine Migration ausgeführt
+- **Anlass/Zweck:** Persistenzgrundlage für AP05.2/AP05.3: Trainingskarten und Sterne, Audit, Sperren, Ausnahmen, Spielarten-Konfiguration und vorzeitiger Sperrausgleich
+- **Betroffene Objekte (geplant):** neun neue Tabellen im Schema `public`, zugehörige Indizes, RLS und minimale Leserechte
+- **Freigabe:** keine Ausführungsfreigabe erteilt. Die Nutzerbitte um Erstellung und Prüfung eines Vorschlags ist keine Freigabe zur Ausführung.
+- **Ausführender:** nicht zutreffend – nicht ausgeführt
+- **Status:** **Geplant / technisch nicht freigegeben**
+- **SQL-Quelle:** `docs/E05_SCHEMA_MIGRATION_DRAFT_2026-11-08.sql`, Branch `develop`; Commit zur aktuellen SQL-Fassung: `cb46a64c1a1c79c893f44f06ae221b9c2d2c92c4`
+- **Zugehöriges Zieldatenmodell:** `docs/E05_TECHNISCHES_ZIELDATENMODELL_2026-11-08.md`
+- **Ergebnis:** kein Ausführungsversuch; Datenbank unverändert
+- **Verifikation:** keine Laufzeitverifikation möglich, da nicht ausgeführt. Read-only Bestandsprüfung siehe E05-Umsetzungsleitlinie und Zieldatenmodell.
+- **Rollback/Wiederherstellung:** nicht zutreffend, da nicht ausgeführt. Vor einer späteren Ausführung muss ein Wiederherstellungsweg dokumentiert sein.
+- **Gegenstück in PROD:** nicht ausgeführt und nicht freigegeben
+- **Offene Punkte:** AP05.2-Quelldatei exakt lokalisieren; alle FK-/Datenkonsistenzregeln und Rollenpfade vervollständigen; Audit-/Delete-Schutz und serverseitige Schreib-RPCs implementieren; Syntax-/Integritätstest auf isoliertem PostgreSQL-Testschema; vollständige Policy-/ACL-Prüfung; Rollback- und Backup-/Restore-Nachweis; finalen Migrationsdateinamen mit Supabase CLI erzeugen. Erst danach erneute technische Freigabeprüfung.
+
+**Wichtige Abgrenzung:** Die Datei unter `docs/` ist ein Review-Entwurf, keine ausführbare Migration unter `supabase/migrations/`. Sie darf nicht ausgeführt werden. Nach technischer Fertigstellung wird eine unveränderliche Migrationsdatei nach dem vorgeschriebenen Supabase-CLI-Verfahren erzeugt und hier referenziert.
