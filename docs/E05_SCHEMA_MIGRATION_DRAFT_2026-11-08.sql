@@ -289,12 +289,27 @@ $$;
 create trigger training_behavior_event_audit_append_only
 before update or delete on public.training_behavior_event_audit
 for each row execute function public.e05_reject_audit_mutation();
+create trigger training_behavior_event_audit_no_truncate
+before truncate on public.training_behavior_event_audit
+for each statement execute function public.e05_reject_audit_mutation();
+
 create trigger training_suspension_audit_append_only
 before update or delete on public.training_suspension_audit
 for each row execute function public.e05_reject_audit_mutation();
+create trigger training_suspension_audit_no_truncate
+before truncate on public.training_suspension_audit
+for each statement execute function public.e05_reject_audit_mutation();
+
 create trigger matchday_early_suspension_reset_audit_append_only
 before update or delete on public.matchday_early_suspension_reset_audit
 for each row execute function public.e05_reject_audit_mutation();
+create trigger matchday_early_suspension_reset_audit_no_truncate
+before truncate on public.matchday_early_suspension_reset_audit
+for each statement execute function public.e05_reject_audit_mutation();
+
+-- Trigger callers do not need direct EXECUTE access to the trigger function.
+revoke all on function public.e05_reject_audit_mutation()
+from public, anon, authenticated, service_role;
 
 -- Remove inherited/default API privileges before granting minimum access.
 revoke all on public.training_behavior_events,
@@ -321,9 +336,9 @@ grant select on public.training_behavior_events,
   public.matchday_early_suspension_reset_audit
 to authenticated;
 
--- Backend role receives only read/insert at table level. Mutating domain rows is
--- reserved for future reviewed SECURITY DEFINER RPCs; audit rows are INSERT-only.
-grant select, insert on public.training_behavior_events,
+-- No API role receives direct write privileges in the foundation.
+-- Future reviewed SECURITY DEFINER RPCs perform domain writes and audit INSERTs atomically.
+grant select on public.training_behavior_events,
   public.training_behavior_event_audit,
   public.training_suspensions,
   public.training_suspension_exceptions,
