@@ -206,3 +206,27 @@ Der Workflow ist auf Push-Änderungen an SQL-Entwurf/Testdateien in `develop` un
 - Keine SQL-Anweisung gegen Supabase DEV oder PROD ausgeführt.
 - Keine bestehenden Tabellen, Funktionen, Policies, Trigger oder Daten in Supabase geändert.
 - Kein Eintrag als ausgeführte Migration in `DB_MIGRATION_LOG.md` oder `DB_CHANGELOG.md`; dies wäre sachlich falsch.
+
+
+### 9.5 Isolierter PostgreSQL-17.6-Testlauf – erfolgreich nach Syntaxkorrektur
+
+**Stand:** 08.11.2026  
+**Testlauf:** GitHub Actions #16  
+**Commit:** `c9ba32c6814e21823d9ab876aace1c6c91599d3b`  
+**Ergebnis:** `success`  
+**Nachweis:** https://github.com/bautnhaus/jugendmannschaft/actions/runs/42465099465
+
+Der vorherige Lauf #15 war fehlgeschlagen. Die Fehlerursache lag im letzten `DO`-Block von `docs/e05-test/assertions.sql`: Der Blockabschluss war als `end $;` statt `end $$;` geschrieben. Die vorherige Korrektur hatte nicht den tatsächlich fehlerhaften letzten Block getroffen.
+
+Die fehlerhafte Abschlusszeile wurde gezielt korrigiert. Vor dem erneuten Workflow-Lauf wurden die Dollar-Quote-Tags in der vollständigen Assertions-Datei und im SQL-Entwurf auf paarige Abschlüsse geprüft. Zusätzlich wurde sichergestellt, dass kein fehlerhaftes `end $;` mehr vorhanden ist.
+
+Im erfolgreichen Lauf #16 wurden alle Schritte grün abgeschlossen:
+- PostgreSQL-17.6-Service initialisiert
+- Supabase-ähnliche Test-Fixture vorbereitet
+- SQL-Entwurf ausschließlich auf der temporären Testdatenbank angewendet
+- Struktur-, Constraint-, Snapshot- und RLS-Assertions vollständig ausgeführt
+- Testcontainer erfolgreich beendet
+
+**Einordnung:** Damit ist die bisherige technische Prüfschranke „isolierter PostgreSQL-Laufzeittest“ für den aktuellen Foundation-Entwurf erfolgreich passiert. Das ist keine Freigabe zur Ausführung in Supabase DEV oder PROD und ersetzt nicht die noch offenen Prüfungen aus Abschnitt 9.3 (insbesondere echte DEV-Kontextfunktionen, Actor-Snapshots in späteren RPCs und Rollback-/Restore-Nachweis).
+
+**Änderungsgrenze:** Es wurde ausschließlich die Testdatei in `develop` korrigiert. Keine Supabase-SQL-Ausführung, keine Änderung an DEV-/PROD-Daten, keine Änderung an `main`.
