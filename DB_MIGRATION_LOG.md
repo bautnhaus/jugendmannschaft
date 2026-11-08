@@ -699,3 +699,24 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Rollback/Wiederherstellung:** Kein automatischer Rollback. Ein Rückbau erfordert eine neue, geprüfte Rücknahmemigration, die die vorherigen vier PROD-Funktionsdefinitionen wiederherstellt und die beiden Trigger sowie den Index und die Triggerfunktion nach Abhängigkeitsprüfung entfernt. Bestehende Admin-Schutz- und Auditmechanismen müssen erhalten bleiben.
 - **Gegenstück in DEV:** DEV-Migration `20261104143331` / `db_dev_009_single_team_membership_guard` vorhanden. PROD-Fassung enthält notwendige PROD-Legacy-Synchronisierung und wurde nicht blind aus DEV wiederholt.
 - **Zusätzliche Hinweise / Nachweisgrenzen:** Die Migration ersetzt vier Funktionsdefinitionen und ergänzt Trigger/Index; sie ändert keine RLS-Policies. Die tatsächliche Einladung über die Edge Functions sowie positive Rollen- und UI-Tests sind noch offen. Die Einladungsstrecke bleibt bis zum Edge-Function-Deployment und den Praxistests deaktiviert.
+
+
+## DB-MIG-2026-007 – E05 Schemafundament Trainingsereignisse und Sperren (DEV – geplant)
+
+- **Migrations-ID:** DB-MIG-2026-007 (fachlicher Vorgang E05-SQL-001)
+- **Ausführungsdatensatz:** DEV – geplant, nicht ausgeführt
+- **Datum:** 08.11.2026 (Entwurfsdatum; kein Ausführungszeitpunkt)
+- **Umgebung:** vorgesehen Supabase DEV – Projekt `pzazqvvoruqnqhcorbwx`
+- **Ausführungsweg:** Noch nicht festgelegt; keine Ausführung
+- **Anlass/Zweck:** Technisches Schemafundament für AP05.2/AP05.3: Trainingsereignisse, Sperren, Ausnahmen, Spielart-Konfiguration, vorzeitiger Sperrausgleich und Auditstrukturen.
+- **Betroffene Objekte:** Neue Tabellen/Indizes/Constraints/RLS/SELECT-Grants gemäß versionierter SQL-Datei. Keine bestehenden Tabellen, Funktionen oder Policies sollen geändert werden.
+- **Freigabe:** **Nicht erteilt.** Der Nutzer hat die Erstellung eines SQL-Entwurfs zur Prüfung/Freigabe beauftragt; dies ist keine Ausführungsfreigabe.
+- **Ausführender:** Nicht zutreffend – nicht ausgeführt.
+- **Status:** **Geplant / nicht ausgeführt**
+- **Tatsächlich ausgeführtes SQL bzw. unveränderlicher Verweis:** Kein SQL ausgeführt. Geprüfter Entwurf: `supabase/migrations/20261108000100_e05_training_events_suspensions_foundation.sql`; Commit `b8837c36b4a42ae756c4cc8566dff0b3d6c05db8`.
+- **Ergebnis / Fehlermeldung:** Nicht zutreffend.
+- **Verifikation (read-only Abfrage und Ergebnis):** DEV-Bestand der relevanten Tabellen/Spalten sowie ausgewählte Rollen-/Kontextfunktionen und bestehende RLS-Policies wurden ausgelesen. Keine neuen Objekte vorhanden, da nicht ausgeführt. Vollständige Post-Migration-Verifikation steht aus.
+- **Rollback/Wiederherstellung:** Vor Ausführung noch vollständig festzulegen. Keine Rücknahme erforderlich, da keine Änderung erfolgt.
+- **Gegenstück in PROD:** Nicht ausgeführt; keine PROD-Freigabe.
+- **GitHub-Datei und Commit-SHA:** SQL-Entwurf in develop, Commit `b8837c36b4a42ae756c4cc8566dff0b3d6c05db8`.
+- **Zusätzliche Hinweise / Nachweisgrenzen:** Der Entwurf ist nur die erste Schemaetappe. Audit-Trigger/RPCs und die vollständige Sperren-/Empfehlungslogik fehlen noch. Er ist daher ausdrücklich kein vollständiges, ausführbares E05-Featurepaket und noch nicht zur Ausführung freigegeben.
