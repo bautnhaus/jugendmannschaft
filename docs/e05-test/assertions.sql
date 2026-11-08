@@ -388,6 +388,6 @@ begin
   begin truncate table public.matchday_early_suspension_reset_audit;
     raise exception 'Early reset audit TRUNCATE unexpectedly succeeded';
   exception when sqlstate '55000' then null; end;
-end $;
+end $$;
 
 \echo 'PASS: E05 schema foundation PostgreSQL 17 test suite completed'
