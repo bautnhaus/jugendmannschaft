@@ -559,18 +559,19 @@ Die vollständigen Ausführungsdetails, Freigaben, SQL-Backup-Prüfsummen, Verif
 
 ## DB-PLAN-E05-001 – Technisches Zielschema für Trainingsereignisse und Sperren
 
-- **Stand:** 08.11.2026, Revision 2 nach technischem Review
+- **Stand:** 08.11.2026, Revision 3 nach fachlicher und dokumentarischer Konsolidierung
 - **Umgebung:** Ziel DEV; nicht ausgeführt
 - **Status:** Entwurf / technisch noch nicht freigegeben
 - **Geplante Objekte:** zehn neue Tabellen: `training_behavior_events`, `training_behavior_event_audit`, `training_suspensions`, `training_suspension_exceptions`, `training_suspension_audit`, `club_suspension_settings`, `team_suspension_game_type_settings`, `team_suspension_game_types`, `matchday_early_suspension_resets`, `matchday_early_suspension_reset_audit`.
 - **SQL-Entwurf:** `docs/E05_SCHEMA_MIGRATION_DRAFT_2026-11-08.sql` (Review-Artefakt, nicht ausführbar als Migration / nicht freigegeben)
-- **Zieldatenmodell:** `docs/E05_TECHNISCHES_ZIELDATENMODELL_2026-11-08.md`
+- **Zieldatenmodell:** `docs/E05_TECHNISCHES_ZIELDATENMODELL_2026-11-08.md` (Revision 3)
 - **Reviewbericht:** `docs/E05_TECHNISCHER_REVIEW_SCHEMAFUNDAMENT_2026-11-08.md`
 - **Sicherheitskonzept:** RLS auf allen neuen Tabellen, minimale SELECT-Grants, keine direkten Client-Schreibrechte. Schreibpfade nur über getrennte, auditierte RPCs.
 - **Datenwirkung:** keine. Es wurden keine E05-Tabellen, Funktionen, Trigger, Policies, Grants oder Daten angelegt/geändert.
 - **Testautomatisierung:** `.github/workflows/e05-schema-draft-test.yml` mit Fixture/Assertions unter `docs/e05-test/`; Ergebnis noch ausstehend.
-- **Technischer Stand:** Die erste Prüfung identifizierte Fehler bei Spieler-/Actor-Snapshots, Team-Override, Sperrenursprung, Statusfluss und Team-/Saison-/Termin-Konsistenz. Modell und SQL-Entwurf wurden daraufhin überarbeitet. Statische Strukturprüfungen sind dokumentiert; ein isolierter PostgreSQL-17.6-GitHub-Actions-Test ist vorbereitet, sein erfolgreicher Lauf aber noch nicht verifiziert.
+- **Technischer Stand:** Die erste Prüfung identifizierte Fehler bei Spieler-/Actor-Snapshots, Team-Override, Sperrenursprung, Statusfluss und Team-/Saison-/Termin-Konsistenz. Modell und SQL-Entwurf wurden daraufhin überarbeitet. Das Zieldatenmodell liegt in Revision 3 vor. Statische Strukturprüfungen sind dokumentiert; ein isolierter PostgreSQL-17.6-GitHub-Actions-Test ist vorbereitet, sein erfolgreicher Lauf aber noch nicht verifiziert.
 - **PROD:** nicht übertragen; keine Freigabe.
+- **Dokumentationszuordnung:** Dieser Eintrag in `DB_CHANGELOG.md` ist das E05-Planungs-/Änderungsregister. `DB_MIGRATION_LOG.md` bleibt ausschließlich das Ausführungsjournal und erhält erst nach einem tatsächlichen SQL-Ausführungsversuch einen DEV-Datensatz. `SUPABASE_CHANGELOG.md` ist für diesen SQL-Vorschlag nicht einschlägig. Es wird kein separates E05-Ausführungsprotokoll parallel zu diesen führenden Dokumenten geführt.
 - **Ausführungsjournal:** erst nach einem tatsächlichen Ausführungsversuch in `DB_MIGRATION_LOG.md` erfassen. Dieser Planungsdatensatz ist kein Ausführungsnachweis.
 
 Dies ist ein Planungsdatensatz und kein Nachweis entstandener Datenbankobjekte.
