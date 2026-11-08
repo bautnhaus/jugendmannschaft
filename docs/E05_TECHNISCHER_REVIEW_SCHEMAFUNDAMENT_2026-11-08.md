@@ -230,3 +230,56 @@ Im erfolgreichen Lauf #16 wurden alle Schritte grün abgeschlossen:
 **Einordnung:** Damit ist die bisherige technische Prüfschranke „isolierter PostgreSQL-Laufzeittest“ für den aktuellen Foundation-Entwurf erfolgreich passiert. Das ist keine Freigabe zur Ausführung in Supabase DEV oder PROD und ersetzt nicht die noch offenen Prüfungen aus Abschnitt 9.3 (insbesondere echte DEV-Kontextfunktionen, Actor-Snapshots in späteren RPCs und Rollback-/Restore-Nachweis).
 
 **Änderungsgrenze:** Es wurde ausschließlich die Testdatei in `develop` korrigiert. Keine Supabase-SQL-Ausführung, keine Änderung an DEV-/PROD-Daten, keine Änderung an `main`.
+
+
+## 10. Read-only-Abgleich mit Supabase DEV
+
+**Stand:** 08.11.2026, 11:00 Uhr Europe/Berlin  
+**Projekt:** Jugendmannschaft DEV (`pzazqvvoruqnqhcorbwx`)  
+**Datenbank:** PostgreSQL 17.6.1  
+**Methode:** ausschließlich Katalog-/Metadatenabfragen und Supabase Advisor; keine schreibenden SQL-Anweisungen.
+
+### 10.1 Foundation-Status
+
+- Alle zehn AP05-Foundation-Tabellen fehlen in DEV: Trainingsereignisse, Event-Audit, Sperren, Sperrausnahmen, Sperren-Audit, Club-Spielartkonfiguration, Team-Override-Kopf/-Werte sowie früher Sperrausgleich und dessen Audit.
+- Damit ist bestätigt: Der bisherige AP05-SQL-Entwurf wurde nicht versehentlich in DEV ausgeführt.
+- Die DEV-Migrationshistorie enthält AP01–AP04-Migrationen bis einschließlich `20261104143331 db_dev_009_single_team_membership_guard`; keine AP05-Migration.
+
+### 10.2 Bestandsmodell und Rollen-/Kontextfunktionen
+
+- Relevante Tabellen sind vorhanden und RLS-aktiviert: `players`, `trainings`, `attendance`, `seasons`, `matchdays`, `matchday_players`, `team_members`, `team_member_roles`, `clubs`, `club_members`, `club_member_roles`, `global_user_roles`, `user_team_context`, `user_club_context`.
+- `attendance` besitzt `training_id`, `player_id`, `present`; die vorhandenen Policies verknüpfen Training und Spieler über dieselbe Mannschaft. Die AP05-Ereignis-RPC muss tatsächliche Anwesenheit (`present = true`) prüfen, nicht die Rückmeldetabelle.
+- Rollenwerte sind `trainer` und `admin` in `team_member_roles`; Clubrolle ist `club_admin`; globale Rolle ist `super_admin`.
+- `is_team_member(team_id)` erkennt Teamrollen sowie Superadmins nur mit ausgewähltem Teamkontext. `is_team_admin(team_id)` erkennt Mannschaftsadmins sowie Superadmins mit ausgewähltem Teamkontext.
+- `has_selected_team_context(team_id)` erlaubt ausgewählten Kontext für Superadmins und Clubadmins des zugehörigen Vereins. `can_manage_club_context(club_id)` prüft den ausgewählten Clubkontext für Superadmins bzw. die Clubadmin-Mitgliedschaft.
+- Diese Funktionen sind `SECURITY DEFINER` mit festem `search_path`; die ACLs gewähren `EXECUTE` an `authenticated` und `service_role`. Die AP05-RPCs müssen die bestehenden Helper gezielt verwenden und ihre eigenen EXECUTE-Rechte eng begrenzen; keine neue parallele Rollenlogik einführen.
+
+### 10.3 Daten- und Lifecycle-Fakten
+
+- DEV enthält 14 Trainings, davon 12 ohne `season_id`. Die Ereigniserfassung darf keinen NULL-Saisonbezug übernehmen; sie muss eine eindeutige aktive Saison des Teams ermitteln oder mit verständlichem Fehler abbrechen.
+- `matchdays.game_type` enthält `Meisterschaft`, `Freundschaftsspiel`, `Turnier` und NULL. NULL darf nicht stillschweigend als sperrenrelevant gelten.
+- Die Spieltagsstatus-Spalte ist vorhanden; Lifecycle-RPCs müssen die tatsächlich durchgeführten Spieltage von abgesagten/geplanten unterscheiden.
+
+### 10.4 Supabase Advisor – vorhandene Befunde
+
+Der aktuelle Security Advisor meldet bereits im Bestand:
+- 2 Tabellen mit RLS ohne Policies: `user_club_context`, `user_team_context` (INFO).
+- 38 SECURITY DEFINER-Funktionen, die für `authenticated` ausführbar sind (WARN).
+- Zusätzlich bestehende Hinweise auf mehrere permissive Policies für einzelne Aktionen/Tabellen.
+
+Diese Befunde sind Bestandszustand und wurden durch AP05 nicht verursacht. Sie dürfen nicht pauschal durch AP05 bereinigt werden; eine Änderung daran wäre ein separates Sicherheits-/Berechtigungsarbeitspaket. Die AP05-Migration darf die bestehenden Funktionen und Policies nicht verändern.
+
+### 10.5 Abgleichbewertung
+
+**Bestanden:** Projektidentität/Version, Fehlen aller AP05-Tabellen und -Migrationen, vorhandene Bestandsobjekte, zentrale Rollen-/Kontextfunktionen, Anwesenheitsquelle sowie reale Saison-/Spielart-Nullfälle sind verifiziert.
+
+**Vor Freigabe zwingend zu präzisieren:**
+1. Jede AP05-Schreib-RPC muss Rolle und Kontext entsprechend der fachlichen Aktion explizit prüfen. Für Karten/Sterne sind die freigegebenen Trainer-/Admin-Berechtigungen maßgeblich; bloßes `is_team_member` ist als Schreibautorisierung zu weit.
+2. Team-/Saison-/Training-/Spieler-Konsistenz ist in jeder RPC serverseitig atomar zu prüfen; `attendance.present = true` ist Pflicht für Trainingsevents.
+3. Club- und Teamkonfigurationen müssen lesbar sein, ohne Clubmitgliedern pauschalen Zugriff auf fremde Teamdaten zu geben.
+4. Bestehende Advisor-Warnungen sind als Baseline zu dokumentieren. Neue AP05-spezifische Warnungen sind nach Migration separat zu bewerten.
+5. Das aktuelle Foundation-SQL erteilt keine Schreibrechte und enthält noch keine Domänen-RPCs. Es kann daher allein weder Kartenvergabe noch Lifecycle-/Sperrenlogik umsetzen.
+
+### 10.6 Änderungsgrenzen
+
+Es wurden nur read-only SQL-Katalogabfragen sowie Security-/Performance-Advisor-Abfragen ausgeführt. Keine Tabellen, Daten, Funktionen, Trigger, Policies, Grants oder Migrationseinträge wurden verändert. Keine Änderung an PROD oder `main`.
