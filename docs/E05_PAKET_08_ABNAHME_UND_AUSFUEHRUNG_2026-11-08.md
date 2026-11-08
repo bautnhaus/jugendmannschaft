@@ -1,0 +1,116 @@
+# E05 – Paket 8: Vorzeitiger Sperrausgleich
+
+- **Status:** SQL-Paket zur Freigabe vorbereitet; noch nicht ausgeführt
+- **Zielumgebung:** Supabase DEV, Projekt pzazqvvoruqnqhcorbwx
+- **Branch:** develop
+- **PROD:** ausdrücklich ausgeschlossen
+
+## 1. Fachlicher Zweck
+
+Ein Trainer kann einen Spieler, der für einen konkreten Spieltag nicht nominiert wurde, freiwillig für einen vorzeitigen Sperrausgleich vormerken. Das ist unabhängig von der Anzahl seiner gelben Karten und keine reguläre Sperre.
+
+Der Reset wird erst wirksam, wenn genau dieser Spieltag tatsächlich durchgeführt wurde. Die Ereignishistorie bleibt unverändert; nur das aktive gelbe Kartenkonto beginnt ab dem Anwendungszeitpunkt neu.
+
+## 2. Enthaltene Datenbankobjekte
+
+- Tabelle matchday_early_suspension_resets mit Status pending/applied/cancelled und vollständigen Snapshots.
+- Tabelle matchday_early_suspension_reset_audit als append-only Historie.
+- RPC schedule_early_suspension_reset(matchday_id,player_id,reason).
+- RPC cancel_early_suspension_reset(reset_id,reason).
+- Interne Statusübergangsfunktion e05_transition_early_reset(...).
+- Trigger für automatische Stornierung bei späterer Nominierung.
+- Trigger für automatische Stornierung bei Spieltagsabsage.
+- Trigger für automatische Anwendung nach Statuswechsel des Spieltags auf done.
+- Anpassung der Gelbkarten-Zählung in award_training_behavior_event, damit der letzte angewendete Sperrausgleich als neuer Startpunkt des aktiven Kontos gilt.
+
+## 3. Verbindliche Regeln
+
+1. Nur Trainer/Admin des Teams oder Super Admin im ausdrücklich ausgewählten Teamkontext.
+2. Pflichtbegründung beim Vormerken und bei manueller Stornierung.
+3. Nur aktiver Spieler der Mannschaft und konkreter, geplanter Spieltag derselben aktiven Saison.
+4. Der Spieler darf für diesen Spieltag noch nicht in matchday_players nominiert sein.
+5. Eine normale Nichtnominierung erzeugt keinen Reset.
+6. Spätere Nominierung storniert einen pending Reset automatisch und revisionssicher.
+7. Spieltagsabsage storniert einen pending Reset automatisch.
+8. Status done wendet einen pending Reset genau einmal an.
+9. Ein bereits angewendeter Reset wird nicht rückwirkend aufgehoben.
+10. Ein Reset verändert weder Ereignishistorie noch Nominierung/Einsatz und ist kein reguläres Ableisten einer Sperre.
+11. Bestehende offene gelbe oder rote Sperren bleiben unberührt. Der Reset hebt keine bereits ausgelöste Sperre auf.
+12. Rote Karten und rote Sperren bleiben vollständig unberührt.
+13. Keine Hard Deletes; jede Zustandsänderung wird mit Vorher-/Nachherwerten, Grund, Akteur und Zeitpunkt auditiert.
+14. Ein Reset wirkt nur auf die gelbe Kartenbilanz desselben Spielers, Teams und derselben Saison ab applied_at.
+
+## 4. Automatische Abläufe
+
+### Vormerkung
+- Trainer wählt einen nicht nominierten Spieler im bestehenden Spieltags-Kaderplan.
+- Die RPC prüft Berechtigung, Team, aktive Saison, Spieltagsstatus und fehlende Nominierung.
+- Reset wird als pending gespeichert.
+
+### Spätere Nominierung
+- Ein INSERT oder eine relevante UPDATE-Änderung in matchday_players storniert den zugehörigen pending Reset automatisch.
+- Die Stornierung wird mit Grund und Akteur auditiert.
+- Die normale Nominierung bleibt unverändert.
+
+### Spieltagsabsage
+- Wechsel des Spieltagsstatus auf cancelled storniert alle zugehörigen pending Resets.
+- Kein gelber Kartenstand wird verändert.
+
+### Tatsächliche Durchführung
+- Wechsel des Spieltagsstatus auf done wendet alle zugehörigen pending Resets an.
+- applied_at markiert den exakten Zeitpunkt.
+- Ab diesem Zeitpunkt zählen ältere gelbe Ereignisse nicht mehr zum aktiven gelben Kartenkonto.
+- Die Ereignisse bleiben in der Historie sichtbar.
+
+## 5. Nicht enthalten
+
+- Keine Änderung der allgemeinen Kaderempfehlung.
+- Keine automatische Nominierung oder Abmeldung.
+- Keine Änderung an roten Sperren.
+- Keine Aufhebung bereits offener Sperren.
+- Keine automatische Rücknahme eines bereits angewendeten Resets.
+- Keine Änderung an PROD.
+
+## 6. DEV-Prüfplan
+
+### Positiv
+1. Trainer merkt nicht nominierten Spieler mit Grund vor.
+2. Reset steht auf pending.
+3. Durchführung des Spieltags setzt Reset auf applied und schreibt Audit.
+4. Aktives gelbes Konto beginnt ab applied_at neu.
+5. Historische gelbe Ereignisse bleiben erhalten.
+
+### Negativ
+1. Nicht authentifizierter Aufruf.
+2. Benutzer ohne Trainer-/Adminrolle.
+3. Super Admin ohne ausgewählten Teamkontext.
+4. Leere Begründung.
+5. Spieler aus anderem Team oder inaktiver Spieler.
+6. Spieltag aus anderer oder inaktiver Saison.
+7. Bereits nominierter Spieler.
+8. Spieltag nicht geplant oder bereits vergangen.
+9. Unbekannte Reset-ID.
+10. Manuelle Stornierung eines bereits angewendeten Resets.
+
+### Automatische Grenzfälle
+1. Nachträgliche Nominierung storniert pending Reset automatisch.
+2. Absage storniert pending Reset automatisch.
+3. Spieltag done wendet pending Reset genau einmal an.
+4. Wiederholtes Statusupdate erzeugt keinen zweiten Audit-/Anwendungsdatensatz.
+5. Reset hebt keine offene gelbe oder rote Sperre auf.
+6. Gleichzeitige Nominierung und Vormerkung wird über Zeilensperren/Eindeutigkeitsindex serialisiert.
+
+### Regression
+- Bestehende award_training_behavior_event-Validierung bleibt erhalten.
+- Gelbe Sperre entsteht weiterhin exakt bei fünf aktiven gelben Karten seit dem letzten Reset oder der letzten abgeleisteten gelben Sperre.
+- Rote Karte löst weiterhin sofort eine rote Sperre aus.
+- Kartenhistorie, Nominierungen, Einsätze und allgemeine Kaderempfehlung bleiben unverändert.
+- RLS, ACL und append-only Audit werden geprüft.
+
+Alle Tests werden in DEV mit synthetischen Daten und zurückrollbaren Transaktionen durchgeführt. Testresultate werden nach Ausführung in diesem Dokument ergänzt.
+
+## 7. Technischer Hinweis vor Freigabe
+
+Der vorhandene DEV-Stand enthält bereits award_training_behavior_event und den Sperren-Lifecycle, aber die Tabellen für den vorzeitigen Sperrausgleich existieren noch nicht. Die Migration ergänzt die Tabellen und Zustandsübergänge. Die Anpassung der Gelbkarten-Zählung in award_training_behavior_event muss im finalen SQL als vollständige CREATE OR REPLACE-Funktion enthalten sein. Der aktuelle Entwurf markiert diese Stelle ausdrücklich; vor Ausführung wird sie mit der vollständigen DEV-Funktionsdefinition vervollständigt und syntaktisch geprüft.
+
+**Dieses Paket ist noch nicht zur Ausführung freigegeben.**
