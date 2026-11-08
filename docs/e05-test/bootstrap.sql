@@ -39,3 +39,8 @@ grant usage on schema public, auth to authenticated, service_role;
 grant execute on function auth.uid() to authenticated, service_role;
 grant execute on function public.is_team_member(uuid), public.has_selected_team_context(uuid),
   public.can_manage_club_context(uuid) to authenticated, service_role;
+
+-- Existing application tables are readable by authenticated users; the E05
+-- SELECT policies query teams to resolve club membership. Mirror that baseline.
+grant select on public.teams to authenticated;
+grant select on public.user_club_context to authenticated;
