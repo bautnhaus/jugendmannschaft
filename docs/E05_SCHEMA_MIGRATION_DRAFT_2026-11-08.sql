@@ -279,12 +279,12 @@ create function public.e05_reject_audit_mutation()
 returns trigger
 language plpgsql
 set search_path = pg_catalog, public
-as $
+as $$
 begin
   raise exception 'E05 audit tables are append-only; % is not permitted on %', TG_OP, TG_TABLE_NAME
     using errcode = '55000';
 end;
-$;
+$$;
 
 create trigger training_behavior_event_audit_append_only
 before update or delete on public.training_behavior_event_audit
