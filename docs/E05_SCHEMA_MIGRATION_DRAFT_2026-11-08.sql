@@ -206,6 +206,7 @@ create table public.team_suspension_game_types (
 create table public.matchday_early_suspension_resets (
   id uuid primary key default gen_random_uuid(),
   team_id uuid not null,
+  team_name_snapshot text not null,
   season_id uuid not null,
   season_name_snapshot text not null,
   player_id uuid references public.players(id) on delete set null,
