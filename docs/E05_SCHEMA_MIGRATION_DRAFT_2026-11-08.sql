@@ -9,14 +9,17 @@
 
 begin;
 
--- 1. Training events. Team/season IDs are historical snapshots.
+-- 1. Training events. Team/season/training/matchday IDs are historical snapshots,
+-- not operational FKs. This avoids partial failures in existing sequential delete flows.
 -- Player identity survives player deletion via nullable FK + name snapshot.
 create table public.training_behavior_events (
   id uuid primary key default gen_random_uuid(),
   team_id uuid not null,
-  season_id uuid not null references public.seasons(id) on delete restrict,
-  training_id uuid not null references public.trainings(id) on delete restrict,
+  season_id uuid not null,
+  season_name_snapshot text not null,
+  training_id uuid not null,
   training_date_snapshot date not null,
+  training_name_snapshot text not null,
   player_id uuid references public.players(id) on delete set null,
   player_name_snapshot text not null check (nullif(btrim(player_name_snapshot),'') is not null),
   event_type text not null check (event_type in ('yellow_card','red_card','positive_star')),
@@ -74,18 +77,24 @@ create index training_behavior_event_audit_event_idx
   on public.training_behavior_event_audit(event_id, changed_at desc);
 
 -- 3. Rule-based suspensions. A suspension always has one source event.
+-- Matchday IDs/dates/opponents are snapshots; deleting a matchday does not block or erase history.
 create table public.training_suspensions (
   id uuid primary key default gen_random_uuid(),
   team_id uuid not null,
-  season_id uuid not null references public.seasons(id) on delete restrict,
+  season_id uuid not null,
+  season_name_snapshot text not null,
   player_id uuid references public.players(id) on delete set null,
   player_name_snapshot text not null check (nullif(btrim(player_name_snapshot),'') is not null),
   source_event_id uuid not null references public.training_behavior_events(id) on delete restrict,
   suspension_type text not null check (suspension_type in ('yellow','red')),
   status text not null default 'open'
     check (status in ('open','served','expired','voided')),
-  intended_matchday_id uuid references public.matchdays(id) on delete restrict,
-  served_matchday_id uuid references public.matchdays(id) on delete restrict,
+  intended_matchday_id uuid,
+  intended_matchday_date_snapshot date,
+  intended_matchday_opponent_snapshot text,
+  served_matchday_id uuid,
+  served_matchday_date_snapshot date,
+  served_matchday_opponent_snapshot text,
   created_by uuid references auth.users(id) on delete set null,
   created_by_snapshot text,
   created_at timestamptz not null default now(),
@@ -114,14 +123,16 @@ create index training_suspensions_matchday_idx
   on public.training_suspensions(intended_matchday_id)
   where status = 'open';
 
--- 4. Exceptions for one exact suspension + matchday.
+-- 4. Exceptions for one exact suspension + matchday; matchday identity is snapshotted.
 create table public.training_suspension_exceptions (
   id uuid primary key default gen_random_uuid(),
   suspension_id uuid not null references public.training_suspensions(id) on delete restrict,
   team_id uuid not null,
   player_id uuid references public.players(id) on delete set null,
   player_name_snapshot text not null,
-  matchday_id uuid not null references public.matchdays(id) on delete restrict,
+  matchday_id uuid not null,
+  matchday_date_snapshot date not null,
+  matchday_opponent_snapshot text,
   reason text not null check (nullif(btrim(reason),'') is not null),
   granted_by uuid references auth.users(id) on delete set null,
   granted_by_snapshot text,
@@ -188,14 +199,17 @@ create table public.team_suspension_game_types (
   primary key (team_id, game_type)
 );
 
--- 7. Early suspension-equivalent reset for a specific matchday.
+-- 7. Early suspension-equivalent reset for a specific matchday; matchday identity is snapshotted.
 create table public.matchday_early_suspension_resets (
   id uuid primary key default gen_random_uuid(),
   team_id uuid not null,
-  season_id uuid not null references public.seasons(id) on delete restrict,
+  season_id uuid not null,
+  season_name_snapshot text not null,
   player_id uuid references public.players(id) on delete set null,
   player_name_snapshot text not null check (nullif(btrim(player_name_snapshot),'') is not null),
-  matchday_id uuid not null references public.matchdays(id) on delete restrict,
+  matchday_id uuid not null,
+  matchday_date_snapshot date not null,
+  matchday_opponent_snapshot text,
   status text not null default 'pending'
     check (status in ('pending','applied','cancelled')),
   reason text not null check (nullif(btrim(reason),'') is not null),
