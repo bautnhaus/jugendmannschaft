@@ -49,3 +49,39 @@ Keine bestehenden Tabellen, Daten, Rollen oder Policies werden geändert. Keine 
 ### Ausführungsstatus
 
 Noch nicht ausgeführt. Dieses Dokument wird nach Freigabe und DEV-Ausführung um Ergebnis, Prüfergebnisse, ggf. Korrekturen und Commitreferenz ergänzt.
+
+
+## DEV-Ausführung und Testergebnis
+
+- **Ausgeführt am:** 08.11.2026
+- **Ziel:** Supabase DEV, Projekt `pzazqvvoruqnqhcorbwx`
+- **Freigabe:** ausdrücklich durch den Nutzer erteilt
+- **Ergebnis:** Funktion erfolgreich angelegt/ersetzt; SQL-Ausführung ohne Fehler.
+
+### Technische Nachkontrollen
+
+| Prüfung | Ergebnis |
+|---|---|
+| Funktionssignatur `award_training_behavior_event(uuid,uuid,text,text)` vorhanden | Bestanden |
+| SECURITY DEFINER | Bestanden |
+| EXECUTE für `authenticated` | Erlaubt |
+| EXECUTE für `anon` | Nicht erlaubt |
+| EXECUTE für `service_role` | Nicht erlaubt |
+| Positivtest mit bestehendem Trainer, aktivem Spieler, bestätigter Anwesenheit und aktiver Saison | Bestanden |
+| Ereignis und Audit-Eintrag gemeinsam erzeugt | Bestanden – jeweils eine Zeile innerhalb der Testtransaktion |
+| Testdaten nach ROLLBACK dauerhaft gespeichert | Nein – 0 Testereignisse verblieben |
+| Negativtest: gelbe Karte ohne Begründung | Abgewiesen (SQLSTATE 22023) |
+
+### Testverfahren
+
+Der Positivtest wurde innerhalb einer expliziten Transaktion mit simuliertem authentifiziertem Trainerkontext ausgeführt. Ereignis und Audit-Eintrag waren innerhalb der Transaktion vorhanden; anschließend wurde die Transaktion zurückgerollt. Eine separate Nachkontrolle bestätigte, dass kein Testereignis dauerhaft gespeichert blieb.
+
+Der Negativtest für einen fehlenden Kartengrund wurde ebenfalls transaktional ausgeführt und erwartungsgemäß abgewiesen.
+
+### Grenzen des aktuellen Tests
+
+Noch nicht praktisch getestet wurden alle weiteren Negativfälle (falsches Team, fehlende Rolle, inaktiver Spieler, fehlende Anwesenheit, abgesagtes Training, fehlende/mehrdeutige aktive Saison) sowie konkurrierende parallele Vergaben. Diese Fälle werden in der weiteren DEV-Testphase bzw. mit den Folgepaketen geprüft.
+
+### Ergebnis
+
+**Paket 2 ist in DEV ausgeführt. Funktionssignatur, SECURITY-DEFINER-Eigenschaft, EXECUTE-Rechte, Positivpfad, atomarer Audit-Eintrag und Ablehnung eines fehlenden Kartengrunds wurden geprüft.** Keine Änderungen an PROD.
