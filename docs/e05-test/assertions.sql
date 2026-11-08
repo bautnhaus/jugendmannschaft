@@ -152,6 +152,90 @@ begin
  end;
 end $$;
 
+-- Multiple red suspensions may remain open and must be served sequentially.
+insert into public.training_behavior_events(
+ id,team_id,team_name_snapshot,season_id,season_name_snapshot,training_id,
+ training_date_snapshot,training_name_snapshot,player_id,player_name_snapshot,
+ event_type,reason
+) values
+ ('50000000-0000-0000-0000-000000000004',
+  '20000000-0000-0000-0000-000000000001','Test Team',
+  '60000000-0000-0000-0000-000000000001','Season 2026/27',
+  '70000000-0000-0000-0000-000000000003',date '2026-11-08','Training 3',
+  '30000000-0000-0000-0000-000000000001','Test Player','red_card','Red 1'),
+ ('50000000-0000-0000-0000-000000000005',
+  '20000000-0000-0000-0000-000000000001','Test Team',
+  '60000000-0000-0000-0000-000000000001','Season 2026/27',
+  '70000000-0000-0000-0000-000000000004',date '2026-11-09','Training 4',
+  '30000000-0000-0000-0000-000000000001','Test Player','red_card','Red 2');
+insert into public.training_suspensions(
+ team_id,team_name_snapshot,season_id,season_name_snapshot,player_id,player_name_snapshot,
+ source_event_id,suspension_type,status
+) values
+ ('20000000-0000-0000-0000-000000000001','Test Team',
+  '60000000-0000-0000-0000-000000000001','Season 2026/27',
+  '30000000-0000-0000-0000-000000000001','Test Player',
+  '50000000-0000-0000-0000-000000000004','red','open'),
+ ('20000000-0000-0000-0000-000000000001','Test Team',
+  '60000000-0000-0000-0000-000000000001','Season 2026/27',
+  '30000000-0000-0000-0000-000000000001','Test Player',
+  '50000000-0000-0000-0000-000000000005','red','open');
+
+-- Snapshot references must not block or erase matchday history on deletion.
+insert into public.matchdays(id,team_id,match_date,opponent,game_type,status)
+values ('90000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001',
+        date '2026-11-14','Opponent','Meisterschaft','planned');
+update public.training_suspensions
+set intended_matchday_id='90000000-0000-0000-0000-000000000001',
+    intended_matchday_date_snapshot=date '2026-11-14',
+    intended_matchday_opponent_snapshot='Opponent'
+where id='80000000-0000-0000-0000-000000000001';
+insert into public.training_suspension_exceptions(
+ suspension_id,team_id,team_name_snapshot,player_id,player_name_snapshot,
+ matchday_id,matchday_date_snapshot,matchday_opponent_snapshot,reason
+) values (
+ '80000000-0000-0000-0000-000000000001',
+ '20000000-0000-0000-0000-000000000001','Test Team',
+ '30000000-0000-0000-0000-000000000001','Test Player',
+ '90000000-0000-0000-0000-000000000001',date '2026-11-14','Opponent','Exception test'
+);
+insert into public.matchday_early_suspension_resets(
+ team_id,team_name_snapshot,season_id,season_name_snapshot,player_id,player_name_snapshot,
+ matchday_id,matchday_date_snapshot,matchday_opponent_snapshot,reason
+) values (
+ '20000000-0000-0000-0000-000000000001','Test Team',
+ '60000000-0000-0000-0000-000000000001','Season 2026/27',
+ '30000000-0000-0000-0000-000000000001','Test Player',
+ '90000000-0000-0000-0000-000000000001',date '2026-11-14','Opponent','Reset test'
+);
+delete from public.matchdays where id='90000000-0000-0000-0000-000000000001';
+do $
+begin
+ if not exists(select 1 from public.training_suspension_exceptions
+   where matchday_id='90000000-0000-0000-0000-000000000001'
+     and matchday_date_snapshot=date '2026-11-14')
+ then raise exception 'Exception matchday snapshot not retained'; end if;
+ if not exists(select 1 from public.matchday_early_suspension_resets
+   where matchday_id='90000000-0000-0000-0000-000000000001'
+     and matchday_opponent_snapshot='Opponent')
+ then raise exception 'Reset matchday snapshot not retained'; end if;
+end $;
+
+-- Storno releases the partial uniqueness slot; historical row remains.
+update public.training_behavior_events
+set status='voided',voided_at=now(),void_reason='Test void'
+where id='50000000-0000-0000-0000-000000000001';
+insert into public.training_behavior_events(
+ team_id,team_name_snapshot,season_id,season_name_snapshot,training_id,
+ training_date_snapshot,training_name_snapshot,player_id,player_name_snapshot,
+ event_type,reason
+) values (
+ '20000000-0000-0000-0000-000000000001','Test Team',
+ '60000000-0000-0000-0000-000000000001','Season 2026/27',
+ '70000000-0000-0000-0000-000000000001',date '2026-11-07','Training',
+ '30000000-0000-0000-0000-000000000001','Test Player','yellow_card','Replacement card'
+);
+
 -- Player and Auth deletion preserve historical snapshots.
 delete from public.players where id='30000000-0000-0000-0000-000000000001';
 delete from auth.users where id='40000000-0000-0000-0000-000000000001';
