@@ -73,3 +73,80 @@ Gelbe Karten werden nicht gelöscht. Da Ereignisse saisonbezogen gespeichert sin
 - Keine Änderung an Matchdays, Nominierungen, Einsätzen, Trainings oder Spielerzuordnungen.
 
 Testdaten werden ausschließlich in DEV und innerhalb zurückrollbarer Transaktionen verwendet. Die tatsächlichen Ergebnisse werden nach der Ausführung in Abschnitt 6 dokumentiert.
+
+
+## 6. Tatsächliche Ausführung und DEV-Ergebnisse
+
+- **Freigabe:** ausdrücklich erteilt.
+- **Umgebung:** Supabase DEV, Projekt \`pzazqvvoruqnqhcorbwx\`.
+- **PROD:** nicht verändert.
+- **Ergebnis:** Paket 7 und die anschließende RLS-Korrektur erfolgreich ausgeführt.
+
+### Ausgeführte Migrationen
+
+| Migration | Version | Ergebnis |
+|---|---:|---|
+| \`e05_package_07_controlled_season_closure\` | \`20261108180535\` | Erfolgreich |
+| \`e05_package_07_fix_season_audit_context_rls\` | \`20261108180944\` | Erfolgreich |
+
+### Positivtests
+
+Alle Positivtests wurden in einer Transaktion mit synthetischer Saison, synthetischen Ereignissen und synthetischen Sperren durchgeführt. Die Transaktion wurde zurückgerollt.
+
+| Test | Ergebnis |
+|---|---|
+| Saison wird geschlossen (\`is_active=false\`) | Bestanden |
+| Offene gelbe Sperre wird auf \`expired\` gesetzt | Bestanden |
+| Offene rote Sperre wird auf \`expired\` gesetzt | Bestanden |
+| \`expired_at\` wird gesetzt | Bestanden |
+| Bereits abgeleistete Sperre bleibt \`served\` | Bestanden |
+| Für jede abgelaufene Sperre entsteht ein \`expired\`-Audit | Bestanden |
+| Saisonabschluss-Audit speichert Begründung | Bestanden |
+
+Ergebnis der Kernprüfung: zwei offene Sperren abgelaufen, eine bereits abgeleistete Sperre unverändert.
+
+### Negativtests
+
+| Test | Ergebnis |
+|---|---|
+| Trainer ohne Adminrolle (ohne Super-Admin-Sonderrecht) | Abgewiesen |
+| Leere Begründung | Abgewiesen |
+| Zweiter Abschluss derselben Saison | Abgewiesen |
+| Unbekannte Saison-ID | Abgewiesen |
+| Änderung eines Saisonabschluss-Auditdatensatzes | Abgewiesen |
+
+Für den Trainer-Negativtest wurde die Super-Admin-Rolle des Testbenutzers ausschließlich innerhalb der zurückrollbaren Testtransaktion temporär entfernt. Nach Rollback war sie unverändert vorhanden.
+
+### Berechtigungs- und RLS-Prüfungen
+
+| Prüfung | Ergebnis |
+|---|---|
+| RPC ist SECURITY DEFINER | Bestanden |
+| RPC für \`authenticated\` ausführbar | Bestanden |
+| RPC für \`anon\` nicht ausführbar | Bestanden |
+| RLS auf \`team_season_closure_audit\` aktiviert | Bestanden |
+| \`authenticated\` darf lesen | Bestanden |
+| \`authenticated\` darf nicht direkt INSERT/UPDATE/DELETE ausführen | Bestanden |
+| \`anon\` darf nicht lesen | Bestanden |
+| Teammitglieder und Benutzer mit zulässigem ausgewähltem Teamkontext können Audit lesen | Policy geprüft |
+
+Die erste RLS-Fassung erlaubte Audit-Lesezugriff nur über \`is_team_member(team_id)\`. Das entsprach nicht vollständig der Vorgabe für Super Admins im ausdrücklich ausgewählten Teamkontext. Deshalb wurde die Policy in einer separaten Korrekturmigration auf \`is_team_member(team_id) OR has_selected_team_context(team_id)\` erweitert. Diese Korrektur ist eingespielt und geprüft.
+
+### Testdatenkontrolle
+
+Nach Rollback wurden alle synthetischen Kennungen abgefragt:
+- Test-Saisons: 0
+- Saisonabschluss-Audits: 0
+- Trainingsevents: 0
+- Sperren: 0
+- Sperren-Audits: 0
+
+Die temporär entfernte Super-Admin-Rolle wurde durch Rollback wiederhergestellt. Es sind keine Testdaten oder Testberechtigungsänderungen zurückgeblieben.
+
+### Supabase Security Advisor
+
+Der Advisor meldet weiterhin bestehende allgemeine Hinweise zu SECURITY DEFINER-Funktionen (insgesamt 46) sowie zwei bereits vorhandene Tabellen ohne RLS-Policy (\`user_club_context\`, \`user_team_context\`) und deaktivierten Leaked-Password-Schutz. Die neue RPC \`close_team_season\` erscheint in der SECURITY DEFINER-Warnliste, weil sie – wie die bestehenden geschützten Schreib-RPCs – für authentifizierte Benutzer ausführbar sein muss. Die Funktion prüft die Teamadmin- bzw. Super-Admin-Berechtigung serverseitig. Die übrigen Advisor-Hinweise wurden durch Paket 7 nicht verändert und sind nicht Teil dieses Pakets.
+
+### Ergebnis
+
+**Paket 7 ist in DEV umgesetzt und die geprüften Positiv-, Negativ-, Berechtigungs- und Rollbacktests sind bestanden.** Der erste Testdatensatz für eine bereits abgeleistete Sperre erfüllte zunächst nicht die vorhandene Datenbank-Constraint für Ableistungsmetadaten. Der Testdatensatz wurde korrigiert; das war kein Fehler der Paket-7-Migration. PROD blieb unangetastet.
