@@ -36,18 +36,39 @@ begin
   if v_count <> 10 then raise exception 'Expected 10 SELECT policies, got %',v_count; end if;
 end $$;
 
--- Client roles have SELECT only; service_role has the explicitly granted backend surface.
-do $$
+-- Verify exact policy operation/role and table ACLs for every one of the ten tables.
+do $
+declare t text; v_count integer;
 begin
-  if has_table_privilege('authenticated','public.training_behavior_events','insert')
-    or has_table_privilege('authenticated','public.training_behavior_events','update')
-    or has_table_privilege('authenticated','public.training_behavior_events','delete')
-  then raise exception 'authenticated unexpectedly has event write privileges'; end if;
-  if not has_table_privilege('authenticated','public.training_behavior_events','select')
-  then raise exception 'authenticated is missing event SELECT'; end if;
-  if not has_table_privilege('service_role','public.training_behavior_events','insert')
-  then raise exception 'service_role is missing backend INSERT'; end if;
-end $$;
+  for t in select unnest(array[
+    'training_behavior_events','training_behavior_event_audit','training_suspensions',
+    'training_suspension_exceptions','training_suspension_audit','club_suspension_settings',
+    'team_suspension_game_type_settings','team_suspension_game_types',
+    'matchday_early_suspension_resets','matchday_early_suspension_reset_audit'
+  ]) loop
+    if not has_table_privilege('authenticated',format('public.%I',t),'select')
+      or has_table_privilege('authenticated',format('public.%I',t),'insert')
+      or has_table_privilege('authenticated',format('public.%I',t),'update')
+      or has_table_privilege('authenticated',format('public.%I',t),'delete')
+      or has_table_privilege('anon',format('public.%I',t),'select')
+      or has_table_privilege('anon',format('public.%I',t),'insert')
+      or has_table_privilege('anon',format('public.%I',t),'update')
+      or has_table_privilege('anon',format('public.%I',t),'delete')
+      or not has_table_privilege('service_role',format('public.%I',t),'select')
+      or not has_table_privilege('service_role',format('public.%I',t),'insert')
+      or has_table_privilege('service_role',format('public.%I',t),'update')
+      or has_table_privilege('service_role',format('public.%I',t),'delete')
+    then raise exception 'Unexpected ACL on public.%',t; end if;
+  end loop;
+  select count(*) into v_count from pg_policies
+  where schemaname='public' and tablename in (
+    'training_behavior_events','training_behavior_event_audit','training_suspensions',
+    'training_suspension_exceptions','training_suspension_audit','club_suspension_settings',
+    'team_suspension_game_type_settings','team_suspension_game_types',
+    'matchday_early_suspension_resets','matchday_early_suspension_reset_audit'
+  ) and (cmd <> 'SELECT' or roles <> array['authenticated']::name[]);
+  if v_count <> 0 then raise exception 'Unexpected non-SELECT policy or policy role'; end if;
+end $;
 
 -- Seed disposable data.
 insert into public.clubs(id,name) values ('10000000-0000-0000-0000-000000000001','Test Club');
@@ -199,6 +220,21 @@ insert into public.training_suspension_exceptions(
  '30000000-0000-0000-0000-000000000001','Test Player',
  '90000000-0000-0000-0000-000000000001',date '2026-11-14','Opponent','Exception test'
 );
+-- A revoked exception frees the active slot; the same matchday can be re-granted.
+update public.training_suspension_exceptions
+set revoked_at=now(), revoke_reason='Revoke for regrant test'
+where suspension_id='80000000-0000-0000-0000-000000000001'
+  and matchday_id='90000000-0000-0000-0000-000000000001';
+insert into public.training_suspension_exceptions(
+ suspension_id,team_id,team_name_snapshot,player_id,player_name_snapshot,
+ matchday_id,matchday_date_snapshot,matchday_opponent_snapshot,reason
+) values (
+ '80000000-0000-0000-0000-000000000001',
+ '20000000-0000-0000-0000-000000000001','Test Team',
+ '30000000-0000-0000-0000-000000000001','Test Player',
+ '90000000-0000-0000-0000-000000000001',date '2026-11-14','Opponent','Regranted exception'
+);
+
 insert into public.matchday_early_suspension_resets(
  team_id,team_name_snapshot,season_id,season_name_snapshot,player_id,player_name_snapshot,
  matchday_id,matchday_date_snapshot,matchday_opponent_snapshot,reason
@@ -320,4 +356,24 @@ where club_id='10000000-0000-0000-0000-000000000001' \gset
 \endif
 reset role;
 
-\echo 'PASS: E05 schema foundation PostgreSQL 17 test suite completed'
+\echo '-- Audit rows reject UPDATE/DELETE.
+insert into public.training_behavior_event_audit(event_id,action,new_values)
+values ('50000000-0000-0000-0000-000000000002','created','{"test":true}');
+insert into public.training_suspension_audit(suspension_id,action,new_values)
+values ('80000000-0000-0000-0000-000000000001','created','{"test":true}');
+insert into public.matchday_early_suspension_reset_audit(reset_id,action,new_values)
+select id,'created','{"test":true}' from public.matchday_early_suspension_resets limit 1;
+do $$
+begin
+  begin update public.training_behavior_event_audit set reason='tamper';
+    raise exception 'Event audit UPDATE unexpectedly succeeded';
+  exception when sqlstate '55000' then null; end;
+  begin delete from public.training_suspension_audit;
+    raise exception 'Suspension audit DELETE unexpectedly succeeded';
+  exception when sqlstate '55000' then null; end;
+  begin update public.matchday_early_suspension_reset_audit set reason='tamper';
+    raise exception 'Early reset audit UPDATE unexpectedly succeeded';
+  exception when sqlstate '55000' then null; end;
+end $$;
+
+PASS: E05 schema foundation PostgreSQL 17 test suite completed'
