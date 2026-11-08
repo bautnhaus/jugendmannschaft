@@ -276,7 +276,7 @@ begin
     matchday_id,matchday_date_snapshot,matchday_opponent_snapshot,
     reason,granted_by,granted_by_snapshot,granted_at
   ) values (
-    v_suspension.id,v_suspension.team_id,coalesce(v_team_name,v_suspension.team_name_snapshot),
+    v_suspension.id,v_suspension.team_id,coalesce(v_team_name,v_suspension.team_id::text),
     v_suspension.player_id,coalesce(v_player_name,v_suspension.player_name_snapshot),
     v_matchday.id,v_matchday.match_date,v_matchday.opponent,
     btrim(p_reason),v_actor,v_actor_name,now()
