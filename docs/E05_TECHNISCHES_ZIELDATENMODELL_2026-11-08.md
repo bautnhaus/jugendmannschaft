@@ -31,7 +31,7 @@ Dies ist eine gezielte E05-Bestandsprüfung, kein vollständiger Datenbank-Siche
 
 Ein Datensatz je tatsächlich vergebener gelber Karte, roter Karte oder positivem Stern.
 
-- `team_id`, `season_id`: historische UUID-Snapshots; `season_name_snapshot` bewahrt die damalige Saisonbezeichnung.
+- `team_id`, `season_id`: historische UUID-Snapshots; `team_name_snapshot` und `season_name_snapshot` bewahren die damaligen Bezeichnungen.
 - `training_id`: historische UUID ohne FK; `training_date_snapshot` und `training_name_snapshot` bewahren die damaligen Trainingsdaten.
 - Die spätere RPC prüft beim Erstellen, dass Training, Spieler, Team und aktive Saison zusammenpassen.
 - `player_id`: nullable FK auf `players` mit `ON DELETE SET NULL`.
@@ -56,7 +56,7 @@ Append-only Audit für `created`, `corrected`, `voided`, `reinstated`. Enthält 
 ### 3.3 `training_suspensions`
 
 Eigenständiger Datensatz je regelbasierter Sperre:
-- historische Team-/Saison-UUIDs,
+- historische Team-/Saison-UUIDs mit Namenssnapshots,
 - nullable Spieler-FK mit `ON DELETE SET NULL` plus Pflicht-Namenssnapshot,
 - verpflichtendes `source_event_id` auf das auslösende Kartenereignis,
 - Sperrentyp `yellow` oder `red`,
