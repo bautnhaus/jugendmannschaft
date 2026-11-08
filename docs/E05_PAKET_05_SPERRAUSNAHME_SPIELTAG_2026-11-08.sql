@@ -60,13 +60,8 @@ create index training_suspension_audit_exception_idx
   on public.training_suspension_audit(exception_id,changed_at desc)
   where exception_id is not null;
 
-create trigger training_suspension_exceptions_no_update_delete
-before update or delete on public.training_suspension_exceptions
-for each row execute function public.e05_reject_suspension_audit_mutation();
-
-create trigger training_suspension_exceptions_no_truncate
-before truncate on public.training_suspension_exceptions
-for each statement execute function public.e05_reject_suspension_audit_mutation();
+-- Exception rows are not directly writable by API roles. A later controlled
+-- revoke RPC may update only revocation metadata; the audit table stays append-only.
 
 -- 2. Rebuild the package-4 assignment helper so an active exception excludes
 --    exactly its matchday from that suspension's next eligible target.
