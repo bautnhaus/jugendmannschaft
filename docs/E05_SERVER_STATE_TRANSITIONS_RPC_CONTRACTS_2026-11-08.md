@@ -204,3 +204,40 @@ Jeder Test muss neben dem RPC-Ergebnis den Datenzustand und den zugehörigen Aud
 Nach diesem Vertragsentwurf folgt eine gezielte read-only Prüfung der konkret verwendeten DEV-Tabellen und Rollenhelfer für die Ereignis-RPCs. Danach wird ausschließlich der Ereignis-RPC-SQL-Entwurf erstellt, statisch geprüft (einschließlich Syntax), im isolierten PostgreSQL-17.6-Test ausgeführt und mit Positiv-/Negativ-/Grenz-/Parallelitätstests ergänzt.
 
 **Keine SQL-Ausführung in Supabase DEV oder PROD ist durch dieses Dokument autorisiert.** Jede spätere schreibende SQL-Anfrage muss vollständig dokumentiert und vor Ausführung ausdrücklich freigegeben werden.
+
+## 10. DEV-Abgleich – Ereignis-RPC-Voraussetzungen (read-only, 08.11.2026)
+
+**Prüfumgebung:** Supabase DEV, Projekt `pzazqvvoruqnqhcorbwx`. Es wurden ausschließlich Metadaten-/Definitionsabfragen ausgeführt. Keine DDL-/DML-Anweisung, keine Migration und keine Datenänderung.
+
+### 10.1 Verifizierte Bestandsobjekte
+
+| Bereich | Tatsächlicher DEV-Bestand | Konsequenz für Ereignis-RPC |
+|---|---|---|
+| Teamrollen | `team_member_roles(team_id,user_id,role)`, Rollen `trainer` und `admin`; zusammengesetzter PK | Nicht nur `is_team_member()` als Trainerprüfung verwenden: diese Funktion bestätigt Mitgliedschaft, nicht die konkrete Rolle. |
+| Mitgliedschaftshelfer | `is_team_member(uuid)` und `is_team_admin(uuid)` sind SECURITY DEFINER; beide berücksichtigen Superadmins nur mit ausgewähltem Teamkontext. | Bestehende Kontextlogik wiederverwenden, aber für die fachlich geforderte Trainer-/Adminrolle zusätzlich die Rolle explizit prüfen. |
+| Superadmin-Kontext | `has_selected_team_context(uuid)` prüft `user_team_context` plus Superadmin-/Clubadmin-Berechtigung | Superadmin-Zugriff darf nicht kontextlos erfolgen. |
+| Training | `trainings(id,team_id,season_id,training_date,name,status,...)`; Status `planned/done/cancelled`; `season_id` nullable | Training und Spieler müssen teamgleich sein; Ereignisvergabe für abgesagte Trainings ablehnen. Vorhandene Daten können `season_id` NULL haben. |
+| Anwesenheit | `attendance(training_id,player_id,present)`, PK auf beiden IDs | Nur `present=true` ist gültiger Anwesenheitsnachweis; Rückmeldungen nicht heranziehen. |
+| Spieler | `players(id,team_id,name,active,...)` | Spieler muss aktiv und demselben Team wie Training zugeordnet sein. |
+| Saison | `seasons(id,team_id,name,is_active,...)`; FK zu Team, UNIQUE `(team_id,name)`; **kein** Unique-Index/Constraint für eine aktive Saison je Team | Eindeutigkeit der aktiven Saison ist nicht durch Schema garantiert. RPC muss genau eine aktive Saison zählen und bei 0 oder >1 abbrechen. Wenn Training.season_id gesetzt ist, muss sie zum Trainingsteam gehören und aktiv sein; bei NULL darf nur genau eine aktive Team-Saison aufgelöst werden. |
+| Akteur-Snapshot | `profiles(id,display_name,...)`, ID referenziert `auth.users` | `display_name` ist die vorhandene Profilquelle. Wenn NULL/leer, keinen E-Mail-Ersatz erfinden; Snapshot darf NULL sein oder kontrolliert auf stabilen neutralen Fallback zurückfallen. |
+| RLS-/ACL-Bestand | Die vorhandenen Basistabellen haben RLS; `authenticated` hat derzeit breite Tabellen-ACLs, die Policies begrenzen den Zugriff. E05-Tabellenentwurf entzieht direkte API-Schreibrechte. | Neue RPCs müssen E05-Tabellen ausschließlich über eng begrenzte Funktionsrechte beschreiben; keine Änderung an vorhandenen Tabellen-ACLs oder Policies als Nebenwirkung. |
+
+### 10.2 Rollenentscheidung für die erste RPC-Etappe
+
+Für die Vergabe/Korrektur/Stornierung/Wiederherstellung ist serverseitig zu prüfen:
+- authentifizierter Akteur (`auth.uid()`);
+- für normale Teammitglieder: explizite Zeile in `team_member_roles` für genau das Team mit Rolle `trainer` oder `admin`;
+- für Superadmins: `global_user_roles.role='super_admin'` **und** `has_selected_team_context(team_id)=true`;
+- keine Berechtigung allein aus Clubmitgliedschaft/Clubadminrolle ohne ausgewählten Teamkontext, sofern nicht die bestehende Rollenregeln dies ausdrücklich zulassen.
+
+Die Prüfung erfolgt innerhalb der RPC und in derselben Transaktion wie Ereignis- und Audit-Schreibvorgang. Die konkreten SQL-Ausdrücke müssen vor Implementierung gegen die bestehende SECURITY DEFINER-Funktionssignatur und deren ACL geprüft werden.
+
+### 10.3 Noch offene technische Punkte – nicht durch Annahmen ersetzen
+
+1. `trainings.status='planned'`: fachliche Entscheidung, ob Ereignisse vor Trainingsende überhaupt vergeben werden dürfen. Die freigegebene Regel verlangt Anwesenheit, nicht ausdrücklich `status='done'`; daher wird hier keine zusätzliche Statussperre eingeführt. `cancelled` muss ausgeschlossen werden.
+2. `training.season_id` gesetzt, aber Saison nicht aktiv: RPC muss abbrechen. Eine Ereignisvergabe in eine historische/inaktive Saison wird nicht stillschweigend zugelassen.
+3. Profilname fehlt: Snapshot-Strategie muss vor SQL-Implementierung festgelegt werden; keine E-Mail als Ersatz.
+4. Sperrenauslösung durch die fünfte gelbe Karte bzw. rote Karte: Ereignis-RPC-Etappe darf kein Ereignis ohne konsistenten Lifecycle hinterlassen. Entweder muss die RPC atomar die offene Sperre miterzeugen oder bis zur integrierten Lifecycle-Etappe die Schwellen-/Rot-Auslösung kontrolliert ablehnen. Keine partielle Ereignisvergabe.
+
+**Ergebnis:** Der DEV-Abgleich ist abgeschlossen. Er zeigt insbesondere, dass aktive Saisons aktuell nicht eindeutig auf Datenbankebene erzwungen werden und `is_team_member()` allein für eine explizite Trainerrollenprüfung nicht ausreicht. Diese Punkte sind verpflichtende Implementierungs- und Testbedingungen.
