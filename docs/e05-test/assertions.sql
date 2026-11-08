@@ -73,7 +73,7 @@ begin
     or has_function_privilege('authenticated','public.e05_reject_audit_mutation()','execute')
     or has_function_privilege('service_role','public.e05_reject_audit_mutation()','execute')
   then raise exception 'Audit trigger function must not be directly executable by API roles'; end if;
-end $;
+end $$;
 
 -- Seed disposable data.
 insert into public.clubs(id,name) values ('10000000-0000-0000-0000-000000000001','Test Club');
