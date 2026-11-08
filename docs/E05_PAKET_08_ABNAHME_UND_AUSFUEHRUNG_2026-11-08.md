@@ -1,6 +1,6 @@
 # E05 – Paket 8: Vorzeitiger Sperrausgleich
 
-- **Status:** SQL-Paket zur Freigabe vorbereitet; noch nicht ausgeführt
+- **Status:** In Supabase DEV umgesetzt; Positiv- und Negativtests bestanden
 - **Zielumgebung:** Supabase DEV, Projekt pzazqvvoruqnqhcorbwx
 - **Branch:** develop
 - **PROD:** ausdrücklich ausgeschlossen
