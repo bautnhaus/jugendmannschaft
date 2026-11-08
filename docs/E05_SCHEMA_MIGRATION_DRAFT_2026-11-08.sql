@@ -322,7 +322,7 @@ revoke all on public.training_behavior_events,
   public.team_suspension_game_types,
   public.matchday_early_suspension_resets,
   public.matchday_early_suspension_reset_audit
-from public, anon, authenticated;
+from public, anon, authenticated, service_role;
 
 grant select on public.training_behavior_events,
   public.training_behavior_event_audit,
