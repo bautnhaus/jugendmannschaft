@@ -94,3 +94,65 @@ Vor einer späteren Freigabe sind erforderlich:
 
 **Nicht freigabefähig in der aktuellen Fassung.**  
 Die oben genannten Punkte werden durch den technischen Review verantwortet und müssen vor erneuter Vorlage korrigiert werden. Der Nutzer muss diese technischen Einzelheiten nicht selbst bewerten. Eine spätere Nutzerfreigabe wird erst eingeholt, wenn ein in sich konsistenter, statisch geprüfter SQL-Stand und sein konkreter Ausführungsumfang vorliegen.
+
+
+## 8. Review Revision 2 – korrigierter Modell- und SQL-Entwurf
+
+**Stand:** 08.11.2026, Revision 2  
+**Geprüfte Dateien:**
+- `docs/E05_TECHNISCHES_ZIELDATENMODELL_2026-11-08.md`
+- `docs/E05_SCHEMA_MIGRATION_DRAFT_2026-11-08.sql`
+
+### 8.1 Korrekturen aus dem Erstreview
+
+Die folgenden Punkte wurden im Modell und SQL-Entwurf korrigiert:
+
+1. **Spielerhistorie:** nullable `player_id` mit `ON DELETE SET NULL`, Pflicht-Namenssnapshot; Historie bleibt bei Spieler-Löschung lesbar.
+2. **Akteure:** Auth-FKs sind nullable mit `ON DELETE SET NULL`; Actor-Namenssnapshot bleibt erhalten. Keine historischen Auditverweise blockieren Kontolöschung.
+3. **Spielart-Override:** Team-Override-Kopf plus Kindtabelle. Ein vorhandener Kopf ohne Kindzeilen ist ein bewusst leerer vollständiger Override.
+4. **Sperrenursprung:** `source_event_id` ist verpflichtend und eindeutig; dasselbe Kartenereignis kann nicht mehrfach eine Sperre auslösen.
+5. **Eventstatus:** ein einzelnes Statusfeld `active/voided` steuert Aktivität; partielle Unique-Indizes gelten nur für aktive Karten/Sterne.
+6. **Mehrere offene Sperren:** kein Unique-Constraint pro Spieler/Sperrentyp, da mehrere rote Sperren nacheinander offen sein können. Eindeutigkeit wird über das jeweilige Quellereignis gesichert.
+7. **Club-Lesepolicy:** `can_manage_club_context(club_id)` wird mit einem passenden Eintrag in `user_club_context` kombiniert. Club-Mitgliedschaft allein gibt keinen Zugriff auf die Konfiguration.
+8. **Team-/Saison-/Terminbeziehungen:** werden als Snapshots gespeichert; die schreibenden RPCs müssen Team-, Saison-, Trainings-, Spieler- und Spieltagskonsistenz serverseitig prüfen.
+
+### 8.2 Zusätzliche Prüfung der bestehenden Löschabläufe
+
+Der aktuelle `develop/index.html`-Stand wurde read-only geprüft:
+- `deleteTraining()` löscht zuerst `training_players` und anschließend in einem separaten Request das Training.
+- `deleteMatchday()` löscht zuerst `matchday_players` und anschließend in einem separaten Request den Spieltag.
+
+Ein `ON DELETE RESTRICT`-FK von Ereignis-/Sperrenhistorie auf Training oder Spieltag könnte deshalb den zweiten Request blockieren, nachdem der erste bereits erfolgreich war. Das würde einen unerwünschten Teilzustand erzeugen.
+
+**Korrektur:** Trainings- und Spieltags-IDs sowie Datum/Name/Gegner werden in der Historie als Snapshots gespeichert, nicht als operative FKs. Die Historie bleibt erhalten, ohne die bestehenden sequenziellen Löschabläufe teilweise scheitern zu lassen. Der Spieler-FK bleibt nullable mit `ON DELETE SET NULL`; Audit-Parentbezüge bleiben `ON DELETE RESTRICT`.
+
+### 8.3 Statische Strukturprüfung des SQL-Entwurfs
+
+Für die aktuelle Revision wurden automatisiert gegen den Text der SQL-Datei geprüft:
+
+| Prüfung | Ergebnis |
+|---|---|
+| Neue Tabellen | 10 erkannt |
+| RLS-Aktivierung | 10 von 10 Tabellen |
+| SELECT-Policies | 10; jede Policy verweist auf eine der neuen Tabellen |
+| Direkte authentifizierte Schreib-Policies | keine |
+| Auth-Akteurs-FKs | nur `ON DELETE SET NULL`; keine `ON DELETE RESTRICT` |
+| Historische Kaskaden auf Ereignis-/Sperren-/Resetobjekte | keine |
+| Eindeutige Sperrenquelle | vorhanden |
+| Vollständiger Team-Override inkl. leerer Liste | Kopf-/Kindmodell vorhanden |
+| Club-Admin-Kontext | ausgewählter Clubkontext wird zusätzlich geprüft |
+
+Die statische Prüfung hat außerdem bestätigt, dass die Migration keine bestehenden Tabellen, Funktionen, Trigger oder Policies verändert. Die einzige Kaskade ist die Löschung von Kind-Spielartzeilen bei Entfernung des nicht-historischen Team-Override-Kopfes.
+
+### 8.4 Verbleibende Prüfschranke
+
+**Noch nicht abgeschlossen:** Die SQL-Datei wurde nicht auf einer isolierten PostgreSQL-Instanz ausgeführt. In der aktuellen Arbeitsumgebung steht kein isolierter PostgreSQL-Testserver zur Verfügung; die DEV-Datenbank wird nicht als Syntax-Testumgebung verwendet und es wird kein kostenpflichtiger zusätzlicher Supabase-Testbranch angelegt.
+
+Damit fehlen weiterhin:
+- PostgreSQL-Laufzeitsyntax-/DDL-Test,
+- tatsächliche Katalogprüfung nach Anlage,
+- RLS-/ACL-Positiv- und Negativtests,
+- Security Advisor nach DDL,
+- geprüfter Rückbau auf einer isolierten Testinstanz.
+
+**Aktuelle Entscheidung:** Die Revision 2 ist statisch deutlich verbessert, aber noch **nicht ausführungsfreigabefähig**. Die Nutzerfreigabe wird nicht eingeholt, solange diese Prüfschranke offen ist. Es wurde kein SQL ausgeführt und keine Datenbank geändert.
