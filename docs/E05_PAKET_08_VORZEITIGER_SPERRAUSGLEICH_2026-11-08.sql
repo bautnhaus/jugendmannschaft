@@ -277,6 +277,11 @@ begin
 end;
 $function$;
 
+revoke all on function public.schedule_early_suspension_reset(uuid,uuid,text)
+from public,anon,authenticated,service_role;
+grant execute on function public.schedule_early_suspension_reset(uuid,uuid,text)
+to authenticated;
+
 -- 4) Explicit cancellation RPC (manual cancellation before the matchday).
 create or replace function public.cancel_early_suspension_reset(
   p_reset_id uuid,
@@ -327,9 +332,9 @@ begin
 end;
 $function$;
 
-revoke all on function public.schedule_early_suspension_reset(uuid,uuid,text)
+revoke all on function public.cancel_early_suspension_reset(uuid,text)
 from public,anon,authenticated,service_role;
-grant execute on function public.schedule_early_suspension_reset(uuid,uuid,text)
+grant execute on function public.cancel_early_suspension_reset(uuid,text)
 to authenticated;
 
 -- 5) Automatic cancellation when the player is later nominated.
