@@ -1,6 +1,8 @@
 -- E05 / AP05 – Paket 3: Sperrenfundament und automatische Auslösung
 -- Ziel: Supabase DEV (Projekt pzazqvvoruqnqhcorbwx)
--- Status: Freigabekandidat – vor Freigabe nicht ausführen.
+-- Status: In DEV vorhanden und geprüft am 08.11.2026; erneuter Komplettlauf
+-- wurde wegen bereits vorhandener Tabellen sicher abgebrochen (42P07).
+-- Siehe docs/E05_PAKET_03_FREIGABE_UND_AUSFUEHRUNG_2026-11-08.md.
 -- Abhängigkeit: Paket 1 und Paket 2 müssen in DEV vorhanden sein.
 -- Umfang: training_suspensions + training_suspension_audit sowie Erweiterung
 -- von award_training_behavior_event um die atomare Sperrenauslösung.
