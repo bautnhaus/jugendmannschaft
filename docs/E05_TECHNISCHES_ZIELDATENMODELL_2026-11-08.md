@@ -100,7 +100,7 @@ Append-only Audit für Vormerkung, Anwendung, Stornierung bei Absage/Nominierung
 
 - Spieler-Löschung setzt nur die nullable Spieler-FK auf NULL; Snapshot und Historie bleiben.
 - Actor-Löschung setzt Actor-FKs auf NULL; Actor-Snapshot, Zeit, Aktion und Grund bleiben.
-- Team-/Saison-IDs sind historische Snapshots ohne FK, damit Archiv-/Löschvorgänge keine Historie zerstören.
+- Team-ID ist ein historischer Snapshot ohne FK; Saison-ID bleibt als FK mit RESTRICT erhalten, damit Archiv-/Löschvorgänge keine Historie zerstören.
 - Trainings- und Spieltagsreferenzen verwenden `ON DELETE RESTRICT`; Quelltermine können nicht versehentlich entfernt werden, solange abhängige Historie existiert.
 - Normale FKs sichern keine teamübergreifende Konsistenz. Jede schreibende RPC muss Team, Spieler, Training, Saison und Spieltag unter Transaktions-/Zeilensperre prüfen. Die aktive Saison wird aus `seasons.is_active` der betreffenden Mannschaft ermittelt; fehlende oder mehrdeutige aktive Saison führt zum Abbruch.
 - Sperrenquelle muss eine Karte desselben Spielers/Teams/Saisonkontexts sein. Ein Ereignis darf höchstens eine Sperre auslösen.
@@ -132,7 +132,7 @@ Append-only Audit für Vormerkung, Anwendung, Stornierung bei Absage/Nominierung
 
 ## 7. Migrationsschnitt
 
-Die Foundation-Migration umfasst ausschließlich neun neue Tabellen, Indizes, Constraints, RLS und minimale Grants. Sie verändert keine bestehenden Tabellen, Funktionen, Trigger oder Policies und schreibt keine Bestandsdaten um.
+Die Foundation-Migration umfasst zehn neue Tabellen (einschließlich Team-Override-Kopf und Kindtabelle), Indizes, Constraints, RLS und minimale Grants. Sie verändert keine bestehenden Tabellen, Funktionen, Trigger oder Policies und schreibt keine Bestandsdaten um.
 
 Separate Folgeetappen:
 1. Ereignis-RPCs mit Anwesenheits-/Saison-/Teamprüfung, atomarer Duplikatverhinderung, Audit und Korrektur/Storno/Wiederherstellung.
