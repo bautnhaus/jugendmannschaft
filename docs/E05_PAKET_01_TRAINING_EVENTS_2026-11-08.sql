@@ -1,6 +1,6 @@
 -- E05 / AP05 – Paket 1: Trainingsereignisse und Ereignis-Audit
 -- Ziel: Supabase DEV (Projekt pzazqvvoruqnqhcorbwx)
--- Status: Freigabekandidat – vor Freigabe nicht ausführen.
+-- Status: 08.11.2026 in Supabase DEV ausgeführt; siehe DEV-Ausführungsprotokoll.
 -- Umfang bewusst klein: nur Ereignisse (gelbe Karte, rote Karte, positiver Stern)
 -- und unveränderliche Ereignisprotokolle. Keine Sperren, RPCs oder UI-Änderungen.
 -- Bestehende Tabellen, Daten, Funktionen und Policies werden nicht verändert.
