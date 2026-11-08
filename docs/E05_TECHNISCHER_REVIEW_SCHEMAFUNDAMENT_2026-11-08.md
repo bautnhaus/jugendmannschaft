@@ -156,3 +156,16 @@ Damit fehlen weiterhin:
 - geprüfter Rückbau auf einer isolierten Testinstanz.
 
 **Aktuelle Entscheidung:** Die Revision 2 ist statisch deutlich verbessert, aber noch **nicht ausführungsfreigabefähig**. Die Nutzerfreigabe wird nicht eingeholt, solange diese Prüfschranke offen ist. Es wurde kein SQL ausgeführt und keine Datenbank geändert.
+
+
+### 8.5 Isolierter PostgreSQL-Testlauf vorbereitet
+
+Um die fehlende Testinstanz ohne Änderung an Supabase DEV/PROD zu ersetzen, wurde eine GitHub-Actions-Teststrecke mit einem kurzlebigen PostgreSQL-17.6-Service ergänzt:
+
+- Workflow: `.github/workflows/e05-schema-draft-test.yml`
+- Fixture: `docs/e05-test/bootstrap.sql`
+- Assertions: `docs/e05-test/assertions.sql`
+- Getestet werden sollen: DDL-Anlage, zehn Tabellen, RLS-Aktivierung, Policyanzahl, minimale Grants, Duplikatverhinderung für Karten/Sterne, eine Karte plus Stern, eindeutige Sperrenquelle, mehrere gleichzeitig offene rote Sperren, leere Team-Overrides, Player-/Auth-Löschung mit Snapshot-Erhalt, Training-/Spieltag-Löschung ohne Historieverlust sowie Team-/Clubkontext-Leserechte.
+
+Der Workflow ist auf Push-Änderungen an SQL-Entwurf/Testdateien in `develop` und manuell per `workflow_dispatch` konfiguriert. Der aktuelle GitHub-Statusabruf hat für die Test-Commits noch keine auslesbaren Statusmeldungen geliefert. **Ein erfolgreicher Lauf wird daher ausdrücklich noch nicht behauptet.** Vor einer Freigabe muss ein grüner Lauf in GitHub Actions tatsächlich verifiziert und sein Run-/Commit-Nachweis in diesem Review dokumentiert werden.
+
