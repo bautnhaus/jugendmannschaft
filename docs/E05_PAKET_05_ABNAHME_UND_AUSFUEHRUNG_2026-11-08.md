@@ -124,3 +124,83 @@ Tests werden nach Freigabe in DEV in zurückrollbaren Transaktionen durchgeführ
 ## 7. Ausführungsstatus
 
 Noch nicht ausgeführt. Nach ausdrücklicher Abnahme/Freigabe wird das Paket in Supabase DEV ausgeführt. Danach folgen Struktur-, Rechte-, Positiv-, Negativ-, Grenz- und Rollbacktests. Korrekturen werden in DEV durchgeführt und zusammen mit den tatsächlichen Testergebnissen auf `develop` dokumentiert. PROD bleibt unangetastet.
+
+
+## 8. Tatsächliche Ausführung und DEV-Ergebnisse
+
+- **Freigabe:** ausdrücklich erteilt am 08.11.2026.
+- **Umgebung:** Supabase DEV, Projekt `pzazqvvoruqnqhcorbwx`.
+- **Branch:** `develop`.
+- **PROD:** nicht verändert.
+- **Ergebnis:** Migration und Korrekturmigration erfolgreich; alle nachfolgenden Funktionstests bestanden.
+
+### Ausgeführte Migrationen
+
+| Migration | Version | Ergebnis |
+|---|---:|---|
+| `e05_package_05_matchday_suspension_exception` | `20261108160747` | Erfolgreich |
+| `e05_package_05_fix_exception_team_snapshot` | `20261108161109` | Erfolgreich |
+
+### Korrektur während des DEV-Tests
+
+Der erste positive Funktionstest hat einen echten Fehler offengelegt: Die RPC verwendete einen Snapshot-Feldnamen `team_name_snapshot`, den die bestehende Tabelle `training_suspensions` nicht besitzt. Der erste Test wurde durch den Fehler vollständig zurückgerollt.
+
+Die RPC wurde korrigiert. Der Teamname wird jetzt aus `teams.name` gelesen; falls kein Teamname gefunden wird, dient die Team-ID als nichtleerer Snapshot-Fallback. Die Korrektur wurde als separate Migration eingespielt und der vollständige Test danach erneut ausgeführt.
+
+### Struktur- und Berechtigungsprüfungen
+
+| Prüfung | Ergebnis |
+|---|---|
+| Tabelle `training_suspension_exceptions` vorhanden | Bestanden |
+| RLS aktiviert | Bestanden |
+| Authenticated darf lesen | Bestanden |
+| Authenticated darf nicht direkt schreiben | Bestanden |
+| Anon darf nicht lesen | Bestanden |
+| RPC ist SECURITY DEFINER | Bestanden |
+| RPC für authenticated ausführbar | Bestanden |
+| RPC für anon nicht ausführbar | Bestanden |
+| Interner Zuordnungs-Helper nicht direkt ausführbar | Bestanden |
+| Audit-Referenz kann genau eine Sperre oder Ausnahme referenzieren | Bestanden |
+| Vorhandene Audit-Aktionen und -Constraints bleiben erhalten | Bestanden |
+
+### Funktionale Positiv- und Negativtests
+
+Alle folgenden Tests liefen mit synthetischen Datensätzen innerhalb einer Transaktion. Die Transaktion wurde anschließend zurückgerollt.
+
+| Test | Ergebnis |
+|---|---|
+| Berechtigter Trainer gewährt Ausnahme für aktuell zugeordneten Spieltag | Bestanden |
+| Ausnahme wird mit Pflichtgrund, Akteur und Snapshot-Daten angelegt | Bestanden |
+| Audit-Eintrag `exception_granted` referenziert die Ausnahme | Bestanden |
+| Offene Sperre bleibt `open` | Bestanden |
+| Sperre wird sofort dem nächsten relevanten Spieltag zugeordnet | Bestanden |
+| Leere Begründung wird abgewiesen | Bestanden |
+| Benutzer ohne Teamrolle wird abgewiesen | Bestanden |
+| Nicht mehr aktuell zugeordneter Spieltag wird abgewiesen | Bestanden |
+| Nominierung/Einsatz in `matchday_players` bleibt unverändert | Bestanden |
+
+### Rollback- und Datenkontrolle
+
+Nach Abschluss der Tests wurden die Testkennungen in den betroffenen Tabellen abgefragt:
+- Test-Spieltage: 0
+- Test-Ereignisse: 0
+- Test-Sperren: 0
+- Test-Ausnahmen: 0
+- Test-Audit-Einträge: 0
+
+Es sind keine synthetischen Testdaten zurückgeblieben.
+
+### Ergebnis
+
+**Paket 5 ist in DEV erfolgreich umgesetzt und die geprüften Kernabläufe sind bestanden.** Die erste Testausführung hat einen Feldnamenfehler sichtbar gemacht; dieser wurde in DEV korrigiert und die Tests anschließend erfolgreich wiederholt.
+
+## 9. Weiterhin nicht Bestandteil von Paket 5
+
+- Widerruf einer gewährten Ausnahme über eine eigene kontrollierte RPC;
+- Frontend-Schaltfläche und Anzeige in Spieler- und Kaderansicht;
+- automatische App-Auslösung bzw. UI-Anbindung;
+- vorzeitiger Sperrausgleich;
+- Saisonabschluss;
+- manuelle Sperrenkorrektur.
+
+Diese Punkte bleiben Folgepakete. Paket 5 bestätigt ausschließlich die Datenbankfunktion zur Gewährung und unmittelbaren Berücksichtigung einer Spieltagsausnahme.
