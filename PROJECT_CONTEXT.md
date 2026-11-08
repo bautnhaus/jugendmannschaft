@@ -34,6 +34,12 @@ STRATO bleibt Registrar; Cloudflare verwaltet die DNS-Zone. Die Rollen nicht ver
 - GitHub-Synchronität nach dem letzten regulären PROD-Deploy: am 06.11.2026 mit `identical` bestätigt.
 - Diese Prüfungen nicht routinemäßig wiederholen. Nur bei einem konkreten Fehler, einer neuen Änderung mit direkter Auswirkung oder einem nachvollziehbaren Widerspruch gezielt erneut prüfen.
 
+### E05 / AP05 – Serverseitige RPC-Verträge (08.11.2026)
+- Nach erfolgreichem isoliertem PostgreSQL-17.6-Workflow #17 auf Commit `b9b33c2` wurde der nächste Umsetzungsschritt ausgeführt: fachliche Zustandsübergänge und serverseitige RPC-Verträge sind spezifiziert.
+- Führendes Dokument: `docs/E05_SERVER_STATE_TRANSITIONS_RPC_CONTRACTS_2026-11-08.md`.
+- Umfasst Ereignisvergabe/-korrektur/-storno/-wiederherstellung, nachgelagerten Sperren-Lifecycle, Ausnahmen, Saisonwechsel, Spielartkonfiguration, vorzeitigen Sperrausgleich, Read-Verträge und Positiv-/Negativ-/Grenz-/Parallelitätstests.
+- **Status:** reine Dokumentation. Keine SQL-Ausführung, keine Supabase-/Datenbankänderung, keine Änderung an `main` oder PROD. Nächster Schritt: gezielte read-only Prüfung der DEV-Rollen-/Tabellenverträge für die Ereignis-RPCs; danach separater SQL-Entwurf mit statischer Syntaxprüfung und isoliertem PostgreSQL-17.6-Test.
+
 ### E05 / AP05 – Kaderplanung, Trainingsereignisse und Kaderempfehlung
 - AP05.2 (fachliche Daten-/Geschäftsregeln) und AP05.3a–d (Userflows/Kaderplanungs-UI) sind abgestimmt; Detailquelle AP05.3: `docs/AP05_3_USERFLOWS_UI_KONZEPT_2026-11-07.md`.
 - UI-Konzept und verbindliche Umsetzungsleitlinie: `docs/E05_UI_KONZEPT_UMSETZUNGSLEITLINIE_2026-11-07.md`. Bestehende Seiten/Komponenten sind 1:1 weiterzuverwenden und gezielt anzupassen; keine Ersatzseiten oder parallelen Listen.
