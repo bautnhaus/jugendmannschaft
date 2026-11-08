@@ -1,6 +1,6 @@
 -- E05 / AP05 – Paket 8: Vorzeitiger Sperrausgleich
 -- Target: Supabase DEV only (pzazqvvoruqnqhcorbwx)
--- Status: REVIEW PACKAGE – NOT APPROVED – DO NOT EXECUTE
+-- Status: EXECUTED IN SUPABASE DEV; POSITIVE AND NEGATIVE TESTS PASSED
 -- PROD is out of scope.
 
 begin;
@@ -413,6 +413,12 @@ $function$;
 create trigger matchdays_reconcile_early_resets
 after update of status on public.matchdays
 for each row execute function public.e05_reconcile_early_resets_on_matchday_status();
+
+-- Trigger entry points are not public RPCs; only PostgreSQL triggers may invoke them.
+revoke all on function public.e05_cancel_early_reset_on_nomination()
+from public,anon,authenticated,service_role;
+revoke all on function public.e05_reconcile_early_resets_on_matchday_status()
+from public,anon,authenticated,service_role;
 
 -- 7) Extend yellow-card accounting: an applied early reset starts a new
 -- active yellow-card account. This is the current DEV award RPC with only
