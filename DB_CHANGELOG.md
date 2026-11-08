@@ -568,7 +568,8 @@ Die vollständigen Ausführungsdetails, Freigaben, SQL-Backup-Prüfsummen, Verif
 - **Reviewbericht:** `docs/E05_TECHNISCHER_REVIEW_SCHEMAFUNDAMENT_2026-11-08.md`
 - **Sicherheitskonzept:** RLS auf allen neuen Tabellen, minimale SELECT-Grants, keine direkten Client-Schreibrechte. Schreibpfade nur über getrennte, auditierte RPCs.
 - **Datenwirkung:** keine. Es wurden keine E05-Tabellen, Funktionen, Trigger, Policies, Grants oder Daten angelegt/geändert.
-- **Technischer Stand:** Die erste Prüfung identifizierte Fehler bei Spieler-/Actor-Snapshots, Team-Override, Sperrenursprung, Statusfluss und Team-/Saison-/Termin-Konsistenz. Modell und SQL-Entwurf wurden daraufhin überarbeitet; die Revision benötigt noch statische Vollprüfung und isolierten PostgreSQL-Test.
+- **Testautomatisierung:** `.github/workflows/e05-schema-draft-test.yml` mit Fixture/Assertions unter `docs/e05-test/`; Ergebnis noch ausstehend.
+- **Technischer Stand:** Die erste Prüfung identifizierte Fehler bei Spieler-/Actor-Snapshots, Team-Override, Sperrenursprung, Statusfluss und Team-/Saison-/Termin-Konsistenz. Modell und SQL-Entwurf wurden daraufhin überarbeitet. Statische Strukturprüfungen sind dokumentiert; ein isolierter PostgreSQL-17.6-GitHub-Actions-Test ist vorbereitet, sein erfolgreicher Lauf aber noch nicht verifiziert.
 - **PROD:** nicht übertragen; keine Freigabe.
 - **Ausführungsjournal:** erst nach einem tatsächlichen Ausführungsversuch in `DB_MIGRATION_LOG.md` erfassen. Dieser Planungsdatensatz ist kein Ausführungsnachweis.
 
