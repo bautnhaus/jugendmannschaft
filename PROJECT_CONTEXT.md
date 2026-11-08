@@ -38,6 +38,8 @@ STRATO bleibt Registrar; Cloudflare verwaltet die DNS-Zone. Die Rollen nicht ver
 - AP05.2 (fachliche Daten-/Geschäftsregeln) und AP05.3a–d (Userflows/Kaderplanungs-UI) sind abgestimmt; maßgebliche Detailquelle für AP05.3: `docs/AP05_3_USERFLOWS_UI_KONZEPT_2026-11-07.md`.
 - Ergänzende UI-Konsolidierung und technische Umsetzungsleitlinie: `docs/E05_UI_KONZEPT_UMSETZUNGSLEITLINIE_2026-11-07.md`.
 - Verbindliches Protokoll für sämtliche schreibenden E05-SQL-Anfragen: `docs/E05_SQL_AENDERUNGSPROTOKOLL.md`. Jeder SQL-Schreibvorgang ist vorab vollständig zu dokumentieren und benötigt ausdrückliche Nutzerfreigabe; nach Ausführung werden Ergebnis und Prüfungen ergänzt.
+- Technisches E05-Zielmodell: `docs/E05_TECHNISCHES_ZIELMODELL_2026-11-08.md`.
+- E05-Foundation-Migration zur Prüfung/Freigabe (nicht ausgeführt): `supabase/migrations/20261108061900_e05_training_events_suspensions_foundation.sql`. Der Vorschlag ist im E05-SQL-Protokoll als nicht freigegeben/nicht ausgeführt vermerkt. `DB_MIGRATION_LOG.md` bleibt ein tatsächliches Ausführungsjournal und erhält erst nach einem Ausführungsversuch einen DEV-Datensatz.
 - Die vertiefte read-only DEV-Prüfung der Trainings-/Spieltagstabellen, Constraints, RLS-Policies, Grants und Trigger ist im Umsetzungsleitdokument festgehalten. Keine Datenbankänderung vorgenommen.
 - Technisches Zieldatenmodell (Entwurf, 08.11.2026): `docs/E05_TECHNISCHES_ZIELDATENMODELL_2026-11-08.md`.
 - Erste Strukturmigration (Entwurf, nicht freigegeben/nicht ausgeführt): `supabase/migrations/20261108000100_e05_training_events_suspensions_foundation.sql`. Sie legt ausschließlich das Schemafundament mit RLS und minimalen Lese-Grants an; Lebenszyklus-RPCs, Audit-Trigger und Empfehlungseinbindung sind ausdrücklich nicht enthalten.
