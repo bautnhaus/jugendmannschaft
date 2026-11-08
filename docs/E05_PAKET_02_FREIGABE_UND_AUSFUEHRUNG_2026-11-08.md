@@ -85,3 +85,27 @@ Noch nicht praktisch getestet wurden alle weiteren Negativfälle (falsches Team,
 ### Ergebnis
 
 **Paket 2 ist in DEV ausgeführt. Funktionssignatur, SECURITY-DEFINER-Eigenschaft, EXECUTE-Rechte, Positivpfad, atomarer Audit-Eintrag und Ablehnung eines fehlenden Kartengrunds wurden geprüft.** Keine Änderungen an PROD.
+
+
+## Ergänzende DEV-Negativtests (nachträglich)
+
+- **Ausgeführt:** 08.11.2026
+- **Methode:** Testtransaktion mit anschließendem ROLLBACK; keine Testdaten dauerhaft gespeichert.
+- **Ergebnisse:**
+
+| Negativ-/Grenzfall | Ergebnis |
+|---|---|
+| Aufruf ohne Teamrolle | Abgewiesen (42501) |
+| Spieler nicht im Trainingsteam / unbekannte Spieler-ID | Abgewiesen (P0002) |
+| Spieler nicht anwesend | Abgewiesen (23514) |
+| Inaktiver Spieler | Abgewiesen (23514) |
+| Abgesagtes Training | Abgewiesen (23514) |
+| Training ohne eindeutig aktive Saison | Abgewiesen (23514) |
+| Gelbe Karte ohne Begründung | Abgewiesen (22023; bereits im ersten Paket-2-Test) |
+| Zweite aktive Karte im selben Training | Abgewiesen (Unique-Verletzung) |
+| Zweiter aktiver Stern im selben Training | Abgewiesen (Unique-Verletzung) |
+| Karte und Stern im selben Training | Zulässig |
+
+Nachkontrolle: 0 verbliebene Paket-2-Testereignisse und 0 zugehörige Audit-Einträge. Spielerstatus und Saisonstatus waren unverändert aktiv.
+
+**Hinweis:** Der Fall „Akteur besitzt ausschließlich eine Rolle in einem anderen Team“ wurde nicht separat mit einem zweiten Teammitglied-Datensatz getestet; die serverseitige Prüfung verlangt explizit eine Rolle für die konkrete `team_id`.
