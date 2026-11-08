@@ -99,3 +99,70 @@ Tests werden in DEV mit zurückrollbaren Transaktionen ausgeführt. Testdaten d�
 ## 8. Ausführungsstatus
 
 Noch nicht ausgeführt. Nach ausdrücklicher Nutzerfreigabe wird das SQL-Paket in Supabase DEV ausgeführt. Anschließend werden Struktur-, Berechtigungs-, Positiv-, Negativ-, Grenz- und Rollbacktests durchgeführt und die tatsächlichen Ergebnisse hier dokumentiert.
+
+
+## 9. Tatsächliche Ausführung und DEV-Prüfergebnisse
+
+- **Freigabe:** ausdrücklich erteilt am 08.11.2026.
+- **Ausführung:** erfolgreich in Supabase DEV.
+- **Projekt:** `pzazqvvoruqnqhcorbwx`
+- **Migration:** `e05_package_04_suspension_matchday_lifecycle`
+- **Migrationsversion:** `20261108133922`
+- **GitHub-Branch:** `develop`
+- **PROD:** nicht verändert.
+
+### Vor Ausführung erkannter und korrigierter Fehler
+
+Bei der abschließenden Schema-/Codeprüfung wurde in der Funktion `serve_matchday_suspensions` die lokale Variable `v_match_status` in der SELECT-Anweisung verwendet, aber nicht deklariert. Die Deklaration wurde vor der Migration ergänzt und die korrigierte SQL-Datei auf `develop` aktualisiert. Erst danach wurde das Paket ausgeführt.
+
+### Struktur- und Rechteprüfungen
+
+| Prüfung | Ergebnis |
+|---|---|
+| Drei Konfigurationstabellen vorhanden | Bestanden |
+| RLS auf allen drei Tabellen aktiv | Bestanden |
+| Jeweils eine SELECT-Policy vorhanden | Bestanden |
+| authenticated: SELECT erlaubt | Bestanden |
+| authenticated: direkte INSERT-/DELETE-Rechte nicht vorhanden | Bestanden |
+| RPCs SECURITY DEFINER | Bestanden |
+| Öffentliche RPCs für authenticated ausführbar | Bestanden |
+| Öffentliche RPCs für anon nicht ausführbar | Bestanden |
+| Interne Helper-RPC nicht für authenticated/anon ausführbar | Bestanden |
+| Migration in Supabase-Migrationshistorie registriert | Bestanden |
+
+### Funktionale Positiv- und Negativtests
+
+Alle Funktionstests wurden in einer Transaktion mit synthetischen Trainingsereignissen, Sperren und Spieltagen ausgeführt. Abschließendes `ROLLBACK`; die Testdaten blieben nicht bestehen.
+
+| Test | Ergebnis |
+|---|---|
+| Team-Override über Konfigurations-RPC setzen | Bestanden |
+| Gelbe Sperre vor roter Sperre zuordnen | Bestanden |
+| Je Spieler nur eine Sperre pro Spieltag | Bestanden |
+| Geplanter Spieltag kann keine Sperre bedienen | Bestanden, SQLSTATE 23514 |
+| Tatsächlich abgeschlossener relevanter Spieltag bedient zugeordnete gelbe Sperre | Bestanden; genau eine Sperre bedient |
+| Verbleibende rote Sperre wird dem nächsten relevanten Spieltag zugeordnet | Bestanden |
+| Rote Sperre wird nicht vor tatsächlichem Abschluss bedient | Bestanden, SQLSTATE 23514 |
+| Spielart außerhalb des Team-Overrides wird abgewiesen | Bestanden, SQLSTATE 23514 |
+| Benutzer ohne Teamrolle wird abgewiesen | Bestanden, SQLSTATE 42501 |
+
+### Rückstands- und Datenkontrolle
+
+Nach den Tests wurden die Testkennungen abgefragt:
+- Test-Spieltage: 0
+- Test-Ereignisse: 0
+- Test-Sperren: 0
+
+Es wurden keine produktiven bzw. bestehenden Spieltags-, Ereignis- oder Sperrendaten verändert.
+
+### Ergebnis
+
+**Paket 4 ist in DEV erfolgreich umgesetzt.** Die geprüften Kernabläufe – Teamkonfiguration, gelb-vor-rot-Zuordnung, tatsächliche Ableistung, Weiterschieben der nächsten Sperre sowie relevante Berechtigungs- und Spielartprüfungen – haben bestanden.
+
+### Noch nicht durch Paket 4 abgedeckt
+
+- automatische Auslösung der Ableistungs-RPC durch den App-Workflow beim Wechsel eines Spieltags auf `done`;
+- Club-Standardkonfiguration über die Club-Admin-Oberfläche und deren Ende-zu-Ende-Test;
+- Saisonabschluss, Ausnahmen, vorzeitiger Sperrausgleich und manuelle Korrekturen.
+
+Diese Punkte bleiben Folgearbeiten und werden nicht als durch Paket 4 erledigt ausgewiesen.
