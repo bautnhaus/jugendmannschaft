@@ -699,3 +699,39 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Rollback/Wiederherstellung:** Kein automatischer Rollback. Ein Rückbau erfordert eine neue, geprüfte Rücknahmemigration, die die vorherigen vier PROD-Funktionsdefinitionen wiederherstellt und die beiden Trigger sowie den Index und die Triggerfunktion nach Abhängigkeitsprüfung entfernt. Bestehende Admin-Schutz- und Auditmechanismen müssen erhalten bleiben.
 - **Gegenstück in DEV:** DEV-Migration `20261104143331` / `db_dev_009_single_team_membership_guard` vorhanden. PROD-Fassung enthält notwendige PROD-Legacy-Synchronisierung und wurde nicht blind aus DEV wiederholt.
 - **Zusätzliche Hinweise / Nachweisgrenzen:** Die Migration ersetzt vier Funktionsdefinitionen und ergänzt Trigger/Index; sie ändert keine RLS-Policies. Die tatsächliche Einladung über die Edge Functions sowie positive Rollen- und UI-Tests sind noch offen. Die Einladungsstrecke bleibt bis zum Edge-Function-Deployment und den Praxistests deaktiviert.
+
+
+## DB-MIG-2026-007 – E05 Paket 9: Manuelle Sperren- und Kartenkorrektur (DEV)
+
+- **Migrations-ID:** DB-MIG-2026-007 (E05 Paket 9)
+- **Ausführungsdatensatz:** DEV
+- **Umgebung:** Supabase DEV – Projekt `pzazqvvoruqnqhcorbwx`
+- **Datum:** 08.11.2026
+- **Supabase-Migrationsversionen / Namen:**
+  - `20261108212745` – `e05_package_09_manual_suspension_and_card_correction_v6`
+  - `20261108213035` – `e05_package_09_fix_card_correction_player_lock`
+  - `20261108213211` – `e05_package_09_fix_card_correction_authenticated_grant`
+- **Ausführungsweg:** Verbundenes Supabase-Migrationswerkzeug (`apply_migration`), nach ausdrücklicher Nutzerfreigabe für Paket 9 in DEV.
+- **Anlass/Zweck:** Manuelle Korrektur offener Sperren, Stornierung/Wiederherstellung gelber und roter Kartenereignisse, Erhalt gültiger manueller Zielzuordnungen und revisionssichere Audit-Snapshots.
+- **Betroffene Objekte:** Spalten `training_behavior_event_audit.changed_by_snapshot`, `training_suspension_audit.changed_by_snapshot`, `training_suspensions.manual_target_locked`; Funktionen `e05_assert_suspension_correction_permission`, `e05_reconcile_suspensions_after_event_correction`, erweiterte `e05_assign_player_suspensions`, RPCs `correct_suspension` und `correct_training_behavior_event`; EXECUTE-Grants.
+- **Freigabe:** Ausdrückliche Nutzerfreigabe am 08.11.2026 zur Umsetzung und Dokumentation ausschließlich in DEV.
+- **Ausführender:** ChatGPT über das verbundene Supabase-Migrationswerkzeug, auf ausdrückliche Nutzerfreigabe.
+- **Status:** Erfolgreich ausgeführt; DEV-Funktionstests und abschließende Read-only-Verifikation bestanden.
+- **Tatsächlich ausgeführtes SQL / versionierte Dateien:**
+  - `docs/E05_PAKET_09_MANUELLE_SPERREN_UND_KARTENKORREKTUR_2026-11-08.sql`
+  - `docs/E05_PAKET_09_FIX_KARTENKORREKTUR_SPIELERLOCK_2026-11-08.sql`
+  - `docs/E05_PAKET_09_FIX_KARTENKORREKTUR_EXECUTE_GRANT_2026-11-08.sql`
+- **Ergebnis:** Alle drei Migrationen sind in `supabase_migrations.schema_migrations` registriert. Ein erster Ausführungsversuch der v6-Übermittlung schlug mit SQL-Syntaxfehler fehl, wurde nicht registriert und hinterließ keine Paket-9-Änderungen. Die vollständige erneute Übermittlung war erfolgreich. Während der DEV-Funktionstests wurden zwei Korrekturen erforderlich (Spielerzeilensperre: SELECT → PERFORM; Wiederherstellung des EXECUTE-Grants für authenticated). Beide Korrekturen wurden als eigene Migrationen erfolgreich eingespielt.
+- **Verifikation (read-only):**
+  1. Alle drei Migrationsversionen vorhanden.
+  2. Die drei neuen Spalten sind vorhanden; `manual_target_locked` ist NOT NULL mit Default false.
+  3. Beide Paket-9-RPCs sind SECURITY DEFINER mit festem `search_path = pg_catalog, public, auth`.
+  4. EXECUTE: beide RPCs `authenticated = true`, `anon = false`, `service_role = false`, `PUBLIC = false`; interne Helfer sind für API-Rollen nicht ausführbar.
+  5. RLS bleibt auf `training_behavior_events`, `training_behavior_event_audit`, `training_suspensions` und `training_suspension_audit` aktiviert.
+  6. Bestehende append-only Audit-Trigger (UPDATE/DELETE/TRUNCATE-Schutz) sind weiterhin vorhanden.
+  7. Korrigierte Spielerzeilensperre mittels `PERFORM p.id ... FOR UPDATE OF p` ist in der gespeicherten Funktionsdefinition vorhanden.
+  8. Funktionstests: gelbe Karte stornieren/wiederherstellen und Sperrenstatus neu berechnen; rote Karte stornieren/wiederherstellen/erneut stornieren; manuelle Sperrenzuordnung; Schutz gültiger manueller Zuordnung bei automatischer Neuberechnung; Freigabe und Neuzuordnung nach Absage des Zielspieltags; unzulässiger Spieltyp; fremder Teamkontext; fehlende Authentifizierung; Schutz bereits abgeleisteter Sperren; Audit-Snapshots. Alle aufgeführten Tests bestanden.
+  9. Alle Testfälle wurden in Transaktionen mit synthetischen Daten ausgeführt und zurückgerollt. Nachkontrolle: keine Test-Trainings, Test-Kartenereignisse, Test-Spieltagseinträge, Test-Sperren oder Test-Vereinseinstellungen verblieben.
+- **Rollback/Wiederherstellung:** Paket-9-Schemaänderungen wurden nicht zurückgerollt. Sie sind Bestandteil des DEV-Entwicklungsstands. Die synthetischen Testdaten wurden zurückgerollt. Für ein Schema-Rollback wäre eine gesonderte, abhängigkeitssichere Rücknahmemigration erforderlich.
+- **Gegenstück in PROD:** Nicht ausgeführt, nicht freigegeben. PROD bleibt unverändert.
+- **Zusätzliche Hinweise / Nachweisgrenzen:** Keine vollständigen parallelen Last-/Race-Condition-Tests und kein Frontend-End-to-End-Test Bestandteil dieser Abnahme. Die ausführliche Testdokumentation liegt in `docs/E05_PAKET_09_ABNAHME_UND_AUSFUEHRUNG_2026-11-08.md`. Die DEV-first-Teststrategie ist in `docs/E05_TESTSTRATEGIE_UND_DEV_VORGEHEN_2026-11-08.md` festgehalten.
