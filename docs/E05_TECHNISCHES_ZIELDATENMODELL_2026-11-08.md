@@ -90,7 +90,7 @@ Vormerkung des optionalen vorzeitigen Sperrausgleichs:
 - Status `pending`, `applied`, `cancelled`,
 - Pflichtgrund, vormerkender Trainer, Zeitpunkt und Auflösungsdaten.
 
-Eine Vormerkung ist unabhängig von der Zahl gelber Karten. Sie darf nicht gleichzeitig mit einer Nominierung desselben Spielers für denselben Spieltag bestehen. Diese Konkurrenz wird in einer RPC atomar geprüft und abgesichert. Nur der tatsächlich durchgeführte konkrete Spieltag führt zur Anwendung; Absage oder spätere Nominierung storniert die Vormerkung. Historische Ereignisse bleiben unverändert; rote und bereits ausgelöste Sperren bleiben unberührt.
+Eine Vormerkung ist unabhängig von der Zahl gelber Karten. Sie darf nicht gleichzeitig mit einer Nominierung desselben Spielers für denselben Spieltag bestehen. Diese Konkurrenz wird in einer RPC atomar geprüft und abgesichert. Nur der tatsächlich durchgeführte konkrete Spieltag führt zur Anwendung; Absage oder spätere Nominierung storniert die Vormerkung. Für die Zählung beginnt das aktive gelbe Konto ab `applied_at` neu. Historische Ereignisse bleiben unverändert; rote und bereits ausgelöste Sperren bleiben unberührt.
 
 ### 3.8 `matchday_early_suspension_reset_audit`
 
@@ -111,7 +111,7 @@ Append-only Audit für Vormerkung, Anwendung, Stornierung bei Absage/Nominierung
 ## 5. Lebenszyklusregeln aus AP05.2
 
 - Fünf aktive gelbe Karten lösen eine gelbe Sperre aus; vier aktive gelbe Karten sind Warnung.
-- Nach Ableistung der gelben Sperre wird das aktive gelbe Kartenkonto auf null gesetzt; historische Karten bleiben. Weitere gelbe Karten während einer offenen gelben Sperre werden nicht in ein neues Konto übernommen.
+- Nach Ableistung der gelben Sperre wird das aktive gelbe Kartenkonto auf null gesetzt; historische Karten bleiben. Technisch wird der Kontobeginn aus dem Zeitpunkt der letzten bedienten gelben Sperre abgeleitet. Weitere gelbe Karten während einer offenen gelben Sperre liegen vor diesem neuen Kontobeginn und werden deshalb nicht in das nächste Konto übernommen.
 - Rote Karte erzeugt sofort eine rote Sperre und verändert das gelbe Konto nicht.
 - Nur tatsächlich durchgeführte, konfigurierte relevante Spieltage bedienen Sperren. Absagen zählen nicht; verschobene Termine erst nach Durchführung.
 - Mehrere Sperren werden nacheinander bedient, gelb vor rot, je eine pro relevantem Spieltag.
