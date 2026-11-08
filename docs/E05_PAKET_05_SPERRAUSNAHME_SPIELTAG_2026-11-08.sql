@@ -1,6 +1,6 @@
 -- E05 / AP05 – Paket 5: Einzelfall-Ausnahme für einen konkreten Spieltag
 -- Ziel: Supabase DEV only (pzazqvvoruqnqhcorbwx)
--- Status: FREIGABEKANDIDAT – NICHT AUSFÜHREN VOR AUSDRÜCKLICHER FREIGABE
+-- Status: AM 08.11.2026 IN SUPABASE DEV AUSGEFÜHRT; KORREKTURMIGRATION UND FUNKTIONSTESTS ERFOLGREICH
 -- Abhängigkeit: Pakete 1–4, insbesondere training_suspensions,
 -- training_suspension_audit und e05_assign_player_suspensions().
 -- Keine PROD-Änderungen.
