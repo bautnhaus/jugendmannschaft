@@ -15,6 +15,7 @@ begin;
 create table public.training_behavior_events (
   id uuid primary key default gen_random_uuid(),
   team_id uuid not null,
+  team_name_snapshot text not null,
   season_id uuid not null,
   season_name_snapshot text not null,
   training_id uuid not null,
@@ -81,6 +82,7 @@ create index training_behavior_event_audit_event_idx
 create table public.training_suspensions (
   id uuid primary key default gen_random_uuid(),
   team_id uuid not null,
+  team_name_snapshot text not null,
   season_id uuid not null,
   season_name_snapshot text not null,
   player_id uuid references public.players(id) on delete set null,
@@ -128,6 +130,7 @@ create table public.training_suspension_exceptions (
   id uuid primary key default gen_random_uuid(),
   suspension_id uuid not null references public.training_suspensions(id) on delete restrict,
   team_id uuid not null,
+  team_name_snapshot text not null,
   player_id uuid references public.players(id) on delete set null,
   player_name_snapshot text not null,
   matchday_id uuid not null,
