@@ -356,7 +356,7 @@ where club_id='10000000-0000-0000-0000-000000000001' \gset
 \endif
 reset role;
 
-\echo '-- Audit rows reject UPDATE/DELETE.
+\echo '-- Audit rows reject UPDATE/DELETE.'
 insert into public.training_behavior_event_audit(event_id,action,new_values)
 values ('50000000-0000-0000-0000-000000000002','created','{"test":true}');
 insert into public.training_suspension_audit(suspension_id,action,new_values)
@@ -376,4 +376,4 @@ begin
   exception when sqlstate '55000' then null; end;
 end $$;
 
-PASS: E05 schema foundation PostgreSQL 17 test suite completed'
+\echo 'PASS: E05 schema foundation PostgreSQL 17 test suite completed'
