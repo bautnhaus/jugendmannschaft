@@ -109,3 +109,26 @@ Noch nicht praktisch getestet wurden alle weiteren Negativfälle (falsches Team,
 Nachkontrolle: 0 verbliebene Paket-2-Testereignisse und 0 zugehörige Audit-Einträge. Spielerstatus und Saisonstatus waren unverändert aktiv.
 
 **Hinweis:** Der Fall „Akteur besitzt ausschließlich eine Rolle in einem anderen Team“ wurde nicht separat mit einem zweiten Teammitglied-Datensatz getestet; die serverseitige Prüfung verlangt explizit eine Rolle für die konkrete `team_id`.
+
+
+## Ergänzende Negativtests in DEV
+
+- **Nachgetestet am:** 08.11.2026
+- **Umgebung:** Supabase DEV
+- **Verfahren:** Alle Schreibtests in einer Transaktion; abschließendes ROLLBACK. Testdaten wurden nicht dauerhaft gespeichert.
+
+| Testfall | Erwartetes Verhalten | Ergebnis |
+|---|---|---|
+| Nicht authentifizierter Aufruf | Ablehnung, SQLSTATE 42501 | Bestanden |
+| Benutzer ohne Rolle im Zielteam | Ablehnung, SQLSTATE 42501 | Bestanden |
+| Spieler ohne bestätigte Anwesenheit | Ablehnung, SQLSTATE 23514 | Bestanden |
+| Abgesagtes Training | Ablehnung, SQLSTATE 23514 | Bestanden |
+| Gelbe Karte ohne Grund | Ablehnung, SQLSTATE 22023 | Bestanden |
+| Ungültiger Ereignistyp | Ablehnung, SQLSTATE 22023 | Bestanden |
+| Zweite aktive Karte im selben Training | Unique-Index lehnt ab | Bestanden |
+| Zweiter aktiver Stern im selben Training | Unique-Index lehnt ab | Bestanden |
+| Karte und Stern im selben Training | Beide dürfen nebeneinander bestehen | Bestanden |
+
+**Nicht separat testbar mit den vorhandenen DEV-Testdaten:** Es gab keinen inaktiven Spieler im betreffenden Team und keinen zweiten bzw. fehlenden aktiven Saison-Datensatz, mit dem die entsprechenden Zweige ohne Änderung der bestehenden Stammdaten hätten ausgelöst werden können. Diese Fälle bleiben als offene Testfälle dokumentiert.
+
+**Ergebnis Paket 2:** Alle mit vorhandenen Testdaten ausführbaren Negativ- und Grenztests bestanden. Sämtliche Schreibtests wurden zurückgerollt; keine Testereignisse verblieben in DEV.
