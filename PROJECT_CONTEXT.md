@@ -34,6 +34,13 @@ STRATO bleibt Registrar; Cloudflare verwaltet die DNS-Zone. Die Rollen nicht ver
 - GitHub-Synchronität nach dem letzten regulären PROD-Deploy: am 06.11.2026 mit `identical` bestätigt.
 - Diese Prüfungen nicht routinemäßig wiederholen. Nur bei einem konkreten Fehler, einer neuen Änderung mit direkter Auswirkung oder einem nachvollziehbaren Widerspruch gezielt erneut prüfen.
 
+### E05 / AP05 – Read-only DEV-Abgleich Ereignis-RPCs (08.11.2026)
+- Supabase DEV `pzazqvvoruqnqhcorbwx` wurde read-only gegen Rollen-/Kontexthelfer, Trainings-, Spieler-, Anwesenheits-, Saison- und Profilstrukturen abgeglichen.
+- Ergebnis und konkrete Implementierungsbedingungen sind in `docs/E05_SERVER_STATE_TRANSITIONS_RPC_CONTRACTS_2026-11-08.md`, Abschnitt 10, dokumentiert.
+- Kritische Befunde: `is_team_member()` allein ist keine explizite Trainerrollenprüfung; Rollen liegen in `team_member_roles` (`trainer`/`admin`). Für aktive Saisons existiert kein DB-Unique-Constraint je Team; RPC muss Kardinalität explizit prüfen. `attendance.present=true` ist Anwesenheitsquelle. Profilquelle ist `profiles.display_name`.
+- **Status:** nur read-only Abfragen und Dokumentationsänderung; keine SQL-Schreibanfrage, keine Migration, keine Datenbankänderung, kein PROD-Eingriff.
+- Nächster Schritt: Ereignis-RPC-SQL-Entwurf erstellen, der Rollen-/Saison-/Anwesenheitsprüfungen, atomare Audits und Sperrenauslösung abdeckt; anschließend Syntax-/statische Prüfung und isolierter PostgreSQL-17.6-Test.
+
 ### E05 / AP05 – Serverseitige RPC-Verträge (08.11.2026)
 - Nach erfolgreichem isoliertem PostgreSQL-17.6-Workflow #17 auf Commit `b9b33c2` wurde der nächste Umsetzungsschritt ausgeführt: fachliche Zustandsübergänge und serverseitige RPC-Verträge sind spezifiziert.
 - Führendes Dokument: `docs/E05_SERVER_STATE_TRANSITIONS_RPC_CONTRACTS_2026-11-08.md`.
