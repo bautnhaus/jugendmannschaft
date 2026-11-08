@@ -195,6 +195,12 @@ begin
     raise exception using errcode='23514',message='Only an open suspension can have its exception revoked';
   end if;
 
+  if v_suspension.team_id<>v_exception.team_id
+     or v_suspension.player_id is distinct from v_exception.player_id then
+    raise exception using errcode='23514',
+      message='Exception and suspension ownership do not match';
+  end if;
+
   if not exists (
     select 1 from public.team_member_roles r
     where r.team_id=v_exception.team_id
