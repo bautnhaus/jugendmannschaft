@@ -109,8 +109,20 @@ Der Reset wird erst wirksam, wenn genau dieser Spieltag tatsächlich durchgefüh
 
 Alle Tests werden in DEV mit synthetischen Daten und zurückrollbaren Transaktionen durchgeführt. Testresultate werden nach Ausführung in diesem Dokument ergänzt.
 
-## 7. Technischer Hinweis vor Freigabe
+## 7. Technischer DEV-Abgleich
 
-Der vorhandene DEV-Stand enthält bereits award_training_behavior_event und den Sperren-Lifecycle, aber die Tabellen für den vorzeitigen Sperrausgleich existieren noch nicht. Die Migration ergänzt die Tabellen und Zustandsübergänge. Die Anpassung der Gelbkarten-Zählung in award_training_behavior_event muss im finalen SQL als vollständige CREATE OR REPLACE-Funktion enthalten sein. Der aktuelle Entwurf markiert diese Stelle ausdrücklich; vor Ausführung wird sie mit der vollständigen DEV-Funktionsdefinition vervollständigt und syntaktisch geprüft.
+Der read-only Abgleich hat bestätigt:
+- Die Tabellen matchday_early_suspension_resets und matchday_early_suspension_reset_audit existieren in DEV noch nicht.
+- award_training_behavior_event existiert bereits und erzeugt rote bzw. fünfte gelbe Sperren atomar.
+- Die Gelbkarten-Zählung verwendet aktuell den letzten served_at-Zeitpunkt einer gelben Sperre als Untergrenze.
+- matchday_players wird über INSERT/UPDATE beschrieben; matchdays verwendet die Statuswerte planned, done und cancelled.
+- Die Migration ergänzt deshalb die beiden fehlenden Tabellen, Audit/RLS/ACL, die Vormerkungs- und Storno-RPCs, automatische Trigger für Nominierung/Absage/Durchführung und ersetzt award_training_behavior_event vollständig auf Basis der aktuellen DEV-Fassung. Die einzige fachliche Erweiterung dieser RPC ist die zusätzliche Berücksichtigung des letzten applied_at eines Sperrausgleichs bei der Gelbkarten-Zählung.
 
-**Dieses Paket ist noch nicht zur Ausführung freigegeben.**
+## 8. Ausführungsgrenzen
+
+- Das SQL enthält die vollständige CREATE OR REPLACE-Fassung der bestehenden award_training_behavior_event-RPC; bestehende Validierungen, Berechtigungsprüfungen, Ereignis-Audits sowie die atomare Erzeugung gelber/roter Sperren bleiben erhalten.
+- Ein bereits ausgelöster offener gelber oder roter Sperrfall wird durch den Sperrausgleich nicht aufgehoben.
+- Die Trigger wenden nur pending-Resets an. Ein zweiter Statuswechsel kann denselben Reset nicht erneut anwenden.
+- Tests und synthetische Testdaten werden ausschließlich nach Freigabe in DEV ausgeführt. PROD bleibt unverändert.
+
+**Dieses Paket ist vollständig zur fachlichen und technischen Freigabe vorbereitet, wurde aber noch nicht in Supabase ausgeführt.**
