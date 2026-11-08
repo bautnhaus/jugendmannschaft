@@ -113,3 +113,61 @@ Tests werden nach Freigabe in DEV mit synthetischen Daten in zurückrollbaren Tr
 ## 7. Ausführungsstatus
 
 Noch nicht ausgeführt. Nach ausdrücklicher Abnahme wird das Paket in Supabase DEV ausgeführt. Danach folgen Struktur-, Rechte-, Positiv-, Negativ-, Grenz-, Parallelitäts- und Rollbacktests. Fehler werden in DEV korrigiert und zusammen mit den tatsächlichen Ergebnissen auf GitHub `develop` dokumentiert. PROD bleibt unangetastet.
+
+
+## 8. Tatsächliche Ausführung und DEV-Ergebnisse
+
+- **Freigabe:** ausdrücklich erteilt am 08.11.2026.
+- **Zielumgebung:** Supabase DEV, Projekt `pzazqvvoruqnqhcorbwx`.
+- **Migration:** `e05_package_06_revoke_suspension_exception`.
+- **Migration-Version:** `20261108174313`.
+- **Ergebnis:** erfolgreich ausgeführt.
+- **PROD:** nicht verändert.
+
+### Struktur- und Berechtigungsprüfungen
+
+| Prüfung | Ergebnis |
+|---|---|
+| Migration in Supabase-Migrationshistorie vorhanden | Bestanden |
+| `revoke_suspension_exception(uuid,text)` vorhanden | Bestanden |
+| `grant_suspension_exception(uuid,uuid,text)` weiterhin vorhanden | Bestanden |
+| Beide Funktionen SECURITY DEFINER | Bestanden |
+| Beide Funktionen für authenticated ausführbar | Bestanden |
+| Beide Funktionen für anon nicht ausführbar | Bestanden |
+| Bestehende Tabellenstruktur bleibt nutzbar; keine neue Tabelle erforderlich | Bestanden |
+
+### Funktionale Tests
+
+Die Tests wurden mit synthetischen Datensätzen innerhalb einer Transaktion ausgeführt und anschließend vollständig zurückgerollt.
+
+| Test | Ergebnis |
+|---|---|
+| Paket-5-Gewährung: Ausnahme verschiebt Sperre vom Ausnahme-Spieltag weg | Bestanden |
+| Widerruf durch berechtigten Mannschaftsadmin | Bestanden |
+| Widerrufsmetadaten werden gespeichert | Bestanden |
+| Audit-Eintrag `exception_revoked` mit Begründung wird angelegt | Bestanden |
+| Sperre bleibt `open` | Bestanden |
+| Ursprünglicher, weiterhin geplanter Spieltag wird wieder zugeordnet | Bestanden |
+| Leere Widerrufsbegründung wird abgewiesen | Bestanden |
+| Benutzer ohne Teamrolle wird abgewiesen | Bestanden |
+| Zweiter Widerruf derselben Ausnahme wird abgewiesen | Bestanden |
+| Keine Änderung an `matchday_players`, Nominierung oder Einsatz | Bestanden |
+
+### Testablauf und Rollback
+
+Ein erster Testlauf hatte einen Fehler in der Reihenfolge der Negativtest-Aufrufe: Der nicht berechtigte Benutzer wurde erst nach dem erfolgreichen Widerruf aufgerufen. Die RPC wies erwartungsgemäß bereits den widerrufenen Zustand zurück, bevor die Rollenprüfung erreicht wurde. Das war ein Fehler im Testablauf, kein Fehler der Migration. Die Transaktion wurde zurückgerollt und der Test in korrekter Reihenfolge wiederholt.
+
+Der vollständige Wiederholungslauf lieferte für alle sechs Testfälle `passed = true`.
+
+Nach dem Rollback wurden die Testkennungen geprüft:
+- Test-Spieltage: 0
+- Test-Ereignisse: 0
+- Test-Sperren: 0
+- Test-Ausnahmen: 0
+- Test-Audit-Einträge: 0
+
+Es sind keine synthetischen Testdaten zurückgeblieben.
+
+### Ergebnis
+
+**Paket 6 ist in Supabase DEV erfolgreich umgesetzt.** Die kontrollierte Widerrufs-RPC und die Berechtigungshärtung der Paket-5-Gewährungs-RPC sind aktiv. Die geprüften Positiv- und Negativfälle sind bestanden. PROD blieb unverändert.
