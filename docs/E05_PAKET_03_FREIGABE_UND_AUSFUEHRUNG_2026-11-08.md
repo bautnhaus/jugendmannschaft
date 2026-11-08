@@ -123,3 +123,43 @@ Ein erster Testlauf scheiterte an einer ungeeigneten Aggregation im Testskript (
 ### Ergebnis
 
 **Paket 3 ist in DEV umgesetzt. Die gelbe Schwelle, das Verhalten bei weiteren gelben Karten während offener Sperre, rote Sperre, Audit-Verknüpfungen und Transaktionsatomarität wurden erfolgreich geprüft.** Die offenen Folgefunktionen aus dem Abschnitt „Bewusste Abgrenzung“ bleiben eigenständige Arbeitspakete.
+
+
+## DEV-Status und Umsetzungskontrolle
+
+- **Kontrolliert am:** 08.11.2026
+- **Ziel:** Supabase DEV, Projekt `pzazqvvoruqnqhcorbwx`
+- **Ergebnis der erneuten Paket-Ausführung:** Der vollständige Paket-SQL-Lauf wurde von PostgreSQL am ersten `CREATE TABLE` mit `42P07 relation already exists` abgewiesen und vollständig zurückgerollt. Deshalb wurde nichts überschrieben.
+- **Bestandsprüfung danach:** Beide Sperrentabellen und die zugehörigen Objekte waren bereits vollständig vorhanden. Die vorhandene RPC enthielt bereits die Paket-3-Sperrenlogik. Es war keine Schema- oder Funktionskorrektur notwendig.
+
+### Verifizierter DEV-Bestand
+
+| Prüfung | Ergebnis |
+|---|---|
+| `training_suspensions` und `training_suspension_audit` vorhanden | Bestanden |
+| Sperrenstatus-/Typ- und Metadaten-Constraints | Bestanden |
+| Quellereignis eindeutig je Sperre | Bestanden |
+| offene Spieler-/Matchday-Indizes | Bestanden |
+| RLS auf beiden Tabellen | Bestanden |
+| Team-Lese-Policies | Bestanden |
+| Audit-Trigger für UPDATE/DELETE/TRUNCATE | Bestanden |
+| `authenticated`: SELECT erlaubt, INSERT/UPDATE nicht erlaubt | Bestanden |
+| `anon`: SELECT nicht erlaubt | Bestanden |
+| RPC SECURITY DEFINER | Bestanden |
+| RPC EXECUTE für authenticated; nicht für anon/service_role/PUBLIC | Bestanden |
+
+### Funktionale DEV-Tests
+
+Alle Tests liefen in einer Transaktion mit synthetischen Trainings- und Anwesenheitszeilen; abschließendes ROLLBACK. Es blieben keine Testdaten zurück.
+
+| Testfall | Ergebnis |
+|---|---|
+| Fünf aktive gelbe Karten | Genau eine offene gelbe Sperre und ein Erstellungs-Audit |
+| Sechste gelbe Karte bei bereits offener gelber Sperre | Keine zweite offene gelbe Sperre |
+| Rote Karte | Sofort genau eine offene rote Sperre |
+
+### Bewertung
+
+**Paket 3 ist in DEV bereits umgesetzt und die Kernlogik wurde erfolgreich geprüft.** Der erneute Ausführungsversuch war nicht erforderlich, da die Objekte bereits vorhanden waren; er wurde durch die vorhandene Tabelle sicher abgebrochen. Es wurden keine bestehenden Daten verändert. Keine Änderungen an PROD.
+
+Die zusätzlichen Paket-2-Negativtests sind im Paket-2-Protokoll dokumentiert.
