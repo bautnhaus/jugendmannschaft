@@ -257,6 +257,11 @@ begin
       message='Exception must refer to the currently assigned planned matchday in the same team and season';
   end if;
 
+  -- Serialize all suspension/exception assignment work for this player.
+  if v_suspension.player_id is not null then
+    perform 1 from public.players p where p.id=v_suspension.player_id for update;
+  end if;
+
   select t.name into v_team_name from public.teams t where t.id=v_suspension.team_id;
   select p.name into v_player_name from public.players p where p.id=v_suspension.player_id;
   select pr.display_name into v_actor_name from public.profiles pr where pr.id=v_actor;
