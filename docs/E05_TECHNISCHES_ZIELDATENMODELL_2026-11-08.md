@@ -31,9 +31,9 @@ Dies ist eine gezielte E05-Bestandsprüfung, kein vollständiger Datenbank-Siche
 
 Ein Datensatz je tatsächlich vergebener gelber Karte, roter Karte oder positivem Stern.
 
-- `team_id`, `season_id`: historische UUID-Snapshots, nicht an aktuelle Team-/Saison-Stammdaten gekoppelt.
-- `training_id`: FK auf Training mit `ON DELETE RESTRICT`; das Quelltraining kann nicht gelöscht werden, solange Ereignisse daran hängen.
-- `training_date_snapshot`: Datum des Trainings zum Ereigniszeitpunkt.
+- `team_id`, `season_id`: historische UUID-Snapshots; `season_name_snapshot` bewahrt die damalige Saisonbezeichnung.
+- `training_id`: historische UUID ohne FK; `training_date_snapshot` und `training_name_snapshot` bewahren die damaligen Trainingsdaten.
+- Die spätere RPC prüft beim Erstellen, dass Training, Spieler, Team und aktive Saison zusammenpassen.
 - `player_id`: nullable FK auf `players` mit `ON DELETE SET NULL`.
 - `player_name_snapshot`: Pflicht; erhält die historische Identität bei späterer Spieler-Löschung.
 - `event_type`: `yellow_card`, `red_card`, `positive_star`.
