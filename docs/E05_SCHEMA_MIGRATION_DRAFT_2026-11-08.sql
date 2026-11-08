@@ -1,5 +1,5 @@
 -- E05 / AP05 – Schemafundament Trainingsereignisse und Sperren
--- Review-Entwurf Revision 3 | 08.11.2026
+-- Review-Entwurf Revision 4 | 08.11.2026
 -- Target: Supabase DEV only (pzazqvvoruqnqhcorbwx)
 -- Status: REVIEW DRAFT – NOT APPROVED – DO NOT EXECUTE
 -- This is a review artifact under docs/, not a Supabase migration file.
