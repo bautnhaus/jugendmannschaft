@@ -361,6 +361,7 @@ declare
   v_match_date date;
   v_opponent text;
   v_game_type text;
+  v_match_status text;
   v_club_id uuid;
   v_types text[];
   v_has_team_override boolean;
