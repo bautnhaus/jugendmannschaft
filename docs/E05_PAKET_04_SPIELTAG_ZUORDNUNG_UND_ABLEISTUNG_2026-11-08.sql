@@ -1,6 +1,7 @@
 -- E05 / AP05 – Paket 4: Spieltagszuordnung und Ableistung von Sperren
 -- Ziel: Supabase DEV only (pzazqvvoruqnqhcorbwx)
--- Status: FREIGABEKANDIDAT – NICHT AUSFÜHREN VOR AUSDRÜCKLICHER FREIGABE
+-- Status: AM 08.11.2026 IN SUPABASE DEV AUSGEFÜHRT UND GEPRÜFT
+-- Migration: e05_package_04_suspension_matchday_lifecycle (20261108133922)
 -- Abhängigkeit: Paket 1–3 und vorhandene training_suspensions /
 -- training_suspension_audit Tabellen.
 -- Keine bestehenden Daten werden gelöscht. Keine PROD-Änderungen.
