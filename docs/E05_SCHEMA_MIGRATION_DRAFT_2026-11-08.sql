@@ -1,182 +1,213 @@
--- E05 / AP05 – schema foundation draft
+-- E05 / AP05 – Schemafundament Trainingsereignisse und Sperren
+-- Review-Entwurf Revision 2 | 08.11.2026
 -- Target: Supabase DEV only (pzazqvvoruqnqhcorbwx)
 -- Status: REVIEW DRAFT – NOT APPROVED – DO NOT EXECUTE
--- This file is a review artifact, not yet a supabase/migrations release file.
--- No existing table/function/policy is altered or replaced by this draft.
--- Full lifecycle RPCs, automated suspension processing and recommendation
--- integration are intentionally excluded and require separate reviewed migrations.
+-- This is a review artifact under docs/, not a Supabase migration file.
+-- Do not execute until static review, isolated PostgreSQL testing,
+-- RLS/ACL review, rollback planning and explicit user approval are complete.
+-- No existing table, function, trigger, policy or data row is modified.
 
 begin;
 
+-- 1. Training events. Team/season IDs are historical snapshots.
+-- Player identity survives player deletion via nullable FK + name snapshot.
 create table public.training_behavior_events (
   id uuid primary key default gen_random_uuid(),
-  team_id uuid not null references public.teams(id) on delete restrict,
+  team_id uuid not null,
   season_id uuid not null references public.seasons(id) on delete restrict,
   training_id uuid not null references public.trainings(id) on delete restrict,
-  player_id uuid not null references public.players(id) on delete restrict,
+  training_date_snapshot date not null,
+  player_id uuid references public.players(id) on delete set null,
+  player_name_snapshot text not null check (nullif(btrim(player_name_snapshot),'') is not null),
   event_type text not null check (event_type in ('yellow_card','red_card','positive_star')),
   reason text,
   status text not null default 'active' check (status in ('active','voided')),
-  awarded_by uuid not null references auth.users(id) on delete restrict,
+  awarded_by uuid references auth.users(id) on delete set null,
+  awarded_by_snapshot text,
   awarded_at timestamptz not null default now(),
-  voided_by uuid references auth.users(id) on delete restrict,
+  voided_by uuid references auth.users(id) on delete set null,
+  voided_by_snapshot text,
   voided_at timestamptz,
   void_reason text,
   created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
   constraint training_behavior_events_reason_check
     check (event_type = 'positive_star' or nullif(btrim(reason),'') is not null),
   constraint training_behavior_events_void_metadata_check
     check (
-      (status = 'active' and voided_by is null and voided_at is null and void_reason is null)
+      (status = 'active' and voided_by is null and voided_by_snapshot is null
+       and voided_at is null and void_reason is null)
       or
-      (status = 'voided' and voided_by is not null and voided_at is not null
+      (status = 'voided' and voided_at is not null
        and nullif(btrim(void_reason),'') is not null)
-    ),
-  constraint training_behavior_events_training_identity_unique
-    unique (id, team_id, season_id, player_id, training_id)
+    )
 );
 
 create unique index training_behavior_events_one_card_per_player_training
   on public.training_behavior_events(training_id, player_id)
-  where status = 'active' and event_type in ('yellow_card','red_card');
-
+  where status = 'active' and player_id is not null
+    and event_type in ('yellow_card','red_card');
 create unique index training_behavior_events_one_star_per_player_training
   on public.training_behavior_events(training_id, player_id)
-  where status = 'active' and event_type = 'positive_star';
-
+  where status = 'active' and player_id is not null
+    and event_type = 'positive_star';
 create index training_behavior_events_player_season_idx
   on public.training_behavior_events(team_id, season_id, player_id, awarded_at desc);
-
 create index training_behavior_events_training_idx
   on public.training_behavior_events(training_id, player_id);
 
+-- 2. Event audit; actor FK may become NULL when an Auth account is deleted.
 create table public.training_behavior_event_audit (
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references public.training_behavior_events(id) on delete restrict,
   action text not null check (action in ('created','corrected','voided','reinstated')),
   old_values jsonb,
-  new_values jsonb,
+  new_values jsonb not null,
   reason text,
-  changed_by uuid not null references auth.users(id) on delete restrict,
+  changed_by uuid references auth.users(id) on delete set null,
+  changed_by_snapshot text,
   changed_at timestamptz not null default now(),
   constraint training_behavior_event_audit_reason_check
     check (action = 'created' or nullif(btrim(reason),'') is not null)
 );
-
 create index training_behavior_event_audit_event_idx
   on public.training_behavior_event_audit(event_id, changed_at desc);
 
+-- 3. Rule-based suspensions. A suspension always has one source event.
 create table public.training_suspensions (
   id uuid primary key default gen_random_uuid(),
-  team_id uuid not null references public.teams(id) on delete restrict,
+  team_id uuid not null,
   season_id uuid not null references public.seasons(id) on delete restrict,
-  player_id uuid not null references public.players(id) on delete restrict,
-  source_event_id uuid references public.training_behavior_events(id) on delete restrict,
+  player_id uuid references public.players(id) on delete set null,
+  player_name_snapshot text not null check (nullif(btrim(player_name_snapshot),'') is not null),
+  source_event_id uuid not null references public.training_behavior_events(id) on delete restrict,
   suspension_type text not null check (suspension_type in ('yellow','red')),
   status text not null default 'open'
     check (status in ('open','served','expired','voided')),
   intended_matchday_id uuid references public.matchdays(id) on delete restrict,
   served_matchday_id uuid references public.matchdays(id) on delete restrict,
-  created_by uuid not null references auth.users(id) on delete restrict,
+  created_by uuid references auth.users(id) on delete set null,
+  created_by_snapshot text,
   created_at timestamptz not null default now(),
   served_at timestamptz,
   expired_at timestamptz,
+  voided_by uuid references auth.users(id) on delete set null,
+  voided_by_snapshot text,
   voided_at timestamptz,
-  voided_by uuid references auth.users(id) on delete restrict,
   void_reason text,
-  constraint training_suspensions_void_metadata_check
-    check (
-      (status <> 'voided' and voided_at is null and voided_by is null and void_reason is null)
-      or
-      (status = 'voided' and voided_at is not null and voided_by is not null
-       and nullif(btrim(void_reason),'') is not null)
-    ),
   constraint training_suspensions_served_metadata_check
-    check (
-      (status = 'served' and served_matchday_id is not null and served_at is not null)
-      or status <> 'served'
-    )
+    check ((status = 'served' and served_matchday_id is not null and served_at is not null)
+       or (status <> 'served' and served_at is null)),
+  constraint training_suspensions_void_metadata_check
+    check ((status = 'voided' and voided_at is not null and nullif(btrim(void_reason),'') is not null)
+       or (status <> 'voided' and voided_at is null and void_reason is null))
 );
-
+create unique index training_suspensions_one_per_source_event
+  on public.training_suspensions(source_event_id);
+create unique index training_suspensions_one_open_per_player_type
+  on public.training_suspensions(team_id, season_id, player_id, suspension_type)
+  where status = 'open' and player_id is not null;
 create index training_suspensions_open_player_idx
   on public.training_suspensions(team_id, season_id, player_id, created_at)
   where status = 'open';
-
 create index training_suspensions_matchday_idx
   on public.training_suspensions(intended_matchday_id)
   where status = 'open';
 
+-- 4. Exceptions for one exact suspension + matchday.
 create table public.training_suspension_exceptions (
   id uuid primary key default gen_random_uuid(),
   suspension_id uuid not null references public.training_suspensions(id) on delete restrict,
+  team_id uuid not null,
+  player_id uuid references public.players(id) on delete set null,
+  player_name_snapshot text not null,
   matchday_id uuid not null references public.matchdays(id) on delete restrict,
   reason text not null check (nullif(btrim(reason),'') is not null),
-  granted_by uuid not null references auth.users(id) on delete restrict,
+  granted_by uuid references auth.users(id) on delete set null,
+  granted_by_snapshot text,
   granted_at timestamptz not null default now(),
-  revoked_by uuid references auth.users(id) on delete restrict,
+  revoked_by uuid references auth.users(id) on delete set null,
+  revoked_by_snapshot text,
   revoked_at timestamptz,
   revoke_reason text,
   constraint training_suspension_exceptions_revocation_check
-    check (
-      (revoked_at is null and revoked_by is null and revoke_reason is null)
-      or
-      (revoked_at is not null and revoked_by is not null
-       and nullif(btrim(revoke_reason),'') is not null)
-    ),
+    check ((revoked_at is null and revoked_by is null and revoke_reason is null)
+       or (revoked_at is not null and nullif(btrim(revoke_reason),'') is not null)),
   unique (suspension_id, matchday_id)
 );
+create index training_suspension_exceptions_matchday_idx
+  on public.training_suspension_exceptions(team_id, matchday_id);
 
+-- 5. Suspension/exception audit with exactly one audited subject.
 create table public.training_suspension_audit (
   id uuid primary key default gen_random_uuid(),
-  suspension_id uuid not null references public.training_suspensions(id) on delete restrict,
+  suspension_id uuid references public.training_suspensions(id) on delete restrict,
+  exception_id uuid references public.training_suspension_exceptions(id) on delete restrict,
   action text not null check (
     action in ('created','target_changed','served','expired','exception_granted',
-               'exception_revoked','corrected','voided','reinstated')
+      'exception_revoked','corrected','voided','reinstated')
   ),
   old_values jsonb,
-  new_values jsonb,
+  new_values jsonb not null,
   reason text,
-  changed_by uuid not null references auth.users(id) on delete restrict,
+  changed_by uuid references auth.users(id) on delete set null,
+  changed_by_snapshot text,
   changed_at timestamptz not null default now(),
+  constraint training_suspension_audit_one_subject_check
+    check (num_nonnulls(suspension_id, exception_id) = 1),
   constraint training_suspension_audit_reason_check
     check (action = 'created' or nullif(btrim(reason),'') is not null)
 );
-
 create index training_suspension_audit_suspension_idx
-  on public.training_suspension_audit(suspension_id, changed_at desc);
+  on public.training_suspension_audit(suspension_id, changed_at desc)
+  where suspension_id is not null;
+create index training_suspension_audit_exception_idx
+  on public.training_suspension_audit(exception_id, changed_at desc)
+  where exception_id is not null;
 
-create table public.club_suspension_game_types (
-  club_id uuid not null references public.clubs(id) on delete restrict,
-  game_type text not null check (nullif(btrim(game_type),'') is not null),
-  created_at timestamptz not null default now(),
-  created_by uuid not null references auth.users(id) on delete restrict,
-  primary key (club_id, game_type)
+-- 6. Club default list. A team override is a separate header + child list.
+create table public.club_suspension_settings (
+  club_id uuid primary key references public.clubs(id) on delete restrict,
+  relevant_game_types text[] not null,
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users(id) on delete set null,
+  constraint club_suspension_settings_values_check
+    check (relevant_game_types <@ array['Meisterschaft','Freundschaftsspiel','Turnier']::text[])
 );
 
+create table public.team_suspension_game_type_settings (
+  team_id uuid primary key references public.teams(id) on delete restrict,
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users(id) on delete set null
+);
+-- Header existence means override. Zero child rows means an intentionally empty override.
 create table public.team_suspension_game_types (
-  team_id uuid not null references public.teams(id) on delete restrict,
-  game_type text not null check (nullif(btrim(game_type),'') is not null),
+  team_id uuid not null references public.team_suspension_game_type_settings(team_id) on delete cascade,
+  game_type text not null check (game_type in ('Meisterschaft','Freundschaftsspiel','Turnier')),
   created_at timestamptz not null default now(),
-  created_by uuid not null references auth.users(id) on delete restrict,
   primary key (team_id, game_type)
 );
 
-create table public.training_early_suspension_resets (
+-- 7. Early suspension-equivalent reset for a specific matchday.
+create table public.matchday_early_suspension_resets (
   id uuid primary key default gen_random_uuid(),
-  team_id uuid not null references public.teams(id) on delete restrict,
+  team_id uuid not null,
   season_id uuid not null references public.seasons(id) on delete restrict,
-  player_id uuid not null references public.players(id) on delete restrict,
+  player_id uuid references public.players(id) on delete set null,
+  player_name_snapshot text not null check (nullif(btrim(player_name_snapshot),'') is not null),
   matchday_id uuid not null references public.matchdays(id) on delete restrict,
   status text not null default 'pending'
     check (status in ('pending','applied','cancelled')),
   reason text not null check (nullif(btrim(reason),'') is not null),
-  created_by uuid not null references auth.users(id) on delete restrict,
+  created_by uuid references auth.users(id) on delete set null,
+  created_by_snapshot text,
   created_at timestamptz not null default now(),
   applied_at timestamptz,
-  cancelled_by uuid references auth.users(id) on delete restrict,
+  cancelled_by uuid references auth.users(id) on delete set null,
+  cancelled_by_snapshot text,
   cancelled_at timestamptz,
   cancel_reason text,
-  constraint training_early_suspension_resets_state_check check (
+  constraint matchday_early_suspension_resets_state_check check (
     (status = 'pending' and applied_at is null and cancelled_at is null
       and cancelled_by is null and cancel_reason is null)
     or
@@ -184,58 +215,67 @@ create table public.training_early_suspension_resets (
       and cancelled_by is null and cancel_reason is null)
     or
     (status = 'cancelled' and applied_at is null and cancelled_at is not null
-      and cancelled_by is not null and nullif(btrim(cancel_reason),'') is not null)
-  ),
-  unique (player_id, matchday_id)
+      and nullif(btrim(cancel_reason),'') is not null)
+  )
 );
+create unique index matchday_early_suspension_resets_one_pending_player_matchday
+  on public.matchday_early_suspension_resets(matchday_id, player_id)
+  where status = 'pending' and player_id is not null;
+create index matchday_early_suspension_resets_team_matchday_idx
+  on public.matchday_early_suspension_resets(team_id, matchday_id, status);
 
-create table public.training_early_suspension_reset_audit (
+-- 8. Early reset audit.
+create table public.matchday_early_suspension_reset_audit (
   id uuid primary key default gen_random_uuid(),
-  reset_id uuid not null references public.training_early_suspension_resets(id) on delete restrict,
-  action text not null check (action in ('created','applied','cancelled')),
+  reset_id uuid not null references public.matchday_early_suspension_resets(id) on delete restrict,
+  action text not null check (action in ('created','applied','cancelled','corrected')),
   old_values jsonb,
-  new_values jsonb,
+  new_values jsonb not null,
   reason text,
-  changed_by uuid not null references auth.users(id) on delete restrict,
-  changed_at timestamptz not null default now()
+  changed_by uuid references auth.users(id) on delete set null,
+  changed_by_snapshot text,
+  changed_at timestamptz not null default now(),
+  constraint matchday_early_suspension_reset_audit_reason_check
+    check (action in ('created','applied') or nullif(btrim(reason),'') is not null)
 );
+create index matchday_early_suspension_reset_audit_idx
+  on public.matchday_early_suspension_reset_audit(reset_id, changed_at desc);
 
-create index training_early_reset_team_matchday_idx
-  on public.training_early_suspension_resets(team_id, matchday_id, status);
-
--- Every new exposed public table has RLS enabled.
+-- RLS on every exposed table.
 alter table public.training_behavior_events enable row level security;
 alter table public.training_behavior_event_audit enable row level security;
 alter table public.training_suspensions enable row level security;
 alter table public.training_suspension_exceptions enable row level security;
 alter table public.training_suspension_audit enable row level security;
-alter table public.club_suspension_game_types enable row level security;
+alter table public.club_suspension_settings enable row level security;
+alter table public.team_suspension_game_type_settings enable row level security;
 alter table public.team_suspension_game_types enable row level security;
-alter table public.training_early_suspension_resets enable row level security;
-alter table public.training_early_suspension_reset_audit enable row level security;
+alter table public.matchday_early_suspension_resets enable row level security;
+alter table public.matchday_early_suspension_reset_audit enable row level security;
 
--- Remove any default/public API privileges first; then grant only required access.
+-- Remove inherited/default API privileges before granting minimum access.
 revoke all on public.training_behavior_events,
   public.training_behavior_event_audit,
   public.training_suspensions,
   public.training_suspension_exceptions,
   public.training_suspension_audit,
-  public.club_suspension_game_types,
+  public.club_suspension_settings,
+  public.team_suspension_game_type_settings,
   public.team_suspension_game_types,
-  public.training_early_suspension_resets,
-  public.training_early_suspension_reset_audit
+  public.matchday_early_suspension_resets,
+  public.matchday_early_suspension_reset_audit
 from public, anon, authenticated;
 
--- Explicit minimal API grants. No direct INSERT/UPDATE/DELETE for authenticated.
 grant select on public.training_behavior_events,
   public.training_behavior_event_audit,
   public.training_suspensions,
   public.training_suspension_exceptions,
   public.training_suspension_audit,
-  public.club_suspension_game_types,
+  public.club_suspension_settings,
+  public.team_suspension_game_type_settings,
   public.team_suspension_game_types,
-  public.training_early_suspension_resets,
-  public.training_early_suspension_reset_audit
+  public.matchday_early_suspension_resets,
+  public.matchday_early_suspension_reset_audit
 to authenticated;
 
 grant all on public.training_behavior_events,
@@ -243,60 +283,82 @@ grant all on public.training_behavior_events,
   public.training_suspensions,
   public.training_suspension_exceptions,
   public.training_suspension_audit,
-  public.club_suspension_game_types,
+  public.club_suspension_settings,
+  public.team_suspension_game_type_settings,
   public.team_suspension_game_types,
-  public.training_early_suspension_resets,
-  public.training_early_suspension_reset_audit
+  public.matchday_early_suspension_resets,
+  public.matchday_early_suspension_reset_audit
 to service_role;
 
--- Team member read access. Existing helper functions retain the app's team context rules.
+-- Team members and selected team-context administrators may read team-scoped rows.
 create policy training_behavior_events_select on public.training_behavior_events
-for select to authenticated using (public.is_team_member(team_id));
+for select to authenticated
+using (public.is_team_member(team_id) or public.has_selected_team_context(team_id));
 
 create policy training_behavior_event_audit_select on public.training_behavior_event_audit
 for select to authenticated using (
   exists (select 1 from public.training_behavior_events e
-          where e.id = event_id and public.is_team_member(e.team_id))
+          where e.id = event_id
+            and (public.is_team_member(e.team_id) or public.has_selected_team_context(e.team_id)))
 );
 
 create policy training_suspensions_select on public.training_suspensions
-for select to authenticated using (public.is_team_member(team_id));
+for select to authenticated
+using (public.is_team_member(team_id) or public.has_selected_team_context(team_id));
 
 create policy training_suspension_exceptions_select on public.training_suspension_exceptions
 for select to authenticated using (
   exists (select 1 from public.training_suspensions s
-          where s.id = suspension_id and public.is_team_member(s.team_id))
+          where s.id = suspension_id
+            and (public.is_team_member(s.team_id) or public.has_selected_team_context(s.team_id)))
 );
 
 create policy training_suspension_audit_select on public.training_suspension_audit
 for select to authenticated using (
-  exists (select 1 from public.training_suspensions s
-          where s.id = suspension_id and public.is_team_member(s.team_id))
+  (suspension_id is not null and exists (
+    select 1 from public.training_suspensions s where s.id = suspension_id
+      and (public.is_team_member(s.team_id) or public.has_selected_team_context(s.team_id))))
+  or
+  (exception_id is not null and exists (
+    select 1 from public.training_suspension_exceptions e
+    join public.training_suspensions s on s.id = e.suspension_id
+    where e.id = exception_id
+      and (public.is_team_member(s.team_id) or public.has_selected_team_context(s.team_id))))
 );
 
-create policy club_suspension_game_types_select on public.club_suspension_game_types
+create policy club_suspension_settings_select on public.club_suspension_settings
 for select to authenticated using (
-  public.is_club_member(club_id)
-  or exists (
+  exists (
     select 1 from public.teams t
-    where t.club_id = club_suspension_game_types.club_id
-      and public.has_selected_team_context(t.id)
+    where t.club_id = club_id and public.is_team_member(t.id)
+  )
+  or (
+    public.can_manage_club_context(club_id)
+    and exists (
+      select 1 from public.user_club_context ucc
+      where ucc.user_id = auth.uid() and ucc.club_id = club_id
+    )
   )
 );
 
+create policy team_suspension_game_type_settings_select on public.team_suspension_game_type_settings
+for select to authenticated
+using (public.is_team_member(team_id) or public.has_selected_team_context(team_id));
+
 create policy team_suspension_game_types_select on public.team_suspension_game_types
-for select to authenticated using (public.is_team_member(team_id));
+for select to authenticated
+using (public.is_team_member(team_id) or public.has_selected_team_context(team_id));
 
-create policy training_early_suspension_resets_select on public.training_early_suspension_resets
-for select to authenticated using (public.is_team_member(team_id));
+create policy matchday_early_suspension_resets_select on public.matchday_early_suspension_resets
+for select to authenticated
+using (public.is_team_member(team_id) or public.has_selected_team_context(team_id));
 
-create policy training_early_suspension_reset_audit_select on public.training_early_suspension_reset_audit
+create policy matchday_early_suspension_reset_audit_select on public.matchday_early_suspension_reset_audit
 for select to authenticated using (
-  exists (select 1 from public.training_early_suspension_resets r
-          where r.id = reset_id and public.is_team_member(r.team_id))
+  exists (select 1 from public.matchday_early_suspension_resets r
+          where r.id = reset_id
+            and (public.is_team_member(r.team_id) or public.has_selected_team_context(r.team_id)))
 );
 
--- No authenticated write policies are defined in this foundation migration.
--- Subsequent RPC migration must implement server-side authorization and write paths.
-
+-- No authenticated write policies. All future writes go through reviewed RPCs.
 commit;
