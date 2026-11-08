@@ -585,3 +585,8 @@ Die vollständigen Ausführungsdetails, Freigaben, SQL-Backup-Prüfsummen, Verif
 - **PROD:** nicht übertragen; keine Freigabe.
 
 Dies ist ein Planungsdatensatz und kein Nachweis entstandener Datenbankobjekte.
+
+
+### Ergänzende Prüfnotiz E05 (08.11.2026)
+
+Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TECHNISCHER_REVIEW_SCHEMAFUNDAMENT_2026-11-08.md` dokumentiert. Die dort referenzierte SQL-Datei ist weiterhin nur ein Review-Entwurf. **Es wurden keine E05-Datenbankobjekte angelegt oder geändert.** Dieser Hinweis ist kein neuer Eintrag im Register tatsächlich entstandener Datenbankobjekte.
