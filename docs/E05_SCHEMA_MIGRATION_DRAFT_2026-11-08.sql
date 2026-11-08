@@ -97,7 +97,10 @@ create table public.training_suspensions (
   void_reason text,
   constraint training_suspensions_served_metadata_check
     check ((status = 'served' and served_matchday_id is not null and served_at is not null)
-       or (status <> 'served' and served_at is null)),
+       or (status <> 'served' and served_at is null and served_matchday_id is null)),
+  constraint training_suspensions_expired_metadata_check
+    check ((status = 'expired' and expired_at is not null)
+       or (status <> 'expired' and expired_at is null)),
   constraint training_suspensions_void_metadata_check
     check ((status = 'voided' and voided_at is not null and nullif(btrim(void_reason),'') is not null)
        or (status <> 'voided' and voided_at is null and void_reason is null))
