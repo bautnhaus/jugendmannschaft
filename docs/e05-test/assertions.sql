@@ -55,7 +55,7 @@ begin
       or has_table_privilege('anon',format('public.%I',t),'update')
       or has_table_privilege('anon',format('public.%I',t),'delete')
       or not has_table_privilege('service_role',format('public.%I',t),'select')
-      or not has_table_privilege('service_role',format('public.%I',t),'insert')
+      or has_table_privilege('service_role',format('public.%I',t),'insert')
       or has_table_privilege('service_role',format('public.%I',t),'update')
       or has_table_privilege('service_role',format('public.%I',t),'delete')
     then raise exception 'Unexpected ACL on public.%',t; end if;
@@ -374,6 +374,15 @@ begin
   begin update public.matchday_early_suspension_reset_audit set reason='tamper';
     raise exception 'Early reset audit UPDATE unexpectedly succeeded';
   exception when sqlstate '55000' then null; end;
-end $$;
+  begin truncate table public.training_behavior_event_audit;
+    raise exception 'Event audit TRUNCATE unexpectedly succeeded';
+  exception when sqlstate '55000' then null; end;
+  begin truncate table public.training_suspension_audit;
+    raise exception 'Suspension audit TRUNCATE unexpectedly succeeded';
+  exception when sqlstate '55000' then null; end;
+  begin truncate table public.matchday_early_suspension_reset_audit;
+    raise exception 'Early reset audit TRUNCATE unexpectedly succeeded';
+  exception when sqlstate '55000' then null; end;
+end $;
 
 \echo 'PASS: E05 schema foundation PostgreSQL 17 test suite completed'
