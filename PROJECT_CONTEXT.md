@@ -37,7 +37,7 @@ STRATO bleibt Registrar; Cloudflare verwaltet die DNS-Zone. Die Rollen nicht ver
 ### E05 / AP05 – Kaderplanung, Trainingsereignisse und Kaderempfehlung
 - AP05.2 (fachliche Daten-/Geschäftsregeln) und AP05.3a–d (Userflows/Kaderplanungs-UI) sind abgestimmt; maßgebliche Detailquelle für AP05.3: `docs/AP05_3_USERFLOWS_UI_KONZEPT_2026-11-07.md`.
 - Ergänzende UI-Konsolidierung und technische Umsetzungsleitlinie: `docs/E05_UI_KONZEPT_UMSETZUNGSLEITLINIE_2026-11-07.md`.
-- Verbindliches Protokoll für sämtliche schreibenden E05-SQL-Anfragen: `docs/E05_SQL_AENDERUNGSPROTOKOLL.md`. Jeder SQL-Schreibvorgang ist vorab vollständig zu dokumentieren und benötigt ausdrückliche Nutzerfreigabe; nach Ausführung werden Ergebnis und Prüfungen ergänzt.
+- Für sämtliche schreibenden E05-SQL-Anfragen gilt zentral `DB_MIGRATION_LOG.md` gemäß `docs/SUPABASE_CHANGE_CONTROL.md`; `DB_CHANGELOG.md` beschreibt die tatsächlich entstandenen Objekte. Der ergänzende E05-Leitfaden verweist auf diese führenden Dokumente.
 - Technisches E05-Zielmodell: `docs/E05_TECHNISCHES_ZIELMODELL_2026-11-08.md`.
 - E05-Foundation-Migration zur Prüfung/Freigabe (nicht ausgeführt): `supabase/migrations/20261108061900_e05_training_events_suspensions_foundation.sql`. Der Vorschlag ist im E05-SQL-Protokoll als nicht freigegeben/nicht ausgeführt vermerkt. `DB_MIGRATION_LOG.md` bleibt ein tatsächliches Ausführungsjournal und erhält erst nach einem Ausführungsversuch einen DEV-Datensatz.
 - Die vertiefte read-only DEV-Prüfung der Trainings-/Spieltagstabellen, Constraints, RLS-Policies, Grants und Trigger ist im Umsetzungsleitdokument festgehalten. Keine Datenbankänderung vorgenommen.
