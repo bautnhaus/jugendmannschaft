@@ -104,9 +104,6 @@ create table public.training_suspensions (
 );
 create unique index training_suspensions_one_per_source_event
   on public.training_suspensions(source_event_id);
-create unique index training_suspensions_one_open_per_player_type
-  on public.training_suspensions(team_id, season_id, player_id, suspension_type)
-  where status = 'open' and player_id is not null;
 create index training_suspensions_open_player_idx
   on public.training_suspensions(team_id, season_id, player_id, created_at)
   where status = 'open';
@@ -330,13 +327,13 @@ create policy club_suspension_settings_select on public.club_suspension_settings
 for select to authenticated using (
   exists (
     select 1 from public.teams t
-    where t.club_id = club_id and public.is_team_member(t.id)
+    where t.club_id = club_suspension_settings.club_id and public.is_team_member(t.id)
   )
   or (
     public.can_manage_club_context(club_id)
     and exists (
       select 1 from public.user_club_context ucc
-      where ucc.user_id = auth.uid() and ucc.club_id = club_id
+      where ucc.user_id = auth.uid() and ucc.club_id = club_suspension_settings.club_id
     )
   )
 );
