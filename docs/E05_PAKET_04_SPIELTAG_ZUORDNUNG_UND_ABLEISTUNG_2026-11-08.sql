@@ -191,6 +191,7 @@ declare
   v_matchday_id uuid;
   v_match_date date;
   v_opponent text;
+  v_match_status text;
   v_used_matchdays uuid[] := '{}'::uuid[];
   v_changed integer := 0;
   v_old_values jsonb;
@@ -217,6 +218,18 @@ begin
     if not found then
       v_types := '{}'::text[];
     end if;
+  end if;
+
+  -- Do not silently skip a completed target: it must first be served through
+  -- serve_matchday_suspensions().
+  if exists (
+    select 1 from public.training_suspensions s
+    join public.matchdays m on m.id=s.intended_matchday_id
+    where s.team_id=p_team_id and s.player_id=p_player_id
+      and s.status='open' and m.status='done'
+  ) then
+    raise exception using errcode='23514',
+      message='A completed assigned matchday must be processed before reassignment';
   end if;
 
   -- Clear and rebuild only future targets for this player's open suspensions.
@@ -316,11 +329,11 @@ begin
     raise exception using errcode='42501', message='Team permission required';
   end if;
 
-  perform 1 from public.players p
-  where p.id=p_player_id and p.team_id=p_team_id
+  perform 1 from public.training_suspensions s
+  where s.team_id=p_team_id and s.player_id=p_player_id and s.status='open'
   for update;
   if not found then
-    raise exception using errcode='P0002', message='Player not found in team';
+    return 0;
   end if;
 
   return public.e05_assign_player_suspensions(p_team_id,p_player_id,auth.uid());
@@ -365,8 +378,8 @@ begin
     raise exception using errcode='22023', message='Matchday is required';
   end if;
 
-  select m.team_id,m.season_id,m.match_date,m.opponent,m.game_type
-    into v_team_id,v_match_season_id,v_match_date,v_opponent,v_game_type
+  select m.team_id,m.season_id,m.match_date,m.opponent,m.game_type,m.status
+    into v_team_id,v_match_season_id,v_match_date,v_opponent,v_game_type,v_match_status
   from public.matchdays m where m.id=p_matchday_id
   for update;
   if not found then
@@ -378,7 +391,7 @@ begin
   ) and not public.has_selected_team_context(v_team_id) then
     raise exception using errcode='42501', message='Team permission required';
   end if;
-  if (select m.status from public.matchdays m where m.id=p_matchday_id) <> 'done' then
+  if v_match_status is distinct from 'done' then
     raise exception using errcode='23514', message='Only a completed matchday can serve suspensions';
   end if;
 
