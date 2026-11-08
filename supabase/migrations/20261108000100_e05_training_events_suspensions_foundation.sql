@@ -217,6 +217,17 @@ using (
   )
 );
 
+-- Explicit minimum read grants; RLS remains the row-level boundary.
+grant select on public.training_behavior_events to authenticated;
+grant select on public.training_behavior_event_audit to authenticated;
+grant select on public.training_suspensions to authenticated;
+grant select on public.training_suspension_exceptions to authenticated;
+grant select on public.training_suspension_audit to authenticated;
+grant select on public.club_suspension_game_types to authenticated;
+grant select on public.team_suspension_game_types to authenticated;
+grant select on public.matchday_early_suspension_resets to authenticated;
+grant select on public.matchday_early_suspension_reset_audit to authenticated;
+
 -- Deliberately no client INSERT/UPDATE/DELETE policies yet. Writes are introduced with
 -- narrowly scoped, audited RPCs in the next migration stage. No broad table grants.
 
