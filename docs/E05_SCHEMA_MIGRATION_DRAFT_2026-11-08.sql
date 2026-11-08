@@ -214,6 +214,18 @@ alter table public.team_suspension_game_types enable row level security;
 alter table public.training_early_suspension_resets enable row level security;
 alter table public.training_early_suspension_reset_audit enable row level security;
 
+-- Remove any default/public API privileges first; then grant only required access.
+revoke all on public.training_behavior_events,
+  public.training_behavior_event_audit,
+  public.training_suspensions,
+  public.training_suspension_exceptions,
+  public.training_suspension_audit,
+  public.club_suspension_game_types,
+  public.team_suspension_game_types,
+  public.training_early_suspension_resets,
+  public.training_early_suspension_reset_audit
+from public, anon, authenticated;
+
 -- Explicit minimal API grants. No direct INSERT/UPDATE/DELETE for authenticated.
 grant select on public.training_behavior_events,
   public.training_behavior_event_audit,
