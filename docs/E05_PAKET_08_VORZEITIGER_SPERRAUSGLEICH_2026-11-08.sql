@@ -327,6 +327,11 @@ begin
 end;
 $function$;
 
+revoke all on function public.schedule_early_suspension_reset(uuid,uuid,text)
+from public,anon,authenticated,service_role;
+grant execute on function public.schedule_early_suspension_reset(uuid,uuid,text)
+to authenticated;
+
 -- 5) Automatic cancellation when the player is later nominated.
 create or replace function public.e05_cancel_early_reset_on_nomination()
 returns trigger language plpgsql security definer
