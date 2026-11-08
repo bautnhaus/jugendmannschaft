@@ -37,7 +37,7 @@ begin
 end $$;
 
 -- Verify exact policy operation/role and table ACLs for every one of the ten tables.
-do $
+do $$
 declare t text; v_count integer;
 begin
   for t in select unnest(array[
@@ -68,7 +68,7 @@ begin
     'matchday_early_suspension_resets','matchday_early_suspension_reset_audit'
   ) and (cmd <> 'SELECT' or roles <> array['authenticated']::name[]);
   if v_count <> 0 then raise exception 'Unexpected non-SELECT policy or policy role'; end if;
-end $;
+end $$;
 
 -- Seed disposable data.
 insert into public.clubs(id,name) values ('10000000-0000-0000-0000-000000000001','Test Club');
