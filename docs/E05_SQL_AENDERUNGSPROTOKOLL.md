@@ -1,12 +1,12 @@
-# E05 – SQL-Änderungs- und Ausführungsprotokoll
+# E05 – Ergänzender SQL-Vorbereitungsleitfaden
 
-Stand: 07.11.2026  
+Stand: 08.11.2026  
 Zielumgebung: ausschließlich Supabase DEV (`pzazqvvoruqnqhcorbwx`)  
 PROD: ausdrücklich ausgeschlossen, bis eine separate Freigabe vorliegt.
 
-## Verbindliche Regel
+## Verhältnis zu den führenden Projektprotokollen\n\nDieses Dokument ist ein ergänzender E05-Arbeitsleitfaden und **kein paralleles Ausführungsjournal**. Führend für jede tatsächliche schreibende SQL-Ausführung ist `DB_MIGRATION_LOG.md` gemäß `docs/SUPABASE_CHANGE_CONTROL.md`. `DB_CHANGELOG.md` beschreibt ausschließlich tatsächlich entstandene Datenbankobjekte und deren Verifikation. Vorbereitete SQL-Dateien sind dort nur als klar gekennzeichnete Entwürfe zu referenzieren.\n\n## Verbindliche Regel
 
-Jede schreibende SQL-Anfrage im Rahmen von E05 wird hier dokumentiert. Das gilt für DDL und DML sowie für Änderungen an Funktionen, Triggern, Policies, Grants, RLS, Daten und Migrationen.
+Jede schreibende SQL-Anfrage im Rahmen von E05 wird vor Ausführung vollständig als unveränderliche SQL-Quelle in GitHub vorbereitet und nach jeder tatsächlichen Ausführung ausschließlich im führenden `DB_MIGRATION_LOG.md` mit eigenem DEV-/PROD-Ausführungsdatensatz dokumentiert. Das gilt für DDL und DML sowie für Änderungen an Funktionen, Triggern, Policies, Grants, RLS, Daten und Migrationen.
 
 **Vor Ausführung** muss ein Eintrag mindestens enthalten:
 1. Kennung und Datum
