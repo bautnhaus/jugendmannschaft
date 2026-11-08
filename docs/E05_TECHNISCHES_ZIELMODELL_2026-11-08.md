@@ -14,7 +14,7 @@ Die E05-Daten werden nicht in vorhandene Anwesenheits- oder Kaderzeilen hineinge
 
 ## 2. Vorhandene Datenbasis (DEV read-only geprüft)
 
-- `trainings`: enthält `team_id`, optional `season_id` und Status `planned / done / cancelled`.
+- `trainings`: enthält `team_id`, optional `season_id` und Status `planned / done / cancelled`. In DEV haben derzeit 12 von 14 Trainings keinen `season_id`. Die spätere Vergabe-RPC muss deshalb die aktive Saison der Mannschaft ermitteln und als historischen Ereigniskontext speichern; sie darf nicht blind `trainings.season_id` übernehmen. Wenn keine aktive Saison existiert, muss die Vergabe mit verständlicher Meldung abgewiesen werden.
 - `attendance`: Primärschlüssel `(training_id, player_id)`, Feld `present boolean`.
 - `players`: enthält aktuelle `team_id` und `active`; Teamwechsel werden bereits durch einen bestehenden Trigger geschützt.
 - `seasons`: Mannschaftsbezogene Saisons.
@@ -79,7 +79,7 @@ Pro Anlage, Zuweisungsänderung, Verbüßung, Ablauf, manueller Korrektur und Au
 - `club_suspension_game_type_settings`: Vereinsstandard der sperrenrelevanten Spielarten.
 - `team_suspension_game_type_overrides`: vollständiger Mannschafts-Override.
 - Existiert ein Team-Override-Datensatz, ersetzt dessen Liste den Vereinsstandard vollständig. Eine leere Liste bedeutet bewusst: keine Spielart zählt. Ohne Team-Override gilt der Vereinsstandard.
-- Zulässige technische Werte: `championship`, `friendly`, `tournament`. Die Zuordnung bestehender `matchdays.game_type`-Werte auf diese kanonischen Werte wird vor der Lifecycle-Migration anhand des Frontends und der vorhandenen Daten geprüft.
+- Zulässige technische Werte: `championship`, `friendly`, `tournament`. Die aktuell vorhandenen Werte sind `Meisterschaft`, `Freundschaftsspiel`, `Turnier` und `NULL` (4 von 9 Spieltagen). Die Lifecycle-Logik muss diese drei Werte eindeutig auf `championship`, `friendly`, `tournament` abbilden; `NULL` zählt nicht automatisch als sperrenrelevant und muss bei Bedarf vor einer späteren Verbüßungsentscheidung fachlich behandelt werden.
 
 ### 3.7 `matchday_early_suspension_resets` – vorzeitiger Sperrausgleich
 
@@ -139,7 +139,7 @@ Diese Foundation allein löst noch keine fachlichen Abläufe aus. Separate Migra
 
 ## 8. Prüfhinweise / offene technische Prüfpunkte vor Ausführung
 
-- Die konkrete Existenz und Signatur von `public.user_club_context` ist in der Zielumgebung vor Ausführung der Policy nochmals zu bestätigen. Falls nicht vorhanden, muss die Club-Settings-Policy angepasst werden. Die aktuelle Migration enthält an dieser Stelle eine vorsichtige Superadmin-Kontextprüfung.
+- Die Existenz und Spalten von `public.user_club_context` wurden in DEV bestätigt (`user_id`, `club_id`, `selected_at`). Die Club-Settings-Policy muss Vereinsadmins im ausgewählten Vereinskontext und Teammitglieder der Vereinsmannschaften lesen lassen; die SQL-Datei wird entsprechend begrenzt.
 - Die tatsächlichen `matchdays.game_type`-Werte müssen vor der Lifecycle-Implementierung vollständig ausgelesen und kanonisch zugeordnet werden.
 - Der aktuelle Frontend-Datenfluss der Kaderempfehlung ist noch nicht vollständig aufgerufen; die bestehende Speicher-RPC validiert Teammitgliedschaft und Spieler, nicht die Sperrenberechtigung.
 - Vor Ausführung müssen die Migrationsdatei und der vollständige SQL-Text gegen den tatsächlichen aktuellen Migrationsordner und die Projektregeln gegengeprüft werden.
