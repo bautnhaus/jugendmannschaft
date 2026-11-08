@@ -1,5 +1,5 @@
 -- E05 / AP05 – Schemafundament Trainingsereignisse und Sperren
--- Review-Entwurf Revision 2 | 08.11.2026
+-- Review-Entwurf Revision 3 | 08.11.2026
 -- Target: Supabase DEV only (pzazqvvoruqnqhcorbwx)
 -- Status: REVIEW DRAFT – NOT APPROVED – DO NOT EXECUTE
 -- This is a review artifact under docs/, not a Supabase migration file.
@@ -146,9 +146,11 @@ create table public.training_suspension_exceptions (
   revoke_reason text,
   constraint training_suspension_exceptions_revocation_check
     check ((revoked_at is null and revoked_by is null and revoke_reason is null)
-       or (revoked_at is not null and nullif(btrim(revoke_reason),'') is not null)),
-  unique (suspension_id, matchday_id)
+       or (revoked_at is not null and nullif(btrim(revoke_reason),'') is not null))
 );
+create unique index training_suspension_exceptions_one_active_per_suspension_matchday
+  on public.training_suspension_exceptions(suspension_id, matchday_id)
+  where revoked_at is null;
 create index training_suspension_exceptions_matchday_idx
   on public.training_suspension_exceptions(team_id, matchday_id);
 
@@ -271,6 +273,29 @@ alter table public.team_suspension_game_types enable row level security;
 alter table public.matchday_early_suspension_resets enable row level security;
 alter table public.matchday_early_suspension_reset_audit enable row level security;
 
+-- Append-only protection for audit history. Mutations are rejected even for service_role;
+-- audited writes are INSERT-only and future RPCs execute as their tightly controlled owner.
+create function public.e05_reject_audit_mutation()
+returns trigger
+language plpgsql
+set search_path = pg_catalog, public
+as $
+begin
+  raise exception 'E05 audit tables are append-only; % is not permitted on %', TG_OP, TG_TABLE_NAME
+    using errcode = '55000';
+end;
+$;
+
+create trigger training_behavior_event_audit_append_only
+before update or delete on public.training_behavior_event_audit
+for each row execute function public.e05_reject_audit_mutation();
+create trigger training_suspension_audit_append_only
+before update or delete on public.training_suspension_audit
+for each row execute function public.e05_reject_audit_mutation();
+create trigger matchday_early_suspension_reset_audit_append_only
+before update or delete on public.matchday_early_suspension_reset_audit
+for each row execute function public.e05_reject_audit_mutation();
+
 -- Remove inherited/default API privileges before granting minimum access.
 revoke all on public.training_behavior_events,
   public.training_behavior_event_audit,
@@ -296,7 +321,9 @@ grant select on public.training_behavior_events,
   public.matchday_early_suspension_reset_audit
 to authenticated;
 
-grant all on public.training_behavior_events,
+-- Backend role receives only read/insert at table level. Mutating domain rows is
+-- reserved for future reviewed SECURITY DEFINER RPCs; audit rows are INSERT-only.
+grant select, insert on public.training_behavior_events,
   public.training_behavior_event_audit,
   public.training_suspensions,
   public.training_suspension_exceptions,
