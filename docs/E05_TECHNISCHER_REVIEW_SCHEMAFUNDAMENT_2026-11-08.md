@@ -283,3 +283,53 @@ Diese Befunde sind Bestandszustand und wurden durch AP05 nicht verursacht. Sie d
 ### 10.6 Änderungsgrenzen
 
 Es wurden nur read-only SQL-Katalogabfragen sowie Security-/Performance-Advisor-Abfragen ausgeführt. Keine Tabellen, Daten, Funktionen, Trigger, Policies, Grants oder Migrationseinträge wurden verändert. Keine Änderung an PROD oder `main`.
+
+
+## 11. DEV-Abgleich des SQL-Entwurfs und statische Prüfung
+
+**Stand:** 08.11.2026, nach dem Read-only-Abgleich  
+**SQL-Entwurf:** `docs/E05_SCHEMA_MIGRATION_DRAFT_2026-11-08.sql`  
+**Ziel:** ausschließlich DEV; Entwurf bleibt nicht freigegeben und wurde nicht ausgeführt.
+
+### 11.1 Abgleich mit tatsächlichem DEV-Bestand
+
+- Die aktuelle DEV-Migrationshistorie endet bei `20261104143331 db_dev_009_single_team_membership_guard`; es existiert weiterhin keine AP05-Migration.
+- Die Bestandsstruktur bestätigt `teams`, `players`, `seasons`, `trainings`, `attendance`, `matchdays`, `matchday_players`, `clubs`, `user_club_context` und die Rollen-/Kontexttabellen.
+- `trainings.season_id` ist nullable; `matchdays.season_id` ist nullable; `matchdays.game_type` ist nullable. Diese Felder dürfen in späteren Schreib-RPCs nicht ungeprüft übernommen werden.
+- Die tatsächlich vorhandenen Kontextfunktionen sind `is_team_member(uuid)`, `has_selected_team_context(uuid)` und `can_manage_club_context(uuid)`. Sie sind `SECURITY DEFINER` mit festem `search_path = pg_catalog, public`. Die Policies im Entwurf referenzieren damit vorhandene Funktionen und keine nur angenommene neue Rollenlogik.
+- `is_team_member(team_id)` umfasst Trainer/Mannschaftsadmins und Superadmins nur im ausgewählten Teamkontext; Clubadmins werden über `has_selected_team_context(team_id)` abgedeckt.
+- Der tatsächliche DEV-Bestand enthält 12 von 14 Trainings ohne `season_id`; die spätere Ereignis-RPC muss eine eindeutige aktive Saison aus `seasons.is_active` ermitteln und andernfalls abbrechen.
+
+### 11.2 Korrektur am SQL-Entwurf
+
+Der vorherige ACL-Abschnitt entzog Tabellenrechte nur `PUBLIC`, `anon` und `authenticated`, während `service_role` anschließend explizit SELECT erhielt. Damit war nicht sichergestellt, dass eventuell vorhandene Default-/Alt-Schreibrechte von `service_role` entfernt sind.
+
+**Korrektur in Revision 5:** Der Tabellen-`REVOKE ALL` umfasst nun ausdrücklich `PUBLIC, anon, authenticated, service_role`. Anschließend erhält `authenticated` ausschließlich SELECT und `service_role` ebenfalls ausschließlich SELECT. Es gibt keine direkten Schreibrechte für eine API-Rolle in der Foundation. Die Triggerfunktion bleibt für alle vier Rollen explizit gesperrt.
+
+### 11.3 Statische Prüfung der überarbeiteten SQL-Datei
+
+Folgende automatisierte Text-/Strukturprüfungen wurden auf dem vollständigen Entwurf ausgeführt:
+
+| Prüfung | Ergebnis |
+|---|---|
+| Transaktionsrahmen BEGIN/COMMIT vorhanden | PASS |
+| Dollar-Quote-Paare vollständig | PASS |
+| Genau zehn Foundation-Tabellen | PASS |
+| Für alle zehn Tabellen RLS aktiviert | PASS |
+| Zehn SELECT-Policies vorhanden | PASS |
+| Tabellen-REVOKE umfasst PUBLIC/anon/authenticated/service_role | PASS |
+| service_role erhält nach REVOKE nur SELECT | PASS |
+| Keine Änderung bestehender Tabellen durch ALTER TABLE | PASS |
+| Bestehende Helper-Funktionen im DEV-Katalog nachgewiesen | PASS |
+
+Die Prüfung ist eine statische Struktur-/Katalogprüfung. Sie ist **kein PostgreSQL-Parserlauf und kein erneuter isolierter PostgreSQL-17.6-Workflow-Test**. Der erfolgreiche bzw. fehlgeschlagene frühere CI-Lauf wird dadurch nicht ersetzt. Ein neuer CI-Lauf auf genau diesem korrigierten Commit bleibt vor technischer Freigabe erforderlich.
+
+### 11.4 Verbleibende technische Risiken / offene Freigabepunkte
+
+1. Die SQL-Datei ist noch ein Review-Artefakt unter `docs/`, keine ausführbare Migration unter `supabase/migrations/`.
+2. Die fachlichen Schreib-RPCs fehlen absichtlich noch; die Foundation bildet Tabellen, SELECT-Sicht und Schreibsperre ab.
+3. Die zehn Tabellen-/Policy-Definitionen müssen im isolierten PostgreSQL-Test gegen die reale Fixture laufen. Insbesondere sind Policy-Auflösung, FK-/Constraint-Verhalten, Trigger-Append-only und tatsächliche Tabellen-ACLs dort zu testen.
+4. Die RLS-Policies für Clubkonfigurationen müssen im isolierten Test mit Teammitglied, Clubadmin im ausgewählten Clubkontext, Clubadmin ohne ausgewählten Kontext und Superadmin ohne/mit passenden Kontexten geprüft werden.
+5. Der Rollback-/Restore-Nachweis und die abschließende Prüfung der Test-Fixture gegen DEV-Berechtigungen stehen weiterhin aus.
+
+**Ergebnis:** Der konkrete, im DEV-Abgleich gefundene ACL-Mangel wurde im Review-Entwurf korrigiert. Die statischen Strukturprüfungen sind bestanden. **Keine SQL-Anweisung wurde in Supabase ausgeführt; DEV und PROD sind unverändert. Keine Ausführungsfreigabe erteilt.**
