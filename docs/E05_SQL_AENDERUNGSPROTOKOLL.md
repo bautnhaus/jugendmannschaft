@@ -56,3 +56,22 @@ Es darf ausschließlich exakt der freigegebene SQL-Stand ausgeführt werden. Jed
 - Ausführung: **NICHT AUSGEFÜHRT**
 - Ergebnis / Migration-ID / Commit:
 - Nachprüfung:
+
+
+### E05-SQL-001 – Technisches Schemafundament Trainingsereignisse und Sperren
+- Datum / Version: 08.11.2026 / Entwurf 1.0
+- Fachlicher Bezug: AP05.2, AP05.3a–d
+- Zielumgebung: Supabase DEV (`pzazqvvoruqnqhcorbwx)); PROD ausgeschlossen
+- Betroffene Objekte: neun neue Tabellen (Trainingsereignisse, Event-Audit, Sperren, Sperrausnahmen, Sperren-Audit, Club-/Team-Spielartkonfiguration, vorzeitiger Sperrausgleich und Audit)
+- Zweck: Historien- und Datenmodellfundament für E05; noch keine ausführbaren Lebenszyklus-/Empfehlungs-RPCs
+- Datenbestand betroffen?: keine bestehenden Zeilen; nur neue leere Tabellen/Indizes/Policies/Grants vorgesehen
+- Sicherheits-/RLS-Auswirkungen: RLS auf allen neuen Tabellen; SELECT-Policies anhand vorhandener Team-/Kontextfunktionen; explizite SELECT-Grants; noch keine Client-Schreib-Policies. Schreiboperationen folgen erst mit geprüften, eng begrenzten RPCs.
+- SQL-Datei: `supabase/migrations/20261108000100_e05_training_events_suspensions_foundation.sql`
+- Erwartetes Ergebnis: neue Tabellen/Indizes/Constraints/RLS-Policies und minimale Lese-Grants; keine Änderung bestehender Tabellen, Funktionen oder Policies
+- Prüfplan: Migration zunächst nicht ausführen; vor Freigabe Syntax-/Abhängigkeitsreview, tatsächliche FKs/Policies/Grants gegen DEV, RLS-Negativ-/Positivtests und Prüfung der Löschblockaden; nach Freigabe read-only Schema-/ACL-/Policy-Verifikation plus funktionale Rechte-Tests
+- Rückfallplan: vor Ausführung zu konkretisieren; da noch keine Ausführung erfolgt, keine Rücknahme ausgeführt. Ein Rollback müsste die neuen Objekte in Abhängigkeitsreihenfolge entfernen und darf keine Auditdaten enthalten.
+- Freigabestatus: **NICHT FREIGEGEBEN**
+- Ausführung: **NICHT AUSGEFÜHRT**
+- Ergebnis / Migration-ID / Commit: Entwurf liegt in develop; Commit nach Aktualisierung: `b8837c36b4a42ae756c4cc8566dff0b3d6c05db8`
+- Nachprüfung: nur statischer Review und read-only Bestandsabgleich; keine Ausführung, keine Schemaänderung.
+- Nachweisgrenze / offene Punkte: Lebenszyklusfunktionen, automatische Sperrenerzeugung/-ableistung, Ausnahmen, Saisonwechsel, vorzeitiger Sperrausgleich, Audit-Trigger und Empfehlungseinbindung sind nicht Teil dieser ersten Strukturmigration. Die technische Freigabe wird erst nach Klärung der im Zieldatenmodell benannten Punkte empfohlen.
