@@ -160,6 +160,7 @@ declare
   v_suspension_id uuid;
   v_suspension_source_event_id uuid;
   v_yellow_count integer;
+  v_yellow_since timestamptz;
 begin
   v_actor := auth.uid();
 
@@ -289,6 +290,7 @@ begin
 
   -- Rot löst unmittelbar eine eigenständige rote Sperre aus.
   if p_event_type = 'red_card' then
+    v_suspension_source_event_id := v_event_id;
     insert into public.training_suspensions (
       team_id, season_id, player_id, player_name_snapshot,
       source_event_id, suspension_type, status, created_by, created_at
@@ -302,6 +304,15 @@ begin
   -- Gelb löst beim fünften aktiven Ereignis eine gelbe Sperre aus.
   -- Eine bereits offene gelbe Sperre verhindert eine zweite parallele gelbe Sperre.
   elsif p_event_type = 'yellow_card' then
+    select coalesce(max(s.served_at), '-infinity'::timestamptz)
+      into v_yellow_since
+    from public.training_suspensions s
+    where s.team_id = v_team_id
+      and s.season_id = v_season_id
+      and s.player_id = p_player_id
+      and s.suspension_type = 'yellow'
+      and s.status = 'served';
+
     select count(*)::integer
       into v_yellow_count
     from public.training_behavior_events e
@@ -309,7 +320,8 @@ begin
       and e.season_id = v_season_id
       and e.player_id = p_player_id
       and e.event_type = 'yellow_card'
-      and e.status = 'active';
+      and e.status = 'active'
+      and e.awarded_at > v_yellow_since;
 
     if v_yellow_count >= 5
        and not exists (
@@ -328,6 +340,7 @@ begin
         and e.player_id = p_player_id
         and e.event_type = 'yellow_card'
         and e.status = 'active'
+        and e.awarded_at > v_yellow_since
       order by e.awarded_at, e.id
       offset 4 limit 1;
 
