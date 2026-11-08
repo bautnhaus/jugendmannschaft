@@ -52,6 +52,11 @@ using (public.is_team_member(team_id) or public.has_selected_team_context(team_i
 alter table public.training_suspension_audit
   add column exception_id uuid references public.training_suspension_exceptions(id) on delete restrict;
 
+-- Existing audit rows reference suspensions; exception audit rows reference
+-- exceptions instead. Exactly one of these two columns must be populated.
+alter table public.training_suspension_audit
+  alter column suspension_id drop not null;
+
 alter table public.training_suspension_audit
   add constraint training_suspension_audit_one_subject_check
   check (num_nonnulls(suspension_id,exception_id)=1);
