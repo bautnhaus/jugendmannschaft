@@ -1,6 +1,6 @@
 -- E05 / AP05 – Paket 7: Kontrollierter Saisonabschluss
 -- Ziel: Supabase DEV only (pzazqvvoruqnqhcorbwx)
--- Status: FREIGEGEBEN – wird in DEV ausgeführt
+-- Status: AM 08.11.2026 IN SUPABASE DEV AUSGEFÜHRT; POSITIV-/NEGATIVTESTS BESTANDEN
 -- Keine PROD-Änderungen.
 
 begin;
