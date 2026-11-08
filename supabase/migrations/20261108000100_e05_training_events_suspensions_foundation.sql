@@ -109,7 +109,7 @@ create table public.training_suspension_audit (
   before_state jsonb,
   after_state jsonb not null,
   reason text,
-  actor_id uuid not null references auth.users(id) on delete restrict,
+  actor_id uuid not null,
   occurred_at timestamptz not null default now(),
   constraint training_suspension_audit_reason_check
     check (action in ('created','served','expired','exception_granted') or nullif(btrim(reason), '') is not null)
@@ -133,8 +133,6 @@ create table public.team_suspension_settings (
   relevant_game_types text[] not null,
   updated_at timestamptz not null default now(),
   updated_by uuid,
-  constraint team_suspension_settings_nonempty_check
-    check (cardinality(relevant_game_types) > 0),
   constraint team_suspension_settings_values_check
     check (relevant_game_types <@ array['Meisterschaft','Freundschaftsspiel','Turnier']::text[])
 );
