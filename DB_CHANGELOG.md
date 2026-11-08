@@ -557,35 +557,22 @@ Die PROD-Datenbankgrundlage für die Mitglieder-/Trainer-Einladung wurde am 05.1
 Die vollständigen Ausführungsdetails, Freigaben, SQL-Backup-Prüfsummen, Verifikationen und Nachweisgrenzen stehen in `DB_MIGRATION_LOG.md` unter DB-MIG-2026-005 und DB-MIG-2026-006.
 
 
-## DB-DEV-010 – E05 technisches Schemafundament (Entwurf, nicht ausgeführt)
-
-- **Umgebung:** Supabase DEV (vorgesehen)
-- **Status:** Technisches Zielmodell erstellt; SQL-Entwurf in GitHub versioniert; nicht freigegeben und nicht ausgeführt.
-- **Fachlicher Bezug:** AP05.2 und AP05.3a–d.
-- **Geplante neue Objekte:** `training_behavior_events`, `training_behavior_event_audit`, `training_suspensions`, `training_suspension_exceptions`, `training_suspension_audit`, `club_suspension_game_types`, `team_suspension_game_types`, `matchday_early_suspension_resets`, `matchday_early_suspension_reset_audit`.
-- **Sicherheitskonzept:** RLS auf allen neuen Tabellen; lesender Zugriff über vorhandene Team-/Kontextfunktionen; minimale SELECT-Grants; keine Client-Schreib-Policies in dieser ersten Etappe. Schreibende RPCs und Audit-Trigger sind eine spätere Etappe.
-- **Datenbestand:** Keine bestehenden Daten sollen geändert werden. Historienreferenzen sind so ausgelegt, dass Spieler-Löschung nicht die Ereignisidentität entfernt; Team-/Saisonbezug bleibt als Snapshot erhalten. Trainings-/Spieltagsreferenzen mit RESTRICT können bestehende Löschvorgänge blockieren und sind vor Freigabe ausdrücklich zu bewerten.
-- **SQL-Quelle:** `supabase/migrations/20261108000100_e05_training_events_suspensions_foundation.sql`, Commit `b8837c36b4a42ae756c4cc8566dff0b3d6c05db8`.
-- **Ausführungsnachweis:** keiner. Siehe `DB_MIGRATION_LOG.md`, DB-MIG-2026-007 (geplant, nicht ausgeführt).
-- **Prüfgrenze:** Read-only Bestandsabgleich und statischer Review; keine Ausführung, keine neuen Datenbankobjekte, keine Funktions-/Policyänderung.
-- **Offen:** Audit-Trigger/RPCs, atomare Eventvergabe, Sperren-Lifecycle, Saisonwechsel, Spielart-Override, Ausnahmen, vorzeitiger Sperrausgleich und Empfehlungseinbindung. Diese Punkte werden nicht durch das Schemafundament allein umgesetzt.
-
-
 ## DB-PLAN-E05-001 – Technisches Zielschema für Trainingsereignisse und Sperren
 
-- **Stand:** 08.11.2026
-- **Umgebung:** Ziel DEV; noch nicht ausgeführt
-- **Status:** Entwurf / nicht technisch freigegeben
-- **Geplante Objekte:** `training_behavior_events`, `training_behavior_event_audit`, `training_suspensions`, `training_suspension_exceptions`, `training_suspension_audit`, `club_suspension_game_types`, `team_suspension_game_types`, `training_early_suspension_resets`, `training_early_suspension_reset_audit`.
-- **SQL-Entwurf:** `docs/E05_SCHEMA_MIGRATION_DRAFT_2026-11-08.sql` (nicht ausführbar / nicht freigegeben)
+- **Stand:** 08.11.2026, Revision 2 nach technischem Review
+- **Umgebung:** Ziel DEV; nicht ausgeführt
+- **Status:** Entwurf / technisch noch nicht freigegeben
+- **Geplante Objekte:** zehn neue Tabellen: `training_behavior_events`, `training_behavior_event_audit`, `training_suspensions`, `training_suspension_exceptions`, `training_suspension_audit`, `club_suspension_settings`, `team_suspension_game_type_settings`, `team_suspension_game_types`, `matchday_early_suspension_resets`, `matchday_early_suspension_reset_audit`.
+- **SQL-Entwurf:** `docs/E05_SCHEMA_MIGRATION_DRAFT_2026-11-08.sql` (Review-Artefakt, nicht ausführbar als Migration / nicht freigegeben)
 - **Zieldatenmodell:** `docs/E05_TECHNISCHES_ZIELDATENMODELL_2026-11-08.md`
-- **Sicherheitskonzept im Entwurf:** RLS auf allen neuen Tabellen, Teamkontext-basierte Lesepolicies, keine direkten authentifizierten Schreibrechte; Schreibpfade sollen über getrennte serverseitige Funktionen ergänzt werden.
-- **Datenwirkung:** keine. Es wurden keine Tabellen, Funktionen, Trigger, Policies, Grants oder Daten geändert.
-- **Technische Grenzen:** Der Entwurf enthält noch nicht die vollständigen RPCs, atomaren Sperren-Lifecycle-Prozesse, Audit-Trigger/Append-only-Schutzmechanismen oder die Empfehlungseinbindung. Diese müssen vor einer Ausführungsfreigabe entworfen und geprüft werden.
+- **Reviewbericht:** `docs/E05_TECHNISCHER_REVIEW_SCHEMAFUNDAMENT_2026-11-08.md`
+- **Sicherheitskonzept:** RLS auf allen neuen Tabellen, minimale SELECT-Grants, keine direkten Client-Schreibrechte. Schreibpfade nur über getrennte, auditierte RPCs.
+- **Datenwirkung:** keine. Es wurden keine E05-Tabellen, Funktionen, Trigger, Policies, Grants oder Daten angelegt/geändert.
+- **Technischer Stand:** Die erste Prüfung identifizierte Fehler bei Spieler-/Actor-Snapshots, Team-Override, Sperrenursprung, Statusfluss und Team-/Saison-/Termin-Konsistenz. Modell und SQL-Entwurf wurden daraufhin überarbeitet; die Revision benötigt noch statische Vollprüfung und isolierten PostgreSQL-Test.
 - **PROD:** nicht übertragen; keine Freigabe.
+- **Ausführungsjournal:** erst nach einem tatsächlichen Ausführungsversuch in `DB_MIGRATION_LOG.md` erfassen. Dieser Planungsdatensatz ist kein Ausführungsnachweis.
 
 Dies ist ein Planungsdatensatz und kein Nachweis entstandener Datenbankobjekte.
-
 
 ### Ergänzende Prüfnotiz E05 (08.11.2026)
 
