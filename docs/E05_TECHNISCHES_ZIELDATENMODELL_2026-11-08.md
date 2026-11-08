@@ -100,8 +100,8 @@ Append-only Audit für Vormerkung, Anwendung, Stornierung bei Absage/Nominierung
 
 - Spieler-Löschung setzt nur die nullable Spieler-FK auf NULL; Snapshot und Historie bleiben.
 - Actor-Löschung setzt Actor-FKs auf NULL; Actor-Snapshot, Zeit, Aktion und Grund bleiben.
-- Team-ID ist ein historischer Snapshot ohne FK; Saison-ID bleibt als FK mit RESTRICT erhalten, damit Archiv-/Löschvorgänge keine Historie zerstören.
-- Trainings- und Spieltagsreferenzen verwenden `ON DELETE RESTRICT`; Quelltermine können nicht versehentlich entfernt werden, solange abhängige Historie existiert.
+- Team-, Saison-, Trainings- und Spieltags-IDs werden als historische Snapshots gespeichert; Saison-, Trainings- und Spieltagsbezeichnungen/-daten werden zusätzlich als Text-/Datums-Snapshots gesichert.
+- Es gibt keine operativen Fremdschlüssel von der Ereignis-/Sperrenhistorie auf Team, Saison, Training oder Spieltag. So bleiben Historien bei Löschung der Quelldatensätze erhalten, ohne bestehende sequenzielle Löschabläufe teilweise scheitern zu lassen.
 - Normale FKs sichern keine teamübergreifende Konsistenz. Jede schreibende RPC muss Team, Spieler, Training, Saison und Spieltag unter Transaktions-/Zeilensperre prüfen. Die aktive Saison wird aus `seasons.is_active` der betreffenden Mannschaft ermittelt; fehlende oder mehrdeutige aktive Saison führt zum Abbruch.
 - Sperrenquelle muss eine Karte desselben Spielers/Teams/Saisonkontexts sein. Ein Ereignis darf höchstens eine Sperre auslösen.
 - Eine Ausnahme muss auf einen Spieltag derselben Mannschaft und Saison zeigen.
