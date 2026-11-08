@@ -1,0 +1,49 @@
+name: E05 schema draft – isolated PostgreSQL test
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - 'docs/E05_SCHEMA_MIGRATION_DRAFT_2026-11-08.sql'
+      - 'docs/e05-test/**'
+      - '.github/workflows/e05-schema-draft-test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-17:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: e05_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d e05_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: e05_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Prepare disposable Supabase-like fixture
+        run: psql -v ON_ERROR_STOP=1 -f docs/e05-test/bootstrap.sql
+      - name: Apply draft to disposable PostgreSQL only
+        run: psql -v ON_ERROR_STOP=1 -f docs/E05_SCHEMA_MIGRATION_DRAFT_2026-11-08.sql
+      - name: Run structural, constraint, snapshot and RLS assertions
+        run: psql -v ON_ERROR_STOP=1 -f docs/e05-test/assertions.sql
