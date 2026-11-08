@@ -744,3 +744,18 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Offene Punkte:** AP05.2-Quelldatei exakt lokalisieren; alle FK-/Datenkonsistenzregeln und Rollenpfade vervollständigen; Audit-/Delete-Schutz und serverseitige Schreib-RPCs implementieren; Syntax-/Integritätstest auf isoliertem PostgreSQL-Testschema; vollständige Policy-/ACL-Prüfung; Rollback- und Backup-/Restore-Nachweis; finalen Migrationsdateinamen mit Supabase CLI erzeugen. Erst danach erneute technische Freigabeprüfung.
 
 **Wichtige Abgrenzung:** Die Datei unter `docs/` ist ein Review-Entwurf, keine ausführbare Migration unter `supabase/migrations/`. Sie darf nicht ausgeführt werden. Nach technischer Fertigstellung wird eine unveränderliche Migrationsdatei nach dem vorgeschriebenen Supabase-CLI-Verfahren erzeugt und hier referenziert.
+
+
+## 9. E05 – technischer Review des vorbereiteten Schemafundaments (08.11.2026)
+
+- **Status:** Read-only Review abgeschlossen; vorhandener SQL-Entwurf ist in der geprüften Fassung nicht freigabefähig.
+- **Zielumgebung:** Supabase DEV (pzazqvvoruqnqhcorbwx); keine Ausführung.
+- **Führender Reviewbericht:** docs/E05_TECHNISCHER_REVIEW_SCHEMAFUNDAMENT_2026-11-08.md.
+- **Maßgebliche Entwurfsdateien:** docs/E05_TECHNISCHES_ZIELDATENMODELL_2026-11-08.md und docs/E05_SCHEMA_MIGRATION_DRAFT_2026-11-08.sql.
+- **Prüfergebnis:** Der vorhandene SQL-Entwurf benötigt vor Freigabe Korrekturen insbesondere bei Spieler-Snapshots/Löschverhalten, vollständigem Team-Override auch bei leerer Spielartenliste, eindeutiger Zuordnung einer Sperre zum auslösenden Ereignis, Akteursreferenzen bei Kontolöschung, konsistentem Storno-/Reaktivierungsstatus sowie Team-/Saison-/Training-/Spieltag-Konsistenz.
+- **DEV-Befunde:** 12 von 14 Trainings besitzen aktuell keinen season_id; vorhandene Spielartwerte sind Meisterschaft, Freundschaftsspiel, Turnier und NULL. Diese Fakten sind in der späteren Schreiblogik zu berücksichtigen.
+- **Ausführung:** Keine schreibende SQL-Anfrage, kein Migrationsversuch, keine Datenbankänderung.
+- **Freigabe:** Nicht erteilt und nicht angefragt; die Vorlage zur technischen Prüfung ist keine Ausführungsfreigabe.
+- **PROD:** nicht betroffen und ausdrücklich ausgeschlossen.
+- **Weiteres Vorgehen:** Korrigiertes Modell und SQL-Review-Artefakt erstellen, statisch prüfen, auf isolierter PostgreSQL-Testinstanz testen und erst danach die finale Migrationsdatei nach dem vorgeschriebenen Supabase-CLI-Verfahren erzeugen.
+
