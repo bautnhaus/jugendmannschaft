@@ -555,3 +555,17 @@ Die PROD-Datenbankgrundlage für die Mitglieder-/Trainer-Einladung wurde am 05.1
 - **Noch offen:** Deployment der Edge Functions in PROD und End-to-End-/UI-Praxistests. Bis dahin bleibt die neue Einladungsstrecke deaktiviert.
 
 Die vollständigen Ausführungsdetails, Freigaben, SQL-Backup-Prüfsummen, Verifikationen und Nachweisgrenzen stehen in `DB_MIGRATION_LOG.md` unter DB-MIG-2026-005 und DB-MIG-2026-006.
+
+
+## DB-DEV-010 – E05 technisches Schemafundament (Entwurf, nicht ausgeführt)
+
+- **Umgebung:** Supabase DEV (vorgesehen)
+- **Status:** Technisches Zielmodell erstellt; SQL-Entwurf in GitHub versioniert; nicht freigegeben und nicht ausgeführt.
+- **Fachlicher Bezug:** AP05.2 und AP05.3a–d.
+- **Geplante neue Objekte:** `training_behavior_events`, `training_behavior_event_audit`, `training_suspensions`, `training_suspension_exceptions`, `training_suspension_audit`, `club_suspension_game_types`, `team_suspension_game_types`, `matchday_early_suspension_resets`, `matchday_early_suspension_reset_audit`.
+- **Sicherheitskonzept:** RLS auf allen neuen Tabellen; lesender Zugriff über vorhandene Team-/Kontextfunktionen; minimale SELECT-Grants; keine Client-Schreib-Policies in dieser ersten Etappe. Schreibende RPCs und Audit-Trigger sind eine spätere Etappe.
+- **Datenbestand:** Keine bestehenden Daten sollen geändert werden. Historienreferenzen sind so ausgelegt, dass Spieler-Löschung nicht die Ereignisidentität entfernt; Team-/Saisonbezug bleibt als Snapshot erhalten. Trainings-/Spieltagsreferenzen mit RESTRICT können bestehende Löschvorgänge blockieren und sind vor Freigabe ausdrücklich zu bewerten.
+- **SQL-Quelle:** `supabase/migrations/20261108000100_e05_training_events_suspensions_foundation.sql`, Commit `b8837c36b4a42ae756c4cc8566dff0b3d6c05db8`.
+- **Ausführungsnachweis:** keiner. Siehe `DB_MIGRATION_LOG.md`, DB-MIG-2026-007 (geplant, nicht ausgeführt).
+- **Prüfgrenze:** Read-only Bestandsabgleich und statischer Review; keine Ausführung, keine neuen Datenbankobjekte, keine Funktions-/Policyänderung.
+- **Offen:** Audit-Trigger/RPCs, atomare Eventvergabe, Sperren-Lifecycle, Saisonwechsel, Spielart-Override, Ausnahmen, vorzeitiger Sperrausgleich und Empfehlungseinbindung. Diese Punkte werden nicht durch das Schemafundament allein umgesetzt.
