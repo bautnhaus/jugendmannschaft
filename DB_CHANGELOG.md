@@ -569,3 +569,19 @@ Die vollständigen Ausführungsdetails, Freigaben, SQL-Backup-Prüfsummen, Verif
 - **Ausführungsnachweis:** keiner. Siehe `DB_MIGRATION_LOG.md`, DB-MIG-2026-007 (geplant, nicht ausgeführt).
 - **Prüfgrenze:** Read-only Bestandsabgleich und statischer Review; keine Ausführung, keine neuen Datenbankobjekte, keine Funktions-/Policyänderung.
 - **Offen:** Audit-Trigger/RPCs, atomare Eventvergabe, Sperren-Lifecycle, Saisonwechsel, Spielart-Override, Ausnahmen, vorzeitiger Sperrausgleich und Empfehlungseinbindung. Diese Punkte werden nicht durch das Schemafundament allein umgesetzt.
+
+
+## DB-PLAN-E05-001 – Technisches Zielschema für Trainingsereignisse und Sperren
+
+- **Stand:** 08.11.2026
+- **Umgebung:** Ziel DEV; noch nicht ausgeführt
+- **Status:** Entwurf / nicht technisch freigegeben
+- **Geplante Objekte:** `training_behavior_events`, `training_behavior_event_audit`, `training_suspensions`, `training_suspension_exceptions`, `training_suspension_audit`, `club_suspension_game_types`, `team_suspension_game_types`, `training_early_suspension_resets`, `training_early_suspension_reset_audit`.
+- **SQL-Entwurf:** `docs/E05_SCHEMA_MIGRATION_DRAFT_2026-11-08.sql` (nicht ausführbar / nicht freigegeben)
+- **Zieldatenmodell:** `docs/E05_TECHNISCHES_ZIELDATENMODELL_2026-11-08.md`
+- **Sicherheitskonzept im Entwurf:** RLS auf allen neuen Tabellen, Teamkontext-basierte Lesepolicies, keine direkten authentifizierten Schreibrechte; Schreibpfade sollen über getrennte serverseitige Funktionen ergänzt werden.
+- **Datenwirkung:** keine. Es wurden keine Tabellen, Funktionen, Trigger, Policies, Grants oder Daten geändert.
+- **Technische Grenzen:** Der Entwurf enthält noch nicht die vollständigen RPCs, atomaren Sperren-Lifecycle-Prozesse, Audit-Trigger/Append-only-Schutzmechanismen oder die Empfehlungseinbindung. Diese müssen vor einer Ausführungsfreigabe entworfen und geprüft werden.
+- **PROD:** nicht übertragen; keine Freigabe.
+
+Dies ist ein Planungsdatensatz und kein Nachweis entstandener Datenbankobjekte.
