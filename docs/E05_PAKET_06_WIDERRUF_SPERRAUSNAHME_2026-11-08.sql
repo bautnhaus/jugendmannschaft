@@ -1,6 +1,6 @@
 -- E05 / AP05 – Paket 6: Kontrollierter Widerruf einer Spieltagsausnahme
 -- Ziel: Supabase DEV only (pzazqvvoruqnqhcorbwx)
--- Status: FREIGABEKANDIDAT – NICHT AUSFÜHREN VOR AUSDRÜCKLICHER FREIGABE
+-- Status: AM 08.11.2026 IN SUPABASE DEV AUSGEFÜHRT; FUNKTIONSTESTS ERFOLGREICH
 -- Abhängigkeit: Pakete 1–5.
 -- Keine PROD-Änderungen.
 
