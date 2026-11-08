@@ -209,7 +209,7 @@ insert into public.matchday_early_suspension_resets(
  '90000000-0000-0000-0000-000000000001',date '2026-11-14','Opponent','Reset test'
 );
 delete from public.matchdays where id='90000000-0000-0000-0000-000000000001';
-do $
+do $$
 begin
  if not exists(select 1 from public.training_suspension_exceptions
    where matchday_id='90000000-0000-0000-0000-000000000001'
@@ -219,7 +219,7 @@ begin
    where matchday_id='90000000-0000-0000-0000-000000000001'
      and matchday_opponent_snapshot='Opponent')
  then raise exception 'Reset matchday snapshot not retained'; end if;
-end $;
+end $$;
 
 -- Storno releases the partial uniqueness slot; historical row remains.
 update public.training_behavior_events
