@@ -69,3 +69,57 @@ Die fachlichen Schwellen- und Auditprüfungen werden, soweit möglich, mit DEV-T
 ## 6. Ausführungsstatus
 
 Noch nicht ausgeführt. Nach ausdrücklicher Freigabe werden Ausführung, tatsächliche Testergebnisse, Korrekturen und Abschlussstatus hier ergänzt.
+
+
+## DEV-Ausführung und Testergebnisse
+
+- **Ausgeführt:** 08.11.2026
+- **Ziel:** Supabase DEV, Projekt `pzazqvvoruqnqhcorbwx`
+- **Freigabe:** Nutzerfreigabe lag für Paket 3 vor.
+- **Ausführung:** erfolgreich; beide Tabellen, Policies, Audit-Trigger und erweiterte RPC wurden angelegt.
+- **PROD:** unverändert.
+
+### Struktur- und Rechteprüfungen
+
+| Prüfung | Ergebnis |
+|---|---|
+| `training_suspensions` vorhanden | Bestanden |
+| `training_suspension_audit` vorhanden | Bestanden |
+| SELECT-Policies auf beiden Tabellen | Bestanden |
+| Audit-Schutztrigger für UPDATE/DELETE | Bestanden |
+| RPC SECURITY DEFINER | Bestanden |
+| EXECUTE für `authenticated` | Erlaubt |
+| EXECUTE für `anon` und `service_role` | Nicht erlaubt |
+
+### Fachliche DEV-Tests
+
+Alle Testdaten wurden in einer Transaktion erzeugt und anschließend zurückgerollt.
+
+| Test | Ergebnis |
+|---|---|
+| Vier historische aktive gelbe Karten | Noch keine Sperre |
+| Fünfte aktive gelbe Karte | Genau eine offene gelbe Sperre |
+| Quellereignis der gelben Sperre | Verweist auf das fünfte Ereignis |
+| Audit-Eintrag zur gelben Sperre | Genau ein Eintrag |
+| Sechste gelbe Karte bei offener gelber Sperre | Keine zweite gelbe Sperre |
+| Rote Karte | Genau eine offene rote Sperre |
+| Quellereignis der roten Sperre | Verweist auf das rote Ereignis |
+| Audit-Eintrag zur roten Sperre | Genau ein Eintrag |
+| Rote Karte und positiver Stern im selben Training | Zulässig |
+| Fehler beim Schreiben des Sperren-Audits | Ereignis und Sperre gemeinsam zurückgerollt |
+
+### Testkorrektur während der Prüfung
+
+Ein erster Testlauf scheiterte an einer ungeeigneten Aggregation im Testskript (`max(uuid)` wird von PostgreSQL nicht unterstützt). Das war kein Fehler der Migration. Das Testskript wurde korrigiert und anschließend vollständig erfolgreich ausgeführt.
+
+### Datenbereinigung / Rollback-Nachkontrolle
+
+- 0 verbliebene Testereignisse.
+- 0 verbliebene Test-Audit-Einträge.
+- 0 verbliebene Sperren.
+- 0 verbliebene Sperren-Audit-Einträge.
+- Teständerungen an Anwesenheitsdaten wurden zurückgerollt.
+
+### Ergebnis
+
+**Paket 3 ist in DEV umgesetzt. Die gelbe Schwelle, das Verhalten bei weiteren gelben Karten während offener Sperre, rote Sperre, Audit-Verknüpfungen und Transaktionsatomarität wurden erfolgreich geprüft.** Die offenen Folgefunktionen aus dem Abschnitt „Bewusste Abgrenzung“ bleiben eigenständige Arbeitspakete.
