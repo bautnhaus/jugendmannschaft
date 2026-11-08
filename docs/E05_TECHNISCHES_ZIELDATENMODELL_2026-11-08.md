@@ -1,6 +1,6 @@
 # E05 – Technisches Zieldatenmodell: Trainingsereignisse, Sperren und Sperrausgleich
 
-**Stand:** 08.11.2026 – Revision 2 nach technischem Review  
+**Stand:** 08.11.2026 – Revision 3, Konsolidierung nach Dokumentations- und Fachabgleich  
 **Branch:** `develop`  
 **Zielumgebung:** ausschließlich Supabase DEV (`pzazqvvoruqnqhcorbwx`)  
 **Status:** korrigiertes Zielmodell; SQL-Entwurf in Prüfung; nicht ausgeführt und nicht freigegeben.
@@ -33,7 +33,8 @@ Ein Datensatz je tatsächlich vergebener gelber Karte, roter Karte oder positive
 
 - `team_id`, `season_id`: historische UUID-Snapshots; `team_name_snapshot` und `season_name_snapshot` bewahren die damaligen Bezeichnungen.
 - `training_id`: historische UUID ohne FK; `training_date_snapshot` und `training_name_snapshot` bewahren die damaligen Trainingsdaten.
-- Die spätere RPC prüft beim Erstellen, dass Training, Spieler, Team und aktive Saison zusammenpassen.
+- Ereignisse dürfen fachlich nur für anwesende Spieler angelegt werden. `attendance.present = true` ist die alleinige Anwesenheitsquelle; die spätere Vergabe-RPC muss diesen Wert serverseitig prüfen und darf sich nicht auf die UI-Liste „nur anwesende Spieler“ verlassen.
+- Die spätere RPC prüft beim Erstellen, dass Training, Spieler, Team und aktive Saison zusammenpassen. Da viele vorhandene Trainings `season_id = NULL` besitzen, muss die RPC die aktive Saison des Teams eindeutig ermitteln; andernfalls bricht sie ohne Ereignisanlage ab.
 - `player_id`: nullable FK auf `players` mit `ON DELETE SET NULL`.
 - `player_name_snapshot`: Pflicht; erhält die historische Identität bei späterer Spieler-Löschung.
 - `event_type`: `yellow_card`, `red_card`, `positive_star`.
@@ -90,7 +91,7 @@ Vormerkung des optionalen vorzeitigen Sperrausgleichs:
 - Status `pending`, `applied`, `cancelled`,
 - Pflichtgrund, vormerkender Trainer, Zeitpunkt und Auflösungsdaten.
 
-Eine Vormerkung ist unabhängig von der Zahl gelber Karten. Sie darf nicht gleichzeitig mit einer Nominierung desselben Spielers für denselben Spieltag bestehen. Diese Konkurrenz wird in einer RPC atomar geprüft und abgesichert. Nur der tatsächlich durchgeführte konkrete Spieltag führt zur Anwendung; Absage oder spätere Nominierung storniert die Vormerkung. Für die Zählung beginnt das aktive gelbe Konto ab `applied_at` neu. Historische Ereignisse bleiben unverändert; rote und bereits ausgelöste Sperren bleiben unberührt.
+Eine Vormerkung ist unabhängig von der Zahl gelber Karten. Sie darf nicht gleichzeitig mit einer Nominierung desselben Spielers für denselben Spieltag bestehen. Diese Konkurrenz wird in einer RPC atomar geprüft und abgesichert. Nur der tatsächlich durchgeführte konkrete Spieltag führt zur Anwendung; Absage oder spätere Nominierung storniert die Vormerkung. Für die Zählung beginnt das aktive gelbe Konto ab `applied_at` neu. Historische Ereignisse bleiben unverändert; rote und bereits ausgelöste Sperren bleiben unberührt. Die Vormerkung ist kein Sperren-Ereignis und beeinflusst weder die allgemeine Kaderempfehlung noch die Reihenfolge ihrer Berechnung.
 
 ### 3.8 `matchday_early_suspension_reset_audit`
 
@@ -161,4 +162,4 @@ Der Review vom 08.11.2026 hat folgende Punkte identifiziert; diese Revision adre
 - dokumentierter Rollback-/Restore-Weg;
 - erst danach Erstellung der finalen Datei über das vorgeschriebene Supabase-CLI-Verfahren.
 
-**Status:** Zielmodell Revision 2 erstellt. Noch keine SQL-Ausführung, keine Datenbankänderung, keine Freigabe.
+**Status:** Zielmodell Revision 3 konsolidiert. Noch keine SQL-Ausführung, keine Datenbankänderung, keine Freigabe. Der SQL-Entwurf bleibt ein separates Review-Artefakt unter `docs/`; die finale Migrationsdatei wird erst nach bestandenem isoliertem PostgreSQL-17.6-Test und vollständigem technischem Review gemäß `docs/SUPABASE_CHANGE_CONTROL.md` erstellt.
