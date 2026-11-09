@@ -2319,16 +2319,26 @@ window.openPlayerCard=id=>{
 
 /* E05 Phase 2 – player event and suspension history */
 function e05EventLabel(type){return type==='yellow_card'?'Gelbe Karte':type==='red_card'?'Rote Karte':type==='positive_star'?'Positiver Stern':type||'Ereignis';}
-function e05EventSymbol(type){return type==='yellow_card'?'🟨':type==='red_card'?'🟥':type==='positive_star'?'★':'•';}
+function e05EventSymbol(type){return type==='positive_star'?'<span class="material-symbols-outlined">star</span>':'<span class="e05CardMark"></span>';}
 function e05SuspensionLabel(s){return s.suspension_type==='yellow'?'Gelbe Sperre':'Rote Sperre';}
 function e05SuspensionStatus(s){return ({open:'Offen',served:'Abgeleistet',expired:'Saison beendet',voided:'Storniert'})[s.status]||s.status;}
 function e05CanManageHistory(){return role==='admin'||role==='trainer'||(isSuperAdmin&&adminContextActive);}
+function e05AuditSnapshot(values){
+  if(!values)return '';
+  const parts=[];
+  if(values.status)parts.push('Status: '+(({active:'Aktiv',voided:'Storniert',open:'Offen',served:'Abgeleistet',expired:'Saison beendet'})[values.status]||values.status));
+  if(values.event_type)parts.push(e05EventLabel(values.event_type));
+  if(Object.prototype.hasOwnProperty.call(values,'intended_matchday_id'))parts.push(values.intended_matchday_id?'Spieltag zugeordnet':'Kein Spieltag zugeordnet');
+  if(values.manual_target_locked===true)parts.push('Manuelle Zuordnung');
+  if(values.void_reason)parts.push('Grund: '+values.void_reason);
+  return parts.join(' · ');
+}
 function e05RenderHistory(player,events,eventAudits,suspensions,suspensionAudits){
   const eventRows=events.length?events.map(e=>{
     const audits=eventAudits.filter(a=>a.event_id===e.id).sort((a,b)=>new Date(b.changed_at)-new Date(a.changed_at));
     const status=e.status==='active'?'Aktiv':'Storniert';
     const action=!e05CanManageHistory()||e.event_type==='positive_star'?'':(e.status==='active'?'<button type="button" class="secondary" onclick="e05OpenEventCorrection(\''+e.id+'\',\'voided\',\''+player.id+'\')">Stornieren</button>':'<button type="button" class="secondary" onclick="e05OpenEventCorrection(\''+e.id+'\',\'active\',\''+player.id+'\')">Wiederherstellen</button>');
-    const auditHtml=audits.length?'<details class="playerCardDetails e05AuditDetails"><summary>Änderungsverlauf ('+audits.length+')</summary>'+audits.map(a=>'<div class="e05AuditRow"><b>'+esc(({created:'Erfasst',corrected:'Korrigiert',voided:'Storniert',reinstated:'Wiederhergestellt'})[a.action]||a.action)+'</b><span>'+esc(new Date(a.changed_at).toLocaleString('de-DE'))+'</span>'+(a.changed_by_snapshot?'<span>'+esc(a.changed_by_snapshot)+'</span>':'')+(a.reason?'<p>'+esc(a.reason)+'</p>':'')+'</div>').join('')+'</details>':'';
+    const auditHtml=audits.length?'<details class="playerCardDetails e05AuditDetails"><summary>Änderungsverlauf ('+audits.length+')</summary>'+audits.map(a=>'<div class="e05AuditRow"><b>'+esc(({created:'Erfasst',corrected:'Korrigiert',voided:'Storniert',reinstated:'Wiederhergestellt'})[a.action]||a.action)+'</b><span>'+esc(new Date(a.changed_at).toLocaleString('de-DE'))+'</span>'+(a.changed_by_snapshot?'<span>'+esc(a.changed_by_snapshot)+'</span>':'<span>Benutzername nicht hinterlegt</span>')+(a.old_values?'<span class="e05AuditSnapshot">Vorher: '+esc(e05AuditSnapshot(a.old_values))+'</span>':'')+(a.new_values?'<span class="e05AuditSnapshot">Nachher: '+esc(e05AuditSnapshot(a.new_values))+'</span>':'')+(a.reason?'<p>'+esc(a.reason)+'</p>':'')+'</div>').join('')+'</details>':'';
     return '<article class="e05HistoryItem"><div class="e05HistoryTop"><span class="e05EventSymbol '+esc(e.event_type)+'">'+e05EventSymbol(e.event_type)+'</span><div class="e05HistoryMain"><b>'+esc(e05EventLabel(e.event_type))+'</b><span>'+esc(fmtDateLong(e.training_date_snapshot))+' · '+esc(e.training_name_snapshot||'Training')+'</span><span class="muted small">'+esc(status)+' · '+esc(new Date(e.awarded_at).toLocaleString('de-DE'))+'</span></div></div>'+(e.reason?'<p class="e05HistoryReason">'+esc(e.reason)+'</p>':'')+(e.status==='voided'&&e.void_reason?'<p class="e05HistoryReason"><b>Stornogrund:</b> '+esc(e.void_reason)+'</p>':'')+(action?'<div class="e05HistoryActions">'+action+'</div>':'')+auditHtml+'</article>';
   }).join(''):'<p class="muted">Für diesen Spieler sind noch keine Ereignisse erfasst.</p>';
   const suspensionRows=suspensions.length?suspensions.map(s=>{
@@ -2336,7 +2346,7 @@ function e05RenderHistory(player,events,eventAudits,suspensions,suspensionAudits
     const target=s.intended_matchday_date_snapshot?fmtDateLong(s.intended_matchday_date_snapshot)+(s.intended_matchday_opponent_snapshot?' · '+s.intended_matchday_opponent_snapshot:''):'Noch kein Spieltag zugeordnet';
     const canCorrect=e05CanManageHistory()&&s.status==='open';
     const action=canCorrect?'<button type="button" class="secondary" onclick="e05OpenSuspensionCorrection(\''+s.id+'\',\''+player.id+'\',\''+s.team_id+'\',\''+s.season_id+'\')">Zuordnung korrigieren</button>':'';
-    const auditHtml=audits.length?'<details class="playerCardDetails e05AuditDetails"><summary>Änderungsverlauf ('+audits.length+')</summary>'+audits.map(a=>'<div class="e05AuditRow"><b>'+esc(a.action)+'</b><span>'+esc(new Date(a.changed_at).toLocaleString('de-DE'))+'</span>'+(a.changed_by_snapshot?'<span>'+esc(a.changed_by_snapshot)+'</span>':'')+(a.reason?'<p>'+esc(a.reason)+'</p>':'')+'</div>').join('')+'</details>':'';
+    const auditHtml=audits.length?'<details class="playerCardDetails e05AuditDetails"><summary>Änderungsverlauf ('+audits.length+')</summary>'+audits.map(a=>'<div class="e05AuditRow"><b>'+esc(a.action)+'</b><span>'+esc(new Date(a.changed_at).toLocaleString('de-DE'))+'</span>'+(a.changed_by_snapshot?'<span>'+esc(a.changed_by_snapshot)+'</span>':'<span>Benutzername nicht hinterlegt</span>')+(a.old_values?'<span class="e05AuditSnapshot">Vorher: '+esc(e05AuditSnapshot(a.old_values))+'</span>':'')+(a.new_values?'<span class="e05AuditSnapshot">Nachher: '+esc(e05AuditSnapshot(a.new_values))+'</span>':'')+(a.reason?'<p>'+esc(a.reason)+'</p>':'')+'</div>').join('')+'</details>':'';
     return '<article class="e05HistoryItem"><div class="e05HistoryTop"><span class="e05SuspensionDot '+esc(s.status)+'"></span><div class="e05HistoryMain"><b>'+esc(e05SuspensionLabel(s))+'</b><span>'+esc(e05SuspensionStatus(s))+' · '+esc(new Date(s.created_at).toLocaleString('de-DE'))+'</span><span class="muted small">'+esc(target)+'</span></div></div>'+(action?'<div class="e05HistoryActions">'+action+'</div>':'')+auditHtml+'</article>';
   }).join(''):'<p class="muted">Für diesen Spieler sind keine Sperren dokumentiert.</p>';
   return '<div class="detailHeader"><button type="button" class="iconBack" aria-label="Zurück zur Spielerkarte" onclick="openPlayerCard(\''+player.id+'\')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Karten &amp; Sperren</h2></div><p class="muted">Historie für '+esc(displayName(player))+' · Neueste Einträge zuerst.</p><section class="playerCardSection"><h3 class="playerCardSectionTitle">Ereignisse ('+events.length+')</h3>'+eventRows+'</section><section class="playerCardSection"><h3 class="playerCardSectionTitle">Sperren ('+suspensions.length+')</h3>'+suspensionRows+'</section>';
@@ -2353,8 +2363,8 @@ window.openPlayerEventHistory=async id=>{
     if(ev.error)throw ev.error;if(su.error)throw su.error;
     const eventIds=(ev.data||[]).map(x=>x.id),suspensionIds=(su.data||[]).map(x=>x.id);
     const [ea,sa]=await Promise.all([
-      eventIds.length?c.from('training_behavior_event_audit').select('id,event_id,action,reason,changed_by_snapshot,changed_at').in('event_id',eventIds).order('changed_at',{ascending:false}):Promise.resolve({data:[],error:null}),
-      suspensionIds.length?c.from('training_suspension_audit').select('id,suspension_id,action,reason,changed_by_snapshot,changed_at').in('suspension_id',suspensionIds).order('changed_at',{ascending:false}):Promise.resolve({data:[],error:null})
+      eventIds.length?c.from('training_behavior_event_audit').select('id,event_id,action,old_values,new_values,reason,changed_by_snapshot,changed_at').in('event_id',eventIds).order('changed_at',{ascending:false}):Promise.resolve({data:[],error:null}),
+      suspensionIds.length?c.from('training_suspension_audit').select('id,suspension_id,action,old_values,new_values,reason,changed_by_snapshot,changed_at').in('suspension_id',suspensionIds).order('changed_at',{ascending:false}):Promise.resolve({data:[],error:null})
     ]);
     if(ea.error)throw ea.error;if(sa.error)throw sa.error;
     $('modalContent').innerHTML=e05RenderHistory(p,ev.data||[],ea.data||[],su.data||[],sa.data||[]);
@@ -5214,8 +5224,8 @@ html[data-theme="dark"] .trainingEventStat.red{color:#F87171}
 
 /* E05 Phase 2 – player event/suspension history */
 .e05HistoryItem{padding:10px 0;border-top:1px solid var(--line)}.e05HistoryItem:first-of-type{border-top:0}
-.e05HistoryTop{display:flex;align-items:flex-start;gap:10px}.e05EventSymbol{width:30px;min-width:30px;text-align:center;font-size:22px;line-height:1.35}.e05EventSymbol.yellow_card{color:#A16207}.e05EventSymbol.red_card{color:#B91C1C}.e05EventSymbol.positive_star{color:#D69E26}
-.e05HistoryMain{display:flex;flex-direction:column;gap:3px;min-width:0}.e05HistoryMain>span{font-size:13px;color:var(--muted)}.e05HistoryReason{font-size:13px;margin:7px 0 0;color:var(--muted);white-space:pre-wrap}.e05HistoryActions{display:flex;gap:8px;margin-top:8px}.e05HistoryActions button{min-height:36px;padding:7px 11px}.e05AuditDetails{margin-top:8px}.e05AuditRow{display:grid;gap:3px;padding:7px 0;border-top:1px solid var(--line);font-size:12px}.e05AuditRow span{color:var(--muted)}.e05AuditRow p{margin:0;white-space:pre-wrap}.e05SuspensionDot{width:13px;height:13px;min-width:13px;border-radius:50%;margin:4px 8px;background:#94a3b8}.e05SuspensionDot.open{background:#dc2626}.e05SuspensionDot.served{background:#16a34a}.e05SuspensionDot.voided{background:#94a3b8}
-html[data-theme="dark"] .e05EventSymbol.yellow_card{color:#FACC15}html[data-theme="dark"] .e05EventSymbol.red_card{color:#F87171}html[data-theme="dark"] .e05EventSymbol.positive_star{color:#FBBF24}
+.e05HistoryTop{display:flex;align-items:flex-start;gap:10px}.e05EventSymbol{width:30px;min-width:30px;display:flex;align-items:center;justify-content:center;min-height:28px}.e05EventSymbol .material-symbols-outlined{font-size:23px}.e05CardMark{display:block;width:13px;height:19px;border-radius:3px}.e05EventSymbol.yellow_card .e05CardMark{background:#FACC15}.e05EventSymbol.red_card .e05CardMark{background:#B91C1C}.e05EventSymbol.positive_star{color:#A16207}
+.e05HistoryMain{display:flex;flex-direction:column;gap:3px;min-width:0}.e05HistoryMain>span{font-size:13px;color:var(--muted)}.e05HistoryReason{font-size:13px;margin:7px 0 0;color:var(--muted);white-space:pre-wrap}.e05HistoryActions{display:flex;gap:8px;margin-top:8px}.e05HistoryActions button{min-height:36px;padding:7px 11px}.e05AuditDetails{margin-top:8px}.e05AuditRow{display:grid;gap:3px;padding:7px 0;border-top:1px solid var(--line);font-size:12px}.e05AuditRow span{color:var(--muted)}.e05AuditSnapshot{display:block;font-size:11px;overflow-wrap:anywhere}.e05AuditRow p{margin:0;white-space:pre-wrap}.e05SuspensionDot{width:13px;height:13px;min-width:13px;border-radius:50%;margin:4px 8px;background:#94a3b8}.e05SuspensionDot.open{background:#dc2626}.e05SuspensionDot.served{background:#16a34a}.e05SuspensionDot.voided{background:#94a3b8}
+html[data-theme="dark"] .e05EventSymbol.yellow_card .e05CardMark{background:#FACC15}html[data-theme="dark"] .e05EventSymbol.red_card .e05CardMark{background:#F87171}html[data-theme="dark"] .e05EventSymbol.positive_star{color:#FBBF24}
 
 </style>
