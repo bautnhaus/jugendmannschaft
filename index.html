@@ -2305,11 +2305,81 @@ window.openPlayerCard=id=>{
         </span>
       </button>
     </div>
+    <button type="button" class="playerCardSection playerCardNotesTile" onclick="openPlayerEventHistory('${id}')" aria-label="Karten- und Sperrenhistorie für ${esc(displayName(p))} öffnen">
+      <span class="playerCardSectionTitle">Karten &amp; Sperren <span class="material-symbols-outlined" style="margin-left:auto;color:#64748b">chevron_right</span></span>
+      <span class="muted small">Ereignisse, Sperren und nachvollziehbare Korrekturen anzeigen</span>
+    </button>
     <button type="button" class="playerCardSection playerCardNotesTile" onclick="openPlayerNotes('${id}')" aria-label="Vollständige Notizen für ${esc(displayName(p))} öffnen">
       <span class="playerCardSectionTitle">Notizen <span class="material-symbols-outlined" style="margin-left:auto;color:#64748b">chevron_right</span></span>
       <span class="playerCardNotes">${esc(p.notes||'Noch keine Notizen hinterlegt.')}</span>
     </button>
     <div class="toolbar playerCardActions">${isInactive?`<button type="button" class="reactivatePlayerButton" onclick="reactivatePlayer('${id}')">Wieder in den aktiven Kader aufnehmen</button>`:`<button class="primary" onclick="closeModal();editPlayer('${id}')">Bearbeiten</button>${role==='admin'?`<button type="button" class="danger" onclick="deletePlayer('${id}')">Aus aktivem Kader entfernen</button>`:''}`}<button onclick="closeModal()">Schließen</button></div>`);
+};
+
+
+/* E05 Phase 2 – player event and suspension history */
+function e05EventLabel(type){return type==='yellow_card'?'Gelbe Karte':type==='red_card'?'Rote Karte':type==='positive_star'?'Positiver Stern':type||'Ereignis';}
+function e05EventSymbol(type){return type==='yellow_card'?'🟨':type==='red_card'?'🟥':type==='positive_star'?'★':'•';}
+function e05SuspensionLabel(s){return s.suspension_type==='yellow'?'Gelbe Sperre':'Rote Sperre';}
+function e05SuspensionStatus(s){return ({open:'Offen',served:'Abgeleistet',expired:'Saison beendet',voided:'Storniert'})[s.status]||s.status;}
+function e05CanManageHistory(){return role==='admin'||role==='trainer'||(isSuperAdmin&&adminContextActive&&!contextReadOnly);}
+function e05RenderHistory(player,events,eventAudits,suspensions,suspensionAudits){
+  const eventRows=events.length?events.map(e=>{
+    const audits=eventAudits.filter(a=>a.event_id===e.id).sort((a,b)=>new Date(b.changed_at)-new Date(a.changed_at));
+    const status=e.status==='active'?'Aktiv':'Storniert';
+    const action=e.event_type==='positive_star'?'':(e.status==='active'?'<button type="button" class="secondary" onclick="e05OpenEventCorrection(\''+e.id+'\',\'voided\',\''+player.id+'\')">Stornieren</button>':'<button type="button" class="secondary" onclick="e05OpenEventCorrection(\''+e.id+'\',\'active\',\''+player.id+'\')">Wiederherstellen</button>');
+    const auditHtml=audits.length?'<details class="playerCardDetails e05AuditDetails"><summary>Änderungsverlauf ('+audits.length+')</summary>'+audits.map(a=>'<div class="e05AuditRow"><b>'+esc(({created:'Erfasst',corrected:'Korrigiert',voided:'Storniert',reinstated:'Wiederhergestellt'})[a.action]||a.action)+'</b><span>'+esc(new Date(a.changed_at).toLocaleString('de-DE'))+'</span>'+(a.changed_by_snapshot?'<span>'+esc(a.changed_by_snapshot)+'</span>':'')+(a.reason?'<p>'+esc(a.reason)+'</p>':'')+'</div>').join('')+'</details>':'';
+    return '<article class="e05HistoryItem"><div class="e05HistoryTop"><span class="e05EventSymbol '+esc(e.event_type)+'">'+e05EventSymbol(e.event_type)+'</span><div class="e05HistoryMain"><b>'+esc(e05EventLabel(e.event_type))+'</b><span>'+esc(fmtDateLong(e.training_date_snapshot))+' · '+esc(e.training_name_snapshot||'Training')+'</span><span class="muted small">'+esc(status)+' · '+esc(new Date(e.awarded_at).toLocaleString('de-DE'))+'</span></div></div>'+(e.reason?'<p class="e05HistoryReason">'+esc(e.reason)+'</p>':'')+(e.status==='voided'&&e.void_reason?'<p class="e05HistoryReason"><b>Stornogrund:</b> '+esc(e.void_reason)+'</p>':'')+(action?'<div class="e05HistoryActions">'+action+'</div>':'')+auditHtml+'</article>';
+  }).join(''):'<p class="muted">Für diesen Spieler sind noch keine Ereignisse erfasst.</p>';
+  const suspensionRows=suspensions.length?suspensions.map(s=>{
+    const audits=suspensionAudits.filter(a=>a.suspension_id===s.id).sort((a,b)=>new Date(b.changed_at)-new Date(a.changed_at));
+    const target=s.intended_matchday_date_snapshot?fmtDateLong(s.intended_matchday_date_snapshot)+(s.intended_matchday_opponent_snapshot?' · '+s.intended_matchday_opponent_snapshot:''):'Noch kein Spieltag zugeordnet';
+    const canCorrect=e05CanManageHistory()&&s.status==='open';
+    const action=canCorrect?'<button type="button" class="secondary" onclick="e05OpenSuspensionCorrection(\''+s.id+'\',\''+player.id+'\',\''+s.team_id+'\',\''+s.season_id+'\')">Zuordnung korrigieren</button>':'';
+    const auditHtml=audits.length?'<details class="playerCardDetails e05AuditDetails"><summary>Änderungsverlauf ('+audits.length+')</summary>'+audits.map(a=>'<div class="e05AuditRow"><b>'+esc(a.action)+'</b><span>'+esc(new Date(a.changed_at).toLocaleString('de-DE'))+'</span>'+(a.changed_by_snapshot?'<span>'+esc(a.changed_by_snapshot)+'</span>':'')+(a.reason?'<p>'+esc(a.reason)+'</p>':'')+'</div>').join('')+'</details>':'';
+    return '<article class="e05HistoryItem"><div class="e05HistoryTop"><span class="e05SuspensionDot '+esc(s.status)+'"></span><div class="e05HistoryMain"><b>'+esc(e05SuspensionLabel(s))+'</b><span>'+esc(e05SuspensionStatus(s))+' · '+esc(new Date(s.created_at).toLocaleString('de-DE'))+'</span><span class="muted small">'+esc(target)+'</span></div></div>'+(action?'<div class="e05HistoryActions">'+action+'</div>':'')+auditHtml+'</article>';
+  }).join(''):'<p class="muted">Für diesen Spieler sind keine Sperren dokumentiert.</p>';
+  return '<div class="detailHeader"><button type="button" class="iconBack" aria-label="Zurück zur Spielerkarte" onclick="openPlayerCard(\''+player.id+'\')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Karten &amp; Sperren</h2></div><p class="muted">Historie für '+esc(displayName(player))+' · Neueste Einträge zuerst.</p><section class="playerCardSection"><h3 class="playerCardSectionTitle">Ereignisse ('+events.length+')</h3>'+eventRows+'</section><section class="playerCardSection"><h3 class="playerCardSectionTitle">Sperren ('+suspensions.length+')</h3>'+suspensionRows+'</section>';
+}
+window.openPlayerEventHistory=async id=>{
+  const p=state.players.find(x=>x.id===id)||state.inactivePlayers.find(x=>x.id===id);if(!p)return;
+  openModal('<div class="detailHeader"><h2>Karten &amp; Sperren</h2></div><p class="muted">Historie wird geladen …</p>');
+  try{
+    const c=getClient();
+    const [ev,su]=await Promise.all([
+      c.from('training_behavior_events').select('id,team_id,season_id,training_id,training_date_snapshot,training_name_snapshot,player_id,player_name_snapshot,event_type,reason,status,awarded_by,awarded_at,voided_by,voided_at,void_reason').eq('player_id',id).order('awarded_at',{ascending:false}),
+      c.from('training_suspensions').select('id,team_id,season_id,player_id,player_name_snapshot,source_event_id,suspension_type,status,intended_matchday_id,intended_matchday_date_snapshot,intended_matchday_opponent_snapshot,served_matchday_id,served_matchday_date_snapshot,served_matchday_opponent_snapshot,created_at,served_at,expired_at,voided_at,void_reason').eq('player_id',id).order('created_at',{ascending:false})
+    ]);
+    if(ev.error)throw ev.error;if(su.error)throw su.error;
+    const eventIds=(ev.data||[]).map(x=>x.id),suspensionIds=(su.data||[]).map(x=>x.id);
+    const [ea,sa]=await Promise.all([
+      eventIds.length?c.from('training_behavior_event_audit').select('id,event_id,action,reason,changed_by_snapshot,changed_at').in('event_id',eventIds).order('changed_at',{ascending:false}):Promise.resolve({data:[],error:null}),
+      suspensionIds.length?c.from('training_suspension_audit').select('id,suspension_id,action,reason,changed_by_snapshot,changed_at').in('suspension_id',suspensionIds).order('changed_at',{ascending:false}):Promise.resolve({data:[],error:null})
+    ]);
+    if(ea.error)throw ea.error;if(sa.error)throw sa.error;
+    $('modalContent').innerHTML=e05RenderHistory(p,ev.data||[],ea.data||[],su.data||[],sa.data||[]);
+  }catch(e){console.error(e);$('modalContent').innerHTML='<div class="detailHeader"><h2>Karten &amp; Sperren</h2></div><p class="notice error">Die Historie konnte nicht geladen werden: '+esc(e.message||e)+'</p><button type="button" onclick="openPlayerCard(\''+id+'\')">Zurück</button>';}
+};
+window.e05OpenEventCorrection=(eventId,targetStatus,playerId)=>{
+  const verb=targetStatus==='voided'?'Ereignis stornieren':'Ereignis wiederherstellen';
+  openModal('<div class="detailHeader"><button type="button" class="iconBack" onclick="openPlayerEventHistory(\''+playerId+'\')"><span class="material-symbols-outlined">arrow_back</span></button><h2>'+verb+'</h2></div><p>Bitte gib eine Begründung an. Die Änderung wird mit Benutzer und Zeitpunkt protokolliert.</p><label class="fieldLabel" for="e05EventCorrectionReason">Begründung</label><textarea id="e05EventCorrectionReason" rows="4" placeholder="Begründung eingeben …"></textarea><div class="toolbar"><button type="button" class="primary" onclick="e05SaveEventCorrection(\''+eventId+'\',\''+targetStatus+'\',\''+playerId+'\')">Speichern</button><button type="button" onclick="openPlayerEventHistory(\''+playerId+'\')">Abbrechen</button></div>');
+};
+window.e05SaveEventCorrection=async(eventId,targetStatus,playerId)=>{
+  const reason=$('e05EventCorrectionReason')?.value.trim();if(!reason){showStatus('Bitte eine Begründung eingeben.','error');return;}
+  try{const {error}=await getClient().rpc('correct_training_behavior_event',{p_event_id:eventId,p_target_status:targetStatus,p_reason:reason});if(error)throw error;showStatus(targetStatus==='voided'?'Ereignis wurde storniert.':'Ereignis wurde wiederhergestellt.','ok');await openPlayerEventHistory(playerId);}catch(e){showStatus('Ereignis konnte nicht geändert werden: '+(e.message||e),'error');}
+};
+window.e05OpenSuspensionCorrection=async(suspensionId,playerId,teamId,seasonId)=>{
+  try{
+    const {data,error}=await getClient().from('matchdays').select('id,match_date,opponent,game_type,status').eq('team_id',teamId).eq('season_id',seasonId).eq('status','planned').gte('match_date',new Date().toISOString().slice(0,10)).order('match_date',{ascending:true});
+    if(error)throw error;
+    if(!data?.length){showStatus('Es gibt keinen zukünftigen geplanten Spieltag als mögliches Ziel.','error');return;}
+    const options=data.map(m=>'<option value="'+esc(m.id)+'">'+esc(fmtDateLong(m.match_date)+(m.opponent?' · '+m.opponent:'')+' · '+(m.game_type||'Spieltag'))+'</option>').join('');
+    openModal('<div class="detailHeader"><button type="button" class="iconBack" onclick="openPlayerEventHistory(\''+playerId+'\')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Sperrenzuordnung korrigieren</h2></div><p>Wähle einen zukünftigen Spieltag. Die Datenbank prüft zusätzlich Spielart, Ausnahme und Berechtigung.</p><label class="fieldLabel" for="e05SuspensionTarget">Neuer Spieltag</label><select id="e05SuspensionTarget">'+options+'</select><label class="fieldLabel" for="e05SuspensionReason">Begründung</label><textarea id="e05SuspensionReason" rows="4" placeholder="Begründung eingeben …"></textarea><div class="toolbar"><button type="button" class="primary" onclick="e05SaveSuspensionCorrection(\''+suspensionId+'\',\''+playerId+'\')">Speichern</button><button type="button" onclick="openPlayerEventHistory(\''+playerId+'\')">Abbrechen</button></div>');
+  }catch(e){showStatus('Mögliche Spieltage konnten nicht geladen werden: '+(e.message||e),'error');}
+};
+window.e05SaveSuspensionCorrection=async(suspensionId,playerId)=>{
+  const target=$('e05SuspensionTarget')?.value,reason=$('e05SuspensionReason')?.value.trim();if(!target||!reason){showStatus('Bitte Spieltag und Begründung auswählen.','error');return;}
+  try{const {error}=await getClient().rpc('correct_suspension',{p_suspension_id:suspensionId,p_target_matchday_id:target,p_reason:reason});if(error)throw error;showStatus('Sperrenzuordnung wurde korrigiert.','ok');await openPlayerEventHistory(playerId);}catch(e){showStatus('Sperrenzuordnung konnte nicht geändert werden: '+(e.message||e),'error');}
 };
 
 function fmtDateLong(d){if(!d)return '';const x=new Date(d+'T00:00:00');return isNaN(x)?d:x.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'long',year:'numeric'});}
@@ -5141,4 +5211,11 @@ html[data-theme="dark"] .trainingEventChip.red .trainingEventMark{background:#F8
 html[data-theme="dark"] .trainingEventStat{background:#111c2e;border-color:#334155}
 html[data-theme="dark"] .trainingEventStat.star,html[data-theme="dark"] .trainingEventStat.yellow{color:#fde68a}
 html[data-theme="dark"] .trainingEventStat.red{color:#F87171}
+
+/* E05 Phase 2 – player event/suspension history */
+.e05HistoryItem{padding:10px 0;border-top:1px solid var(--line)}.e05HistoryItem:first-of-type{border-top:0}
+.e05HistoryTop{display:flex;align-items:flex-start;gap:10px}.e05EventSymbol{width:30px;min-width:30px;text-align:center;font-size:22px;line-height:1.35}.e05EventSymbol.yellow_card{color:#A16207}.e05EventSymbol.red_card{color:#B91C1C}.e05EventSymbol.positive_star{color:#D69E26}
+.e05HistoryMain{display:flex;flex-direction:column;gap:3px;min-width:0}.e05HistoryMain>span{font-size:13px;color:var(--muted)}.e05HistoryReason{font-size:13px;margin:7px 0 0;color:var(--muted);white-space:pre-wrap}.e05HistoryActions{display:flex;gap:8px;margin-top:8px}.e05HistoryActions button{min-height:36px;padding:7px 11px}.e05AuditDetails{margin-top:8px}.e05AuditRow{display:grid;gap:3px;padding:7px 0;border-top:1px solid var(--line);font-size:12px}.e05AuditRow span{color:var(--muted)}.e05AuditRow p{margin:0;white-space:pre-wrap}.e05SuspensionDot{width:13px;height:13px;min-width:13px;border-radius:50%;margin:4px 8px;background:#94a3b8}.e05SuspensionDot.open{background:#dc2626}.e05SuspensionDot.served{background:#16a34a}.e05SuspensionDot.voided{background:#94a3b8}
+html[data-theme="dark"] .e05EventSymbol.yellow_card{color:#FACC15}html[data-theme="dark"] .e05EventSymbol.red_card{color:#F87171}html[data-theme="dark"] .e05EventSymbol.positive_star{color:#FBBF24}
+
 </style>
