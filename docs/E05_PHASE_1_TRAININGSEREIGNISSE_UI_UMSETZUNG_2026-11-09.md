@@ -3,7 +3,7 @@
 - **Stand:** 09.11.2026
 - **Branch:** `develop`
 - **Zielumgebung:** Jugendmannschaft DEV
-- **Status:** UI-Korrekturrunde umgesetzt; DEV-Deploy/ iPhone-Praxistest und Abnahme ausstehend
+- **Status:** Fachlich abgenommen am 09.11.2026 nach iPhone-Praxistest
 - **Datenbank:** Keine Änderung; vorhandene E05-RPCs und Tabellen werden verwendet
 - **PROD:** Nicht verändert
 
@@ -122,3 +122,11 @@ Die zentrale Ereignisübersicht in der Spielerliste sowie Sperren-, Ausnahme- un
 - Die Rückmeldung zum Praxistest zeigte, dass die Kennzahlen-Farben bereits passen, die Ereignis-Chips bei den Spielern aber noch ältere, abweichende Farbwerte verwendeten.
 - Gelbe und rote Ereignis-Chips einschließlich ihrer Kartenmarkierung wurden an dieselben Farbfamilien wie die Kennzahlen angepasst – jeweils mit Light- und Dark-Mode-Werten.
 - Umsetzung in `index.html`, Commit `ce2c3768`; JavaScript-Syntaxprüfung erfolgreich. DEV-Praxistest ausstehend.
+
+
+### Fachliche Abnahme Phase 1
+
+- Der Nutzer hat die finale Darstellung der Ereignis-Kennzahlen und der Ereignismarkierungen in der Spielerliste für Light Mode und Dark Mode bestätigt.
+- Die Farbgebung der Kennzahlen und der Spielersymbole ist konsistent.
+- **Phase 1 ist fachlich abgeschlossen.**
+- PROD wurde nicht verändert.
