@@ -107,3 +107,11 @@ Die zentrale Ereignisübersicht in der Spielerliste sowie Sperren-, Ausnahme- un
 - Die Kennzahlen werden aus dem geladenen Ereignisbestand berechnet und benötigen keine zusätzliche Datenbankabfrage oder Schemaänderung.
 - Responsive Darstellung mit drei gleich breiten Karten sowie Anpassungen für Dark Mode.
 - Umsetzung in `index.html`, Commit `4cc5d25a`; JavaScript-Syntaxprüfung erfolgreich. DEV-Praxistest ausstehend.
+
+
+### Farbkorrektur nach iPhone-Praxistest
+
+- Rückmeldung: rote Karte im Dark Mode zu blass; gelbe Karte im Light Mode zu dunkel.
+- Gelbe Karte im Light Mode auf ein klareres Gelb (`#FACC15`) mit passender dunklerer Akzentfarbe angepasst.
+- Rote Karte im Dark Mode auf ein kräftigeres, kontrastreiches Rot (`#F87171`) angepasst.
+- Umsetzung in `index.html`, Commit `da318969`; JavaScript-Syntaxprüfung erfolgreich. Erneuter iPhone-Praxistest ausstehend.
