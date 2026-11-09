@@ -2494,6 +2494,16 @@ function renderTrainingBehaviorEvents(t){
   const presentPlayers=sortTrainingPlayers(state.players.filter(p=>!!t.attendance?.[p.id]))
     .filter(p=>playerSearchMatches(p,trainingSearchText));
   const events=trainingBehaviorEventsByTraining[t.id]||[];
+  const eventCounts={
+    stars:events.filter(e=>e.event_type==='positive_star').length,
+    yellow:events.filter(e=>e.event_type==='yellow_card').length,
+    red:events.filter(e=>e.event_type==='red_card').length
+  };
+  const eventSummary='<div class="trainingEventSummary">'+
+    '<div class="trainingEventStat star"><span class="trainingEventStatIcon">'+materialIcon('star')+'</span><strong>'+eventCounts.stars+'</strong><small>Sterne</small></div>'+
+    '<div class="trainingEventStat yellow"><span class="trainingEventStatMark"></span><strong>'+eventCounts.yellow+'</strong><small>Gelbe Karten</small></div>'+
+    '<div class="trainingEventStat red"><span class="trainingEventStatMark"></span><strong>'+eventCounts.red+'</strong><small>Rote Karten</small></div>'+
+    '</div>';
   const byPlayer=new Map();
   events.forEach(e=>{if(!byPlayer.has(e.player_id))byPlayer.set(e.player_id,[]);byPlayer.get(e.player_id).push(e);});
   const rows=presentPlayers.map(p=>{
@@ -2507,7 +2517,7 @@ function renderTrainingBehaviorEvents(t){
       '</div>';
     return '<div class="trainingPlayerRow trainingEventPlayerRow"><div class="trainingPlayerIdentity">'+playerAvatarHtml(p.photo_data||'')+'<div class="trainingPlayerMeta"><div class="trainingPlayerName">'+esc(displayName(p))+'</div><div class="trainingPlayerTags matchdayAttendanceTags">'+playerPositionsHtml(p)+playerLevelHtml(p)+'</div><div class="trainingEventChips">'+(chips||'<span class="trainingEventEmpty">Noch kein Ereignis</span>')+'</div></div></div>'+actions+'</div>';
   }).join('');
-  return '<div class="trainingEventIntro"><div><strong>'+presentPlayers.length+'</strong><span> Anwesende Spieler</span></div><small>Gelbe und rote Karten benötigen eine Begründung. Pro Training ist höchstens eine Karte und ein Stern je Spieler möglich.</small></div>'+
+  return eventSummary+'<div class="trainingEventIntro"><div><strong>'+presentPlayers.length+'</strong><span> Anwesende Spieler</span></div><small>Gelbe und rote Karten benötigen eine Begründung. Pro Training ist höchstens eine Karte und ein Stern je Spieler möglich.</small></div>'+
     '<label class="playerSearchWrap trainingEventSearch"><span class="material-symbols-outlined">search</span><input id="trainingSearch" type="search" placeholder="Anwesende Spieler suchen …" value="'+esc(trainingSearchText)+'" oninput="setTrainingSearch(this.value)">'+(trainingSearchText?'<button type="button" class="playerSearchClear" aria-label="Suchbegriff löschen" onclick="clearTrainingSearch(event)"><span class="material-symbols-outlined">close</span></button>':'')+'</label>'+
     '<div class="trainingPlayerList">'+(rows||'<div class="notice small">Keine anwesenden Spieler gefunden.</div>')+'</div>';
 }
@@ -5103,4 +5113,21 @@ html[data-theme="dark"] .trainingEventChoice:has(input:checked){background:#172b
 html[data-theme="dark"] .trainingEventChoiceIcon.star,html[data-theme="dark"] .trainingEventChoiceIcon.yellow{background:#422006;color:#fde68a}
 html[data-theme="dark"] .trainingEventChoiceIcon.red{background:#450a0a;color:#fecaca}
 @media(max-width:390px){.trainingEventChoice{padding:9px;gap:8px}.trainingEventChoiceText small{font-size:11px}}
+
+/* E05 Phase 1 – training event counters */
+.trainingEventSummary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 10px}
+.trainingEventStat{min-width:0;min-height:86px;padding:10px 5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.trainingEventStatIcon{height:23px;display:flex;align-items:center;justify-content:center}
+.trainingEventStatIcon .material-symbols-outlined{font-size:23px}
+.trainingEventStat strong{font-size:23px;line-height:1.1;color:var(--text)}
+.trainingEventStat small{font-size:11px;line-height:1.2;text-align:center;color:var(--muted)}
+.trainingEventStat.star{color:#a16207}
+.trainingEventStat.star .trainingEventStatIcon{color:#b77900}
+.trainingEventStat.yellow{color:#a16207}
+.trainingEventStat.red{color:#b91c1c}
+.trainingEventStatMark{display:block;width:13px;height:19px;border-radius:2px;background:currentColor}
+@media(max-width:390px){.trainingEventSummary{gap:6px}.trainingEventStat{min-height:80px;padding:8px 3px}.trainingEventStat small{font-size:10px}}
+html[data-theme="dark"] .trainingEventStat{background:#111c2e;border-color:#334155}
+html[data-theme="dark"] .trainingEventStat.star,html[data-theme="dark"] .trainingEventStat.yellow{color:#fde68a}
+html[data-theme="dark"] .trainingEventStat.red{color:#fecaca}
 </style>
