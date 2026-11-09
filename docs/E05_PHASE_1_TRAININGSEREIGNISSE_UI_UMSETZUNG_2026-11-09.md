@@ -98,3 +98,12 @@ Die zentrale Ereignisübersicht in der Spielerliste sowie Sperren-, Ausnahme- un
 - Pflichtfelder werden nicht mit einem Sternchen markiert. Der bisherige Gestaltungsstandard kennzeichnet ausschließlich optionale Angaben mit „(optional)“.
 - Entsprechend wird „Begründung“ bei gelber/roter Karte ohne Sternchen angezeigt; beim positiven Stern bleibt „(optional)“ sichtbar.
 - Änderung in `index.html`, Commit `c2e25a9a`; JavaScript-Syntaxprüfung erfolgreich. DEV-Deploy nach Push abzuwarten.
+
+
+### Ereignis-Kennzahlen
+
+- Oberhalb der Spielerliste werden drei Kennzahlen-Karten angezeigt: positive Sterne, gelbe Karten und rote Karten.
+- Die Zahlen zählen ausschließlich aktive Ereignisse des aktuell geöffneten Trainings. Die Datenquelle wird bereits mit `status = 'active'` geladen; stornierte Ereignisse fließen daher nicht ein.
+- Die Kennzahlen werden aus dem geladenen Ereignisbestand berechnet und benötigen keine zusätzliche Datenbankabfrage oder Schemaänderung.
+- Responsive Darstellung mit drei gleich breiten Karten sowie Anpassungen für Dark Mode.
+- Umsetzung in `index.html`, Commit `4cc5d25a`; JavaScript-Syntaxprüfung erfolgreich. DEV-Praxistest ausstehend.
