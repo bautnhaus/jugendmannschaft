@@ -2322,7 +2322,7 @@ function e05EventLabel(type){return type==='yellow_card'?'Gelbe Karte':type==='r
 function e05EventSymbol(type){return type==='yellow_card'?'🟨':type==='red_card'?'🟥':type==='positive_star'?'★':'•';}
 function e05SuspensionLabel(s){return s.suspension_type==='yellow'?'Gelbe Sperre':'Rote Sperre';}
 function e05SuspensionStatus(s){return ({open:'Offen',served:'Abgeleistet',expired:'Saison beendet',voided:'Storniert'})[s.status]||s.status;}
-function e05CanManageHistory(){return role==='admin'||role==='trainer'||(isSuperAdmin&&adminContextActive&&!contextReadOnly);}
+function e05CanManageHistory(){return role==='admin'||role==='trainer'||(isSuperAdmin&&adminContextActive);}
 function e05RenderHistory(player,events,eventAudits,suspensions,suspensionAudits){
   const eventRows=events.length?events.map(e=>{
     const audits=eventAudits.filter(a=>a.event_id===e.id).sort((a,b)=>new Date(b.changed_at)-new Date(a.changed_at));
