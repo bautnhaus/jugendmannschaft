@@ -90,3 +90,11 @@ Auf dem iPhone in Jugendmannschaft DEV prüfen:
 Korrektur und Stornierung bereits erfasster Ereignisse sind bewusst nicht Bestandteil dieses Trainings-Tabs. Gemäß UI-Konzept erfolgen diese Aktionen später in den Spielerdetails mit Begründung und Auditspur (Folgephase).
 
 Die zentrale Ereignisübersicht in der Spielerliste sowie Sperren-, Ausnahme- und Sperrausgleichsaktionen in der Spieltagsplanung folgen in den nächsten Phasen.
+
+
+### UI-Feinkorrektur nach iPhone-Praxistest
+
+- Der iPhone-Praxistest bestätigte den gemeinsamen Dialog und den Ablauf zur Begründungseingabe.
+- Pflichtfelder werden nicht mit einem Sternchen markiert. Der bisherige Gestaltungsstandard kennzeichnet ausschließlich optionale Angaben mit „(optional)“.
+- Entsprechend wird „Begründung“ bei gelber/roter Karte ohne Sternchen angezeigt; beim positiven Stern bleibt „(optional)“ sichtbar.
+- Änderung in `index.html`, Commit `c2e25a9a`; JavaScript-Syntaxprüfung erfolgreich. DEV-Deploy nach Push abzuwarten.
