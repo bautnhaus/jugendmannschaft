@@ -2518,6 +2518,7 @@ window.openTrainingBehaviorEvent=(trainingId,playerId,eventType)=>{
   const t=state.trainings.find(x=>x.id===trainingId);
   const p=state.players.find(x=>x.id===playerId);
   if(!t||!p||!t.attendance?.[playerId]){showStatus('Nur anwesende Spieler können ein Ereignis erhalten.','error');return;}
+  if(t.status==='cancelled'||(contextReadOnly&&!isSuperAdmin)){showStatus('In diesem Trainingskontext können keine Ereignisse erfasst werden.','error');return;}
   const meta=trainingBehaviorEventMeta(eventType);
   const reasonRequired=eventType==='yellow_card'||eventType==='red_card';
   openModal('<h2>'+meta.icon+' '+esc(meta.label)+'</h2><p class="muted">'+esc(displayName(p))+' · '+esc(fmtDate(t.date))+'</p>'+
@@ -2530,6 +2531,7 @@ window.saveTrainingBehaviorEvent=async(trainingId,playerId,eventType)=>{
   if((eventType==='yellow_card'||eventType==='red_card')&&!reason){showStatus('Bitte eine Begründung eingeben.','error');$('trainingEventReason')?.focus();return;}
   const t=state.trainings.find(x=>x.id===trainingId);
   if(!t||!t.attendance?.[playerId]){showStatus('Der Spieler ist nicht als anwesend markiert.','error');return;}
+  if(t.status==='cancelled'||(contextReadOnly&&!isSuperAdmin)){showStatus('In diesem Trainingskontext können keine Ereignisse erfasst werden.','error');return;}
   const button=$('saveTrainingEventButton');if(button){button.disabled=true;button.textContent='Wird gespeichert …';}
   try{
     const {error}=await getClient().rpc('award_training_behavior_event',{
