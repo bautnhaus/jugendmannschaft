@@ -115,3 +115,10 @@ Die zentrale Ereignisübersicht in der Spielerliste sowie Sperren-, Ausnahme- un
 - Gelbe Karte im Light Mode auf ein klareres Gelb (`#FACC15`) mit passender dunklerer Akzentfarbe angepasst.
 - Rote Karte im Dark Mode auf ein kräftigeres, kontrastreiches Rot (`#F87171`) angepasst.
 - Umsetzung in `index.html`, Commit `da318969`; JavaScript-Syntaxprüfung erfolgreich. Erneuter iPhone-Praxistest ausstehend.
+
+
+### Konsistenzkorrektur: Ereignissymbole in der Spielerliste
+
+- Die Rückmeldung zum Praxistest zeigte, dass die Kennzahlen-Farben bereits passen, die Ereignis-Chips bei den Spielern aber noch ältere, abweichende Farbwerte verwendeten.
+- Gelbe und rote Ereignis-Chips einschließlich ihrer Kartenmarkierung wurden an dieselben Farbfamilien wie die Kennzahlen angepasst – jeweils mit Light- und Dark-Mode-Werten.
+- Umsetzung in `index.html`, Commit `ce2c3768`; JavaScript-Syntaxprüfung erfolgreich. DEV-Praxistest ausstehend.
