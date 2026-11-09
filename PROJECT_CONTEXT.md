@@ -1,8 +1,18 @@
 # Jugendmannschaft – Projektkontext
 
 **Dokumenttyp:** Zentrale Projektdokumentation  
-**Stand:** 06.11.2026  
+**Stand:** 09.11.2026  
 **Führende Quelle:** Branch `develop` im Repository `bautnhaus/jugendmannschaft`
+
+## Aktueller Stand – verbindliche Aktualisierung vom 09.11.2026
+
+### Hotfix Spielerstatistiken ab Mannschaftsbeitritt / Main Deploy
+- Der Hotfix zur zeitlichen Begrenzung der Spielerstatistiken auf den Mannschaftsbeitritt wurde in DEV mit sechs Praxistests erfolgreich geprüft und über PR #5 isoliert nach `main` gemergt.
+- Der Nutzer hat den anschließenden PROD-Deploy über den neuen manuellen Workflow `.github/workflows/deploy-main.yml` erfolgreich bestätigt.
+- Der Workflow deployt ausschließlich den vorhandenen `main`-Stand mit PROD-Supabase-Konfiguration; er übernimmt keine Änderungen aus `develop` und schreibt nicht in Git.
+- Die fachliche Funktionsprüfung in PROD und die Bereinigung des temporären Testspielers in DEV stehen noch aus.
+- Detailnachweis: `docs/HOTFIX_PLAYER_STATS_JOIN_DATE_2026-11-09.md`.
+- Keine Datenbankänderung und keine SQL-Migration.
 
 ## Aktueller Stand – verbindliche Aktualisierung vom 06.11.2026
 
@@ -138,7 +148,7 @@ Neue Funktionen und Features werden grundsätzlich in einer abgestimmten Konzept
 | `DB_CHANGELOG.md` | Technische Datenbankobjekte, Änderungen, Definitionen und Prüfungen |
 | `DB_MIGRATION_LOG.md` | Chronologischer Ausführungsnachweis aller schreibenden SQL-Eingriffe |
 | `SUPABASE_CHANGELOG.md` | Chronologischer Nachweis tatsächlicher nicht-SQL-basierter Supabase-Laufzeit- und Konfigurationsänderungen |
-| `RELEASE_NOTES_*.md` | Fachlicher und technischer Umfang einer veröffentlichten Version |
+| `RELEASE_NOTES_*.md` | Fachlicher und technischer Umfang einer veröffentlichten Version |\n| `docs/HOTFIX_PLAYER_STATS_JOIN_DATE_2026-11-09.md` | Hotfix-Nachweis Spielerstatistiken ab Mannschaftsbeitritt, DEV-Tests, PR/Merge, PROD-Deploy und Main-Deploy-Workflow |
 | `docs/AP01-03_RELEASE_KATALOG_2026-11-01.md` | AP01–AP03-Releaseumfang, Abhängigkeiten und Freigabeblocker |
 | `docs/AP01-03_MIGRATION_TEST_MAPPING_2026-11-01.md` | Zuordnung der Migrationen, Tests und offenen Nachweise |
 | `docs/AP04-profile-management.md` | AP04-Profilverwaltung, Avatar und geschützte Rollenänderungen; Mitgliederbearbeitung im bestehenden Vereinskontext |
