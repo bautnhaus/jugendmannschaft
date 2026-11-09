@@ -3,7 +3,7 @@
 - **Stand:** 09.11.2026
 - **Branch:** `develop`
 - **Zielumgebung:** Jugendmannschaft DEV
-- **Status:** Implementiert und DEV-Deploy angestoßen; iPhone-Praxistest/Abnahme ausstehend
+- **Status:** UI-Korrekturrunde umgesetzt; DEV-Deploy/ iPhone-Praxistest und Abnahme ausstehend
 - **Datenbank:** Keine Änderung; vorhandene E05-RPCs und Tabellen werden verwendet
 - **PROD:** Nicht verändert
 
@@ -12,7 +12,7 @@
 Die bestehende Trainingsdetailansicht wurde erweitert. Die drei vorhandenen Bereiche bleiben erhalten; ein vierter Tab **Ereignisse** wurde ergänzt.
 
 Reihenfolge:
-1. Rückmeldungen
+1. Zu-/Absagen
 2. Anwesenheit
 3. Teams
 4. Ereignisse
@@ -21,9 +21,11 @@ Reihenfolge:
 
 - Es werden ausschließlich aktive Spieler angezeigt, die im ausgewählten Training als anwesend markiert sind.
 - Die vorhandene Trainings-Spielerzeile mit Avatar, Name und Metadaten wird wiederverwendet.
-- Pro Spieler können eine gelbe Karte, eine rote Karte oder ein positiver Stern erfasst werden.
+- Pro Spieler gibt es nur eine Aktion „Ereignis hinzufügen“. Ein gemeinsamer, zweistufiger Dialog lässt zunächst zwischen positivem Stern, gelber Karte und roter Karte wählen und fragt anschließend die Begründung ab.
 - Gelbe und rote Karten erfordern eine nicht leere Begründung. Beim positiven Stern ist die Begründung optional.
-- Bereits erfasste aktive Ereignisse werden mit kompakten Material-Symbolen dargestellt.
+- Bereits erfasste aktive Ereignisse werden mit kompakten Symbolen dargestellt. Die Karten werden als gelbe bzw. rote Farbmarkierung, positive Sterne als Sternsymbol angezeigt.
+- Bereits ausgeschöpfte Ereignisarten werden im Dialog deaktiviert: maximal eine aktive Karte (gelb oder rot) sowie maximal ein aktiver Stern je Spieler und Training.
+- Der Tab „Rückmeldungen“ wurde in „Zu-/Absagen“ umbenannt; die vier Tabs erhalten eine kompakte, gleichmäßige Darstellung.
 - Pro Spieler und Training wird die vorhandene Datenbankregel berücksichtigt: höchstens eine aktive Karte (gelb oder rot) sowie höchstens ein aktiver positiver Stern.
 - Suche filtert die anwesenden Spieler.
 - Bei abgesagten Trainings und in reinen Lese-Kontexten werden keine Erfassungsaktionen angeboten.
@@ -52,7 +54,7 @@ Die UI prüft Anwesenheit und Pflichtbegründung zusätzlich clientseitig. Die D
 
 ## 4. Geänderte Dateien
 
-- `index.html` – Trainingsdetail-Tab, Ereignisliste, Erfassungsdialog, RPC-Aufruf und responsive Styles.
+- `index.html` – Trainingsdetail-Tabs, Ereignisliste, gemeinsamer zweistufiger Erfassungsdialog, RPC-Aufruf und responsive Styles.
 
 Keine SQL-Datei und keine Datenbankmigration wurde für Phase 1 erstellt oder ausgeführt.
 
@@ -62,23 +64,26 @@ Keine SQL-Datei und keine Datenbankmigration wurde für Phase 1 erstellt oder au
 - Vorhandene Trainings-Tabs und Renderfunktionen weiterverwendet.
 - JavaScript-Syntaxprüfung des Hauptscripts erfolgreich (Supabase-ESM-Import für die Syntaxprüfung ausgeklammert).
 - DEV-Deploy-Workflow wird bei jedem Push auf `develop` automatisch gestartet.
-- GitHub Actions Deploy DEV Run #623 für den aktuellen UI-Code wurde gestartet; Ergebnis zum Zeitpunkt dieser Dokumentation noch ausstehend.
+- JavaScript-Syntaxprüfung nach der UI-Korrekturrunde erfolgreich.
+- DEV-Deploy wird automatisch durch Push auf `develop` gestartet; das Ergebnis des aktuellen Laufs ist separat zu kontrollieren.
 
 ## 6. Noch ausstehende Praxistests
 
 Auf dem iPhone in Jugendmannschaft DEV prüfen:
 
-1. Ereignis-Tab erscheint an vierter Stelle; die drei bisherigen Tabs funktionieren unverändert.
-2. Nur anwesende Spieler erscheinen.
-3. Gelbe Karte ohne Begründung wird clientseitig verhindert.
-4. Gelbe Karte mit Begründung wird gespeichert und nach erneutem Öffnen angezeigt.
-5. Rote Karte mit Begründung wird gespeichert und angezeigt.
-6. Positiver Stern lässt sich ohne Begründung speichern.
-7. Zweite Karte bzw. zweiter Stern desselben Typs/Spielers wird nicht als neue Aktion angeboten.
-8. Suche funktioniert und bleibt auf anwesende Spieler begrenzt.
-9. Absagestatus und reine Lese-Kontexte bieten keine Schreibaktion.
-10. Helles und dunkles Design sowie schmale iPhone-Bildschirmbreiten prüfen.
-11. Rückmeldungen, Anwesenheit und Teams funktionieren weiterhin unverändert.
+1. „Zu-/Absagen“ wird vollständig und ohne Überlappung angezeigt; die drei übrigen Tabs funktionieren unverändert.
+2. Ereignis-Tab erscheint an vierter Stelle und zeigt pro Spieler nur eine Aktion „Ereignis hinzufügen“.
+3. Der gemeinsame Dialog erlaubt die Auswahl aller drei Ereignisarten und deaktiviert bereits ausgeschöpfte Ereignisarten.
+4. Nur anwesende Spieler erscheinen.
+5. Gelbe Karte ohne Begründung wird clientseitig verhindert.
+6. Gelbe Karte mit Begründung wird gespeichert und nach erneutem Öffnen angezeigt.
+7. Rote Karte mit Begründung wird gespeichert und angezeigt.
+8. Positiver Stern lässt sich ohne Begründung speichern.
+9. Zweite Karte bzw. zweiter Stern desselben Typs/Spielers wird im Dialog nicht angeboten.
+10. Suche funktioniert und bleibt auf anwesende Spieler begrenzt.
+11. Absagestatus und reine Lese-Kontexte bieten keine Schreibaktion.
+12. Helles und dunkles Design sowie schmale iPhone-Bildschirmbreiten prüfen.
+13. Zu-/Absagen, Anwesenheit und Teams funktionieren weiterhin unverändert.
 
 ## 7. Abgrenzung
 
