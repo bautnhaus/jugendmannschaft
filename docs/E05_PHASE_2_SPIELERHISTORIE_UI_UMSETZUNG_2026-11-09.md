@@ -76,3 +76,12 @@ Datei: `index.html`.
 Die aktuelle DB-Funktion kann Ereignisstatus von Karten korrigieren, aber weder Ereignistyp noch Ereignisbegründung bearbeiten und positive Sterne nicht stornieren/wiederherstellen. Die UI bildet exakt den vorhandenen DB-Vertrag ab. Falls fachlich auch positive Sterne oder inhaltliche Kartenkorrekturen geändert werden sollen, ist dafür vor einer Umsetzung ein gesondertes SQL-Paket vorzulegen und freizugeben.
 
 **Abnahme:** Noch nicht erfolgt. DEV-Praxistest durch den Nutzer steht aus.
+
+
+### UI-Feinkorrektur vor DEV-Praxistest
+
+- Ereignissymbole in der Historie verwenden jetzt Material Symbols für Sterne und die vorhandenen Kartenmarkierungen statt Emoji-Platzhaltern.
+- Die Audit-Abfragen lesen nun auch `old_values` und `new_values`; im aufklappbaren Änderungsverlauf werden die verfügbaren Vorher-/Nachher-Zustände zusätzlich zu Aktion, Zeitpunkt, Akteur-Snapshot und Begründung angezeigt.
+- JavaScript-Syntaxprüfung erfolgreich.
+- Commit: `f5269e46319aae9c45cfcc07faef5ea899a06dcf`.
+- DEV-Praxistest weiterhin ausstehend; PROD unverändert.
