@@ -51,6 +51,7 @@ Datei: `index.html`.
 - JavaScript-Syntaxprüfung nach Änderung erfolgreich (Supabase-ESM-Import für die lokale Syntaxprüfung ausgeklammert).
 - Commit mit UI: `a47d69070eac14e0c6ed27279be25c00cf96adfc`.
 - Nachkorrektur des Superadmin-Kontextchecks: `663adc99b4f6791c95a7ddb5de2e9279f9e691e1`.
+- Nachkorrektur: Korrekturaktionen werden in der UI nur für Trainer, Mannschaftsadmins und Superadmins im ausgewählten Teamkontext angezeigt: `60a0eb4a972e93bc120b346261c9f7e2aa83ab53`.
 - DEV-Deploy-Workflow für den neuesten Commit ist separat zu kontrollieren.
 - Keine SQL-Ausführung, keine Datenbankänderung, keine Änderung an `main` oder PROD.
 
