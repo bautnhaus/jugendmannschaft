@@ -1661,45 +1661,7 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
 /* Phase 2.1: Mehr-Navigation mit eigenständigen Seiten statt aufgeklappten Kacheln. */
 .mehrView{min-width:0}.mehrContext{margin:0 0 12px;padding:8px 2px}.mehrMenu{display:flex;flex-direction:column;gap:8px}.mehrPageHeader{margin:4px 0 16px;align-items:center}.mehrPageHeader h2{font-size:20px}.mehrMenu .playerListRow{width:100%;text-align:left;cursor:pointer}.mehrMenu .playerListIdentity{min-width:0}.mehrMenu .playerListName{display:block}
 </style>
-<style>
-/* E05 Phase 1 – Trainingsereignisse */
-.trainingDetailTabs{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-.trainingEventIntro{display:flex;flex-direction:column;gap:4px;padding:10px 12px;margin:0 0 9px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
-.trainingEventIntro strong{font-size:22px;color:var(--accent)}
-.trainingEventIntro span{font-size:13px;font-weight:600}
-.trainingEventIntro small{font-size:12px;color:var(--muted);line-height:1.35}
-.trainingEventSearch{margin:0 0 9px}
-.trainingEventPlayerRow{gap:8px}
-.trainingEventPlayerRow .trainingPlayerIdentity{min-width:0;flex:1 1 auto}
-.trainingEventPlayerRow .trainingPlayerMeta{min-width:0}
-.trainingEventChips{display:flex;align-items:center;gap:5px;margin-top:4px;min-height:18px}
-.trainingEventChip{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 4px;border-radius:6px;font-size:13px;line-height:1}
-.trainingEventChip.yellow{background:#fef3c7;color:#92400e}
-.trainingEventChip.red{background:#fee2e2;color:#991b1b}
-.trainingEventChip.star{background:#fef9c3;color:#854d0e}
-.trainingEventEmpty{font-size:11px;color:var(--muted)}
-.trainingEventActions{display:flex;align-items:center;justify-content:flex-end;gap:4px;flex:0 0 auto}
-.trainingEventAction{width:34px;min-width:34px;height:36px;min-height:36px;padding:3px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-size:17px}
-.trainingEventAction.yellow{background:#fffbeb;border-color:#fcd34d}
-.trainingEventAction.red{background:#fef2f2;border-color:#fca5a5}
-.trainingEventAction.star{background:#fffbeb;border-color:#fde68a;color:#a16207;font-size:20px}
-.trainingEventTaken{font-size:11px;color:var(--muted);white-space:nowrap;padding:0 3px}
-.trainingEventReasonLabel{display:block;margin:14px 0 6px;font-weight:650}
-#trainingEventReason{display:block;width:100%;min-height:88px;resize:vertical}
-.trainingEventRetry{display:inline;border:0;background:transparent;color:var(--accent);padding:0;min-height:0;text-decoration:underline}
-@media(max-width:390px){
- .trainingDetailTabs button{font-size:12px!important;padding:8px 3px!important}
- .trainingEventAction{width:30px;min-width:30px;height:34px;min-height:34px}
- .trainingEventTaken{font-size:10px}
-}
-@media(prefers-color-scheme:dark){
- .trainingEventAction.yellow,.trainingEventAction.star{background:#422006;border-color:#854d0e}
- .trainingEventAction.red{background:#450a0a;border-color:#991b1b}
- .trainingEventChip.yellow{background:#422006;color:#fde68a}
- .trainingEventChip.red{background:#450a0a;color:#fecaca}
- .trainingEventChip.star{background:#422006;color:#fde68a}
-}
-</style>
+
 </head>
 <body>
 <div id="loginView">
@@ -2497,7 +2459,7 @@ function setTrainingDetailMode(mode){
   renderTrainings();
   if(mode==='events'){
     const t=state.trainings.find(x=>x.id===trainingOpenId);
-    if(t)loadTrainingBehaviorEvents(t.id);
+    if(t)loadTrainingBehaviorEvents(t.id,true);
   }
 }
 async function loadTrainingBehaviorEvents(trainingId,force=false){
@@ -2522,9 +2484,9 @@ async function loadTrainingBehaviorEvents(trainingId,force=false){
   }
 }
 function trainingBehaviorEventMeta(type){
-  if(type==='yellow_card')return {label:'Gelbe Karte',short:'Gelb',icon:'🟨',kind:'yellow'};
-  if(type==='red_card')return {label:'Rote Karte',short:'Rot',icon:'🟥',kind:'red'};
-  return {label:'Positiver Stern',short:'Stern',icon:'★',kind:'star'};
+  if(type==='yellow_card')return {label:'Gelbe Karte',short:'Gelb',icon:'rectangle',kind:'yellow'};
+  if(type==='red_card')return {label:'Rote Karte',short:'Rot',icon:'rectangle',kind:'red'};
+  return {label:'Positiver Stern',short:'Stern',icon:'star',kind:'star'};
 }
 function renderTrainingBehaviorEvents(t){
   if(trainingBehaviorEventsLoading[t.id])return '<div class="notice small">Ereignisse werden geladen …</div>';
@@ -2538,15 +2500,17 @@ function renderTrainingBehaviorEvents(t){
     const playerEvents=byPlayer.get(p.id)||[];
     const hasCard=playerEvents.some(e=>e.event_type==='yellow_card'||e.event_type==='red_card');
     const hasStar=playerEvents.some(e=>e.event_type==='positive_star');
-    const chips=playerEvents.map(e=>{const m=trainingBehaviorEventMeta(e.event_type);return '<span class="trainingEventChip '+m.kind+'" title="'+esc(m.label)+'">'+m.icon+'</span>';}).join('');
+    const chips=playerEvents.map(e=>{const m=trainingBehaviorEventMeta(e.event_type);return '<span class="trainingEventChip '+m.kind+'" title="'+esc(m.label)+'">'+materialIcon(m.icon)+'</span>';}).join('');
+    const canAwardEvents=t.status!=='cancelled'&&(!contextReadOnly||isSuperAdmin);
     const actions='<div class="trainingEventActions">'+
-      (hasCard?'<span class="trainingEventTaken" title="Für dieses Training ist bereits eine Karte erfasst">Karte erfasst</span>':'<button type="button" class="trainingEventAction yellow" onclick="openTrainingBehaviorEvent(\''+t.id+'\',\''+p.id+'\',\'yellow_card\')">🟨</button><button type="button" class="trainingEventAction red" onclick="openTrainingBehaviorEvent(\''+t.id+'\',\''+p.id+'\',\'red_card\')">🟥</button>')+
-      (hasStar?'<span class="trainingEventTaken" title="Stern bereits vergeben">★</span>':'<button type="button" class="trainingEventAction star" onclick="openTrainingBehaviorEvent(\''+t.id+'\',\''+p.id+'\',\'positive_star\')">★</button>')+
+      (!canAwardEvents?'<span class="trainingEventTaken">Nur Ansicht</span>':
+       (hasCard?'<span class="trainingEventTaken" title="Für dieses Training ist bereits eine Karte erfasst">Karte erfasst</span>':'<button type="button" class="trainingEventAction yellow" aria-label="Gelbe Karte" title="Gelbe Karte" onclick="openTrainingBehaviorEvent(\\''+t.id+'\\',\\''+p.id+'\\',\\'yellow_card\\')">'+materialIcon('rectangle')+'</button><button type="button" class="trainingEventAction red" aria-label="Rote Karte" title="Rote Karte" onclick="openTrainingBehaviorEvent(\\''+t.id+'\\',\\''+p.id+'\\',\\'red_card\\')">'+materialIcon('rectangle')+'</button>'))+
+      (!canAwardEvents?'':(hasStar?'<span class="trainingEventTaken" title="Stern bereits vergeben">'+materialIcon('star')+'</span>':'<button type="button" class="trainingEventAction star" aria-label="Positiver Stern" title="Positiver Stern" onclick="openTrainingBehaviorEvent(\\''+t.id+'\\',\\''+p.id+'\\',\\'positive_star\\')">'+materialIcon('star')+'</button>'))+
       '</div>';
     return '<div class="trainingPlayerRow trainingEventPlayerRow"><div class="trainingPlayerIdentity">'+playerAvatarHtml(p.photo_data||'')+'<div class="trainingPlayerMeta"><div class="trainingPlayerName">'+esc(displayName(p))+'</div><div class="trainingPlayerTags matchdayAttendanceTags">'+playerPositionsHtml(p)+playerLevelHtml(p)+'</div><div class="trainingEventChips">'+(chips||'<span class="trainingEventEmpty">Noch kein Ereignis</span>')+'</div></div></div>'+actions+'</div>';
   }).join('');
   return '<div class="trainingEventIntro"><div><strong>'+presentPlayers.length+'</strong><span> Anwesende Spieler</span></div><small>Gelbe und rote Karten benötigen eine Begründung. Pro Training ist höchstens eine Karte und ein Stern je Spieler möglich.</small></div>'+
-    '<label class="playerSearchWrap trainingEventSearch"><span class="material-symbols-outlined">search</span><input type="search" placeholder="Anwesende Spieler suchen …" value="'+esc(trainingSearchText)+'" oninput="setTrainingSearch(this.value)">'+(trainingSearchText?'<button type="button" class="playerSearchClear" aria-label="Suchbegriff löschen" onclick="clearTrainingSearch(event)"><span class="material-symbols-outlined">close</span></button>':'')+'</label>'+
+    '<label class="playerSearchWrap trainingEventSearch"><span class="material-symbols-outlined">search</span><input id="trainingSearch" type="search" placeholder="Anwesende Spieler suchen …" value="'+esc(trainingSearchText)+'" oninput="setTrainingSearch(this.value)">'+(trainingSearchText?'<button type="button" class="playerSearchClear" aria-label="Suchbegriff löschen" onclick="clearTrainingSearch(event)"><span class="material-symbols-outlined">close</span></button>':'')+'</label>'+
     '<div class="trainingPlayerList">'+(rows||'<div class="notice small">Keine anwesenden Spieler gefunden.</div>')+'</div>';
 }
 window.loadTrainingBehaviorEvents=loadTrainingBehaviorEvents;
@@ -4372,6 +4336,51 @@ html[data-theme="dark"] .dashboardRolePill{background:#1e3a5f;border-color:#3157
   .dashboardTeamSeason{font-size:12px}
 }
 @media(min-width:700px){.dashboardWelcome h2{font-size:22px!important}}
+</style>
+<style>
+/* E05 Phase 1 – Trainingsereignisse */
+.trainingDetailTabs{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.trainingEventIntro{display:flex;flex-direction:column;gap:4px;padding:10px 12px;margin:0 0 9px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.trainingEventIntro strong{font-size:22px;color:var(--accent)}
+.trainingEventIntro span{font-size:13px;font-weight:600}
+.trainingEventIntro small{font-size:12px;color:var(--muted);line-height:1.35}
+.trainingEventSearch{margin:0 0 9px}
+.trainingEventPlayerRow{gap:8px}
+.trainingEventPlayerRow .trainingPlayerIdentity{min-width:0;flex:1 1 auto}
+.trainingEventPlayerRow .trainingPlayerMeta{min-width:0}
+.trainingEventChips{display:flex;align-items:center;gap:5px;margin-top:4px;min-height:18px}
+.trainingEventChip{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 4px;border-radius:6px;font-size:13px;line-height:1}
+.trainingEventChip.yellow{background:#fef3c7;color:#92400e}
+.trainingEventChip.red{background:#fee2e2;color:#991b1b}
+.trainingEventChip.star{background:#fef9c3;color:#854d0e}
+.trainingEventEmpty{font-size:11px;color:var(--muted)}
+.trainingEventActions{display:flex;align-items:center;justify-content:flex-end;gap:4px;flex:0 0 auto}
+.trainingEventAction{width:34px;min-width:34px;height:36px;min-height:36px;padding:3px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-size:17px}
+.trainingEventAction.yellow{background:#fffbeb;border-color:#fcd34d}
+.trainingEventAction.red{background:#fef2f2;border-color:#fca5a5}
+.trainingEventAction.star{background:#fffbeb;border-color:#fde68a;color:#a16207;font-size:20px}
+.trainingEventTaken{font-size:11px;color:var(--muted);white-space:nowrap;padding:0 3px}
+.trainingEventReasonLabel{display:block;margin:14px 0 6px;font-weight:650}
+#trainingEventReason{display:block;width:100%;min-height:88px;resize:vertical}
+.trainingEventRetry{display:inline;border:0;background:transparent;color:var(--accent);padding:0;min-height:0;text-decoration:underline}
+@media(max-width:390px){
+ .trainingDetailTabs button{font-size:12px!important;padding:8px 3px!important}
+ .trainingEventAction{width:30px;min-width:30px;height:34px;min-height:34px}
+ .trainingEventTaken{font-size:10px}
+}
+@media(prefers-color-scheme:dark){
+ .trainingEventAction.yellow,.trainingEventAction.star{background:#422006;border-color:#854d0e}
+ .trainingEventAction.red{background:#450a0a;border-color:#991b1b}
+ .trainingEventChip.yellow{background:#422006;color:#fde68a}
+ .trainingEventChip.red{background:#450a0a;color:#fecaca}
+ .trainingEventChip.star{background:#422006;color:#fde68a}
+}
+
+html[data-theme="dark"] .trainingEventAction.yellow,html[data-theme="dark"] .trainingEventAction.star{background:#422006;border-color:#854d0e;color:#fde68a}
+html[data-theme="dark"] .trainingEventAction.red{background:#450a0a;border-color:#991b1b;color:#fecaca}
+html[data-theme="dark"] .trainingEventChip.yellow,html[data-theme="dark"] .trainingEventChip.star{background:#422006;color:#fde68a}
+html[data-theme="dark"] .trainingEventChip.red{background:#450a0a;color:#fecaca}
+.trainingEventAction .material-symbols-outlined,.trainingEventChip .material-symbols-outlined{font-size:18px;line-height:1}
 </style>
 </body></html>
 
