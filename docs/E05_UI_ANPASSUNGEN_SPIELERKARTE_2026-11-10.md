@@ -3,7 +3,7 @@
 **Datum:** 10.11.2026  
 **Branch:** `develop`  
 **Zielumgebung:** Jugendmannschaft DEV  
-**Status:** Implementierung in `develop` abgeschlossen; DEV-Praxistest und visuelle Abnahme ausstehend  
+**Status:** Implementierung in `develop` mit DEV-Korrektur ergänzt; DEV-Praxistest und visuelle Abnahme ausstehend  
 **Datenbank:** Ausschließlich read-only geprüft; keine SQL-Änderung und keine Migration  
 **PROD:** Nicht verändert
 
@@ -121,3 +121,27 @@ Die Frontend-Umsetzung wurde in mehreren kleinen Commits auf `develop` vorgenomm
 Die Dokumentation wird separat ergänzt. Der aktuelle Branchvergleich zeigt `develop` weiterhin deutlich vor `main`; die Branches sind divergent. Es wurde kein Merge und kein PROD-Deploy ausgelöst.
 
 **Abnahme:** Ausstehend. Die Implementierung ist bereit für den DEV-Praxistest, nicht für einen PROD-Release.
+
+
+## 7. DEV-Korrektur nach erstem Praxistest (10.11.2026)
+
+Der erste iPhone-Praxistest nach erfolgreichem DEV-Deploy zeigte zwei Punkte:
+
+1. Beim Öffnen der Ereignisübersicht trat `invalid input syntax for type uuid: "undefined"` auf.
+2. Die Kennzahlen der Ereigniskachel sollten – wie Variante A vereinbart – jeweils mittig untereinander stehen.
+
+### Ursache und Korrektur
+
+- Ursache des UUID-Fehlers: Die aktiven und inaktiven Spielerdatensätze wurden ohne `team_id` geladen. Die Ereignisübersicht verwendet anschließend `p.team_id` für die Trainingsabfrage.
+- Korrektur: `team_id` wurde in die drei relevanten Spielerdaten-Abfragen (aktive Spieler, inaktive Spieler und Backup-Snapshot) aufgenommen.
+- Die drei Kennzahlen der Ereigniskachel bleiben in einer dreispaltigen Anordnung. Jede Zahl und ihre Bezeichnung werden nun horizontal zentriert.
+- Die Trainings- und Spieltagsstatistikkacheln wurden nicht angepasst.
+- Keine SQL- oder RLS-Änderung.
+
+### Offene Verifikation
+
+- Prüfen, ob die Ereignisübersicht nach dem neuen DEV-Deploy ohne UUID-Fehler lädt.
+- Prüfen, ob Zahlen und Bezeichnungen auf dem iPhone jeweils mittig untereinander stehen.
+- Prüfen, dass Trainings- und Spieltagskacheln optisch und funktional unverändert geblieben sind.
+
+**Code-Korrektur-Commit:** `06db064c8b66571b89aa7410c449e7d38746656c`
