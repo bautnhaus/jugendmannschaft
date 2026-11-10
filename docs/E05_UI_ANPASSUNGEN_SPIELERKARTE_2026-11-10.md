@@ -52,9 +52,11 @@ Die Trainingsübersicht lädt Trainings der Mannschaft ab `players.created_at`. 
 ### 2.3 Audit-Benutzerauflösung
 
 - Die Audit-Abfragen lesen jetzt zusätzlich `changed_by`.
-- Für Audit-Einträge ohne `changed_by_snapshot` wird der Anzeigename aus `profiles.display_name` anhand der gespeicherten Benutzer-ID aufgelöst.
+- Für Audit-Einträge ohne `changed_by_snapshot` wird der Anzeigename anhand der gespeicherten Benutzer-ID aus `profiles.display_name` aufgelöst, soweit die bestehende RLS-Regel den Zugriff erlaubt.
+- Für den aktuell angemeldeten Nutzer wird ergänzend das bereits geladene eigene Profil verwendet.
 - Ein vorhandener Snapshot hat weiterhin Vorrang.
-- Damit wird insbesondere der initiale Erfassungseintrag nachvollziehbar, sofern das Profil einen Anzeigenamen enthält.
+- **Berechtigungsgrenze:** Die aktuelle DEV-RLS-Regel erlaubt das Lesen fremder Profile nur Mannschaftsadmins. Trainer können deshalb fremde Audit-Akteure nicht zuverlässig über `profiles` auflösen.
+- Eine vollständige, rollenunabhängige Lösung benötigt einen beim initialen RPC-Aufruf serverseitig gespeicherten `changed_by_snapshot`. Dafür wäre eine separate SQL-Änderung an `award_training_behavior_event` nötig. Diese wurde nicht ausgeführt und bleibt bis zu Deiner gesonderten Freigabe offen.
 - Es wurde keine Datenbankfunktion und kein Audit-Datensatz verändert.
 
 ### 2.4 Ereignisauswahl
