@@ -121,7 +121,7 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerCardTileIcon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--tile-main) 13%,white);color:var(--tile-main);flex:0 0 30px}
 .playerCardTileIcon .material-symbols-outlined{font-size:18px}
 .playerCardTileTitle{font-weight:750;font-size:14px;min-width:0;flex:1}
-.playerCardTile{position:relative;padding-right:38px}.playerCardTileArrow{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#64748b;font-size:20px;flex:0 0 auto}.playerCardTile.events{grid-column:1/-1;--tile-bg:#f1f7ff;--tile-border:#d4e8ff;--tile-main:#1674df;--tile-track:#d6e9ff}.playerCardEventMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}.playerCardEventMetric{display:flex;flex-direction:column;gap:3px;min-width:0}.playerCardEventMetric strong{font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums}.playerCardEventMetric span{font-size:12px;color:var(--muted)}
+.playerCardTile{position:relative;padding-right:38px}.playerCardTileArrow{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#64748b;font-size:20px;flex:0 0 auto}.playerCardTile.events{grid-column:1/-1;--tile-bg:#f1f7ff;--tile-border:#d4e8ff;--tile-main:#1674df;--tile-track:#d6e9ff}.playerCardEventMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}.playerCardEventMetric{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:0;text-align:center}.playerCardEventMetric strong{font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums;text-align:center}.playerCardEventMetric span{font-size:12px;color:var(--muted);text-align:center}
 .playerCardTileBody{display:flex;align-items:center;gap:8px;min-width:0}.playerCardTile.events .playerCardTileBody{align-items:stretch}
 .playerCardDonut{width:72px;height:72px;flex:0 0 72px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--tile-main) calc(var(--progress)*1%),var(--tile-track) 0);position:relative}
 .playerCardDonut:before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--tile-bg)}
@@ -2011,11 +2011,11 @@ async function loadApp(){
   const {data:teamRow,error:te}=await c.from('teams').select('id,name,club_id,recommended_squad_size').eq('id',team).single();if(te)throw te;currentClubId=teamRow?.club_id||null;currentWelcomeTeamName=String(teamRow?.name||'').trim();recommendedSquadSize=Number(teamRow?.recommended_squad_size)||16;canManageClub=false;if(currentClubId){const {data:clubAdminFlag,error:clubAdminError}=await c.rpc('is_club_admin',{p_club_id:currentClubId});if(clubAdminError)console.warn('Vereinsverwaltung konnte nicht geprüft werden:',clubAdminError.message);else canManageClub=clubAdminFlag===true;}const clubPanel=$('clubAdminPanel');if(clubPanel)clubPanel.classList.toggle('hidden',!canManageClub||contextReadOnly);
   const {data:seasonRows,error:se}=await c.from('seasons').select('id,name,start_date,end_date,is_active').eq('team_id',team).eq('is_active',true).limit(1);if(se)throw se;season=seasonRows?.[0]||null;currentWelcomeSeasonName=String(season?.name||'').trim();await loadDashboardWelcomeClub();
   const {data:pos,error:pe}=await c.from('positions').select('id,name,sort_order,color').eq('team_id',team).order('sort_order').order('name');if(pe)throw pe;
-  const {data:players,error:pl}=await c.from('players').select('id,name,first_name,last_name,birth_year,preferred_foot,level,photo_data,notes,active,created_at').eq('team_id',team).eq('active',true);if(pl)throw pl;
+  const {data:players,error:pl}=await c.from('players').select('id,team_id,name,first_name,last_name,birth_year,preferred_foot,level,photo_data,notes,active,created_at').eq('team_id',team).eq('active',true);if(pl)throw pl;
   // Inaktive Spieler müssen für historische Trainingsansichten geladen werden,
   // unabhängig davon, ob der aktuelle Nutzer die Kaderverwaltung administrieren darf.
   // Die separate state.inactivePlayers-Liste hält sie aus der aktiven Planung heraus.
-  const {data:inactiveRows,error:inactiveError}=await c.from('players').select('id,name,first_name,last_name,birth_year,preferred_foot,level,photo_data,notes,active,created_at').eq('team_id',team).eq('active',false);
+  const {data:inactiveRows,error:inactiveError}=await c.from('players').select('id,team_id,name,first_name,last_name,birth_year,preferred_foot,level,photo_data,notes,active,created_at').eq('team_id',team).eq('active',false);
   if(inactiveError)throw inactiveError;
   let inactivePlayers=inactiveRows||[];
   const allPlayerIds=[...(players||[]),...inactivePlayers].map(x=>x.id);
@@ -3272,7 +3272,7 @@ async function buildBackupSnapshot(){
   const c=getClient();
   const [posR,playerR,ppR,trainingR,seriesR,matchdayR,teamR]=await Promise.all([
     c.from('positions').select('id,name,sort_order,color').eq('team_id',team).order('sort_order').order('name'),
-    c.from('players').select('id,name,first_name,last_name,birth_year,preferred_foot,level,photo_data,notes,active,created_at').eq('team_id',team),
+    c.from('players').select('id,team_id,name,first_name,last_name,birth_year,preferred_foot,level,photo_data,notes,active,created_at').eq('team_id',team),
     c.from('player_positions').select('player_id,position_id'),
     c.from('trainings').select('id,training_date,name,start_time,duration_minutes,location,status,note,series_id,overrides').eq('team_id',team).order('training_date'),
     c.from('training_series').select('id,team_id,start_date,end_date,start_time,duration_minutes,weekdays,location,name').eq('team_id',team),
