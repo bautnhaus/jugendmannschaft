@@ -121,8 +121,8 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerCardTileIcon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--tile-main) 13%,white);color:var(--tile-main);flex:0 0 30px}
 .playerCardTileIcon .material-symbols-outlined{font-size:18px}
 .playerCardTileTitle{font-weight:750;font-size:14px;min-width:0;flex:1}
-.playerCardTileArrow{color:#64748b;font-size:20px;flex:0 0 auto}
-.playerCardTileBody{display:flex;align-items:center;gap:8px;min-width:0}
+.playerCardTile{position:relative;padding-right:38px}.playerCardTileArrow{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#64748b;font-size:20px;flex:0 0 auto}.playerCardTile.events{grid-column:1/-1;--tile-bg:#f1f7ff;--tile-border:#d4e8ff;--tile-main:#1674df;--tile-track:#d6e9ff}.playerCardEventMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}.playerCardEventMetric{display:flex;flex-direction:column;gap:3px;min-width:0}.playerCardEventMetric strong{font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums}.playerCardEventMetric span{font-size:12px;color:var(--muted)}
+.playerCardTileBody{display:flex;align-items:center;gap:8px;min-width:0}.playerCardTile.events .playerCardTileBody{align-items:stretch}
 .playerCardDonut{width:72px;height:72px;flex:0 0 72px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--tile-main) calc(var(--progress)*1%),var(--tile-track) 0);position:relative}
 .playerCardDonut:before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--tile-bg)}
 .playerCardDonutInner{position:relative;z-index:1;text-align:center;line-height:1.1}
@@ -2251,9 +2251,24 @@ window.openPlayerMatchdayDetails=id=>{const p=state.players.find(x=>x.id===id);i
 window.openExactPlayerMatchday=(playerId,matchdayId)=>openPlayerMatchdayRecord(playerId,matchdayId);
 window.returnToPlayerStatsFromEvent=(playerId,type)=>{playerEventReturn=null;showTab('players');if(type==='training')openPlayerTrainingDetails(playerId);else openPlayerMatchdayDetails(playerId);};
 window.openPlayerNotes=id=>{const p=state.players.find(x=>x.id===id);if(!p)return;openModal(`<div class="detailHeader"><button type="button" class="iconBack" aria-label="Zurück zur Spielerkarte" onclick="openPlayerCard('${id}')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Notizen · ${esc(displayName(p))}</h2></div><div class="playerCardNotes playerCardNotesFull">${esc(p.notes||'Noch keine Notizen hinterlegt.')}</div>`);};
-window.openPlayerCard=id=>{
+window.openPlayerCard=async id=>{
   const p=state.players.find(x=>x.id===id)||state.inactivePlayers.find(x=>x.id===id);
   if(!p)return;
+  let eventCardCounts={cards:0,suspensions:0,stars:0};
+  if(season?.id){
+    try{
+      const c=getClient();
+      const [eventResult,suspensionResult]=await Promise.all([
+        c.from('training_behavior_events').select('event_type').eq('player_id',id).eq('season_id',season.id).eq('status','active'),
+        c.from('training_suspensions').select('id').eq('player_id',id).eq('season_id',season.id).neq('status','voided')
+      ]);
+      if(eventResult.error)throw eventResult.error;
+      if(suspensionResult.error)throw suspensionResult.error;
+      eventCardCounts.cards=(eventResult.data||[]).filter(e=>e.event_type==='yellow_card'||e.event_type==='red_card').length;
+      eventCardCounts.stars=(eventResult.data||[]).filter(e=>e.event_type==='positive_star').length;
+      eventCardCounts.suspensions=(suspensionResult.data||[]).length;
+    }catch(e){console.error('Ereigniskennzahlen konnten nicht geladen werden:',e);showStatus('Ereigniskennzahlen konnten nicht geladen werden.','error');}
+  }
   const isInactive=p.active===false||state.inactivePlayers.some(x=>x.id===id);
   const a=attendanceStats(p);
   const positions=orderedPositions(p.positions||[]);
@@ -2305,9 +2320,13 @@ window.openPlayerCard=id=>{
         </span>
       </button>
     </div>
-    <button type="button" class="playerCardSection playerCardNotesTile" onclick="openPlayerEventHistory('${id}')" aria-label="Karten- und Sperrenhistorie für ${esc(displayName(p))} öffnen">
-      <span class="playerCardSectionTitle">Karten &amp; Sperren <span class="material-symbols-outlined" style="margin-left:auto;color:#64748b">chevron_right</span></span>
-      <span class="muted small">Ereignisse, Sperren und nachvollziehbare Korrekturen anzeigen</span>
+    <button type="button" class="playerCardTile events" onclick="openPlayerEventHistory('${id}')" aria-label="Ereignisse für ${esc(displayName(p))} öffnen">
+      <span class="playerCardTileHead"><span class="playerCardTileIcon">${materialIcon('history')}</span><span class="playerCardTileTitle">Ereignisse</span><span class="material-symbols-outlined playerCardTileArrow">chevron_right</span></span>
+      <span class="playerCardTileBody"><span class="playerCardEventMetrics">
+        <span class="playerCardEventMetric"><strong>${eventCardCounts.cards}</strong><span>Karten</span></span>
+        <span class="playerCardEventMetric"><strong>${eventCardCounts.suspensions}</strong><span>Sperren</span></span>
+        <span class="playerCardEventMetric"><strong>${eventCardCounts.stars}</strong><span>Sterne</span></span>
+      </span></span>
     </button>
     <button type="button" class="playerCardSection playerCardNotesTile" onclick="openPlayerNotes('${id}')" aria-label="Vollständige Notizen für ${esc(displayName(p))} öffnen">
       <span class="playerCardSectionTitle">Notizen <span class="material-symbols-outlined" style="margin-left:auto;color:#64748b">chevron_right</span></span>
