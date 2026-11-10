@@ -1,0 +1,121 @@
+# E05 – UI-Anpassungen Spielerkarte und Ereignishistorie
+
+**Datum:** 10.11.2026  
+**Branch:** `develop`  
+**Zielumgebung:** Jugendmannschaft DEV  
+**Status:** Implementierung in `develop` abgeschlossen; DEV-Praxistest und visuelle Abnahme ausstehend  
+**Datenbank:** Ausschließlich read-only geprüft; keine SQL-Änderung und keine Migration  
+**PROD:** Nicht verändert
+
+## 1. Verbindliche fachliche Grundlage
+
+- `players.created_at` ist das Eintrittsdatum des Spielers in die Mannschaft.
+- Die Ereignisübersicht umfasst alle nicht abgesagten, bereits stattgefundenen Trainings ab diesem Eintrittszeitpunkt – unabhängig von der tatsächlichen Anwesenheit.
+- Ereignisstatistiken zählen nur Ereignisse der aktiven Mannschaftssaison.
+- Karten zählen gemeinsam (gelbe und rote Karten), Sperren und Sterne separat.
+- Es zählen nur aktive Karten/Sterne sowie nicht aufgehobene Sperren. Abgesessene und abgelaufene Sperren zählen weiterhin, aufgehobene Sperren nicht.
+- Eine Sperre zählt nur, wenn ihr auslösendes Kartenereignis aktiv ist.
+- Stornierte Ereignisse bleiben in der Historie sichtbar, zählen aber nicht in den Kennzahlen oder Ereignisfiltern.
+- Die bestehenden Trainings- und Spieltagsstatistiken sowie ihre Detailansichten bleiben unverändert.
+
+## 2. Umgesetzte Frontend-Anpassungen
+
+Datei: `index.html`.
+
+### 2.1 Ereignisstatistik auf der Spielercard
+
+- Die bisherige schmale Kachel „Karten & Sperren“ wurde durch eine große Kachel „Ereignisse“ ersetzt.
+- Die Kachel zeigt drei Kennzahlen: Karten, Sperren und Sterne.
+- Karten werden als gemeinsame Summe von gelben und roten Karten dargestellt.
+- Kennzahlen werden anhand der aktiven Saison (`season.id`) geladen.
+- Bei Sperren werden nur nicht aufgehobene Sperren berücksichtigt, deren Quellkarte aktiv ist.
+- Die bestehenden Kacheln „Training“ und „Spieltage“ wurden nicht verändert.
+
+### 2.2 Ereignisübersicht
+
+Dreistufiger Ablauf:
+
+1. Ereigniskachel auf der Spielercard.
+2. Trainingsübersicht mit den Hauptfiltern „Alle“, „Karten“, „Sperren“ und „Sterne“.
+3. Chronologische Ereignishistorie für das ausgewählte Training.
+
+Die Trainingsübersicht lädt Trainings der Mannschaft ab `players.created_at`. Trainings vor dem Mannschaftsbeitritt, abgesagte Trainings und noch nicht stattgefundene Trainings werden nicht angezeigt. Die tatsächliche Anwesenheit ist keine Voraussetzung.
+
+- „Alle“ zeigt auch Trainings ohne Ereignisse mit dem Hinweis „Keine Ereignisse“.
+- Die Filter „Karten“, „Sperren“ und „Sterne“ zeigen nur Trainings mit dem jeweiligen aktiven Ereignistyp.
+- Gelbe und rote Karten werden im Filter „Karten“ gemeinsam behandelt.
+- Stornierte Ereignisse werden im Filter nicht berücksichtigt; bei Trainings, in denen ausschließlich zurückgenommene Ereignisse vorliegen, wird dies kenntlich gemacht.
+- Im Trainingsdetail werden Karten, Sterne und Sperren gemeinsam nach Zeitpunkt sortiert angezeigt.
+- Auditdetails, Stornogründe und vorhandene Korrekturaktionen bleiben erhalten.
+- Nach einer Korrektur oder Sperrenzuordnung wird wieder die Ereignishistorie des betreffenden Trainings geöffnet.
+
+### 2.3 Audit-Benutzerauflösung
+
+- Die Audit-Abfragen lesen jetzt zusätzlich `changed_by`.
+- Für Audit-Einträge ohne `changed_by_snapshot` wird der Anzeigename aus `profiles.display_name` anhand der gespeicherten Benutzer-ID aufgelöst.
+- Ein vorhandener Snapshot hat weiterhin Vorrang.
+- Damit wird insbesondere der initiale Erfassungseintrag nachvollziehbar, sofern das Profil einen Anzeigenamen enthält.
+- Es wurde keine Datenbankfunktion und kein Audit-Datensatz verändert.
+
+### 2.4 Ereignisauswahl
+
+- Die gesamte Ereigniskachel ist auswählbar.
+- Die Auswahl führt direkt zum nächsten Dialogschritt.
+- Der separate Button „Weiter“ entfällt.
+- „Abbrechen“ bleibt erhalten.
+- Der sichtbare Auswahlindikator entfällt; die vorhandene Radio-Auswahl bleibt technisch verborgen und zugänglich für die Kachelbedienung.
+
+### 2.5 Überschriften und Navigation
+
+- Training: Hauptüberschrift „Training“, Untertitel „Historie für [Spielername]“.
+- Spieltage: Hauptüberschrift „Spieltage“, Untertitel „Historie für [Spielername]“.
+- Ereignisse: Hauptüberschrift „Ereignisse“, Untertitel „Historie für [Spielername]“.
+- Notizen: Hauptüberschrift „Notizen“, Untertitel „Notizen für [Spielername]“.
+- Der Navigationspfeil der Statistik-Kacheln ist absolut positioniert und vertikal auf die gesamte Kachelhöhe zentriert.
+
+### 2.6 Dark Mode
+
+- Für die Ereignisauswahl wurden System-Dark-Mode-Regeln ergänzt, die dieselben dunklen Flächen-, Rahmen- und Textfarben wie die manuelle Dark-Mode-Darstellung verwenden.
+- Die Kaderzusammenstellung besitzt bereits parallele Regeln für System-Dark-Mode und explizit gesetzten Dark Mode. Diese wurden im aktuellen Quellstand geprüft und nicht unnötig dupliziert.
+
+## 3. Technische Abgrenzung
+
+- Keine Tabellen, Spalten, Trigger, Policies, RPCs oder Edge Functions geändert.
+- Keine SQL-Schreiboperation ausgeführt.
+- Keine Änderungen an Supabase-Konfiguration oder Auth.
+- Keine Änderungen an `main`, PROD, DNS oder Registrar.
+- Es wurden ausschließlich Frontend-Code und diese Dokumentation auf `develop` geändert.
+
+## 4. Technische Prüfung
+
+- Aktuelle `develop/index.html` vor jeder Änderung frisch abgerufen.
+- JavaScript-Syntaxprüfung für das vollständige Hauptscript und die geänderten Funktionsblöcke erfolgreich.
+- Geprüfte Funktionsblöcke: Ereignisübersicht, Ereignisdetail, kombinierte Ereignis-/Sperrenchronologie, Korrekturhandler, Spielercard und Ereignisauswahl.
+- Keine Browser-/iPhone-Visualprüfung und kein vollständiger DEV-Praxistest durch den Nutzer durchgeführt.
+
+## 5. DEV-Praxistest – ausstehend
+
+1. Ereigniskachel auf der Spielercard: Karten-, Sperren- und Sternzahlen stimmen für die aktive Saison.
+2. Abgesessene und abgelaufene Sperren zählen; aufgehobene Sperren und Sperren mit zurückgenommener Quellkarte zählen nicht.
+3. Stornierte Karten/Sterne zählen nicht, bleiben aber in der Trainingshistorie sichtbar.
+4. Trainingsliste beginnt exakt ab `players.created_at`; Trainings vor dem Beitritt werden ausgeschlossen.
+5. Trainings ohne Ereignisse erscheinen in „Alle“ mit „Keine Ereignisse“.
+6. Alle vier Hauptfilter liefern passende Trainings.
+7. Ein Training öffnet die gemeinsame chronologische Liste aus Karten, Sternen und Sperren.
+8. Audit-Historie zeigt den Namen des initial erfassenden Nutzers sowie Namen bei späteren Änderungen, sofern ein Profilname vorhanden ist.
+9. Stornierung/Wiederherstellung einer Karte und Korrektur einer Sperrenzuordnung führen zurück zum passenden Trainingsdetail.
+10. Ereignisauswahl: ganze Kachel reagiert, direkter Wechsel zum Folgeschritt, nur „Abbrechen“ als unterer Button.
+11. System-Dark-Mode und manuell aktivierter Dark Mode sehen bei Ereignisauswahl und Kaderzusammenstellung gleich aus.
+12. Überschriften und Untertitel in Training, Spieltage, Ereignisse und Notizen prüfen.
+13. Pfeile in den Statistik-Kacheln bei unterschiedlichen Textlängen vertikal mittig prüfen.
+14. iPhone-Breite, Scrollverhalten und Regression der bestehenden Trainings- und Spieltagsstatistiken prüfen.
+
+## 6. Commit-Stand
+
+Die Frontend-Umsetzung wurde in mehreren kleinen Commits auf `develop` vorgenommen. Letzter Code-Commit zum Zeitpunkt dieser Dokumentation:
+
+- `6593809f9027f87256cee9809b58199c3d77065f`
+
+Die Dokumentation wird separat ergänzt. Der aktuelle Branchvergleich zeigt `develop` weiterhin deutlich vor `main`; die Branches sind divergent. Es wurde kein Merge und kein PROD-Deploy ausgelöst.
+
+**Abnahme:** Ausstehend. Die Implementierung ist bereit für den DEV-Praxistest, nicht für einen PROD-Release.
