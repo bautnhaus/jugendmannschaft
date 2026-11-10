@@ -121,8 +121,8 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerCardTileIcon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--tile-main) 13%,white);color:var(--tile-main);flex:0 0 30px}
 .playerCardTileIcon .material-symbols-outlined{font-size:18px}
 .playerCardTileTitle{font-weight:750;font-size:14px;min-width:0;flex:1}
-.playerCardTile{position:relative;padding-right:38px}.playerCardTileArrow{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#64748b;font-size:20px;flex:0 0 auto}.playerCardTile.events{grid-column:1/-1;--tile-bg:#f1f7ff;--tile-border:#d4e8ff;--tile-main:#1674df;--tile-track:#d6e9ff}.playerCardEventMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}.playerCardEventMetric{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:0;text-align:center}.playerCardEventMetric strong{font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums;text-align:center}.playerCardEventMetric span{font-size:12px;color:var(--muted);text-align:center}
-.playerCardTileBody{display:flex;align-items:center;gap:8px;min-width:0}.playerCardTile.events .playerCardTileBody{align-items:stretch}
+.playerCardTileArrow{color:#64748b;font-size:20px;flex:0 0 auto}
+.playerCardTileBody{display:flex;align-items:center;gap:8px;min-width:0}
 .playerCardDonut{width:72px;height:72px;flex:0 0 72px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--tile-main) calc(var(--progress)*1%),var(--tile-track) 0);position:relative}
 .playerCardDonut:before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--tile-bg)}
 .playerCardDonutInner{position:relative;z-index:1;text-align:center;line-height:1.1}
@@ -136,6 +136,13 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerCardTileMetric span{color:#475569;overflow-wrap:anywhere}
 .playerCardTile:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
 @media(max-width:380px){.playerCardStatsTiles{gap:7px}.playerCardTile{padding:8px}.playerCardTileHead{gap:5px;margin-bottom:8px}.playerCardTileTitle{font-size:12px}.playerCardTileBody{gap:5px}.playerCardDonut{width:58px;height:58px;flex-basis:58px}.playerCardDonut:before{inset:6px}.playerCardDonutValue{font-size:14px}.playerCardDonutTotal{font-size:9px}.playerCardTilePercent{font-size:14px}.playerCardTileCaption,.playerCardTileMetric{font-size:10px}.playerCardTileMetric strong{font-size:12px}}
+.playerCardTile.events{grid-column:1/-1;position:relative;padding-right:38px;--tile-bg:#f1f7ff;--tile-border:#d4e8ff;--tile-main:#1674df;--tile-track:#d6e9ff}
+.playerCardTile.events .playerCardTileArrow{position:absolute;right:10px;top:50%;transform:translateY(-50%)}
+.playerCardEventMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
+.playerCardEventMetric{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:0;text-align:center}
+.playerCardEventMetric strong{font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums;text-align:center}
+.playerCardEventMetric span{font-size:12px;color:var(--muted);text-align:center}
+.playerCardTile.events .playerCardTileBody{align-items:stretch}
 
 /* Spielerübersicht – kompakte Variante des Spielerkarten-Kopfbereichs */
 .playerListControls{display:flex;gap:8px;align-items:center;margin:8px 0 10px;min-width:0}
