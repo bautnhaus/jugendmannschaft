@@ -201,3 +201,22 @@ Der DEV-Datensatz des im Praxistest geöffneten Spielers bestätigt drei aktive 
 - **Offen:** erfolgreicher DEV-Deploy und erneuter iPhone-Praxistest der Historienliste, Filterwechsel und Abstände.
 
 PROD/`main` wurden nicht verändert.
+
+
+## 11. Ereignis- und Notizenkachel sowie Ereignislisten-Layout (10.11.2026)
+
+### Vereinbarte UI-Anpassungen
+
+- Ereigniskachel: Pfeil rechts in der Überschriftenzeile neben „Ereignisse“, nicht mehr vertikal mittig in der gesamten Kachel. Violette Hinterlegung, `fact_check` und die mittig ausgerichteten drei Kennzahlen bleiben erhalten.
+- Notizenkachel: gleicher Kopfzeilenaufbau; links Google Material Symbol `sticky_note_2`, danach „Notizen“, Pfeil rechts in derselben Zeile. Die Vorschau des Notizinhalts bleibt darunter.
+- Ereignishistorie: Listenzeilen verwenden den vorhandenen `.playerrow.playerHistoryLink`-Aufbau aus den Spielerstatistiken (insbesondere Spieltagshistorie), statt einer eigenständigen Button-Kartenoptik.
+- Filtersteuerung: Filterbuttons rufen nun einen expliziten globalen Callback `window.setPlayerEventFilter` auf und markieren den aktiven Filter zusätzlich mit `aria-pressed`.
+
+### Umsetzung und Prüfung
+
+- Umsetzung ausschließlich in `develop/index.html`.
+- Beide JavaScript-Blöcke erfolgreich syntaktisch geprüft.
+- **Code-Commit:** `7f51efcea288a7b946c2e2a3bf6977f6c2a734c4`.
+- **Offen:** DEV-Deploy und iPhone-Praxistest der Listenoptik, Filterreaktion, Kachelpfeile und Notizenüberschrift.
+
+Keine SQL- oder Datenänderungen. `main`/PROD unverändert.
