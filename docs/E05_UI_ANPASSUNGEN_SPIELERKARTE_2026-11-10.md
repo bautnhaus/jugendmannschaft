@@ -145,3 +145,18 @@ Der erste iPhone-Praxistest nach erfolgreichem DEV-Deploy zeigte zwei Punkte:
 - Prüfen, dass Trainings- und Spieltagskacheln optisch und funktional unverändert geblieben sind.
 
 **Code-Korrektur-Commit:** `06db064c8b66571b89aa7410c449e7d38746656c`
+
+
+## 8. Wiederherstellung der Trainings- und Spieltagskacheln anhand von main (10.11.2026)
+
+Nach dem erneuten DEV-Praxistest wurde gemeldet, dass Trainings- und Spieltagskacheln weiterhin von der Referenzdarstellung abweichen.
+
+- `main/index.html` wurde als visuelle Referenz herangezogen (Referenz-Blob: `ea65f81d53a48bb9a17a15e18b76bfcc3418f6bc`).
+- Das vollständige CSS-Grundlayout der Statistik-Kacheln wurde aus main übernommen.
+- Die Ereigniskachel behält ihre eigenen Styles. Die absolute Pfeilpositionierung und der zusätzliche rechte Innenabstand sind jetzt ausdrücklich auf `.playerCardTile.events` begrenzt und beeinflussen Training/Spieltage nicht mehr.
+- Markup und Berechnungslogik der Trainings- und Spieltagskacheln wurden nicht verändert.
+- Keine SQL- oder PROD-Änderung.
+
+**Code-Commit:** `a7f1d8a5ad42505533e880bd50fe309fcd0c6e42`
+
+**Offene Verifikation:** Nach DEV-Deploy Darstellung der beiden Kacheln auf dem iPhone direkt mit main vergleichen.
