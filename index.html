@@ -2413,7 +2413,7 @@ function renderPlayerEventTrainingList(playerId,filter='all'){
   const cached=window.playerEventTrainingCache[playerId];
   if(!p||!cached)return;
   const filters=[['all','Alle'],['cards','Karten'],['suspensions','Sperren'],['stars','Sterne']];
-  const chips=filters.map(([key,label])=>'<button type="button" class="playerFilterChip '+(filter===key?'active':'')+'" onclick="renderPlayerEventTrainingList(\\''+playerId+'\\',\\''+key+'\\')">'+label+'</button>').join('');
+  const chips=filters.map(([key,label])=>'<button type="button" class="playerFilterChip '+(filter===key?'active':'')+'" onclick="renderPlayerEventTrainingList(\''+playerId+'\',\''+key+'\')">'+label+'</button>').join('');
   const trainings=cached.trainings.filter(t=>{
     if(filter==='cards')return t.currentEvents.some(e=>e.event_type==='yellow_card'||e.event_type==='red_card');
     if(filter==='suspensions')return t.suspensions.length>0;
@@ -2426,9 +2426,9 @@ function renderPlayerEventTrainingList(playerId,filter='all'){
     const suspensionTag=t.suspensions.length?'<span class="badge medium">Sperre</span>':'';
     const empty=!t.allEvents.length?'<span class="muted small">Keine Ereignisse</span>':'';
     const voided=t.allEvents.length&&!t.currentEvents.length?'<span class="muted small">Nur zurückgenommene Ereignisse</span>':'';
-    return '<button type="button" class="playerrow playerHistoryLink" onclick="openPlayerEventTrainingHistory(\\''+playerId+'\\',\\''+t.id+'\\')"><span><b>'+esc(fmtDate(t.training_date))+'</b>'+(t.name?'<br><span class="muted small">'+esc(t.name)+'</span>':'')+'</span><span class="right playerHistoryMeta">'+(tags||'')+suspensionTag+empty+voided+'<span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></span></button>';
+    return '<button type="button" class="playerrow playerHistoryLink" onclick="openPlayerEventTrainingHistory(\''+playerId+'\',\''+t.id+'\')"><span><b>'+esc(fmtDate(t.training_date))+'</b>'+(t.name?'<br><span class="muted small">'+esc(t.name)+'</span>':'')+'</span><span class="right playerHistoryMeta">'+(tags||'')+suspensionTag+empty+voided+'<span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></span></button>';
   }).join(''):'<p class="muted">Für diesen Filter gibt es keine passenden Trainings.</p>';
-  $('modalContent').innerHTML='<div class="detailHeader"><button type="button" class="iconBack" onclick="openPlayerCard(\\''+playerId+'\\')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Ereignisse</h2></div><p class="muted">Historie für '+esc(displayName(p))+' · Trainings seit Mannschaftsbeitritt.</p><div class="playerFilterChips">'+chips+'</div>'+rows;
+  $('modalContent').innerHTML='<div class="detailHeader"><button type="button" class="iconBack" onclick="openPlayerCard(\''+playerId+'\')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Ereignisse</h2></div><p class="muted">Historie für '+esc(displayName(p))+' · Trainings seit Mannschaftsbeitritt.</p><div class="playerFilterChips">'+chips+'</div>'+rows;
 }
 window.openPlayerEventHistory=async id=>{
   const p=state.players.find(x=>x.id===id)||state.inactivePlayers.find(x=>x.id===id);if(!p)return;
@@ -2440,7 +2440,7 @@ window.openPlayerEventTrainingList=async(playerId,filter='all')=>{
     renderPlayerEventTrainingList(playerId,filter);
     return;
   }
-  openModal('<div class="detailHeader"><button type="button" class="iconBack" onclick="openPlayerCard(\\''+playerId+'\\')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Ereignisse</h2></div><p class="muted">Historie für '+esc(displayName(p))+' · Trainings seit Mannschaftsbeitritt.</p><p class="muted">Trainings werden geladen …</p>');
+  openModal('<div class="detailHeader"><button type="button" class="iconBack" onclick="openPlayerCard(\''+playerId+'\')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Ereignisse</h2></div><p class="muted">Historie für '+esc(displayName(p))+' · Trainings seit Mannschaftsbeitritt.</p><p class="muted">Trainings werden geladen …</p>');
   try{
     const c=getClient(),joinedAt=new Date(p.created_at);
     if(Number.isNaN(joinedAt.getTime()))throw new Error('Mannschaftsbeitritt konnte nicht bestimmt werden.');
@@ -2472,7 +2472,7 @@ window.openPlayerEventTrainingList=async(playerId,filter='all')=>{
     renderPlayerEventTrainingList(playerId,filter);
   }catch(e){
     console.error(e);
-    $('modalContent').innerHTML='<div class="detailHeader"><h2>Ereignisse</h2></div><p class="notice error">Die Trainingsübersicht konnte nicht geladen werden: '+esc(e.message||e)+'</p><button type="button" onclick="openPlayerCard(\\''+playerId+'\\')">Zurück</button>';
+    $('modalContent').innerHTML='<div class="detailHeader"><h2>Ereignisse</h2></div><p class="notice error">Die Trainingsübersicht konnte nicht geladen werden: '+esc(e.message||e)+'</p><button type="button" onclick="openPlayerCard(\''+playerId+'\')">Zurück</button>';
   }
 };
 window.openPlayerEventTrainingHistory=async(playerId,trainingId)=>{
