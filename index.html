@@ -2372,22 +2372,79 @@ function e05RenderHistory(player,events,eventAudits,suspensions,suspensionAudits
 }
 window.openPlayerEventHistory=async id=>{
   const p=state.players.find(x=>x.id===id)||state.inactivePlayers.find(x=>x.id===id);if(!p)return;
-  openModal('<div class="detailHeader"><h2>Karten &amp; Sperren</h2></div><p class="muted">Historie wird geladen …</p>');
+  window.openPlayerEventTrainingList(id,'all');
+};
+window.openPlayerEventTrainingList=async(playerId,filter='all')=>{
+  const p=state.players.find(x=>x.id===playerId)||state.inactivePlayers.find(x=>x.id===playerId);if(!p)return;
+  openModal('<div class="detailHeader"><button type="button" class="iconBack" onclick="openPlayerCard(\\''+playerId+'\\')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Ereignisse</h2></div><p class="muted">Historie für '+esc(displayName(p))+' · Trainings seit Mannschaftsbeitritt.</p><p class="muted">Trainings werden geladen …</p>');
+  try{
+    const c=getClient(),joinedAt=new Date(p.created_at);
+    if(Number.isNaN(joinedAt.getTime()))throw new Error('Mannschaftsbeitritt konnte nicht bestimmt werden.');
+    const [tr,ev,su]=await Promise.all([
+      c.from('trainings').select('id,training_date,name,status,season_id,start_time').eq('team_id',p.team_id).gte('training_date',joinedAt.toISOString().slice(0,10)).order('training_date',{ascending:false}),
+      c.from('training_behavior_events').select('id,training_id,event_type,status').eq('player_id',playerId),
+      c.from('training_suspensions').select('id,source_event_id,status').eq('player_id',playerId)
+    ]);
+    if(tr.error)throw tr.error;if(ev.error)throw ev.error;if(su.error)throw su.error;
+    const eventRows=ev.data||[],suspensionRows=su.data||[];
+    const activeEvents=eventRows.filter(e=>e.status==='active');
+    const activeSuspensions=suspensionRows.filter(x=>x.status!=='voided');
+    const activeSuspensionSources=new Set(activeSuspensions.map(x=>x.source_event_id).filter(Boolean));
+    const trainings=(tr.data||[]).filter(t=>{
+      if(t.status==='cancelled')return false;
+      const eligible=playerEligibleForTraining(p,{date:t.training_date,startTime:t.start_time});
+      const startAt=new Date(t.training_date+'T'+(t.start_time||'00:00')+':00');
+      return eligible&&!Number.isNaN(startAt.getTime())&&startAt<=new Date();
+    }).map(t=>{
+      const allEvents=eventRows.filter(e=>e.training_id===t.id);
+      const currentEvents=activeEvents.filter(e=>e.training_id===t.id);
+      const suspensions=activeSuspensions.filter(x=>activeSuspensionSources.has(x.source_event_id)&&currentEvents.some(e=>e.id===x.source_event_id));
+      return {...t,allEvents,currentEvents,suspensions};
+    }).filter(t=>{
+      if(filter==='cards')return t.currentEvents.some(e=>e.event_type==='yellow_card'||e.event_type==='red_card');
+      if(filter==='suspensions')return t.suspensions.length>0;
+      if(filter==='stars')return t.currentEvents.some(e=>e.event_type==='positive_star');
+      return true;
+    });
+    const filters=[['all','Alle'],['cards','Karten'],['suspensions','Sperren'],['stars','Sterne']];
+    const chips=filters.map(([key,label])=>'<button type="button" class="playerFilterChip '+(filter===key?'active':'')+'" onclick="openPlayerEventTrainingList(\\''+playerId+'\\',\\''+key+'\\')">'+label+'</button>').join('');
+    const rows=trainings.length?trainings.map(t=>{
+      const activeTypes=[...new Set(t.currentEvents.map(e=>e.event_type))];
+      const tags=activeTypes.map(type=>'<span class="badge '+(type==='yellow_card'?'medium':type==='red_card'?'danger':'strong')+'">'+esc(e05EventLabel(type))+'</span>').join(' ');
+      const suspensionTag=t.suspensions.length?'<span class="badge medium">Sperre</span>':'';
+      const empty=!t.allEvents.length?'<span class="muted small">Keine Ereignisse</span>':'';
+      const voided=t.allEvents.length&&!t.currentEvents.length?'<span class="muted small">Nur zurückgenommene Ereignisse</span>':'';
+      return '<button type="button" class="playerrow playerHistoryLink" onclick="openPlayerEventTrainingHistory(\\''+playerId+'\\',\\''+t.id+'\\')"><span><b>'+esc(fmtDate(t.training_date))+'</b>'+(t.name?'<br><span class="muted small">'+esc(t.name)+'</span>':'')+'</span><span class="right playerHistoryMeta">'+(tags||'')+suspensionTag+empty+voided+'<span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></span></button>';
+    }).join(''):'<p class="muted">Für diesen Filter gibt es keine passenden Trainings.</p>';
+    $('modalContent').innerHTML='<div class="detailHeader"><button type="button" class="iconBack" onclick="openPlayerCard(\\''+playerId+'\\')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Ereignisse</h2></div><p class="muted">Historie für '+esc(displayName(p))+' · Trainings seit Mannschaftsbeitritt.</p><div class="playerFilterChips">'+chips+'</div>'+rows;
+  }catch(e){console.error(e);$('modalContent').innerHTML='<div class="detailHeader"><h2>Ereignisse</h2></div><p class="notice error">Die Trainingsübersicht konnte nicht geladen werden: '+esc(e.message||e)+'</p><button type="button" onclick="openPlayerCard(\\''+playerId+'\\')">Zurück</button>';}
+};
+window.openPlayerEventTrainingHistory=async(playerId,trainingId)=>{
+  const p=state.players.find(x=>x.id===playerId)||state.inactivePlayers.find(x=>x.id===playerId);if(!p)return;
+  openModal('<div class="detailHeader"><h2>Ereignisse</h2></div><p class="muted">Historie wird geladen …</p>');
   try{
     const c=getClient();
     const [ev,su]=await Promise.all([
-      c.from('training_behavior_events').select('id,team_id,season_id,training_id,training_date_snapshot,training_name_snapshot,player_id,player_name_snapshot,event_type,reason,status,awarded_by,awarded_at,voided_by,voided_at,void_reason').eq('player_id',id).order('awarded_at',{ascending:false}),
-      c.from('training_suspensions').select('id,team_id,season_id,player_id,player_name_snapshot,source_event_id,suspension_type,status,intended_matchday_id,intended_matchday_date_snapshot,intended_matchday_opponent_snapshot,served_matchday_id,served_matchday_date_snapshot,served_matchday_opponent_snapshot,created_at,served_at,expired_at,voided_at,void_reason').eq('player_id',id).order('created_at',{ascending:false})
+      c.from('training_behavior_events').select('id,team_id,season_id,training_id,training_date_snapshot,training_name_snapshot,player_id,player_name_snapshot,event_type,reason,status,awarded_by,awarded_at,voided_by,voided_at,void_reason').eq('player_id',playerId).eq('training_id',trainingId).order('awarded_at',{ascending:false}),
+      c.from('training_suspensions').select('id,team_id,season_id,player_id,player_name_snapshot,source_event_id,suspension_type,status,intended_matchday_id,intended_matchday_date_snapshot,intended_matchday_opponent_snapshot,served_matchday_id,served_matchday_date_snapshot,served_matchday_opponent_snapshot,created_at,served_at,expired_at,voided_at,void_reason').eq('player_id',playerId).order('created_at',{ascending:false})
     ]);
     if(ev.error)throw ev.error;if(su.error)throw su.error;
     const eventIds=(ev.data||[]).map(x=>x.id),suspensionIds=(su.data||[]).map(x=>x.id);
     const [ea,sa]=await Promise.all([
-      eventIds.length?c.from('training_behavior_event_audit').select('id,event_id,action,old_values,new_values,reason,changed_by_snapshot,changed_at').in('event_id',eventIds).order('changed_at',{ascending:false}):Promise.resolve({data:[],error:null}),
-      suspensionIds.length?c.from('training_suspension_audit').select('id,suspension_id,action,old_values,new_values,reason,changed_by_snapshot,changed_at').in('suspension_id',suspensionIds).order('changed_at',{ascending:false}):Promise.resolve({data:[],error:null})
+      eventIds.length?c.from('training_behavior_event_audit').select('id,event_id,action,old_values,new_values,reason,changed_by,changed_by_snapshot,changed_at').in('event_id',eventIds).order('changed_at',{ascending:false}):Promise.resolve({data:[],error:null}),
+      suspensionIds.length?c.from('training_suspension_audit').select('id,suspension_id,action,old_values,new_values,reason,changed_by,changed_by_snapshot,changed_at').in('suspension_id',suspensionIds).order('changed_at',{ascending:false}):Promise.resolve({data:[],error:null})
     ]);
     if(ea.error)throw ea.error;if(sa.error)throw sa.error;
-    $('modalContent').innerHTML=e05RenderHistory(p,ev.data||[],ea.data||[],su.data||[],sa.data||[]);
-  }catch(e){console.error(e);$('modalContent').innerHTML='<div class="detailHeader"><h2>Karten &amp; Sperren</h2></div><p class="notice error">Die Historie konnte nicht geladen werden: '+esc(e.message||e)+'</p><button type="button" onclick="openPlayerCard(\''+id+'\')">Zurück</button>';}
+    const audits=[...(ea.data||[]),...(sa.data||[])],actorIds=[...new Set(audits.map(a=>a.changed_by).filter(Boolean))];
+    const profiles=actorIds.length?await c.from('profiles').select('id,display_name').in('id',actorIds):{data:[],error:null};
+    if(profiles.error)throw profiles.error;
+    const actorNames=Object.fromEntries((profiles.data||[]).map(x=>[x.id,x.display_name]).filter(x=>x[1]));
+    const eventAudits=(ea.data||[]).map(a=>({...a,changed_by_snapshot:a.changed_by_snapshot||actorNames[a.changed_by]||null}));
+    const suspensionAudits=(sa.data||[]).map(a=>({...a,changed_by_snapshot:a.changed_by_snapshot||actorNames[a.changed_by]||null}));
+    const selectedSuspensions=(su.data||[]).filter(x=>(ev.data||[]).some(e=>e.id===x.source_event_id));
+    const selectedSuspensionIds=new Set(selectedSuspensions.map(x=>x.id));
+    $('modalContent').innerHTML=e05RenderHistory(p,ev.data||[],eventAudits,selectedSuspensions,suspensionAudits.filter(a=>selectedSuspensionIds.has(a.suspension_id)),actorNames,'openPlayerEventTrainingList');
+  }catch(e){console.error(e);$('modalContent').innerHTML='<div class="detailHeader"><h2>Ereignisse</h2></div><p class="notice error">Die Ereignishistorie konnte nicht geladen werden: '+esc(e.message||e)+'</p><button type="button" onclick="openPlayerEventTrainingList(\\''+playerId+'\\',\\'all\\')">Zurück</button>';}
 };
 window.e05OpenEventCorrection=(eventId,targetStatus,playerId)=>{
   const verb=targetStatus==='voided'?'Ereignis stornieren':'Ereignis wiederherstellen';
