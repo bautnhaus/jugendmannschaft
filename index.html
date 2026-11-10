@@ -2509,6 +2509,7 @@ window.e05OpenEventCorrection=(eventId,targetStatus,playerId,trainingId)=>{
 };
 window.e05SaveEventCorrection=async(eventId,targetStatus,playerId,trainingId)=>{
   const reason=$('e05EventCorrectionReason')?.value.trim();if(!reason){showStatus('Bitte eine Begründung eingeben.','error');return;}
+  delete window.playerEventTrainingCache[playerId];
   try{const {error}=await getClient().rpc('correct_training_behavior_event',{p_event_id:eventId,p_target_status:targetStatus,p_reason:reason});if(error)throw error;showStatus(targetStatus==='voided'?'Ereignis wurde storniert.':'Ereignis wurde wiederhergestellt.','ok');await openPlayerEventTrainingHistory(playerId,trainingId);}catch(e){showStatus('Ereignis konnte nicht geändert werden: '+(e.message||e),'error');}
 };
 window.e05OpenSuspensionCorrection=async(suspensionId,playerId,teamId,seasonId,trainingId)=>{
@@ -2522,6 +2523,7 @@ window.e05OpenSuspensionCorrection=async(suspensionId,playerId,teamId,seasonId,t
 };
 window.e05SaveSuspensionCorrection=async(suspensionId,playerId,trainingId)=>{
   const target=$('e05SuspensionTarget')?.value,reason=$('e05SuspensionReason')?.value.trim();if(!target||!reason){showStatus('Bitte Spieltag und Begründung auswählen.','error');return;}
+  delete window.playerEventTrainingCache[playerId];
   try{const {error}=await getClient().rpc('correct_suspension',{p_suspension_id:suspensionId,p_target_matchday_id:target,p_reason:reason});if(error)throw error;showStatus('Sperrenzuordnung wurde korrigiert.','ok');await openPlayerEventTrainingHistory(playerId,trainingId);}catch(e){showStatus('Sperrenzuordnung konnte nicht geändert werden: '+(e.message||e),'error');}
 };
 function fmtDateLong(d){if(!d)return '';const x=new Date(d+'T00:00:00');return isNaN(x)?d:x.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'long',year:'numeric'});}
