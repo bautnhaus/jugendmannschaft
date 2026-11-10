@@ -2444,6 +2444,7 @@ window.openPlayerEventTrainingHistory=async(playerId,trainingId)=>{
     const profiles=actorIds.length?await c.from('profiles').select('id,display_name').in('id',actorIds):{data:[],error:null};
     if(profiles.error)throw profiles.error;
     const actorNames=Object.fromEntries((profiles.data||[]).map(x=>[x.id,x.display_name]).filter(x=>x[1]));
+    if(currentUser?.id&&currentProfileDisplayName)actorNames[currentUser.id]=currentProfileDisplayName;
     const eventAudits=(ea.data||[]).map(a=>({...a,changed_by_snapshot:a.changed_by_snapshot||actorNames[a.changed_by]||null}));
     const suspensionAudits=(sa.data||[]).map(a=>({...a,changed_by_snapshot:a.changed_by_snapshot||actorNames[a.changed_by]||null}));
     const selectedSuspensions=(su.data||[]).filter(x=>(ev.data||[]).some(e=>e.id===x.source_event_id));
