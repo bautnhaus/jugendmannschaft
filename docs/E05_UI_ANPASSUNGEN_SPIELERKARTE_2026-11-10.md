@@ -176,3 +176,28 @@ Auf Basis des DEV-Praxistests wurde festgelegt:
 **Code-Commit:** `0fa7f1dc3d9384a19d076dee5c103a7adeabea99`
 
 **Offen:** DEV-Deploy abwarten und auf iPhone Light/Dark Mode sowie Abstand zur Notizenkachel prüfen.
+
+
+## 10. Ereignishistorie – Datenfehler, Filter-Ladeverhalten und Abstand (10.11.2026)
+
+### Befund
+
+Der DEV-Datensatz des im Praxistest geöffneten Spielers bestätigt drei aktive Kartenereignisse in drei Trainings (05.11., 07.11. und 09.11.2026). Die Ereigniskachel zählte diese korrekt. Die Historienliste blieb leer, weil Supabase-Zeitwerte vom Typ `time` als `HH:MM:SS` geliefert werden können, der bisherige Code aber nochmals `:00` anhängte. Dadurch entstand ein ungültiger Zeitstempel (`HH:MM:SS:00`); die Trainingsfilterung schloss alle betroffenen Trainings aus.
+
+### Umsetzung in develop
+
+- Startzeiten werden vor der Date-Konstruktion auf `HH:MM` normalisiert. Damit werden beide üblichen TIME-Darstellungen unterstützt.
+- Die Trainings-/Ereignisdaten werden beim ersten Öffnen einmal geladen und pro Spieler im Arbeitsspeicher zwischengespeichert.
+- Filterwechsel (Alle/Karten/Sperren/Sterne) werden anschließend clientseitig aus dem Cache gerendert; keine erneuten parallelen Datenbankabfragen und kein erneuter Ladebildschirm pro Filterwechsel.
+- Nach Ereignis- oder Sperrenkorrekturen wird der Cache des Spielers invalidiert, damit beim nächsten Öffnen frische Daten geladen werden.
+- Der Abstand oberhalb und unterhalb der Ereigniskachel wurde explizit auf 9 px gesetzt.
+- Das Icon `fact_check` und die abgestimmte violette Farbgebung bleiben erhalten.
+
+### Verifikation
+
+- DEV-Datenprüfung erfolgte ausschließlich lesend. Keine SQL-Änderung und keine Datenänderung.
+- Beide JavaScript-Blöcke in `index.html` wurden nach der Korrektur erfolgreich syntaktisch geprüft.
+- **Code-Commits:** `d0f4b920`, `5e62f04d`, `0f54ef0a`.
+- **Offen:** erfolgreicher DEV-Deploy und erneuter iPhone-Praxistest der Historienliste, Filterwechsel und Abstände.
+
+PROD/`main` wurden nicht verändert.
