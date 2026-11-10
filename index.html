@@ -136,13 +136,14 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerCardTileMetric span{color:#475569;overflow-wrap:anywhere}
 .playerCardTile:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
 @media(max-width:380px){.playerCardStatsTiles{gap:7px}.playerCardTile{padding:8px}.playerCardTileHead{gap:5px;margin-bottom:8px}.playerCardTileTitle{font-size:12px}.playerCardTileBody{gap:5px}.playerCardDonut{width:58px;height:58px;flex-basis:58px}.playerCardDonut:before{inset:6px}.playerCardDonutValue{font-size:14px}.playerCardDonutTotal{font-size:9px}.playerCardTilePercent{font-size:14px}.playerCardTileCaption,.playerCardTileMetric{font-size:10px}.playerCardTileMetric strong{font-size:12px}}
-.playerCardTile.events{grid-column:1/-1;position:relative;padding-right:38px;--tile-bg:#f1f7ff;--tile-border:#d4e8ff;--tile-main:#1674df;--tile-track:#d6e9ff}
+.playerCardTile.events{grid-column:1/-1;position:relative;padding-right:38px;--tile-bg:#f5f1ff;--tile-border:#ddd2f5;--tile-main:#7653b5;--tile-track:#e5dcf5}
 .playerCardTile.events .playerCardTileArrow{position:absolute;right:10px;top:50%;transform:translateY(-50%)}
 .playerCardEventMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
 .playerCardEventMetric{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:0;text-align:center}
 .playerCardEventMetric strong{font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums;text-align:center}
 .playerCardEventMetric span{font-size:12px;color:var(--muted);text-align:center}
 .playerCardTile.events .playerCardTileBody{align-items:stretch}
+.playerCardStatsTiles + .playerCardSection{margin-top:9px}
 
 /* Spielerübersicht – kompakte Variante des Spielerkarten-Kopfbereichs */
 .playerListControls{display:flex;gap:8px;align-items:center;margin:8px 0 10px;min-width:0}
@@ -920,7 +921,17 @@ html:not([data-theme="light"]) .playerCardTile.training {
   }
 
   
-html:not([data-theme="light"]) .playerCardTile.matchday {
+html:not([data-theme="light"]) .playerCardTile.events {
+    --tile-bg:#241d35;
+    --tile-border:#51406f;
+    --tile-main:#b99be8;
+    --tile-track:#403253;
+    background:var(--tile-bg);
+    border-color:var(--tile-border);
+    color:var(--text);
+  }
+
+  html:not([data-theme="light"]) .playerCardTile.matchday {
     --tile-bg:#14243a;
     --tile-border:#294b75;
     --tile-main:#60a5fa;
@@ -1474,7 +1485,17 @@ html[data-theme="dark"] .playerCardTile.training {
   }
 
   
-html[data-theme="dark"] .playerCardTile.matchday {
+html[data-theme="dark"] .playerCardTile.events {
+    --tile-bg:#241d35;
+    --tile-border:#51406f;
+    --tile-main:#b99be8;
+    --tile-track:#403253;
+    background:var(--tile-bg);
+    border-color:var(--tile-border);
+    color:var(--text);
+  }
+
+  html[data-theme="dark"] .playerCardTile.matchday {
     --tile-bg:#14243a;
     --tile-border:#294b75;
     --tile-main:#60a5fa;
@@ -2329,7 +2350,7 @@ window.openPlayerCard=async id=>{
       </button>
     </div>
     <button type="button" class="playerCardTile events" onclick="openPlayerEventHistory('${id}')" aria-label="Ereignisse für ${esc(displayName(p))} öffnen">
-      <span class="playerCardTileHead"><span class="playerCardTileIcon">${materialIcon('history')}</span><span class="playerCardTileTitle">Ereignisse</span><span class="material-symbols-outlined playerCardTileArrow">chevron_right</span></span>
+      <span class="playerCardTileHead"><span class="playerCardTileIcon">${materialIcon('fact_check')}</span><span class="playerCardTileTitle">Ereignisse</span><span class="material-symbols-outlined playerCardTileArrow">chevron_right</span></span>
       <span class="playerCardTileBody"><span class="playerCardEventMetrics">
         <span class="playerCardEventMetric"><strong>${eventCardCounts.cards}</strong><span>Karten</span></span>
         <span class="playerCardEventMetric"><strong>${eventCardCounts.suspensions}</strong><span>Sperren</span></span>
