@@ -2259,14 +2259,15 @@ window.openPlayerCard=async id=>{
     try{
       const c=getClient();
       const [eventResult,suspensionResult]=await Promise.all([
-        c.from('training_behavior_events').select('event_type').eq('player_id',id).eq('season_id',season.id).eq('status','active'),
-        c.from('training_suspensions').select('id').eq('player_id',id).eq('season_id',season.id).neq('status','voided')
+        c.from('training_behavior_events').select('id,event_type').eq('player_id',id).eq('season_id',season.id).eq('status','active'),
+        c.from('training_suspensions').select('id,source_event_id,status').eq('player_id',id).eq('season_id',season.id).neq('status','voided')
       ]);
       if(eventResult.error)throw eventResult.error;
       if(suspensionResult.error)throw suspensionResult.error;
       eventCardCounts.cards=(eventResult.data||[]).filter(e=>e.event_type==='yellow_card'||e.event_type==='red_card').length;
       eventCardCounts.stars=(eventResult.data||[]).filter(e=>e.event_type==='positive_star').length;
-      eventCardCounts.suspensions=(suspensionResult.data||[]).length;
+      const activeEventIds=new Set((eventResult.data||[]).map(e=>e.id));
+      eventCardCounts.suspensions=(suspensionResult.data||[]).filter(x=>activeEventIds.has(x.source_event_id)).length;
     }catch(e){console.error('Ereigniskennzahlen konnten nicht geladen werden:',e);showStatus('Ereigniskennzahlen konnten nicht geladen werden.','error');}
   }
   const isInactive=p.active===false||state.inactivePlayers.some(x=>x.id===id);
