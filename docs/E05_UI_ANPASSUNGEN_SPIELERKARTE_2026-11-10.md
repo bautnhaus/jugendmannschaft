@@ -220,3 +220,19 @@ PROD/`main` wurden nicht verändert.
 - **Offen:** DEV-Deploy und iPhone-Praxistest der Listenoptik, Filterreaktion, Kachelpfeile und Notizenüberschrift.
 
 Keine SQL- oder Datenänderungen. `main`/PROD unverändert.
+
+
+## 12. Abschließende Nutzerbestätigung Ereignisübersicht und Notizenkachel (10.11.2026)
+
+Nach dem erfolgreichen DEV-Deploy und der Überarbeitung hat der Nutzer bestätigt:
+
+- Die Ereignisliste ist optisch stimmig und orientiert sich am bestehenden Statistik-/Spieltagshistorie-Aufbau.
+- Die vier Filter (Alle, Karten, Sperren, Sterne) funktionieren zuverlässig.
+- Die Ereigniskachel und Notizenkachel entsprechen der abgestimmten Gestaltung.
+- Die Trainings- und Spieltagskacheln sind wieder in Ordnung und bleiben unverändert.
+
+**Status: Dieser UI-/Filter-Teilbereich ist im DEV-Praxistest abgenommen.** Diese Abnahme umfasst ausdrücklich nicht die vollständige End-to-End-Prüfung der Auditdetails und Korrekturaktionen der Phase 2.
+
+Der aktuelle DEV-Code-Stand wurde mit Commit `c15375c8786de6f3c1eb1eb729293c0a173a24b5` deployed; GitHub Actions Deploy DEV Run 667 meldet `completed / success`.
+
+Keine SQL-Änderung, keine Änderung an `main` oder PROD.
