@@ -160,3 +160,19 @@ Nach dem erneuten DEV-Praxistest wurde gemeldet, dass Trainings- und Spieltagska
 **Code-Commit:** `a7f1d8a5ad42505533e880bd50fe309fcd0c6e42`
 
 **Offene Verifikation:** Nach DEV-Deploy Darstellung der beiden Kacheln auf dem iPhone direkt mit main vergleichen.
+
+
+## 9. Ereigniskachel – Icon, Farbgebung und Abstand (10.11.2026)
+
+Auf Basis des DEV-Praxistests wurde festgelegt:
+
+- Trainings- und Spieltagskacheln sind wieder korrekt und bleiben unverändert.
+- Für die Ereigniskachel wird das Google Material Symbol `fact_check` verwendet.
+- Die Ereigniskachel erhält eine dezente violette/lavendelfarbene Hinterlegung, passend zur bestehenden grünen Trainings- und blauen Spieltagskachel.
+- Für Dark Mode ist eine dunkle Violettvariante mit zurückhaltendem Lavendelakzent definiert.
+- Der Abstand zwischen dem Statistik-Kachelraster und der darunterliegenden Notizenkachel wird auf 9 px vereinheitlicht.
+- Ereigniskennzahlen bleiben dreispaltig und jeweils mittig ausgerichtet.
+
+**Code-Commit:** `0fa7f1dc3d9384a19d076dee5c103a7adeabea99`
+
+**Offen:** DEV-Deploy abwarten und auf iPhone Light/Dark Mode sowie Abstand zur Notizenkachel prüfen.
