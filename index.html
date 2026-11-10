@@ -2686,11 +2686,11 @@ window.openTrainingBehaviorEvent=(trainingId,playerId)=>{
   const hasCard=events.some(e=>e.player_id===playerId&&(e.event_type==='yellow_card'||e.event_type==='red_card'));
   const hasStar=events.some(e=>e.player_id===playerId&&e.event_type==='positive_star');
   const options=[{type:'positive_star',label:'Positiver Stern',description:'Besonderer Einsatz, Teamwork oder Engagement.',disabled:hasStar},{type:'yellow_card',label:'Gelbe Karte',description:'Verwarnung, z. B. Unsportlichkeit oder wiederholtes Fehlverhalten.',disabled:hasCard},{type:'red_card',label:'Rote Karte',description:'Feldverweis, z. B. grobes Foulspiel oder unsportliches Verhalten.',disabled:hasCard}];
-  const optionHtml=options.map(o=>'<label class="trainingEventChoice '+(o.disabled?'disabled':'')+'"><input type="radio" name="trainingEventChoice" value="'+o.type+'" '+(o.disabled?'disabled':'')+'><span class="trainingEventChoiceIcon '+(o.type==='positive_star'?'star':o.type==='yellow_card'?'yellow':'red')+'">'+(o.type==='positive_star'?materialIcon('star'):'')+'</span><span class="trainingEventChoiceText"><strong>'+o.label+'</strong><small>'+o.description+'</small>'+(o.disabled?'<small class="trainingEventUnavailable">Für diesen Spieler bereits erfasst</small>':'')+'</span><span class="trainingEventChoiceCheck">'+materialIcon('check')+'</span></label>').join('');
-  openModal('<div class="trainingEventDialog"><div class="trainingEventDialogHeader"><div><h2>Ereignis hinzufügen</h2><p class="muted">'+esc(displayName(p))+' · '+esc(fmtDate(t.date))+'</p></div><button type="button" class="iconButton" aria-label="Schließen" onclick="closeModal()">'+materialIcon('close')+'</button></div><p class="trainingEventDialogHint">Welches Ereignis möchtest Du erfassen?</p><div class="trainingEventChoices">'+optionHtml+'</div><div class="toolbar trainingEventDialogActions"><button type="button" class="primary" onclick="continueTrainingBehaviorEvent(\''+trainingId+'\',\''+playerId+'\')">Weiter</button><button type="button" onclick="closeModal()">Abbrechen</button></div></div>');
+  const optionHtml=options.map(o=>'<label class="trainingEventChoice '+(o.disabled?'disabled':'')+'"><input type="radio" name="trainingEventChoice" value="'+o.type+'" '+(o.disabled?'disabled':'')+' '+(o.disabled?'':'onchange="continueTrainingBehaviorEvent(\\''+trainingId+'\\',\\''+playerId+'\\',this.value)"')+'><span class="trainingEventChoiceIcon '+(o.type==='positive_star'?'star':o.type==='yellow_card'?'yellow':'red')+'">'+(o.type==='positive_star'?materialIcon('star'):'')+'</span><span class="trainingEventChoiceText"><strong>'+o.label+'</strong><small>'+o.description+'</small>'+(o.disabled?'<small class="trainingEventUnavailable">Für diesen Spieler bereits erfasst</small>':'')+'</span></label>').join('');
+  openModal('<div class="trainingEventDialog"><div class="trainingEventDialogHeader"><div><h2>Ereignis hinzufügen</h2><p class="muted">'+esc(displayName(p))+' · '+esc(fmtDate(t.date))+'</p></div><button type="button" class="iconButton" aria-label="Schließen" onclick="closeModal()">'+materialIcon('close')+'</button></div><p class="trainingEventDialogHint">Welches Ereignis möchtest Du erfassen?</p><div class="trainingEventChoices">'+optionHtml+'</div><div class="toolbar trainingEventDialogActions"><button type="button" onclick="closeModal()">Abbrechen</button></div></div>');
 };
-window.continueTrainingBehaviorEvent=(trainingId,playerId)=>{
-  const selected=document.querySelector('input[name="trainingEventChoice"]:checked')?.value;
+window.continueTrainingBehaviorEvent=(trainingId,playerId,selectedType)=>{
+  const selected=selectedType||document.querySelector('input[name="trainingEventChoice"]:checked')?.value;
   if(!selected){showStatus('Bitte zuerst ein Ereignis auswählen.','error');return;}
   const t=state.trainings.find(x=>x.id===trainingId),p=state.players.find(x=>x.id===playerId);
   if(!t||!p||!t.attendance?.[playerId]||t.status==='cancelled'||(contextReadOnly&&!isSuperAdmin)){showStatus('Das Ereignis kann in diesem Trainingskontext nicht erfasst werden.','error');return;}
@@ -5268,6 +5268,14 @@ html[data-theme="dark"] .trainingEventChoice{background:#111c2e;border-color:#33
 html[data-theme="dark"] .trainingEventChoice:has(input:checked){background:#172b45;border-color:#60a5fa}
 html[data-theme="dark"] .trainingEventChoiceIcon.star,html[data-theme="dark"] .trainingEventChoiceIcon.yellow{background:#422006;color:#fde68a}
 html[data-theme="dark"] .trainingEventChoiceIcon.red{background:#450a0a;color:#fecaca}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingEventChoice{background:#111c2e;border-color:#334155;color:#f1f5f9}
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingEventChoice:has(input:checked){background:#172b45;border-color:#60a5fa;box-shadow:0 0 0 1px #60a5fa}
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingEventChoiceIcon.star,
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingEventChoiceIcon.yellow{background:#422006;color:#fde68a}
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingEventChoiceIcon.red{background:#450a0a;color:#fecaca}
+  html:not([data-theme="light"]):not([data-theme="dark"]) .trainingEventChoiceText small{color:#cbd5e1}
+}
 @media(max-width:390px){.trainingEventChoice{padding:9px;gap:8px}.trainingEventChoiceText small{font-size:11px}}
 
 
