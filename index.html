@@ -85,7 +85,7 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerCardStat{background:#f8fafc;border-radius:10px;padding:10px;min-width:0}
 .playerCardStatValue{font-size:21px;font-weight:750;line-height:1.25;font-variant-numeric:tabular-nums}
 .playerCardStatLabel{font-size:12px;color:var(--muted);margin-top:3px}
-.playerCardNotes{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden}.detailHeader{display:flex;align-items:center;gap:8px;margin-bottom:8px}.detailHeader h2{margin:0;min-width:0}.iconBack{width:38px;min-width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--text)}.playerCardNotesFull{display:block!important;overflow:visible!important;-webkit-line-clamp:unset!important;white-space:pre-wrap;overflow-wrap:anywhere;padding:4px 2px 12px}.playerHistoryLink{border-radius:8px}.playerHistoryMeta{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}.playerHistoryLink:focus-visible{outline:3px solid #93c5fd;outline-offset:1px}.playerCardNotesTile{display:block;width:100%;text-align:left;color:var(--text);cursor:pointer;position:relative;padding-right:32px}.playerCardNotesTile:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}.playerCardNotesArrow{position:absolute;right:2px;top:50%;transform:translateY(-50%);color:#64748b;font-size:21px}
+.playerCardNotes{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden}.detailHeader{display:flex;align-items:center;gap:8px;margin-bottom:8px}.detailHeader h2{margin:0;min-width:0}.iconBack{width:38px;min-width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--text)}.playerCardNotesFull{display:block!important;overflow:visible!important;-webkit-line-clamp:unset!important;white-space:pre-wrap;overflow-wrap:anywhere;padding:4px 2px 12px}.playerHistoryLink{border-radius:8px}.playerHistoryMeta{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}.playerHistoryLink:focus-visible{outline:3px solid #93c5fd;outline-offset:1px}.playerCardNotesTile{display:block;width:100%;text-align:left;color:var(--text);cursor:pointer;position:relative;padding-right:12px}.playerCardNotesTile:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}.playerCardNotesTile .playerCardSectionTitle{display:flex;align-items:center;gap:7px;margin:0 0 9px}.playerCardNotesIcon{font-size:19px;color:#64748b;flex:0 0 auto}.playerCardNotesArrow{position:static;margin-left:auto;color:#64748b;font-size:21px;flex:0 0 auto}
 .playerCardDetails{margin-top:10px;border:1px solid var(--line);border-radius:13px;background:#fff;padding:12px}
 .playerCardDetails summary{cursor:pointer;font-weight:700;display:flex;align-items:center;gap:7px}
 .playerCardDetails[open] summary{margin-bottom:8px}
@@ -136,8 +136,9 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerCardTileMetric span{color:#475569;overflow-wrap:anywhere}
 .playerCardTile:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
 @media(max-width:380px){.playerCardStatsTiles{gap:7px}.playerCardTile{padding:8px}.playerCardTileHead{gap:5px;margin-bottom:8px}.playerCardTileTitle{font-size:12px}.playerCardTileBody{gap:5px}.playerCardDonut{width:58px;height:58px;flex-basis:58px}.playerCardDonut:before{inset:6px}.playerCardDonutValue{font-size:14px}.playerCardDonutTotal{font-size:9px}.playerCardTilePercent{font-size:14px}.playerCardTileCaption,.playerCardTileMetric{font-size:10px}.playerCardTileMetric strong{font-size:12px}}
-.playerCardTile.events{grid-column:1/-1;position:relative;margin-top:9px;margin-bottom:9px;padding-right:38px;--tile-bg:#f5f1ff;--tile-border:#ddd2f5;--tile-main:#7653b5;--tile-track:#e5dcf5}
-.playerCardTile.events .playerCardTileArrow{position:absolute;right:10px;top:50%;transform:translateY(-50%)}
+.playerCardTile.events{grid-column:1/-1;position:relative;margin-top:9px;margin-bottom:9px;padding-right:10px;--tile-bg:#f5f1ff;--tile-border:#ddd2f5;--tile-main:#7653b5;--tile-track:#e5dcf5}
+.playerCardTile.events .playerCardTileHead{margin-bottom:10px}
+.playerCardTile.events .playerCardTileArrow{position:static;transform:none;margin-left:auto}
 .playerCardEventMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
 .playerCardEventMetric{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:0;text-align:center}
 .playerCardEventMetric strong{font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums;text-align:center}
@@ -2358,7 +2359,7 @@ window.openPlayerCard=async id=>{
       </span></span>
     </button>
     <button type="button" class="playerCardSection playerCardNotesTile" onclick="openPlayerNotes('${id}')" aria-label="Vollständige Notizen für ${esc(displayName(p))} öffnen">
-      <span class="playerCardSectionTitle">Notizen <span class="material-symbols-outlined" style="margin-left:auto;color:#64748b">chevron_right</span></span>
+      <span class="playerCardSectionTitle"><span class="material-symbols-outlined playerCardNotesIcon">sticky_note_2</span><span>Notizen</span><span class="material-symbols-outlined playerCardNotesArrow">chevron_right</span></span>
       <span class="playerCardNotes">${esc(p.notes||'Noch keine Notizen hinterlegt.')}</span>
     </button>
     <div class="toolbar playerCardActions">${isInactive?`<button type="button" class="reactivatePlayerButton" onclick="reactivatePlayer('${id}')">Wieder in den aktiven Kader aufnehmen</button>`:`<button class="primary" onclick="closeModal();editPlayer('${id}')">Bearbeiten</button>${role==='admin'?`<button type="button" class="danger" onclick="deletePlayer('${id}')">Aus aktivem Kader entfernen</button>`:''}`}<button onclick="closeModal()">Schließen</button></div>`);
@@ -2412,8 +2413,10 @@ function renderPlayerEventTrainingList(playerId,filter='all'){
   const p=state.players.find(x=>x.id===playerId)||state.inactivePlayers.find(x=>x.id===playerId);
   const cached=window.playerEventTrainingCache[playerId];
   if(!p||!cached)return;
+  const allowedFilters=new Set(['all','cards','suspensions','stars']);
+  if(!allowedFilters.has(filter))filter='all';
   const filters=[['all','Alle'],['cards','Karten'],['suspensions','Sperren'],['stars','Sterne']];
-  const chips=filters.map(([key,label])=>'<button type="button" class="playerFilterChip '+(filter===key?'active':'')+'" onclick="renderPlayerEventTrainingList(\''+playerId+'\',\''+key+'\')">'+label+'</button>').join('');
+  const chips=filters.map(([key,label])=>'<button type="button" class="playerFilterChip '+(filter===key?'active':'')+'" aria-pressed="'+(filter===key?'true':'false')+'" onclick="window.setPlayerEventFilter(\''+playerId+'\',\''+key+'\')">'+label+'</button>').join('');
   const trainings=cached.trainings.filter(t=>{
     if(filter==='cards')return t.currentEvents.some(e=>e.event_type==='yellow_card'||e.event_type==='red_card');
     if(filter==='suspensions')return t.suspensions.length>0;
@@ -2426,10 +2429,11 @@ function renderPlayerEventTrainingList(playerId,filter='all'){
     const suspensionTag=t.suspensions.length?'<span class="badge medium">Sperre</span>':'';
     const empty=!t.allEvents.length?'<span class="muted small">Keine Ereignisse</span>':'';
     const voided=t.allEvents.length&&!t.currentEvents.length?'<span class="muted small">Nur zurückgenommene Ereignisse</span>':'';
-    return '<button type="button" class="playerrow playerHistoryLink" onclick="openPlayerEventTrainingHistory(\''+playerId+'\',\''+t.id+'\')"><span><b>'+esc(fmtDate(t.training_date))+'</b>'+(t.name?'<br><span class="muted small">'+esc(t.name)+'</span>':'')+'</span><span class="right playerHistoryMeta">'+(tags||'')+suspensionTag+empty+voided+'<span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></span></button>';
+    return '<div class="playerrow playerHistoryLink" role="button" tabindex="0" onclick="openPlayerEventTrainingHistory(\''+playerId+'\',\''+t.id+'\')"><span><b>'+esc(fmtDate(t.training_date))+'</b>'+(t.name?'<br><span class="muted small">'+esc(t.name)+'</span>':'')+'</span><span class="right playerHistoryMeta">'+(tags||'')+suspensionTag+empty+voided+'<span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></span></div>';
   }).join(''):'<p class="muted">Für diesen Filter gibt es keine passenden Trainings.</p>';
-  $('modalContent').innerHTML='<div class="detailHeader"><button type="button" class="iconBack" onclick="openPlayerCard(\''+playerId+'\')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Ereignisse</h2></div><p class="muted">Historie für '+esc(displayName(p))+' · Trainings seit Mannschaftsbeitritt.</p><div class="playerFilterChips">'+chips+'</div>'+rows;
+  $('modalContent').innerHTML='<div class="detailHeader"><button type="button" class="iconBack" onclick="openPlayerCard(\''+playerId+'\')"><span class="material-symbols-outlined">arrow_back</span></button><h2>Ereignisse</h2></div><p class="muted small">Historie für '+esc(displayName(p))+' · Trainings seit Mannschaftsbeitritt.</p><div class="playerFilterChips">'+chips+'</div>'+rows;
 }
+window.setPlayerEventFilter=(playerId,filter)=>renderPlayerEventTrainingList(playerId,filter);
 window.openPlayerEventHistory=async id=>{
   const p=state.players.find(x=>x.id===id)||state.inactivePlayers.find(x=>x.id===id);if(!p)return;
   window.openPlayerEventTrainingList(id,'all');
