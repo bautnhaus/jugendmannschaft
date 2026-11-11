@@ -261,3 +261,43 @@ Ein PostgreSQL-Parser-/Ausführungstest wurde nicht durchgeführt, weil dafür d
 - **Gate D (PROD):** nicht freigegeben; eigenständige spätere Prüfung und Zustimmung erforderlich.
 
 **DEV, PROD und main sind unverändert.** Der tatsächliche Ausführungsnachweis wird erst nach einem ausdrücklich freigegebenen Ausführungsversuch in DB_MIGRATION_LOG.md angelegt. Dieser Abschnitt und DB-PLAN-E05-010 sind Planungs-/Freigabedokumentation, kein Ausführungsprotokoll.
+## 16. Ausführung in DEV und Nachdokumentation (11.11.2026)
+
+**Status: Migration erfolgreich ausgeführt.**
+
+- **Supabase-Projekt:** DEV `pzazqvvoruqnqhcorbwx`
+- **Migrationsversion:** `20261111161403`
+- **Migrationsname:** `e05_package_10_training_date_suspensions`
+- **Ausführungsweg:** Supabase-Migrationswerkzeug nach ausdrücklicher Nutzerfreigabe.
+- **Ergebnis:** Supabase meldete `success: true`; die Version ist in der Migrationshistorie registriert.
+- **Versionierte Migration:** `supabase/migrations/20261111161403_e05_package_10_training_date_suspensions.sql`.
+- **Rollback:** `supabase/rollback/20261111090000_e05_package_10_training_date_suspensions_rollback.sql`.
+
+### 16.1 Nachkontrolle
+
+Read-only bestätigt:
+- Alle vier Funktionen sind vorhanden und SECURITY DEFINER mit festem `search_path = pg_catalog, public, auth`.
+- EXECUTE auf den beiden öffentlichen RPCs `award_training_behavior_event` und `correct_suspension` ist für `authenticated` vorhanden und für `anon` nicht vorhanden.
+- Die internen Funktionen `e05_assign_player_suspensions` und `e05_reconcile_suspensions_after_event_correction` sind für API-Rollen nicht ausführbar.
+- Es wurden keine Tabellen, Spalten, Trigger, RLS-Policies, Grants oder Spielarten-Einstellungen geändert.
+- Die bestehende Spielartenkonfiguration beider geprüfter DEV-Mannschaften ist weiterhin leer (kein Team-Override, keine Vereins-Spielarten).
+- Eine bestehende offene gelbe Sperre bleibt daher ohne Zielzuordnung. Eine read-only-Abfrage zeigt zwei offene Sperren ohne Zielspieltag; die leere Konfiguration erklärt die fehlende automatische Zuordnung. Es wurde keine Einstellung automatisch ergänzt.
+
+### 16.2 Fehlgeschlagener Erstversuch
+
+Der erste Ausführungsversuch scheiterte an fehlenden Statement-Terminatoren nach den PL/pgSQL-Funktionsdefinitionen. Supabase registrierte diesen Versuch nicht. Die Migration und das Rollback wurden korrigiert und danach erfolgreich erneut ausgeführt. In der Migrationshistorie ist nur der erfolgreiche Lauf enthalten.
+
+### 16.3 Noch offene Tests
+
+- Keine synthetischen Funktionstests mit Testkarten/Sperren/Spieltagen ausgeführt.
+- Kein Frontend-End-to-End-Test ausgeführt.
+- Keine Testdaten angelegt oder zurückzulassen.
+- Die fachliche Wirksamkeit der Neuanlage-, Nachdatierungs-, Storno-/Wiederherstellungs- und manuellen Korrekturpfade muss im DEV-Praxistest noch geprüft werden.
+
+### 16.4 Dokumentation und Umgebungsschutz
+
+- `DB_MIGRATION_LOG.md`: Ausführungsdatensatz `DB-MIG-2026-008` ergänzt.
+- `DB_CHANGELOG.md`: Package 10 von Planungsstatus auf erfolgreich in DEV ausgeführt aktualisiert.
+- `supabase/migrations/20261111161403_e05_package_10_training_date_suspensions.sql`: offizielle, versionierte Migrationsdatei ergänzt.
+- `docs/sql-drafts/E05_PACKAGE_10_MIGRATION_DRAFT.sql`: Review-Stand bleibt als Entwurfs-/Historienkopie erhalten.
+- Supabase PROD und GitHub `main` wurden nicht verändert und sind nicht freigegeben.
