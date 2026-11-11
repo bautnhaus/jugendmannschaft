@@ -139,7 +139,7 @@ begin
         select max(r.matchday_date_snapshot) from public.matchday_early_suspension_resets r
         where r.team_id=v_team_id and r.season_id=v_season_id
           and r.player_id=p_player_id and r.status='applied'
-      ),'-infinity'::timestamptz)
+      ),'-infinity'::date)
     ) into v_yellow_since;
 
     select count(*)::integer into v_yellow_count
@@ -158,7 +158,7 @@ begin
       from public.training_behavior_events e
       where e.team_id=v_team_id and e.season_id=v_season_id
         and e.player_id=p_player_id and e.event_type='yellow_card'
-        and e.status='active' and e.awarded_at>v_yellow_since
+        and e.status='active' and e.training_date_snapshot>v_yellow_since
       order by e.training_date_snapshot,e.id offset 4 limit 1;
 
       if v_suspension_source_event_id is not null then
@@ -174,6 +174,12 @@ begin
   end if;
 
   if v_suspension_id is not null then
+    -- Assign immediately using the canonical configured-game-type and
+    -- post-trigger-training-date rules.
+    perform public.e05_assign_player_suspensions(
+      v_team_id, p_player_id, v_actor
+    );
+
     insert into public.training_suspension_audit(
       suspension_id,action,old_values,new_values,reason,changed_by,changed_at
     ) values (
@@ -606,7 +612,7 @@ begin
         and r.season_id = v_event.season_id
         and r.player_id = v_event.player_id
         and r.status = 'applied'
-    ), '-infinity'::timestamptz)
+    ), '-infinity'::date)
   ) into v_yellow_since;
 
   select count(*)::integer
@@ -684,7 +690,7 @@ begin
       and e.player_id = v_event.player_id
       and e.event_type = 'yellow_card'
       and e.status = 'active'
-      and e.awarded_at > v_yellow_since
+      and e.training_date_snapshot > v_yellow_since
     order by e.training_date_snapshot, e.id
     offset 4 limit 1;
 
@@ -796,8 +802,8 @@ begin
     and e.player_id = v_event.player_id
     and e.event_type = 'yellow_card'
     and e.status = 'active'
-    and e.awarded_at > v_yellow_since
-  order by e.awarded_at, e.id
+    and e.training_date_snapshot > v_yellow_since
+  order by e.training_date_snapshot, e.id
   offset 4 limit 1;
 
   if v_fifth_event_id is null then
