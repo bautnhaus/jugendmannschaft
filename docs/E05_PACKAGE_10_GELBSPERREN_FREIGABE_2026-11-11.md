@@ -95,3 +95,79 @@ Konsequenzen für Package 10:
 - Die manuelle Korrektur muss dieselbe Spielartenregel respektieren; ein nicht relevanter Spieltag darf nicht als Ziel gewählt werden.
 
 **Freigabestatus:** Fachliche Entscheidung zu diesem Punkt liegt vor. SQL-Ausführung weiterhin nicht freigegeben.
+## 12. Vertiefte technische Prüfung und Umsetzungsspezifikation
+
+### 12.1 Bestätigte Signaturen und Sicherheitskontext
+
+Die aktuellen DEV-Definitionen bestätigen folgende Signaturen:
+
+- `award_training_behavior_event(p_training_id uuid, p_player_id uuid, p_event_type text, p_reason text DEFAULT NULL)`
+- `e05_reconcile_suspensions_after_event_correction(p_event_id uuid, p_actor_id uuid, p_reason text)`
+- `e05_assign_player_suspensions(p_team_id uuid, p_player_id uuid, p_actor_id uuid)`
+- `correct_suspension(p_suspension_id uuid, p_target_matchday_id uuid, p_reason text)`
+- `e05_assert_suspension_correction_permission(p_team_id uuid, p_actor_id uuid)`
+
+Die Funktionen verwenden SECURITY DEFINER und den festgelegten search_path `pg_catalog, public, auth`. Diese Eigenschaften, bestehende Berechtigungsprüfungen, Grants und Audit-Schreibvorgänge müssen in den vollständigen Ersatzdefinitionen erhalten bleiben.
+
+### 12.2 Präzise fachliche Korrektur
+
+**Gelbe Kartenfolge:** Die aktive Kartenfolge wird nach `training_date_snapshot ASC, id ASC` sortiert. Der Erfassungszeitpunkt `awarded_at` darf nicht in Zählung, Reihenfolge oder Auswahl der fünften Karte verwendet werden.
+
+**Schwellen und Resets:** Die vorhandene Regel für den Beginn einer neuen Zählperiode (zuletzt erfüllte gelbe Sperre bzw. angewandter vorzeitiger Reset) muss erhalten bleiben. Vor der Umsetzung ist der fachliche Vergleich zwischen den bestehenden Zeitstempeln `served_at` / `applied_at` und den Trainingsdaten ausdrücklich zu validieren. Ein stiller Vergleich von DATE mit TIMESTAMPTZ wäre fachlich nicht hinreichend. Die Migration darf keine neue Reset-Regel erfinden.
+
+**Quelle der Sperre:** `training_suspensions.source_event_id` muss auf genau die aktive Karte zeigen, die nach Trainingsdatum die fünfte Karte der aktuellen Zählperiode ist.
+
+**Reconciliation:** Nach Storno oder Wiederherstellung wird dieselbe Trainingsdatum-Chronologie neu ausgewertet. Eine offene Sperre darf nur dann storniert/umgehängt werden, wenn die zugrunde liegende aktive Fünfer-Schwelle dies verlangt. Erfüllte oder abgelaufene Sperren bleiben unverändert. Bestehende Sperren-Audit-Einträge bleiben unverändert erhalten.
+
+### 12.3 Automatische Zielzuordnung
+
+Die aktuelle Zuordnungsfunktion verwendet `current_date` als frühesten Spieltag. Das ist zu ersetzen durch das jeweilige Auslöserdatum der Sperre:
+
+- Gelbe Sperre: `training_date_snapshot` des `source_event_id`.
+- Rote Sperre: Datum des Trainingsereignisses, das die rote Sperre ausgelöst hat.
+
+Es wird der erste Spieltag mit `match_date > trigger_training_date` ausgewählt, der:
+- derselben Mannschaft und Saison angehört,
+- `status = 'planned'` hat,
+- nach den bereits bestehenden Vereins-/Mannschaftseinstellungen relevant ist,
+- nicht durch eine aktive Ausnahme ausgeschlossen ist,
+- nicht bereits für eine andere offene Sperre desselben Spielers reserviert ist.
+
+Die bereits vorhandene Vorreservierung gültiger manueller Ziele und die Auditierung automatischer Änderungen bleiben bestehen. Eine manuelle Zuordnung wird nicht überschrieben, solange sie gültig bleibt.
+
+### 12.4 Manuelle Korrektur
+
+Die bestehende RPC-Funktion prüft bereits:
+- Rolle Trainer/Admin bzw. Super Admin mit ausgewähltem Teamkontext,
+- Team- und Saisonübereinstimmung,
+- geplanten zukünftigen Spieltag,
+- Spielart anhand der unveränderten Vereins-/Mannschaftseinstellung,
+- aktive Ausnahmen,
+- doppelte Zielbelegung,
+- Begründung und Audit.
+
+Die Berechtigungsfunktion `e05_assert_suspension_correction_permission` ist im aktuellen DEV-Stand bereits für `trainer`, `admin` und Super Admin im ausgewählten Teamkontext formuliert. Package 10 ändert diese Rollenregeln nicht.
+
+Zusätzliche fachliche Validierung: Das Datum des Zielspieltags muss strikt nach dem Trainingsdatum des auslösenden Ereignisses liegen. Die Frontend-Auswahlliste muss die verfügbaren zukünftigen Spieltage nach demselben Triggerdatum filtern und die RPC-Fehlermeldung sichtbar darstellen.
+
+### 12.5 Konfigurationsentscheidung bestätigt
+
+Am 11.11.2026 hat der Nutzer festgelegt: **Die bisherige Vereins-/Mannschaftseinstellung bleibt unverändert.**
+
+Daraus folgt: Package 10 ändert weder `club_suspension_settings`, `team_suspension_game_type_settings` noch `team_suspension_game_types`. Freundschaftsspiele werden nur dann berücksichtigt, wenn die bestehende Einstellung sie bereits enthält. Bei leerer/fehlender Konfiguration wird kein Spieltag erzwungen; die Sperre bleibt ohne Zielzuordnung und die Oberfläche muss diesen Zustand erklären.
+
+### 12.6 Datenbankmigrationen im DEV-Projekt
+
+Die vorhandene DEV-Migrationshistorie enthält E05 Packages 04–07 sowie Package 09 und dessen Korrekturen vom 08.11.2026. Package 10 muss als neue, eigenständige Migration mit neuer Zeitstempelversion ergänzt werden. Der tatsächliche Migrationsname und Versionsstempel werden erst beim finalen SQL-Artefakt festgeschrieben; keine bestehende Migration wird geändert.
+
+### 12.7 Noch erforderliche technische Artefakte vor Gate B
+
+Vor einer ausführbaren Freigabe müssen folgende Dateien gemeinsam vorliegen:
+
+1. Vollständige `CREATE OR REPLACE FUNCTION`-Definitionen der vier betroffenen Funktionen, direkt aus dem geprüften DEV-Stand abgeleitet und mit Trainingsdatum-Logik angepasst.
+2. Rollback-Skript mit den vollständigen, unveränderten DEV-Originaldefinitionen.
+3. Read-only Vorher-/Nachher-Prüfabfragen einschließlich Kartenchronologie, Sperrenstatus, Zielspieltag, Konfiguration und Audit.
+4. Migrationseintrag im vorhandenen SQL-Release-Katalog. Der Katalogpfad und sein aktuelles Format müssen vor Änderung anhand des Repository-Inhalts verifiziert werden; bis dahin wird kein neuer Katalog unter einem geratenen Pfad angelegt.
+5. Frontend-Diff auf `develop`, der die Zielspieltag-Auswahl nach Auslöserdatum ausrichtet und Fehlerzustände des RPC sichtbar macht.
+
+**Status nach dieser Prüfung:** Fachliche Spezifikation und Funktionssignaturen sind präzisiert. Die vollständigen Ersatzdefinitionen, Rollback-Datei und der Katalogeintrag sind noch nicht als ausführbare Artefakte abgelegt. Daher ist Gate B noch nicht erreicht. Keine SQL-Ausführung, keine DEV-Datenänderung, keine Frontend-Änderung und keine PROD-Änderung.
