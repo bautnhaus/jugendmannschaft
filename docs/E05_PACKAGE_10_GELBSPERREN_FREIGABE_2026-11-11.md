@@ -83,3 +83,15 @@ Vor Ausführung werden vollständige Originaldefinitionen aller betroffenen Funk
 Vor SQL-Ausführung: versioniertes Migrationsskript unter supabase/migrations/ gemäß Repository-Schema; SQL-Release-Katalogeintrag mit Paketnummer, Datum, Zweck, Objekten, DEV-/PROD-Status, Freigabe und Commit; Vorher-/Nachher-Prüfungen; Rollback-Skript und Ausführungsprotokoll.
 
 **Aktueller Status:** Entwurf und Befund dokumentiert. Noch kein ausführbares SQL freigegeben oder ausgeführt. Noch keine Frontend-Änderung vorgenommen.
+## 11. Entscheidung zur Spielarten-Konfiguration (11.11.2026)
+
+**Nutzerentscheidung:** Die bisherige Vereins-/Mannschaftseinstellung bleibt unverändert.
+
+Konsequenzen für Package 10:
+- Es werden keine Spielarten ergänzt, entfernt oder umkonfiguriert.
+- Die automatische Sperrenzuordnung berücksichtigt ausschließlich Spieltage, deren Spielart nach der bestehenden Vereins-/Mannschaftseinstellung bereits sperrenrelevant ist.
+- Ein Freundschaftsspiel wird nicht allein durch Package 10 sperrenrelevant. Ob der Spieltag vom 14.11.2026 als Ziel infrage kommt, ergibt sich ausschließlich aus der bestehenden Konfiguration.
+- Wenn die bestehende Konfiguration keine zulässige Spielart enthält, bleibt die Sperre ohne automatische Zielzuordnung und muss als Konfigurations-/Datenproblem sichtbar gemeldet werden. Die Funktion darf die Einstellung nicht umgehen.
+- Die manuelle Korrektur muss dieselbe Spielartenregel respektieren; ein nicht relevanter Spieltag darf nicht als Ziel gewählt werden.
+
+**Freigabestatus:** Fachliche Entscheidung zu diesem Punkt liegt vor. SQL-Ausführung weiterhin nicht freigegeben.
