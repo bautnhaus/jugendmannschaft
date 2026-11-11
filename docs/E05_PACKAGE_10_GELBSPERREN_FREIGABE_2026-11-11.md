@@ -198,3 +198,25 @@ Zusätzlich ist zu prüfen, ob die automatische Zielzuordnung nach der Neuberech
 6. Migration und Rollback statisch sowie anhand der vollständigen Funktionsdefinitionen gegenprüfen.
 
 **Gate B bleibt gesperrt.** Die Entwurfsdateien sind nicht ausführungs- oder freigabefertig. Es erfolgte keine SQL-Ausführung und keine Datenänderung in DEV oder PROD.
+
+## 14. Weitere Gegenprüfung am 11.11.2026
+
+Bei der statischen Prüfung des ersten SQL-Entwurfs wurden zusätzliche Inkonsistenzen gefunden und im Entwurf korrigiert:
+
+- Datums-Sentinelwerte für die neue DATE-basierte Chronologie vereinheitlicht (kein DATE/TIMESTAMPTZ-Mischvergleich mehr an diesen Stellen).
+- Sämtliche verbliebenen gelben Kartenfilter und Fünftkarten-Auswahlen in den betroffenen Funktionen auf `training_date_snapshot` umgestellt; `awarded_at` bleibt ausschließlich Erfassungs-/Auditzeit.
+- Bei der initialen Ereignisanlage wird die zentrale automatische Zuordnungsfunktion nach Anlage der Sperre jetzt explizit aufgerufen.
+
+Der korrigierte Entwurf liegt unter:
+`docs/sql-drafts/E05_PACKAGE_10_MIGRATION_DRAFT.sql`
+
+Die Datei wurde bewusst aus `supabase/migrations/` entfernt. Der zuvor verwendete Zeitstempelname war nicht über den Supabase-CLI-Migrationsworkflow erzeugt. Gemäß Projekt-/Supabase-Migrationsprozess darf erst nach vollständiger Prüfung eine offizielle Migration mit `supabase migration new` erzeugt werden. Der SQL-Entwurf ist daher weiterhin nur ein Review-Artefakt.
+
+### Noch nicht erreicht
+
+- Die komplette PL/pgSQL-Definition wurde nicht in einer Datenbank-Testtransaktion ausgeführt oder geparst. Dies bleibt wegen der fehlenden SQL-Freigabe ausstehend.
+- Der tatsächliche bestehende SQL-Release-Katalog konnte über die verfügbare Repository-Suche nicht verlässlich lokalisiert werden. Es wird kein Katalogpfad geraten und kein paralleler Katalog angelegt.
+- Die Frontend-Auswahlliste und Fehlerbehandlung wurden noch nicht geändert.
+- Die Rücksetzdatei und Read-only-Testdatei bleiben Entwürfe; keine Ausführung.
+
+**Status:** Statische Korrekturen im SQL-Review-Entwurf vorgenommen. Package 10 ist weiterhin nicht ausführungsbereit und nicht zur DEV-Ausführung freigegeben.
