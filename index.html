@@ -4036,6 +4036,7 @@ window.openMehrPage=(page)=>{
       // Vereinsadmins verwenden dieselbe Vereinsdetailansicht wie Super Admins.
       // Das alte clubAdminPanel bleibt verborgen, damit keine zweite Oberfläche erscheint.
       showSection(club);
+      window.renderSuspensionGameTypeSettings('club');
       $('clubAdminPanel')?.classList.add('hidden');
       $('superAdminPanel')?.classList.remove('hidden');
       $('superAdminClubListView')?.classList.add('hidden');
