@@ -171,3 +171,30 @@ Vor einer ausführbaren Freigabe müssen folgende Dateien gemeinsam vorliegen:
 5. Frontend-Diff auf `develop`, der die Zielspieltag-Auswahl nach Auslöserdatum ausrichtet und Fehlerzustände des RPC sichtbar macht.
 
 **Status nach dieser Prüfung:** Fachliche Spezifikation und Funktionssignaturen sind präzisiert. Die vollständigen Ersatzdefinitionen, Rollback-Datei und der Katalogeintrag sind noch nicht als ausführbare Artefakte abgelegt. Daher ist Gate B noch nicht erreicht. Keine SQL-Ausführung, keine DEV-Datenänderung, keine Frontend-Änderung und keine PROD-Änderung.
+
+## 13. Arbeitsstand der Artefakte – technische Nachprüfung
+
+Am 11.11.2026 wurden auf `develop` drei Entwurfsdateien angelegt:
+
+- `supabase/migrations/20261111090000_e05_package_10_training_date_suspensions.sql`
+- `supabase/rollback/20261111090000_e05_package_10_training_date_suspensions_rollback.sql`
+- `docs/E05_PACKAGE_10_TEST_QUERIES.sql`
+
+**Alle drei Dateien sind ausdrücklich Entwürfe und NICHT AUSZUFÜHREN.** Sie wurden aus den aktuellen DEV-Funktionsdefinitionen abgeleitet. Die Rücksetzdatei enthält die gesicherten Originaldefinitionen. Die Read-only-Prüfabfragen enthalten keine schreibenden Statements.
+
+### 13.1 Bei der Gegenprüfung erkannte Restlücke
+
+Die einfache Neuberechnung in `award_training_behavior_event` prüft beim Eintragen einer weiteren gelben Karte zwar die Schwelle, aktualisiert aber nicht in jedem Fall die Quelle einer bereits offenen Sperre, wenn eine nachträglich erfasste Karte die chronologische fünfte Karte verändert. Diese Konstellation muss vor Gate B mit derselben Reconciliation-Logik wie Storno/Wiederherstellung vereinheitlicht werden.
+
+Zusätzlich ist zu prüfen, ob die automatische Zielzuordnung nach der Neuberechnung unmittelbar für neu angelegte Sperren ausgelöst wird. Die Triggerprüfung auf den betroffenen Tabellen zeigte keine entsprechenden Trigger auf `training_behavior_events` oder `training_suspensions`; der Aufrufpfad muss daher explizit in den Funktionsdefinitionen sichergestellt werden.
+
+### 13.2 Noch offene Arbeiten vor Freigabefähigkeit
+
+1. Gelbe-Karten-Neuanlage und Reconciliation in eine einzige konsistente Chronologie-/Sperrenlogik überführen, ohne doppelte Audit-Einträge.
+2. Sicherstellen, dass nach Neuanlage, Storno und Wiederherstellung die automatische Zielzuordnung aufgerufen wird.
+3. Datumsgrenze für bereits erfüllte Sperren und vorzeitige Resets fachlich gegen alle bestehenden E05-Regeln verifizieren.
+4. Frontend-Änderung separat auf `develop` vorbereiten und testen; bislang kein Frontend-Code geändert.
+5. Vorhandenen SQL-Release-Katalogpfad im Repository verifizieren und dort Package 10 ergänzen.
+6. Migration und Rollback statisch sowie anhand der vollständigen Funktionsdefinitionen gegenprüfen.
+
+**Gate B bleibt gesperrt.** Die Entwurfsdateien sind nicht ausführungs- oder freigabefertig. Es erfolgte keine SQL-Ausführung und keine Datenänderung in DEV oder PROD.
