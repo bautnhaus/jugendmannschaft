@@ -128,49 +128,14 @@ begin
     ) returning id into v_suspension_id;
 
   elsif p_event_type='yellow_card' then
-    select greatest(
-      coalesce((
-        select max(s.served_matchday_date_snapshot) from public.training_suspensions s
-        where s.team_id=v_team_id and s.season_id=v_season_id
-          and s.player_id=p_player_id and s.suspension_type='yellow'
-          and s.status='served'
-      ),'-infinity'::date),
-      coalesce((
-        select max(r.matchday_date_snapshot) from public.matchday_early_suspension_resets r
-        where r.team_id=v_team_id and r.season_id=v_season_id
-          and r.player_id=p_player_id and r.status='applied'
-      ),'-infinity'::date)
-    ) into v_yellow_since;
-
-    select count(*)::integer into v_yellow_count
-    from public.training_behavior_events e
-    where e.team_id=v_team_id and e.season_id=v_season_id
-      and e.player_id=p_player_id and e.event_type='yellow_card'
-      and e.status='active' and e.training_date_snapshot>v_yellow_since;
-
-    if v_yellow_count>=5 and not exists (
-      select 1 from public.training_suspensions s
-      where s.team_id=v_team_id and s.season_id=v_season_id
-        and s.player_id=p_player_id and s.suspension_type='yellow'
-        and s.status='open'
-    ) then
-      select e.id into v_suspension_source_event_id
-      from public.training_behavior_events e
-      where e.team_id=v_team_id and e.season_id=v_season_id
-        and e.player_id=p_player_id and e.event_type='yellow_card'
-        and e.status='active' and e.training_date_snapshot>v_yellow_since
-      order by e.training_date_snapshot,e.id offset 4 limit 1;
-
-      if v_suspension_source_event_id is not null then
-        insert into public.training_suspensions(
-          team_id,season_id,player_id,player_name_snapshot,
-          source_event_id,suspension_type,status,created_by,created_at
-        ) values (
-          v_team_id,v_season_id,p_player_id,v_player_name,
-          v_suspension_source_event_id,'yellow','open',v_actor,now()
-        ) returning id into v_suspension_id;
-      end if;
-    end if;
+    -- Reuse the same canonical chronology/reconciliation path used by
+    -- card voiding and reinstatement. This also handles backdated entries
+    -- that change which active event is chronologically fifth.
+    perform public.e05_reconcile_suspensions_after_event_correction(
+      v_event_id,
+      v_actor,
+      coalesce(nullif(btrim(p_reason), ''), 'Gelbe Karte erfasst')
+    );
   end if;
 
   if v_suspension_id is not null then
