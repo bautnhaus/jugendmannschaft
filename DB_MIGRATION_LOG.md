@@ -763,3 +763,23 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Rollback/Wiederherstellung:** Vollständige vor Package 10 gesicherte Originaldefinitionen aller vier Funktionen liegen in `supabase/rollback/20261111090000_e05_package_10_training_date_suspensions_rollback.sql`. Ein Rollback wurde nicht ausgeführt.
 - **Gegenstück in PROD:** Nicht ausgeführt, nicht freigegeben. PROD und GitHub `main` bleiben unverändert.
 - **Testumfang / Nachweisgrenzen:** Nach der Migration wurden Funktionsdefinitionen, Suchpfade, Grants, Migrationshistorie und Konfiguration read-only verifiziert. Es wurden keine Testkarten, Test-Sperren oder Test-Spieltagzuordnungen erzeugt. Ein vollständiger fachlicher Funktionstest mit synthetischen Daten und ein Frontend-End-to-End-Test stehen noch aus und sind Bestandteil der anschließenden DEV-Praxistests.
+
+
+## DB-MIG-2026-009 – E05: Berechtigungsgeprüfte Lese-RPCs für sperrenrelevante Spielarten (DEV)
+
+- **Datum:** 11.11.2026
+- **Umgebung:** Supabase DEV – Projekt `pzazqvvoruqnqhcorbwx`
+- **Migrationsversion / Name:** `20261111180619` – `e05_suspension_game_type_settings_read_rpcs`
+- **Freigabe:** Ausdrückliche Nutzerfreigabe am 11.11.2026 nach reproduziertem Frontend-Fehler `permission denied for table user_club_context`; DEV ausschließlich.
+- **Anlass/Zweck:** Die Verwaltungsoberfläche konnte die bereits vorhandenen Vereins-/Mannschaftseinstellungen für sperrenrelevante Spielarten nicht laden. Statt direkter Tabellenlesezugriffe, deren RLS-/Kontextprüfung auf `user_club_context` scheiterte, werden zwei eng begrenzte, serverseitig berechtigungsgeprüfte Lese-RPCs verwendet.
+- **Betroffene Objekte:** Neu: `public.get_club_suspension_game_types(uuid)` und `public.get_team_suspension_game_type_settings(uuid)`. Beide sind `STABLE SECURITY DEFINER`, fester Suchpfad `pg_catalog, public, auth`, Eigentümer `postgres`. Keine Tabellen, Spalten, Daten, Trigger, RLS-Policies oder vorhandenen Funktionen geändert.
+- **Berechtigungslogik:** Vereinslesefunktion verlangt Authentifizierung und `can_manage_club_context(p_club_id)`. Mannschaftslesefunktion verlangt Authentifizierung und entweder Mannschaftsrolle `trainer`/`admin` oder den bereits ausgewählten, berechtigten Mannschaftskontext über `has_selected_team_context(p_team_id)`. Beide Funktionen geben ausschließlich die angefragte Konfiguration zurück.
+- **Grants:** EXECUTE nur für `authenticated`; EXECUTE für `anon` und `PUBLIC` entzogen. Keine Tabellenrechte erweitert.
+- **Ausführungsweg:** Supabase-Migrationswerkzeug (`apply_migration`) nach ausdrücklicher Freigabe. Supabase meldete `success: true`; Migrationshistorie bestätigt Version `20261111180619`.
+- **Versionierte SQL-Quelle:** `supabase/migrations/20261111180619_e05_suspension_game_type_settings_read_rpcs.sql`.
+- **Rollback:** `supabase/rollback/20261111180619_e05_suspension_game_type_settings_read_rpcs_rollback.sql`. Rückbau erst nach Rücknahme der Frontend-Aufrufe; entfernt ausschließlich die beiden neuen RPCs.
+- **Read-only-Verifikation:** Beide Funktionen vorhanden; Eigentümer `postgres`; SECURITY DEFINER; Suchpfad fest; `authenticated` EXECUTE = true; `anon` EXECUTE = false; `PUBLIC` EXECUTE = false. Migration in Supabase-Historie vorhanden.
+- **Frontend-Anpassung:** `renderSuspensionGameTypeSettings` ruft nun die beiden RPCs statt direkter SELECTs auf den Einstellungstabellen auf. Commit auf `develop`: `c64a4e2a90be1e48551346d9cf71b523a73c639a`.
+- **Dokumentations-Commits:** Migration `b8e83f1f6fb35f01015bc42dfc585c5d3e63b1cb`; Rollback `97fd20d56319372afa39ab8feb46ba0400f94de4`.
+- **Testumfang / Nachweisgrenzen:** Bisher statische Prüfung und Metadaten-/Grant-Verifikation. Noch offen sind echte Browser-Ladetests mit Vereinsadmin, Mannschaftsadmin und Trainer sowie Negativtests für unberechtigte Vereins-/Mannschaftskontexte. Speichern über die bestehenden RPCs wurde nicht verändert und muss im Frontend-Praxistest erneut geprüft werden.
+- **PROD / GitHub main:** Nicht ausgeführt, nicht freigegeben; unverändert.
