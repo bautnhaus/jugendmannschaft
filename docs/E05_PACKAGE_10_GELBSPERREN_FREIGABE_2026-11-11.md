@@ -220,3 +220,44 @@ Die Datei wurde bewusst aus `supabase/migrations/` entfernt. Der zuvor verwendet
 - Die Rücksetzdatei und Read-only-Testdatei bleiben Entwürfe; keine Ausführung.
 
 **Status:** Statische Korrekturen im SQL-Review-Entwurf vorgenommen. Package 10 ist weiterhin nicht ausführungsbereit und nicht zur DEV-Ausführung freigegeben.
+
+## 15. Abschluss Punkt A – Datenbankpaket zur Freigabe (11.11.2026)
+
+**Status: Als Review-/Freigabepaket zusammengestellt. Noch nicht ausgeführt.**
+
+### Finaler SQL-Review-Stand
+
+Die Neuanlage einer gelben Karte verwendet jetzt denselben Reconciliation-Pfad wie Storno und Wiederherstellung. Damit wird auch bei einer nachträglich erfassten Karte die fünfte aktive Karte anhand der Trainingsdatums-Chronologie neu bestimmt und eine bereits offene Sperre bei Bedarf auf den korrekten Quellvorgang umgestellt. Der Reconciliation-Pfad schreibt die zugehörigen Sperren-Audit-Einträge und ruft anschließend die zentrale Zielzuordnung auf.
+
+Die vier Funktionsdefinitionen im Migrationsentwurf wurden statisch geprüft. Die vier Originaldefinitionen sind im Rollback enthalten. Die manuelle Korrektur erzwingt ein Zielspieltagdatum strikt nach dem Trainingsdatum des Quellereignisses. Automatische Zuordnung und manuelle Korrektur verwenden weiterhin ausschließlich die bereits vorhandene Spielartenkonfiguration.
+
+### Statische Prüfergebnisse
+
+- Genau vier CREATE OR REPLACE FUNCTION-Definitionen in Migration und Rollback.
+- Alle vier Funktionssignaturen sind in beiden Dateien jeweils genau einmal vorhanden.
+- Kein gelber Kartenfilter und keine fünfte-Karte-Sortierung verwendet awarded_at.
+- Neuanlage gelber Karten ruft die gemeinsame Reconciliation auf.
+- Automatische Zuordnung und manuelle Korrektur verlangen ein Ziel nach dem Auslösertraining.
+- Keine DDL-/DML-Anweisung verändert die Spielarten-Konfiguration.
+- Read-only-Testdatei enthält nur SELECT-Abfragen.
+- Keine Tabellen, Spalten, Trigger, RLS-Policies oder Grants werden durch das Paket verändert.
+
+### Führende Dateien
+
+1. docs/sql-drafts/E05_PACKAGE_10_MIGRATION_DRAFT.sql – vollständiger Migrationsentwurf.
+2. supabase/rollback/20261111090000_e05_package_10_training_date_suspensions_rollback.sql – vollständige Originaldefinitionen zur Rücksetzung.
+3. docs/E05_PACKAGE_10_TEST_QUERIES.sql – Vorher-/Nachher-Prüfabfragen (read-only).
+4. DB_CHANGELOG.md – Planungs-/Release-Katalogeintrag DB-PLAN-E05-010.
+
+### Verbindliche Nachweisgrenze
+
+Ein PostgreSQL-Parser-/Ausführungstest wurde nicht durchgeführt, weil dafür die SQL-Definitionen in einer Datenbank ausgeführt werden müssten. Eine solche SQL-Ausführung ist ausdrücklich noch nicht freigegeben. Daher wird das Paket als vollständig zusammengestelltes Review-Paket vorgelegt, nicht als live-validierte Migration. Vor oder unmittelbar nach der gesonderten DEV-Freigabe muss die Migration über den vorgesehenen Supabase-Migrationsweg ausgeführt und vollständig verifiziert werden. Bei einem Syntax-/Validierungsfehler muss die Transaktion vollständig zurückrollen; vor einer erneuten Ausführung ist eine korrigierte, versionierte Datei vorzulegen.
+
+### Freigabe und Ausführung
+
+- **Gate A (fachliche Regeln):** abgeschlossen; bestehende Vereins-/Mannschaftseinstellungen bleiben unverändert.
+- **Gate B (Paket zur SQL-Freigabe):** vollständig zusammengestellt und zur Prüfung vorgelegt; SQL-Ausführung noch nicht freigegeben.
+- **Gate C (DEV-Praxistest):** offen; erst nach Gate B.
+- **Gate D (PROD):** nicht freigegeben; eigenständige spätere Prüfung und Zustimmung erforderlich.
+
+**DEV, PROD und main sind unverändert.** Der tatsächliche Ausführungsnachweis wird erst nach einem ausdrücklich freigegebenen Ausführungsversuch in DB_MIGRATION_LOG.md angelegt. Dieser Abschnitt und DB-PLAN-E05-010 sind Planungs-/Freigabedokumentation, kein Ausführungsprotokoll.
