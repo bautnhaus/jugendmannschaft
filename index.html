@@ -683,7 +683,7 @@ html:not([data-theme="light"]) .trainingSectionHeading .sectionIcon { background
 html:not([data-theme="light"]) .playerCardTileIcon { background:#1e3a5f; color:#bfdbfe; }
 
   
-html:not([data-theme="light"]) .playerCardDonutInner { background:var(--card); color:var(--text); }
+html:not([data-theme="light"]) .playerCardDonutInner { background:transparent !important; color:var(--text); }
 
   
 html:not([data-theme="light"]) .playerCardDonut,
@@ -942,6 +942,8 @@ html:not([data-theme="light"]) .playerCardTile.events {
 
   
 html:not([data-theme="light"]) .playerCardDonut:before { background:var(--tile-bg); }
+html:not([data-theme="light"]) .playerCardDonutInner,
+html:not([data-theme="light"]) .playerCardDonutInner * { background:transparent !important; }
 
   
 html:not([data-theme="light"]) .playerCardDonutInner,
@@ -1245,7 +1247,7 @@ html[data-theme="dark"] .trainingSectionHeading .sectionIcon { background:#1e3a5
 html[data-theme="dark"] .playerCardTileIcon { background:#1e3a5f; color:#bfdbfe; }
 
   
-html[data-theme="dark"] .playerCardDonutInner { background:var(--card); color:var(--text); }
+html[data-theme="dark"] .playerCardDonutInner { background:transparent !important; color:var(--text); }
 
   
 html[data-theme="dark"] .playerCardDonut,
@@ -1504,6 +1506,8 @@ html[data-theme="dark"] .playerCardTile.events {
 
   
 html[data-theme="dark"] .playerCardDonut:before { background:var(--tile-bg); }
+html[data-theme="dark"] .playerCardDonutInner,
+html[data-theme="dark"] .playerCardDonutInner * { background:transparent !important; }
 
   
 html[data-theme="dark"] .playerCardDonutInner,
@@ -4001,7 +4005,7 @@ window.openMehrPage=(page)=>{
   const homeRows=[...home.querySelectorAll('.mehrMenu > .playerListRow')];
   if(homeRows[2])homeRows[2].style.display=(isTeamAdmin||hasClubOrPlatformAdmin)?'':'none';
   if(homeRows[3])homeRows[3].style.display=isTeamAdmin?'':'none';
-  const restrictedTeamPages=['management','members','teams','squad','positions','trainers','data'];
+  const restrictedTeamPages=['management','members','teams','squad','positions','trainers','data','clubSuspensions'];
   if(restrictedTeamPages.includes(page)&&!isTeamAdmin&&!hasClubOrPlatformAdmin){page='home';}
   const sections=[...legacy.querySelectorAll(':scope > .settingsSection')];
   const personal=sections[0],club=sections[1],admin=sections[2];
@@ -4022,6 +4026,7 @@ window.openMehrPage=(page)=>{
     members:['Mitglieder und Rollen','Mitgliedschaften und Rollen im ausgewählten Kontext.'],
     teams:['Mannschaften','Mannschaft und zugehörige Einstellungen.'],
      suspensions:['Sperrenrelevante Spielarten','Lege fest, welche Spielarten für Sperren berücksichtigt werden.'],
+     clubSuspensions:['Sperrenrelevante Spielarten','Lege die vereinsweite Standardauswahl für Sperren fest.'],
     squad:['Kadergröße','Lege die Zielgröße der Kaderempfehlung fest.'],
     positions:['Positionen','Verwalte die verfügbaren Spielpositionen.'],
     trainers:['Trainerverwaltung','Verwalte Trainer und ihre Rollen.'],
@@ -4131,7 +4136,7 @@ window.openMehrPage=(page)=>{
   }
   else if(page==='management'){
     legacy.classList.add('hidden');
-    menu.innerHTML=((isTeamAdmin||hasClubOrPlatformAdmin)?row('Mitglieder und Rollen','Mitglieder, Trainer und Mannschaftsrollen verwalten','group','members'):'')+row('Mannschaften','Mannschaftseinstellungen verwalten','groups','teams');
+    menu.innerHTML=((isTeamAdmin||hasClubOrPlatformAdmin)?row('Mitglieder und Rollen','Mitglieder, Trainer und Mannschaftsrollen verwalten','group','members'):'')+(hasClubOrPlatformAdmin?row('Sperrenrelevante Spielarten','Vereinsweite Standardauswahl festlegen','event_available','clubSuspensions'):'')+row('Mannschaften','Mannschaftseinstellungen verwalten','groups','teams');
   } else if(page==='members'){
     if(isTeamAdmin){
       showSection(admin);
@@ -4192,6 +4197,17 @@ window.openMehrPage=(page)=>{
     }
   } else if(['squad','positions','suspensions','trainers'].includes(page)){
     showSection(admin);adminCards.forEach(x=>x.style.display='none');const target=page==='squad'?squad:page==='positions'?positions:page==='suspensions'?suspensions:trainers;if(target)target.style.display='';if(data)data.style.display='none';if(backup)backup.style.display='none';menu.classList.add('hidden');content.classList.remove('hidden');if(page==='suspensions')window.renderSuspensionGameTypeSettings('team');/* Die bestehende Karte bleibt an ihrem DOM-Platz; nur die Darstellung wird gefiltert. */
+  } else if(page==='clubSuspensions'){
+    showSection(club);
+    $('superAdminPanel')?.classList.remove('hidden');
+    $('superAdminClubListView')?.classList.add('hidden');
+    $('superAdminClubSubView')?.classList.add('hidden');
+    $('superAdminTeamDetailView')?.classList.add('hidden');
+    $('superAdminTeamSettingView')?.classList.add('hidden');
+    $('superAdminClubDetailView')?.classList.remove('hidden');
+    const clubBack=$('superAdminClubDetailView')?.querySelector('.detailHeader .iconBack');
+    if(clubBack){clubBack.setAttribute('aria-label','Zurück zur Verwaltung');clubBack.onclick=()=>window.openMehrPage('management');}
+    window.renderSuspensionGameTypeSettings('club');
   } else if(page==='data'){
     showSection(admin);adminCards.forEach(x=>x.style.display='none');if(data)data.style.display='';if(backup)backup.style.display='';menu.classList.add('hidden');content.classList.remove('hidden');/* Backup-Karten bleiben im bestehenden Verwaltungsbereich; keine DOM-Verschiebung. */
   }
