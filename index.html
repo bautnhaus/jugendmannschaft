@@ -4226,26 +4226,27 @@ window.renderSuspensionGameTypeSettings=async(scope)=>{
  host.innerHTML='<p class="muted small">Einstellungen werden geladen …</p>';
  try{
   const client=getClient();
-  const {data:clubRow,error:clubError}=await client.from('club_suspension_settings').select('relevant_game_types').eq('club_id',clubId|| (await client.from('teams').select('club_id').eq('id',teamId).single()).data?.club_id).maybeSingle();
-  if(clubError)throw clubError;
-  const clubTypes=clubRow?.relevant_game_types||[];
-  let override=false,selectedTypes=clubTypes;
-  if(!isClub){
-   const {data:overrideRow,error:overrideError}=await client.from('team_suspension_game_type_settings').select('team_id').eq('team_id',teamId).maybeSingle();
-   if(overrideError)throw overrideError;
-   override=!!overrideRow;
-   if(override){
-    const {data:teamRows,error:teamError}=await client.from('team_suspension_game_types').select('game_type').eq('team_id',teamId);
-    if(teamError)throw teamError;
-    selectedTypes=(teamRows||[]).map(x=>x.game_type);
-   }
+  let clubTypes=[],override=false,selectedTypes=[];
+  if(isClub){
+   const {data,error}=await client.rpc('get_club_suspension_game_types',{p_club_id:clubId});
+   if(error)throw error;
+   clubTypes=data||[];
+   selectedTypes=clubTypes;
+  }else{
+   const {data,error}=await client.rpc('get_team_suspension_game_type_settings',{p_team_id:teamId});
+   if(error)throw error;
+   const settings=Array.isArray(data)?data[0]:data;
+   if(!settings)throw new Error('Einstellungsdaten konnten nicht gelesen werden.');
+   clubTypes=settings.club_game_types||[];
+   override=!!settings.override_enabled;
+   selectedTypes=override?(settings.team_game_types||[]):clubTypes;
   }
   const idPrefix=isClub?'club':'team';
   const checkboxes=suspensionGameTypes.map((type,i)=>'<label style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)"><input type="checkbox" id="'+idPrefix+'SuspensionType'+i+'" value="'+type+'" '+(selectedTypes.includes(type)?'checked':'')+' style="width:20px;height:20px;flex:0 0 20px"><span>'+type+'</span></label>').join('');
   if(isClub){
-   host.innerHTML='<p class="muted small">Aktuell ausgewählt: '+(clubTypes.length?clubTypes.join(', '):'Keine Spielart')+'</p>'+checkboxes+'<button type="button" class="primary" style="width:100%;margin-top:12px" onclick="window.saveSuspensionGameTypeSettings(\'club\')">Vereinseinstellung speichern</button><p id="clubSuspensionSettingsStatus" class="notice small hidden" role="status" style="margin-top:8px"></p>';
+   host.innerHTML='<p class="muted small">Aktuell ausgewählt: '+(clubTypes.length?clubTypes.join(', '):'Keine Spielart')+'</p>'+checkboxes+'<button type="button" class="primary" style="width:100%;margin-top:12px" onclick="window.saveSuspensionGameTypeSettings(\\'club\\')">Vereinseinstellung speichern</button><p id="clubSuspensionSettingsStatus" class="notice small hidden" role="status" style="margin-top:8px"></p>';
   }else{
-   host.innerHTML='<p class="muted small">Vereinseinstellung: '+(clubTypes.length?clubTypes.join(', '):'Keine Spielart hinterlegt')+'</p><label style="display:flex;align-items:flex-start;gap:10px;margin:12px 0"><input type="checkbox" id="teamSuspensionOverride" '+(override?'checked':'')+' style="width:20px;height:20px;flex:0 0 20px"><span><strong>Eigene Einstellung für diese Mannschaft verwenden</strong><span class="muted small" style="display:block">Wenn deaktiviert, gilt automatisch die Vereinseinstellung.</span></span></label><div id="teamSuspensionTypeChoices" style="'+(override?'':'opacity:.45;pointer-events:none')+'">'+checkboxes+'</div><button type="button" class="primary" style="width:100%;margin-top:12px" onclick="window.saveSuspensionGameTypeSettings(\'team\')">Mannschaftseinstellung speichern</button><p id="teamSuspensionSettingsStatus" class="notice small hidden" role="status" style="margin-top:8px"></p>';
+   host.innerHTML='<p class="muted small">Vereinseinstellung: '+(clubTypes.length?clubTypes.join(', '):'Keine Spielart hinterlegt')+'</p><label style="display:flex;align-items:flex-start;gap:10px;margin:12px 0"><input type="checkbox" id="teamSuspensionOverride" '+(override?'checked':'')+' style="width:20px;height:20px;flex:0 0 20px"><span><strong>Eigene Einstellung für diese Mannschaft verwenden</strong><span class="muted small" style="display:block">Wenn deaktiviert, gilt automatisch die Vereinseinstellung.</span></span></label><div id="teamSuspensionTypeChoices" style="'+(override?'':'opacity:.45;pointer-events:none')+'">'+checkboxes+'</div><button type="button" class="primary" style="width:100%;margin-top:12px" onclick="window.saveSuspensionGameTypeSettings(\\'team\\')">Mannschaftseinstellung speichern</button><p id="teamSuspensionSettingsStatus" class="notice small hidden" role="status" style="margin-top:8px"></p>';
    $('teamSuspensionOverride')?.addEventListener('change',e=>{const box=$('teamSuspensionTypeChoices');if(box){box.style.opacity=e.target.checked?'1':'.45';box.style.pointerEvents=e.target.checked?'auto':'none';}});
   }
  }catch(e){console.error(e);host.innerHTML='<p class="muted small">Einstellungen konnten nicht geladen werden: '+esc(e?.message||'Unbekannter Fehler')+'</p>';}
