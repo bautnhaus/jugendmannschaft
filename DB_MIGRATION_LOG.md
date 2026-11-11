@@ -735,3 +735,31 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Rollback/Wiederherstellung:** Paket-9-Schemaänderungen wurden nicht zurückgerollt. Sie sind Bestandteil des DEV-Entwicklungsstands. Die synthetischen Testdaten wurden zurückgerollt. Für ein Schema-Rollback wäre eine gesonderte, abhängigkeitssichere Rücknahmemigration erforderlich.
 - **Gegenstück in PROD:** Nicht ausgeführt, nicht freigegeben. PROD bleibt unverändert.
 - **Zusätzliche Hinweise / Nachweisgrenzen:** Keine vollständigen parallelen Last-/Race-Condition-Tests und kein Frontend-End-to-End-Test Bestandteil dieser Abnahme. Die ausführliche Testdokumentation liegt in `docs/E05_PAKET_09_ABNAHME_UND_AUSFUEHRUNG_2026-11-08.md`. Die DEV-first-Teststrategie ist in `docs/E05_TESTSTRATEGIE_UND_DEV_VORGEHEN_2026-11-08.md` festgehalten.
+
+
+
+## DB-MIG-2026-008 – E05 Package 10: Trainingsdatumsbasierte Kartenchronologie und Sperrenzuordnung (DEV)
+
+- **Migrations-ID:** DB-MIG-2026-008 (E05 Package 10)
+- **Umgebung:** Supabase DEV – Projekt `pzazqvvoruqnqhcorbwx`
+- **Datum:** 11.11.2026
+- **Supabase-Migrationsversion / Name:** `20261111161403` – `e05_package_10_training_date_suspensions`
+- **Ausführungsweg:** Verbundenes Supabase-Migrationswerkzeug (`apply_migration`), nach ausdrücklicher Nutzerfreigabe am 11.11.2026 ausschließlich für DEV.
+- **Anlass/Zweck:** Fünfte aktive gelbe Karte chronologisch nach Trainingstag bestimmen; gelbe Sperre dem ersten zulässigen, nachfolgenden Spieltag zuordnen; manuelle Korrektur auf Zielspieltag nach Auslösertraining begrenzen; Neuanlage und Kartenkorrektur über denselben Reconciliation-Pfad führen.
+- **Betroffene Objekte:** Ersetzt ausschließlich die vier Funktionen `public.award_training_behavior_event(uuid,uuid,text,text)`, `public.e05_assign_player_suspensions(uuid,uuid,uuid)`, `public.e05_reconcile_suspensions_after_event_correction(uuid,uuid,text)` und `public.correct_suspension(uuid,uuid,text)`. Keine Tabellen, Spalten, Trigger, RLS-Policies, Spielarten-Einstellungen oder Grants wurden geändert.
+- **Freigabe:** Ausdrückliche Nutzerfreigabe zur Ausführung in DEV und anschließenden Dokumentation am 11.11.2026.
+- **Ausführender:** ChatGPT über das verbundene Supabase-Migrationswerkzeug.
+- **Status:** Erfolgreich ausgeführt; Supabase meldete `success: true`; die Migrationshistorie bestätigt Version `20261111161403`.
+- **Tatsächlich ausgeführtes SQL / versionierte Datei:** `supabase/migrations/20261111161403_e05_package_10_training_date_suspensions.sql`. Der identische Review-Stand verbleibt zusätzlich unter `docs/sql-drafts/E05_PACKAGE_10_MIGRATION_DRAFT.sql`.
+- **Ergebnis und Verifikation (read-only):**
+  1. Migrationsversion `20261111161403` ist in der Supabase-Migrationshistorie vorhanden.
+  2. Alle vier Funktionen sind vorhanden, `SECURITY DEFINER`, mit festem `search_path = pg_catalog, public, auth`.
+  3. EXECUTE: `award_training_behavior_event` und `correct_suspension` sind für `authenticated` ausführbar, nicht für `anon`; die internen Funktionen `e05_assign_player_suspensions` und `e05_reconcile_suspensions_after_event_correction` sind für API-Rollen nicht ausführbar.
+  4. Die bestehenden Spielarten-Einstellungen wurden nicht verändert. Read-only-Prüfung ergab für beide DEV-Mannschaften keinen Mannschafts-Override und keine befüllte Vereinskonfiguration.
+  5. Eine bestehende offene gelbe Sperre ist weiterhin vorhanden und hat wegen der leeren Spielartenkonfiguration keine Zielzuordnung. Dies entspricht der unveränderten Konfiguration; es wurde keine Einstellung automatisch ergänzt.
+  6. Eine read-only-Abfrage fand zwei offene Sperren ohne Zielspieltag. Diese sind wegen fehlender konfigurierter relevanter Spielarten nicht automatisch zuordenbar; die zugehörigen Auslöserdaten wurden geprüft.
+  7. Supabase Security Advisor meldet weiterhin allgemeine SECURITY DEFINER-Hinweise für mehrere bestehende RPCs, darunter die bereits für `authenticated` freigegebenen öffentlichen RPCs `award_training_behavior_event` und `correct_suspension`. Die Paket-10-Migration hat diese Berechtigungen unverändert übernommen und keine neuen API-Grants vergeben.
+- **Fehlgeschlagener Erstversuch:** Ein erster Aufruf der Migration scheiterte mit Syntaxfehler an der fehlenden Statement-Terminierung nach den PL/pgSQL-Funktionsdefinitionen. Die Migration wurde dabei nicht registriert. Die vier Funktionsdefinitionen in Migrations- und Rollbackdatei wurden korrigiert; anschließend war die erneute Ausführung erfolgreich. Die Migrationshistorie enthält nur den erfolgreichen Lauf.
+- **Rollback/Wiederherstellung:** Vollständige vor Package 10 gesicherte Originaldefinitionen aller vier Funktionen liegen in `supabase/rollback/20261111090000_e05_package_10_training_date_suspensions_rollback.sql`. Ein Rollback wurde nicht ausgeführt.
+- **Gegenstück in PROD:** Nicht ausgeführt, nicht freigegeben. PROD und GitHub `main` bleiben unverändert.
+- **Testumfang / Nachweisgrenzen:** Nach der Migration wurden Funktionsdefinitionen, Suchpfade, Grants, Migrationshistorie und Konfiguration read-only verifiziert. Es wurden keine Testkarten, Test-Sperren oder Test-Spieltagzuordnungen erzeugt. Ein vollständiger fachlicher Funktionstest mit synthetischen Daten und ein Frontend-End-to-End-Test stehen noch aus und sind Bestandteil der anschließenden DEV-Praxistests.
