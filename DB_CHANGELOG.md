@@ -596,3 +596,14 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - **Tests:** Statische und read-only Nachkontrollen abgeschlossen. Synthetische Funktionstests und Frontend-E2E stehen noch aus.
 - **PROD:** Nicht ausgeführt, nicht freigegeben.
 
+
+
+## DB-MIG-2026-009 – E05: Read-RPCs für sperrenrelevante Spielarten (DEV)
+
+- Nach ausdrücklicher Freigabe wurden zwei eng begrenzte Lese-RPCs ergänzt: `get_club_suspension_game_types(uuid)` und `get_team_suspension_game_type_settings(uuid)`.
+- Beide Funktionen sind `STABLE SECURITY DEFINER` mit festem Suchpfad und prüfen den Vereins- bzw. Mannschaftskontext serverseitig. EXECUTE ist ausschließlich `authenticated` erlaubt; `anon` und `PUBLIC` sind ausgeschlossen.
+- Die Frontend-Verwaltung liest die Einstellungen jetzt über diese RPCs statt über direkte SELECTs. Damit wird der zuvor sichtbare Fehler `permission denied for table user_club_context` adressiert, ohne pauschale Tabellenrechte oder neue RLS-Policies einzuführen.
+- Keine Tabellen, Daten, RLS-Policies, vorhandenen Funktionen oder bestehenden Grants geändert.
+- Migration `20261111180619`, SQL-Quelle `supabase/migrations/20261111180619_e05_suspension_game_type_settings_read_rpcs.sql`; Rollback `supabase/rollback/20261111180619_e05_suspension_game_type_settings_read_rpcs_rollback.sql`.
+- Frontend-Commit: `c64a4e2a90be1e48551346d9cf71b523a73c639a`. PROD und `main` unverändert.
+- **Noch offen:** Browser-/Rollen-Praxistests und Negativtests; die Metadaten-/Grant-Prüfung ist bestanden.
