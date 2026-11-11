@@ -582,25 +582,17 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 
 
 
-## DB-PLAN-E05-010 – Trainingsdatumsbasierte Kartenchronologie und Sperrenzuordnung (Package 10)
+## DB-MIG-2026-008 – E05 Package 10: Trainingsdatumsbasierte Kartenchronologie und Sperrenzuordnung (DEV)
 
 - **Datum:** 11.11.2026
-- **Umgebung:** Ziel Supabase DEV; nicht ausgeführt
-- **Status:** SQL-Review-Paket vollständig zusammengestellt; wartet auf ausdrückliche SQL-Freigabe und anschließende DEV-Ausführung
-- **Fachliche Freigabe:** Die fünfte aktive gelbe Karte wird nach `training_date_snapshot` und bei gleichem Datum deterministisch nach `id` bestimmt. `awarded_at` ist ausschließlich Erfassungs-/Auditzeit. Eine gelbe Sperre wirkt auf den ersten nach dem Auslösertraining liegenden, geplanten und nach bestehender Vereins-/Mannschaftseinstellung relevanten Spieltag. Trainings sind keine Sperrziele. Manuelle Korrektur ist für Trainer, Mannschaftsadmins und Superadmins im ausgewählten Teamkontext vorgesehen.
-- **Konfigurationsentscheidung:** Die vorhandene Vereins-/Mannschaftseinstellung bleibt unverändert. Package 10 ergänzt oder verändert keine Spielarten. Bei leerer Konfiguration wird kein Zielspieltag erzwungen; die Sperre bleibt ohne Zuordnung.
-- **Betroffene Funktionen:** `award_training_behavior_event(uuid,uuid,text,text)`, `e05_reconcile_suspensions_after_event_correction(uuid,uuid,text)`, `e05_assign_player_suspensions(uuid,uuid,uuid)`, `correct_suspension(uuid,uuid,text)`. Die Berechtigungsfunktion `e05_assert_suspension_correction_permission(uuid,uuid)` wird nicht geändert.
-- **Geplante technische Änderung:** Neue gelbe Karten werden über denselben Reconciliation-Pfad verarbeitet wie Storno/Wiederherstellung. Dadurch wird auch eine nachträglich erfasste, chronologisch ältere Karte berücksichtigt, wenn sie die fünfte aktive Karte verschiebt. Die automatische Zuordnung und manuelle Korrektur validieren das Ziel gegen das Datum des auslösenden Trainingsevents. Bestehende SECURITY DEFINER-Eigenschaften, search_path und Grants werden erhalten; keine Tabellen, Spalten, Trigger, RLS-Policies oder Spielarten-Einstellungen werden geändert.
-- **Review-Artefakte:**
-  - Migration: `docs/sql-drafts/E05_PACKAGE_10_MIGRATION_DRAFT.sql`
-  - Rollback mit den vor Package 10 gesicherten Originaldefinitionen: `supabase/rollback/20261111090000_e05_package_10_training_date_suspensions_rollback.sql`
-  - Read-only Vorher-/Nachher-Prüfabfragen: `docs/E05_PACKAGE_10_TEST_QUERIES.sql`
-  - Fachlich/technische Freigabedokumentation: `docs/E05_PACKAGE_10_GELBSPERREN_FREIGABE_2026-11-11.md`
-- **Read-only DEV-Befund (11.11.2026):** Die vier betroffenen Funktionen sind vorhanden, SECURITY DEFINER, Eigentümer postgres, fester search_path `pg_catalog, public, auth`. EXECUTE für `authenticated` besteht bei `award_training_behavior_event` und `correct_suspension`; die internen Helfer bleiben für API-Rollen nicht ausführbar. Die Berechtigungsfunktion bleibt unverändert und intern. Auf den E05-Ereignis-/Sperrentabellen bestehen keine Trigger, die diese Reconciliation automatisch übernehmen; der Aufrufpfad wird daher in den RPCs selbst sichergestellt. DEV-Konfiguration für die geprüften Teams hat derzeit weder Team-Override noch befüllte Vereins-Spielarten. Deshalb entsteht bei unveränderter Konfiguration automatisch kein Zielspieltag; die App muss diesen Zustand verständlich darstellen.
-- **Migrationshistorie:** DEV enthält E05 Packages 04–07 und 09 (inklusive Paket-09-Fixes); Package 10 ist nicht registriert.
-- **Datenwirkung:** keine. Keine SQL-Anweisung ausgeführt; keine Testdaten geschrieben; keine bestehenden Karten, Sperren, Audits oder Konfigurationen verändert.
-- **PROD:** Nicht übertragen, nicht freigegeben.
-- **Freigabe-Gate:** Erst nach ausdrücklicher Zustimmung darf das SQL in DEV ausgeführt werden. Danach sind Migrationsregistrierung, Funktionsdefinitionen, ACLs, RLS-Unverändertheit, Datenbilanz und Funktionstests nachzuweisen. Der Ausführungsversuch wird erst dann zusätzlich als eigener Datensatz in `DB_MIGRATION_LOG.md` erfasst.
-- **Nachweisgrenze:** Das SQL wurde aus den vollständigen DEV-Definitionen erstellt und statisch gegengeprüft. Ein PostgreSQL-Parser-/Ausführungstest wurde nicht vorgenommen, weil dies eine SQL-Ausführung erfordern würde und die gesonderte Zustimmung noch aussteht. Das Review-Artefakt ist deshalb noch kein ausgeführter oder technisch live-validierter Migrationsnachweis.
+- **Status:** Erfolgreich in DEV ausgeführt; Migrationsversion 20261111161403.
+- **Migration:** `supabase/migrations/20261111161403_e05_package_10_training_date_suspensions.sql`
+- **Rollback:** `supabase/rollback/20261111090000_e05_package_10_training_date_suspensions_rollback.sql`
+- **Prüfabfragen:** `docs/E05_PACKAGE_10_TEST_QUERIES.sql`
+- **Freigabedokumentation:** `docs/E05_PACKAGE_10_GELBSPERREN_FREIGABE_2026-11-11.md`
+- **Umfang:** Vier bestehende Funktionen ersetzt; keine Tabellen, Spalten, Trigger, RLS-Policies, Grants oder Spielarten-Einstellungen verändert.
+- **Verifikation:** Migration registriert; Funktionen SECURITY DEFINER mit festem search_path; API-Grants unverändert; bestehende Vereins-/Mannschaftskonfiguration read-only geprüft.
+- **Konfiguration:** Beide DEV-Mannschaften haben aktuell keine befüllte relevante Spielartenkonfiguration. Daher bleiben offene Sperren ohne automatische Zielzuordnung, bis die bereits vorhandene Einstellung gepflegt ist. Package 10 hat die Konfiguration nicht geändert.
+- **Tests:** Statische und read-only Nachkontrollen abgeschlossen. Synthetische Funktionstests und Frontend-E2E stehen noch aus.
+- **PROD:** Nicht ausgeführt, nicht freigegeben.
 
-Dieser Eintrag ist ein Planungs-/Freigabedatensatz. Er ist kein Eintrag über tatsächlich entstandene Datenbankobjekte und ersetzt keinen späteren Ausführungsnachweis in `DB_MIGRATION_LOG.md`.
