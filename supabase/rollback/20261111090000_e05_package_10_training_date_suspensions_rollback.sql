@@ -188,7 +188,7 @@ begin
   end if;
   return v_event_id;
 end;
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.e05_assign_player_suspensions(p_team_id uuid, p_player_id uuid, p_actor_id uuid)
@@ -405,7 +405,7 @@ begin
 
   return v_changed;
 end;
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.e05_reconcile_suspensions_after_event_correction(p_event_id uuid, p_actor_id uuid, p_reason text)
@@ -869,7 +869,7 @@ begin
     v_event.team_id, v_event.player_id, p_actor_id
   );
 end;
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.correct_suspension(p_suspension_id uuid, p_target_matchday_id uuid, p_reason text)
@@ -1075,6 +1075,6 @@ begin
 
   return v_suspension.id;
 end;
-$function$
+$function$;
 
 commit;
