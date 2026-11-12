@@ -783,3 +783,23 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Dokumentations-Commits:** Migration `b8e83f1f6fb35f01015bc42dfc585c5d3e63b1cb`; Rollback `97fd20d56319372afa39ab8feb46ba0400f94de4`.
 - **Testumfang / Nachweisgrenzen:** Bisher statische Prüfung und Metadaten-/Grant-Verifikation. Noch offen sind echte Browser-Ladetests mit Vereinsadmin, Mannschaftsadmin und Trainer sowie Negativtests für unberechtigte Vereins-/Mannschaftskontexte. Speichern über die bestehenden RPCs wurde nicht verändert und muss im Frontend-Praxistest erneut geprüft werden.
 - **PROD / GitHub main:** Nicht ausgeführt, nicht freigegeben; unverändert.
+
+
+## DB-MIG-2026-010 – E05: Alle Spieltage als Sperrziele (DEV – vorbereitet, nicht ausgeführt)
+
+- **Vorbereitungsdatum:** 12.11.2026
+- **Ausführungsdatensatz:** DEV
+- **Umgebung:** Supabase DEV – Projekt `pzazqvvoruqnqhcorbwx`
+- **Migrationsversion / Name:** `20261112070000` – `e05_all_matchdays_suspension_targets`
+- **Anlass/Zweck:** Die individuelle Vereins-/Mannschaftskonfiguration sperrenrelevanter Spielarten wird aus automatischer Zuordnung, manueller Korrektur und Sperrenableistung entfernt. Jeder geplante Spieltag ist unabhängig von `game_type` (auch NULL) zulässig.
+- **Betroffene Objekte:** `e05_assign_player_suspensions(uuid,uuid,uuid)`, `correct_suspension(uuid,uuid,text)`, `serve_matchday_suspensions(uuid)`.
+- **Freigabe:** SQL-Freigabe zur Ausführung noch nicht erteilt.
+- **Ausführender:** Noch keine Ausführung.
+- **Status:** Geplant – nicht ausgeführt.
+- **Tatsächlich ausgeführtes SQL bzw. unveränderlicher Verweis:** Noch kein SQL ausgeführt. Vorbereitete Quelle: `supabase/migrations/20261112070000_e05_all_matchdays_suspension_targets.sql`.
+- **Rollback/Wiederherstellung:** Vorbereitet unter `supabase/rollback/20261112070000_e05_all_matchdays_suspension_targets_rollback.sql`; noch nicht ausgeführt oder live getestet.
+- **Read-only-Ausgangsprüfung:** Alle drei Funktionen vorhanden und SECURITY DEFINER. Die automatische Funktion enthält drei Spielartfilter; manuelle Korrektur und Sperrenableistung weisen NULL bzw. nicht konfigurierte Spielarten zurück. Die chronologische Reconciliation verwendet `training_date_snapshot, id`.
+- **Ergebnis / Verifikation:** Nicht zutreffend – keine Ausführung. Migrationsversion `20261112070000` war zum Prüfzeitpunkt nicht in der Supabase-Migrationshistorie registriert.
+- **Gegenstück in PROD:** Nicht ausgeführt, nicht freigegeben.
+- **GitHub-Dateien:** Migration, Rollback und `docs/E05_DB_MIG_2026_010_SPIELARTENKONFIGURATION_ENTKOPPELN.md` in `develop`.
+- **Zusätzliche Hinweise / Nachweisgrenzen:** Die Migration ändert keine Tabellen, Daten, RLS-Policies, Trigger oder Grants. Die vorhandene chronologische Kartenermittlung wird nicht verändert. Die Frontend-Anpassung ist ausdrücklich ein separater Folgeschritt.
