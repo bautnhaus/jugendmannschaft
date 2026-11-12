@@ -199,3 +199,24 @@ Die Supabase-DEV-Struktur wurde ausschließlich lesend geprüft (Projekt `pzazqv
 - Dieses Dokument: ergänzende UI-Konsolidierung und technische Umsetzungsleitlinie vom 07.11.2026.
 
 **Status bei Erstellung:** Dokumentation und read-only Frontend-Bestandsaufnahme begonnen. Noch keine Code-, SQL-, Datenbank-, Supabase- oder PROD-Änderung.
+
+
+## 10. Verbindliche Präzisierung – Sperrstatus nach erteilter Ausnahme (12.11.2026)
+
+Für die Spieltagskachel gelten ab sofort folgende visuelle und funktionale Zustände:
+
+1. **Regulär gesperrt, keine Ausnahme:** Die gesamte Kachel erhält eine sanfte, aber klar erkennbare rote Hinterlegung mit passender Kontur. Ein einheitlicher Status-Chip lautet „Gesperrt · Ausnahme möglich“. Der Spieler bleibt sichtbar, wird aus der regulären Kaderempfehlung ausgeschlossen und kann nicht regulär nominiert werden. Durch Antippen kann der Trainer den begründungspflichtigen Ausnahmeprozess starten.
+2. **Ausnahme für genau diesen Spieltag erteilt:** Die rote Hinterlegung und rote Sperrkontur entfallen vollständig. Die Kachel erhält wieder ihre normale Grunddarstellung bzw. die unabhängig davon geltende Empfehlungs-/Nominierungsdarstellung. Ein Status-Chip „Ausnahme erteilt“ bleibt sichtbar. Der Spieler ist für diesen konkreten Spieltag wieder empfehlungs- und nominierungsfähig.
+3. **Folgender relevanter Spieltag:** Die offene Sperre bleibt bestehen und wird gemäß AP05.2 auf den nächsten relevanten Spieltag verschoben. Dort erscheint der Spieler wieder im Zustand „Gesperrt · Ausnahme möglich“, sofern für diesen neuen Spieltag keine eigene Ausnahme erteilt wurde.
+
+Die Ausnahme ist keine endgültige Aufhebung oder Löschung der Sperre. Sie gilt ausschließlich für den konkreten Spieltag; Sperrhistorie und offene Sperre bleiben erhalten.
+
+### Einheitliche Status-Chips
+- Beide Chips („Gesperrt · Ausnahme möglich“ und „Ausnahme erteilt“) verwenden dieselbe Komponente bzw. dieselben Gestaltungsparameter.
+- Identisch sind insbesondere Höhe, Schriftgröße, Schriftgewicht, Zeilenhöhe, Innenabstände, Außenabstände, Eckenradius und Position innerhalb der Spielerkachel.
+- Der Chip steht immer unmittelbar unter dem Spielernamen. Unterschiedliche Textlängen dürfen die Chip-Höhe und die vertikalen Abstände nicht verändern.
+- Der Status-Chip darf die Kachelhöhe nicht durch uneinheitliche Margins oder Padding verändern.
+
+**Abgrenzung:** Gelb bleibt für den in AP05.3 dokumentierten vorgemerkten vorzeitigen Sperrausgleich reserviert. Es wird nicht als Ersatzfarbe für eine reguläre Sperre oder eine erteilte Ausnahme verwendet.
+
+Diese Präzisierung ersetzt für den Ausnahmespieltag die zuvor dokumentierte Darstellung „weiterhin rote Kachel nach Ausnahme“. Sie ändert keine DB-Sperrlogik, keine Berechtigungen und keine fachlichen AP05.2-Regeln.
