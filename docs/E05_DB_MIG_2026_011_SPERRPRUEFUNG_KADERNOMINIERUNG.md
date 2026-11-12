@@ -150,3 +150,12 @@ Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nich
 - JavaScript-Syntaxprüfung der beiden Script-Blöcke erfolgreich.
 - **Noch offen:** Browser-Praxistest mit Trainerkonto, Ausnahme/Widerruf, Rollen und iPhone-Layout. Die UI enthält in diesem Schritt noch keine separate Widerrufsaktion; bestehende Widerrufs-RPC bleibt unberührt und kann im nächsten UI-Feinschliff angebunden werden.
 
+
+
+### Korrektur nach DEV-Sichtprüfung (12.11.2026)
+
+- Fehlerursache: Die Spieltagsansicht verwendete dieselbe gefilterte Rangliste wie die Empfehlung. Dadurch wurden gesperrte Spieler vollständig aus der sichtbaren Spielerliste entfernt.
+- Korrektur-Commit: `33637e3297e97ff3306142cce6492b37e92d760c`.
+- Die Ranglistenfunktion akzeptiert jetzt `includeSuspended`. Die Spieltagsansicht zeigt alle Spieler inklusive gesperrter Spieler; die Berechnung/Speicherung der Empfehlung verwendet weiterhin die gefilterte Standardrangliste.
+- Gesperrte Spieler erhalten zusätzlich den sichtbaren Hinweis „Gesperrt · Ausnahme möglich“; bei aktiver Ausnahme „Ausnahme erteilt“.
+- JavaScript-Syntaxprüfung erneut erfolgreich. Browser-Praxistest weiterhin ausstehend.
