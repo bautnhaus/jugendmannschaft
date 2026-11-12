@@ -220,3 +220,14 @@ Die Ausnahme ist keine endgültige Aufhebung oder Löschung der Sperre. Sie gilt
 **Abgrenzung:** Gelb bleibt für den in AP05.3 dokumentierten vorgemerkten vorzeitigen Sperrausgleich reserviert. Es wird nicht als Ersatzfarbe für eine reguläre Sperre oder eine erteilte Ausnahme verwendet.
 
 Diese Präzisierung ersetzt für den Ausnahmespieltag die zuvor dokumentierte Darstellung „weiterhin rote Kachel nach Ausnahme“. Sie ändert keine DB-Sperrlogik, keine Berechtigungen und keine fachlichen AP05.2-Regeln.
+
+
+## 11. Verbindliche Entscheidung – Optionsmenü und Rücknahme von Sperrmaßnahmen (12.11.2026)
+
+- Jede Spielerkachel erhält ein Drei-Punkte-Optionsmenü. Die Optionen sind status- und spieltagbezogen und zeigen nur zulässige Aktionen.
+- Ausnahme erteilen/zurücknehmen sowie vorzeitigen Sperrausgleich erteilen/zurücknehmen werden über dieses Menü verwaltet. Normales Antippen der Kachel bleibt der Kaderplanung vorbehalten.
+- Für jede Erteilung und Rücknahme ist eine nicht leere Begründung verpflichtend. Änderungen werden über abgesicherte RPCs ausgeführt und revisionsfähig protokolliert; keine direkten Frontend-Tabellenwrites und keine Hard Deletes.
+- Ausnahme zurücknehmen wirkt sofort: Der Spieler wird für diesen Spieltag wieder regulär gesperrt (rote Kachel, aus Empfehlung/Nominierung ausgeschlossen). Falls er bereits nominiert ist, muss die Nominierung sicher und konsistent behandelt werden. Vor Umsetzung ist zu verifizieren, ob der vorhandene Widerrufs-RPC dies erledigt oder ein DB-Folgeentwurf notwendig ist.
+- Vorzeitigen Sperrausgleich zurücknehmen muss die Sperrzuordnung gemäß AP05.2 sofort neu bewerten; bereits angewendete/abgeschlossene Vorgänge dürfen nicht rückwirkend verändert werden.
+- Nach erteilter Ausnahme muss die Kachel die normale Kontur und den normalen Empfehlungs-/Nominierungszustand beibehalten; der Chip „Ausnahme erteilt“ ergänzt diesen Zustand, überschreibt ihn aber nicht.
+- Diese Spezifikation ist fachlich beschlossen, jedoch noch nicht technisch umgesetzt. Vor Codeänderungen ist der Bestand von index.html sowie der vorhandenen RPCs read-only abzugleichen. SQL-Änderungen benötigen eine separate ausdrückliche Freigabe.
