@@ -68,3 +68,10 @@ Es wurden keine echten Sperren, Spieltage oder Testdatensätze verändert. Diese
 - Supabase DEV und PROD wurden durch diese Frontend-Änderung nicht verändert.
 - GitHub `main` und die PROD-Website wurden nicht verändert.
 - Die Datenbankeinstellungen und die vier bisherigen Settings-RPCs bleiben vorerst als ungenutzter Bestand erhalten. Eine spätere Datenbankbereinigung benötigt einen eigenen read-only Review und eine separate Freigabe.
+
+## 6. DEV-Deployment
+
+- Der Workflow `Deploy DEV` wurde durch den Push nach `develop` ausgelöst.
+- GitHub Actions Run: [43166097833 – Deploy DEV](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43166097833).
+- Ergebnis: `completed / success` auf Commit `18babcd937f67c3775241821c5c02a276e6ae9f0`.
+- Damit wurde der dokumentierte `develop`-Stand in den DEV-Deploy-Spiegel übertragen. Ein manueller Browser-Praxistest ist damit nicht ersetzt.
