@@ -3,7 +3,7 @@
 **Stand:** 12.11.2026  
 **Branch:** `develop`  
 **Zielumgebung:** ausschließlich Supabase DEV  
-**Status:** SQL vorbereitet, technische Prüfung dokumentiert, **nicht ausgeführt**  
+**Status:** Erfolgreich in Supabase DEV ausgeführt und read-only verifiziert  
 **PROD / main:** unverändert
 
 ## 1. Ziel und fachliche Regel
@@ -50,7 +50,7 @@ Die drei Funktionen werden per `CREATE OR REPLACE` auf Basis ihrer in DEV vorhan
 
 ## 4. Dateien
 
-- Migration: `supabase/migrations/20261112070000_e05_all_matchdays_suspension_targets.sql`
+- Migration: `supabase/migrations/20261112055415_e05_all_matchdays_suspension_targets.sql`
 - Rollback: `supabase/rollback/20261112070000_e05_all_matchdays_suspension_targets_rollback.sql`
 
 Die Migration ist eine guarded source transformation der drei aktuellen DEV-Funktionsdefinitionen. Sie ist absichtlich keine Tabellenmigration und ändert keine fachlichen Daten.
@@ -85,13 +85,25 @@ Die read-only Prüfung beweist den Ausgangszustand, nicht die erfolgreiche Ausf�
 
 Das Rollback stellt die vorherige Spielartenlogik in den drei Funktionen wieder her. Es verändert keine Daten oder Audit-Einträge. Vor einem Rollback ist der tatsächliche Funktionsstand zu prüfen. Das Rollback darf nur nach einer erfolgreichen Anwendung dieser Migration und bei passendem vereinfachtem Funktionsstand ausgeführt werden.
 
-## 8. Freigabestatus
+## 8. Ausführung und Verifikation am 12.11.2026
+
+- Ausdrückliche Freigabe zur DEV-Ausführung lag vor.
+- Supabase meldete `success: true`.
+- Registrierte Migrationsversion: `20261112055415` (`e05_all_matchdays_suspension_targets`).
+- Alle drei Zielfunktionen sind weiterhin `SECURITY DEFINER`, Eigentümer `postgres`, Suchpfad `pg_catalog, public, auth`.
+- EXECUTE-ACLs sind unverändert: `correct_suspension` und `serve_matchday_suspensions` nur `authenticated` plus Eigentümer; `e05_assign_player_suspensions` nur Eigentümer. `anon` besitzt für keine der drei Funktionen EXECUTE.
+- Read-only Funktionsprüfung: keine Spielarten-Konfigurationsreferenzen, kein `v_types`, keine Spielartfilter; bei manueller Korrektur keine `game_type`-Zielprüfung mehr.
+- Chronologische Reconciliation weiterhin mit `training_date_snapshot` und `ORDER BY e.training_date_snapshot, e.id` nachgewiesen.
+- Es wurden keine Tabellen, Spalten, Daten, Trigger, RLS-Policies oder Grants verändert.
+- Keine synthetischen Testdaten und keine echten Sperren-/Spieltag-Aktionen wurden ausgeführt. Der Funktionsnachweis ist daher Metadaten-/Definitionsprüfung, kein vollständiger fachlicher E2E-Test.
+
+## 9. Freigabestatus
 
 - [x] Fachliche Vereinfachung bestätigt: jeder Spieltag zählt, auch ohne Spielart.
 - [x] Technische Ausgangsdefinitionen in DEV read-only geprüft.
 - [x] Migrations- und Rollbackdatei in `develop` vorbereitet.
-- [ ] SQL-Freigabe zur Ausführung in DEV
-- [ ] DEV-Migration ausgeführt und verifiziert
+- [x] SQL-Freigabe zur Ausführung in DEV
+- [x] DEV-Migration ausgeführt und read-only verifiziert
 - [ ] Frontend-Anpassung separat vorbereitet und freigegeben
 - [ ] PROD-Freigabe (separater Vorgang)
 
