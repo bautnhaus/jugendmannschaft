@@ -1,3 +1,14 @@
+# Aktueller Stand – E05 Saisonzuordnung DEV (12.11.2026)
+
+- Nach ausdrücklicher Freigabe wurden 8 Spieltage und 12 Trainings der DEV Mannschaft, deren `season_id` zuvor NULL war, der aktiven Saison 2026/2027 zugeordnet.
+- Read-only-Nachprüfung: DEV Mannschaft 10/10 Spieltage und 15/15 Trainings mit Saison-ID; 0 NULL-Zuordnungen. G-Junioren unverändert und vollständig zugeordnet.
+- Ursache: Termine vor Anlage der Saison am 30.10.2026 erstellt; Frontend verwendete `season?.id || null`; Datenbank erlaubt NULL und hat keine automatische Saisonzuordnung per Trigger.
+- Reine DML-Datenkorrektur, keine Schemaänderung/Migration. PROD und GitHub `main` unangetastet.
+- **Offen:** Frontend-Erstellung absichern (Einzeltraining, Trainingsserie, Spieltag) und serverseitige Absicherung prüfen. Keine Umsetzung hierfür freigegeben.
+- Details/SQL: `docs/E05_DATA_REPAIR_SEASON_ASSIGNMENT_DEV_2026-11-12.md`; Einträge in `DB_MIGRATION_LOG.md` und `DB_CHANGELOG.md`.
+
+---
+
 # Jugendmannschaft – Projektkontext
 
 ## Aktueller Stand – E05 Spielartenvereinfachung (12.11.2026)
