@@ -1,5 +1,16 @@
 # Jugendmannschaft – Projektkontext
 
+## Aktueller Stand – E05 Spielartenvereinfachung (12.11.2026)
+
+- DB-MIG-2026-010 `20261112055415_e05_all_matchdays_suspension_targets` wurde nach ausdrücklicher Freigabe erfolgreich ausschließlich in Supabase DEV ausgeführt und read-only verifiziert. Alle Spieltage sind unabhängig von `game_type`, einschließlich NULL, mögliche Sperrziele.
+- Die chronologische Gelbkartenermittlung bleibt nach `training_date_snapshot ASC, id ASC`; bei nachgetragenen Karten ist das Trainingsdatum und nicht der Eingabezeitpunkt maßgeblich.
+- Frontend-Vereinfachung wurde in `develop/index.html` umgesetzt (Commit `74842c6632b512b57015d78dbdf29da91d4df5cf`): Vereins- und Mannschaftseinstellungen, Navigation, Render-/Save-Handler und die zugehörigen vier Settings-RPC-Aufrufe wurden aus der Oberfläche entfernt. Spielart bleibt als normales Spieltagsfeld erhalten.
+- Die vorhandenen Einstellungsdaten, Tabellen und vier Settings-RPCs bleiben in der Datenbank bestehen; keine Datenbereinigung oder zusätzliche SQL-Änderung durchgeführt.
+- JavaScript-Syntaxprüfung beider Inline-Scripts erfolgreich; statische Suche nach alten Einstellungsreferenzen ohne Treffer.
+- Führende Frontend-Dokumentation: `docs/E05_FRONTEND_SPIELARTEN_ENTKOPPELN_2026-11-12.md`. DB-Nachweis: `docs/E05_DB_MIG_2026_010_SPIELARTENKONFIGURATION_ENTKOPPELN.md`, `DB_MIGRATION_LOG.md` und `DB_CHANGELOG.md`.
+- **Noch offen:** DEV-Praxistests der Vereins-/Team-/Superadmin-Ansichten, automatische Sperrenzuordnung bei allen Spielarten einschließlich NULL, manuelle Sperrenkorrektur, normale Spielartpflege sowie iPhone-/Darkmode-Darstellung.
+- PROD, GitHub `main` und die PROD-Website wurden nicht verändert. Keine Freigabe für einen PROD-Release erteilt.
+
 **Dokumenttyp:** Zentrale Projektdokumentation  
 **Stand:** 09.11.2026  
 **Führende Quelle:** Branch `develop` im Repository `bautnhaus/jugendmannschaft`
