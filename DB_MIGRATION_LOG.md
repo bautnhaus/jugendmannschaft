@@ -876,3 +876,17 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Rollback:** `supabase/rollback/20261112120000_e05_suspension_nomination_guard_rollback.sql` (stellt die vorab geprüfte ursprüngliche Empfehlungs-RPC wieder her und entfernt ausschließlich die neuen Trigger/Funktion).
 - **Spezifikation:** `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
 - **Wichtiger Status:** Dateien liegen auf `develop`; Migration wurde weder ausgeführt noch in Supabase-Migrationshistorie registriert. Rollback nicht ausgeführt. Umsetzung erst nach gesonderter ausdrücklicher Freigabe.
+
+
+## DB-MIG-2026-011 – E05 Sperrenprüfung für Kaderempfehlung und Nominierung (12.11.2026)
+
+- **Status:** Vollständiges Freigabepaket in `develop` vorbereitet; ausdrücklich NICHT in Supabase ausgeführt.
+- **Ziel:** Regulär gesperrte Spieler werden bei der Speicherung der Kaderempfehlung und bei direkter Nominierung in `matchday_players` serverseitig abgewiesen. Eine nicht widerrufene Ausnahme für genau den ursprünglichen Spieltag erlaubt die Teilnahme; die bestehende Ausnahme bleibt begründungspflichtig, auditiert und verschiebt die offene Sperre über die vorhandene RPC auf den nächsten Spieltag.
+- **Read-only-Basis:** `save_matchday_recommendation(uuid,uuid[])` war SECURITY INVOKER, Owner postgres, search_path `pg_catalog, public`, EXECUTE für postgres/authenticated/service_role. Bestehende Ausnahme-RPCs `grant_suspension_exception(uuid,uuid,text)` und `revoke_suspension_exception(uuid,text)` bleiben unverändert. Bestehende Trigger und RLS-Policies auf `matchday_players` bleiben erhalten.
+- **Migration:** `supabase/migrations/20261112191000_e05_suspension_nomination_guard.sql`.
+- **Rollback:** `supabase/rollback/20261112191000_e05_suspension_nomination_guard_rollback.sql` (stellt die vorab gelesene RPC-Definition wieder her und entfernt nur den neuen Trigger/dessen Funktion).
+- **Spezifikation:** `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
+- **Änderungsumfang:** CREATE OR REPLACE der Empfehlungs-RPC mit zusätzlicher Sperrenprüfung; neue SECURITY INVOKER Triggerfunktion und BEFORE INSERT/UPDATE-Trigger auf `matchday_players`; keine Tabellen-/Spalten-/Daten-/RLS-Policy-Änderung. Bestehende Nominierungen werden nicht automatisch gelöscht.
+- **Wichtige Ausnahmebehandlung:** Die Prüfung akzeptiert ausschließlich einen nicht widerrufenen Ausnahme-Datensatz für genau die betreffende Sperre und den betreffenden Spieltag. Die bestehende Grant-Funktion verschiebt das offene Sperrziel; der Ausnahme-Datensatz bleibt als Nachweis des ursprünglichen Spieltags erhalten.
+- **Freigabegrenze:** Nur Entwurf. Keine SQL-Ausführung, keine Migration registriert, keine Frontendänderung. PROD und GitHub `main` unverändert.
+- **Nach Freigabe zu testen:** gesperrte Empfehlung abweisen; ungesperrte Empfehlung zulassen; direkte Nominierung ohne Ausnahme abweisen; Nominierung mit Ausnahme zulassen; nach Widerruf erneut abweisen; Team-/Saisonkontext, RLS, ACLs, bestehende Trigger und Audit prüfen.
