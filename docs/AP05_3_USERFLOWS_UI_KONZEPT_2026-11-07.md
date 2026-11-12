@@ -240,3 +240,19 @@ Vor einer Umsetzung gelten weiterhin die verbindlichen Projektregeln:
 6. DEV praktisch testen; PROD bleibt bis zu einer gesonderten Freigabe unverändert.
 
 **Umsetzungsstatus:** Keine Code-, SQL-, Datenbank-, Supabase-, Auth-, Edge-Function-, DNS- oder PROD-Änderung im Rahmen von AP05.3.
+
+
+## 8. Ergänzende verbindliche UI-Entscheidung – Ausnahme zur regulären Sperre (12.11.2026)
+
+Die Darstellung der regulären Sperre und einer erteilten Spieltagsausnahme wird wie folgt präzisiert:
+
+- **Ohne Ausnahme:** gesamte Spieltagskachel sanft rot hinterlegt und rot konturiert; Chip „Gesperrt · Ausnahme möglich“. Keine reguläre Empfehlung oder Nominierung. Trainer kann über die Kachel den begründungspflichtigen Ausnahmeprozess öffnen.
+- **Ausnahme erteilt:** rote Hinterlegung und rote Kontur werden entfernt. Die Kachel zeigt wieder ihre normale bzw. unabhängig davon bestehende Empfehlungs-/Nominierungsdarstellung. Der Chip „Ausnahme erteilt“ bleibt an derselben Position sichtbar. Für diesen Spieltag ist der Spieler wieder für Empfehlung und Nominierung zugelassen.
+- **Folgender relevanter Spieltag:** die offene Sperre besteht fort und wird gemäß AP05.2 auf den nächsten relevanten Spieltag verschoben. Dort gilt wieder die reguläre rote Sperrdarstellung, solange keine neue Ausnahme für genau diesen Spieltag erteilt wurde.
+
+Die Ausnahme gilt ausschließlich für den konkreten Spieltag und löscht/erledigt die Sperre nicht. Historie und Datenbank-Sperrstatus bleiben erhalten.
+
+### Einheitliche Chip-Geometrie
+Beide Status-Chips müssen dieselbe Höhe, Schriftgröße, Schriftstärke, Zeilenhöhe, Innen-/Außenabstände, Rundung und Position direkt unter dem Spielernamen verwenden. Unterschiedliche Chiptexte dürfen keine abweichende Höhe oder vertikale Kachelgeometrie erzeugen.
+
+Gelb bleibt dem vorgemerkten vorzeitigen Sperrausgleich vorbehalten (Abschnitte 4.4–4.6). Diese UI-Präzisierung ändert die fachliche Sperr- und Ausnahme-Logik aus AP05.2 nicht.
