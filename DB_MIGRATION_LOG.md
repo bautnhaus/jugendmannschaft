@@ -862,3 +862,17 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Art der Änderung:** Aufruf vorhandener, abgesicherter Datenbankfunktionen; keine direkte Tabellenänderung, keine Schemaänderung, keine Migration, keine RLS-/Grant-/Trigger-Änderung.
 - **PROD / main:** unverändert.
 - **Offen:** Browser-Praxistest in DEV; prüfen, ob Historie die Sperre jetzt beim 09.11.-Ereignis zeigt und ob Tom sowie Spieler Dreißig für den Spieltag 14.11. als gesperrt erscheinen. Der Spieltag wurde nicht abgeschlossen; keine Sperre wurde als abgeleistet markiert.
+
+
+## DB-MIG-2026-011 – E05 Sperrprüfung Kaderempfehlung und Nominierung (12.11.2026)
+
+- **Status:** Freigabepaket erstellt; NICHT ausgeführt.
+- **Umgebung:** ausschließlich Supabase DEV vorgesehen. PROD und GitHub `main` unverändert.
+- **Ausgangsbasis:** Read-only-Prüfung der DEV-RPC `save_matchday_recommendation(uuid,uuid[])`, Ausnahme-RPCs `grant_suspension_exception(uuid,uuid,text)` und `revoke_suspension_exception(uuid,text)`, Tabellen/Spalten, RLS-Policies und vorhandener Trigger auf `matchday_players`.
+- **Änderungsumfang:** Neue dedizierte SECURITY DEFINER-Triggerfunktion `e05_assert_matchday_player_not_suspended()` mit festem search_path und rein lesender Sperrenprüfung; zwei BEFORE-Trigger auf `matchday_players` und `matchday_recommendation_players`; guarded Erweiterung der bestehenden Empfehlungs-RPC um dieselbe Sperrenprüfung.
+- **Fachregel:** Offene Sperre mit `intended_matchday_id` gleich Zielspieltag blockiert Empfehlung und Nominierung. Eine aktive Ausnahme für exakt diesen Spieltag (`revoked_at IS NULL`) erlaubt sie. Ausnahme bleibt dokumentiert; Sperre wird durch bestehende Ausnahme-RPC verschoben. Widerruf macht die Sperre nach erneuter Zuordnung wieder wirksam.
+- **Unverändert:** Ausnahme-RPCs, bestehende Trigger, RLS-Policies, Tabellen/Spalten, vorhandene Daten, bestehende Empfehlungen/Nominierungen, übrige E05-Funktionen. Keine automatische Entfernung bestehender Nominierungen. Keine Frontendänderung.
+- **Migration:** `supabase/migrations/20261112120000_e05_suspension_nomination_guard.sql`.
+- **Rollback:** `supabase/rollback/20261112120000_e05_suspension_nomination_guard_rollback.sql` (stellt die vorab geprüfte ursprüngliche Empfehlungs-RPC wieder her und entfernt ausschließlich die neuen Trigger/Funktion).
+- **Spezifikation:** `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
+- **Wichtiger Status:** Dateien liegen auf `develop`; Migration wurde weder ausgeführt noch in Supabase-Migrationshistorie registriert. Rollback nicht ausgeführt. Umsetzung erst nach gesonderter ausdrücklicher Freigabe.
