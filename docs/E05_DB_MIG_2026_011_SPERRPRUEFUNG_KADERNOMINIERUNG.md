@@ -3,7 +3,7 @@
 **Stand:** 12.11.2026  
 **Branch:** develop  
 **Zielumgebung:** Supabase DEV ausschließlich  
-**Status:** Vollständiges Freigabepaket vorbereitet; nicht ausgeführt  
+**Status:** In Supabase DEV erfolgreich ausgeführt und read-only technisch verifiziert; Praxistest ausstehend  
 **PROD / main:** unverändert
 
 ## 1. Ziel und verbindliche Fachentscheidung
@@ -115,3 +115,17 @@ Rollback nur nach gesonderter Freigabe. Er entfernt beide neuen Trigger und die 
 ## 8. Freigabestatus
 
 Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nicht in Supabase ausgeführt, nicht in der Migrationshistorie registriert und nicht deployed. Eine gesonderte ausdrückliche Freigabe ist vor jeder Ausführung erforderlich.
+
+
+## 9. Ausführung und technische Nachprüfung (12.11.2026)
+
+- Nach ausdrücklicher Freigabe wurde die Migration in Supabase DEV angewendet. Tool-Rückgabe: `success: true`.
+- Registrierte Supabase-Migration: Version `20261112181910`, Name `20261112191000_e05_suspension_nomination_guard`.
+- Neuer Trigger `matchday_players_prevent_suspended_nomination` vorhanden: BEFORE INSERT OR UPDATE OF matchday_id, player_id.
+- Die drei bisherigen Trigger auf `matchday_players` sind weiterhin vorhanden; insgesamt nun vier nicht-interne Trigger.
+- `save_matchday_recommendation(uuid,uuid[])`: SECURITY INVOKER unverändert, search_path `pg_catalog, public`, ursprüngliche EXECUTE-ACL `postgres, authenticated, service_role` erhalten; Funktionsdefinition enthält die Sperrenprüfung.
+- Neue Triggerfunktion: SECURITY INVOKER, search_path `pg_catalog, public`; EXECUTE nicht an PUBLIC/anon/authenticated vergeben.
+- Die acht bestehenden RLS-Policies auf `matchday_players` sind weiterhin vorhanden. Es wurden keine RLS-Policies geändert.
+- Keine Tabellen-/Spaltenänderung und keine bestehenden Sperren, Ausnahmen oder Nominierungen bearbeitet.
+- **Noch offen:** Funktionale Negativ-/Positivtests mit kontrollierten DEV-Testdaten sowie Rollen-/Ausnahmepraxistest. Bis dahin gilt die technische Installation als verifiziert, die fachliche Abnahme aber als offen.
+- PROD und GitHub `main` unverändert.
