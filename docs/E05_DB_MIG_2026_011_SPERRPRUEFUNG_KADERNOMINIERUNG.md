@@ -203,3 +203,13 @@ Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nich
 - Fix-Commit: `8fe45438bdf30a25261a6ad8b4e66081b6e8cd7b`.
 - Am Ende von `index.html` wird jetzt ein abschließender CSS-Block geladen, der für `.isSuspended` und `.hasSuspensionException` eine deutlich rote Kachelfläche, rote Umrandung und helle Textfarbe erzwingt – unabhängig von Light-/Darkmode sowie Empfehlungs-/Nominierungsstatus. Der Hinweis-Chip bleibt separat sichtbar.
 - JavaScript-Syntaxprüfung erfolgreich; CSS-Visualtest im iPhone-Browser steht nach Deployment aus.
+
+
+### Verbindliche UI-Entscheidung: Kachel nach erteilter Ausnahme (12.11.2026)
+
+- Nutzerentscheidung: Bei regulärer Sperre ohne Ausnahme wird die gesamte Kachel sanft rot hinterlegt und zeigt den Chip „Gesperrt · Ausnahme möglich“.
+- Nach Erteilung einer Ausnahme für genau diesen Spieltag entfällt die rote Hinterlegung vollständig. Die Kachel zeigt wieder ihre normale bzw. unabhängig davon geltende Empfehlungs-/Nominierungsdarstellung; der Chip „Ausnahme erteilt“ bleibt sichtbar. Der Spieler ist für diesen Spieltag wieder empfehlungs- und nominierungsfähig.
+- Die offene Sperre wird nicht gelöscht oder endgültig aufgehoben. Sie bleibt gemäß AP05.2 für den nächsten relevanten Spieltag bestehen/zugeordnet und erscheint dort wieder als reguläre rote Sperre, sofern keine neue Ausnahme erteilt wird.
+- Beide Chips müssen identische Höhe, Schriftgröße, Schriftgewicht, Zeilenhöhe, Innen-/Außenabstände, Rundung und Position direkt unter dem Spielernamen besitzen.
+- Gelb bleibt für den vorgemerkten vorzeitigen Sperrausgleich reserviert.
+- Diese Änderung ist eine verbindliche UI-Präzisierung. Noch keine Umsetzung in `index.html`; keine SQL-, DB-, RLS-, Auth- oder PROD-Änderung.
