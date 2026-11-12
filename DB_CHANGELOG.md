@@ -668,3 +668,10 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Funktionale Praxistests stehen noch aus.
 - PROD und GitHub `main` unverändert.
 - Details: `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
+
+
+## 12.11.2026 – E05 Sperrenprüfung: DB-Tests und Frontend-Anbindung
+
+- Gesperrter direkter Nominierungs-INSERT wird serverseitig abgewiesen; ungesperrter INSERT-Positivtest innerhalb Transaktion zurückgerollt.
+- Frontend auf `develop` bindet Sperrstatus, Ausschluss aus Empfehlung und begründungspflichtige Spieltagsausnahme an. Commit `32afa447a7b6e9baf46d1c55412fd03023c39339`.
+- Browser-Praxistest und Widerruf-UI noch offen. PROD und `main` unverändert.
