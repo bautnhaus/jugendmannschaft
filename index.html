@@ -3096,7 +3096,7 @@ function renderMatchday(){
       const ranked=top16Ranking(true);
       body=`<div class="matchdayActionStack"><button type="button" class="trainingBulkAction" onclick="saveMatchdayRecommendation()">${materialIcon('refresh')} Neu berechnen</button><button type="button" class="trainingBulkAction" onclick="nominateRecommendedPlayers()" ${md.recommendation?.length?'':'disabled'}>${materialIcon('check_circle')} Empfehlung nominieren</button><button type="button" class="trainingBulkAction" onclick="clearMatchday()">${materialIcon('close')} Auswahl leeren</button></div>
       ${md.recommendationAt?`<p class="small muted matchdaySnapshotNote">${materialIcon('lock')} Gespeicherte Empfehlung · ${esc(new Date(md.recommendationAt).toLocaleString('de-DE'))}. Sie bleibt unverändert, bis du sie neu berechnest.</p>`:''}
-      ${matchdayControlsMarkup()}<div class="matchdaySquadTileList">${matchdayFilteredPlayers(ranked).map(p=>`<button type="button" class="playerListRow matchdaySquadTile ${recIds.has(p.id)?'isRecommended':''} ${selectedIds.has(p.id)?'isNominated':''} ${matchdaySuspensionFor(p.id,md.id).blocked?'isSuspended':''} ${matchdaySuspensionFor(p.id,md.id).exception?'hasSuspensionException':''}" onclick="toggleMatchdayNomination('${p.id}')" aria-pressed="${selectedIds.has(p.id)}"><span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}${selectedIds.has(p.id)?materialIcon('apparel','playerCardSquadIcon'):''}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span>${matchdaySuspensionFor(p.id,md.id).blocked?'<span class="matchdaySuspensionBadge">Gesperrt · Ausnahme möglich</span>':matchdaySuspensionFor(p.id,md.id).exception?'<span class="matchdaySuspensionExceptionBadge">Gesperrt · Ausnahme erteilt</span>':''}<span class="playerListPositions">${playerPositionsHtml(p)}</span><span class="playerListLevel">${playerLevelHtml(p)}</span></span>${selectedIds.has(p.id)?'<span class="matchdayNominationBadge">Kader</span>':''}</button>`).join('')||'<p class="muted playerRecordEmpty">Keine passenden Spieler gefunden.</p>'}</div>`;
+      ${matchdayControlsMarkup()}<div class="matchdaySquadTileList">${matchdayFilteredPlayers(ranked).map(p=>`<button type="button" class="playerListRow matchdaySquadTile ${recIds.has(p.id)?'isRecommended':''} ${selectedIds.has(p.id)?'isNominated':''} ${matchdaySuspensionFor(p.id,md.id).blocked?'isSuspended':''} ${matchdaySuspensionFor(p.id,md.id).exception?'hasSuspensionException':''}" onclick="toggleMatchdayNomination('${p.id}')" aria-pressed="${selectedIds.has(p.id)}"><span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}${selectedIds.has(p.id)?materialIcon('apparel','playerCardSquadIcon'):''}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span>${matchdaySuspensionFor(p.id,md.id).blocked?'<span class="matchdayStatusChip">Gesperrt · Ausnahme möglich</span>':matchdaySuspensionFor(p.id,md.id).exception?'<span class="matchdayStatusChip">Ausnahme erteilt</span>':''}<span class="playerListPositions">${playerPositionsHtml(p)}</span><span class="playerListLevel">${playerLevelHtml(p)}</span></span>${selectedIds.has(p.id)?'<span class="matchdayNominationBadge">Kader</span>':''}</button>`).join('')||'<p class="muted playerRecordEmpty">Keine passenden Spieler gefunden.</p>'}</div>`;
     }else if(matchdaySubTab==='attendance'){
       const nominated=state.players.filter(p=>selectedIds.has(p.id));
       body=`<div class="matchdayActionRow"><button type="button" class="primary" onclick="setAllMatchdayAttendance(true)"><span class="material-symbols-outlined">check</span><span>Alle Spieler als anwesend markieren</span></button></div>
@@ -5433,37 +5433,35 @@ html[data-theme="dark"] .e05EventSymbol.yellow_card .e05CardMark{background:#FAC
 \n/* E05 status visibility in dark and light themes */\n.playerListRow.matchdaySquadTile.isSuspended,.playerListRow.matchdaySquadTile.hasSuspensionException{background:rgba(220,38,38,.16)!important;border:2px solid rgba(239,68,68,.85)!important}\n.matchdaySuspensionBadge,.matchdaySuspensionExceptionBadge{display:inline-flex!important;align-items:center;width:max-content;max-width:100%;margin:4px 0 2px;padding:4px 8px;border-radius:7px;background:#fee2e2!important;color:#991b1b!important;border:1px solid #fca5a5;font-size:12px;font-weight:750;line-height:1.25}\n</style>
 
 <style id="e05-suspension-tile-visual-priority">
-/* E05: Sperrstatus hat Vorrang vor Empfehlung/Nominierung – auch im Darkmode. */
-html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended,
-html[data-theme="dark"] .playerListRow.matchdaySquadTile.hasSuspensionException,
-html[data-theme="light"] .playerListRow.matchdaySquadTile.isSuspended,
-html[data-theme="light"] .playerListRow.matchdaySquadTile.hasSuspensionException,
-.playerListRow.matchdaySquadTile.isSuspended,
-.playerListRow.matchdaySquadTile.hasSuspensionException{
-  background:#57252d!important;
-  background-color:#57252d!important;
-  border:2px solid #f87171!important;
-  color:#fff1f2!important;
-  box-shadow:inset 0 0 0 1px rgba(248,113,113,.18)!important;
+/* E05: Sperre nur ohne Ausnahme rot markieren. Ausnahme ist spieltagbezogen und stellt normale Kacheldarstellung wieder her. */
+.playerListRow.matchdaySquadTile.isSuspended{
+  background:#63343a!important;background-color:#63343a!important;
+  border:2px solid #d97777!important;color:#fff1f2!important;
+  box-shadow:inset 0 0 0 1px rgba(248,113,113,.10)!important;
 }
-html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended .playerListName,
-html[data-theme="dark"] .playerListRow.matchdaySquadTile.hasSuspensionException .playerListName,
-html[data-theme="light"] .playerListRow.matchdaySquadTile.isSuspended .playerListName,
-html[data-theme="light"] .playerListRow.matchdaySquadTile.hasSuspensionException .playerListName,
-.playerListRow.matchdaySquadTile.isSuspended .playerListName,
-.playerListRow.matchdaySquadTile.hasSuspensionException .playerListName{color:#fff1f2!important}
-html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended .playerListPositions,
-html[data-theme="dark"] .playerListRow.matchdaySquadTile.hasSuspensionException .playerListPositions,
-html[data-theme="light"] .playerListRow.matchdaySquadTile.isSuspended .playerListPositions,
-html[data-theme="light"] .playerListRow.matchdaySquadTile.hasSuspensionException .playerListPositions,
-.playerListRow.matchdaySquadTile.isSuspended .playerListPositions,
-.playerListRow.matchdaySquadTile.hasSuspensionException .playerListPositions{color:#ffe4e6!important}
-html[data-theme="dark"] .matchdaySuspensionBadge,
-html[data-theme="dark"] .matchdaySuspensionExceptionBadge,
-html[data-theme="light"] .matchdaySuspensionBadge,
-html[data-theme="light"] .matchdaySuspensionExceptionBadge,
-.matchdaySuspensionBadge,.matchdaySuspensionExceptionBadge{
-  display:inline-flex!important;background:#ffe4e6!important;color:#9f1239!important;
-  border:1px solid #fda4af!important;font-weight:800!important;
+.playerListRow.matchdaySquadTile.isSuspended .playerListName{color:#fff1f2!important}
+.playerListRow.matchdaySquadTile.isSuspended .playerListPositions{color:#ffe4e6!important}
+/* Ausnahme erteilt: normale Grund-/Empfehlungs-/Nominierungsdarstellung statt Sperrrot. */
+.playerListRow.matchdaySquadTile.hasSuspensionException:not(.isSuspended){
+  background:var(--card-bg, var(--surface, transparent))!important;
+  border-color:transparent!important;color:var(--text)!important;box-shadow:none!important;
+}
+.playerListRow.matchdaySquadTile.hasSuspensionException.isRecommended:not(.isSuspended){
+  background:#eff6ff!important;border:2px solid #93c5fd!important;color:var(--text)!important;
+}
+.playerListRow.matchdaySquadTile.hasSuspensionException.isNominated:not(.isSuspended){
+  background:#eff6ff!important;border:2px solid #60a5fa!important;color:var(--text)!important;
+}
+.playerListRow.matchdaySquadTile.hasSuspensionException .playerListName{color:var(--text)!important}
+.playerListRow.matchdaySquadTile.hasSuspensionException .playerListPositions{color:var(--muted)!important}
+/* Einheitliche Chip-Geometrie für beide Texte. */
+.matchdayStatusChip{
+ display:inline-flex!important;align-items:center!important;box-sizing:border-box!important;
+ min-height:28px!important;width:max-content!important;max-width:100%!important;
+ margin:4px 0 2px!important;padding:4px 9px!important;
+ border:1px solid #fda4af!important;border-radius:7px!important;
+ background:#ffe4e6!important;color:#9f1239!important;
+ font-size:12px!important;font-weight:750!important;line-height:18px!important;
+ white-space:normal!important;
 }
 </style>
