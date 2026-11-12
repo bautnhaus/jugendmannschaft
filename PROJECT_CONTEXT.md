@@ -1,3 +1,15 @@
+# Aktueller Stand – E05 Sperrenkorrektur DEV (12.11.2026)
+
+- Saisonlose Spieltage/Trainings der DEV Mannschaft wurden bereits korrigiert (8 Spieltage, 12 Trainings); danach 0 NULL-Saisonzuordnungen.
+- Bestehende offene Sperren waren danach weiterhin ohne Zielspieltag. Tom Achtzehn Jahre: offene gelbe Sperre verwies auf Karte 20.10., obwohl chronologisch fünfte aktive Karte vom 09.11. war. Über vorhandene Reconciliation-Funktion korrigiert; Quelle nun 09.11. und Ziel 14.11.2026 / Flensburg.
+- Spieler Dreißig: offene rote Sperre ebenfalls über vorhandene Assignment-Funktion dem 14.11.2026 / Flensburg zugeordnet.
+- Nachprüfung bestätigt beide Sperren OPEN und Zielspieltag geplant. Audit-Einträge vorhanden. Keine Sperre als abgeleistet markiert.
+- Keine neue Migration, kein Schema-/Policy-/Grant-/Trigger-Change. PROD und `main` unverändert.
+- Dokumentation: `docs/E05_SUSPENSION_REPAIR_DEV_2026-11-12.md`; Einträge in `DB_MIGRATION_LOG.md` und `DB_CHANGELOG.md`.
+- **Noch offen:** Browser-Praxistest auf DEV: Historie zeigt gelbe Sperre beim 09.11.-Ereignis; beide Spieler werden am Spieltag 14.11. als gesperrt angezeigt.
+
+---
+
 # Aktueller Stand – E05 Saisonzuordnung DEV (12.11.2026)
 
 - Nach ausdrücklicher Freigabe wurden 8 Spieltage und 12 Trainings der DEV Mannschaft, deren `season_id` zuvor NULL war, der aktiven Saison 2026/2027 zugeordnet.
