@@ -607,3 +607,17 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Migration `20261111180619`, SQL-Quelle `supabase/migrations/20261111180619_e05_suspension_game_type_settings_read_rpcs.sql`; Rollback `supabase/rollback/20261111180619_e05_suspension_game_type_settings_read_rpcs_rollback.sql`.
 - Frontend-Commit: `c64a4e2a90be1e48551346d9cf71b523a73c639a`. PROD und `main` unverändert.
 - **Noch offen:** Browser-/Rollen-Praxistests und Negativtests; die Metadaten-/Grant-Prüfung ist bestanden.
+
+
+## DB-MIG-2026-010 – E05: Alle Spieltage als Sperrziele (Vorbereitung, 12.11.2026)
+
+- **Status:** SQL-Entwurf in `develop`; noch nicht ausgeführt und nicht zur Ausführung freigegeben.
+- **Fachliche Regel:** Jeder Spieltag ist sperrenrelevant, unabhängig von `game_type`; auch ein leerer Spielartwert (NULL) schließt einen Spieltag nicht aus.
+- **Funktionen:** `e05_assign_player_suspensions`, `correct_suspension` und `serve_matchday_suspensions` werden von der bisherigen Vereins-/Mannschaftskonfiguration entkoppelt.
+- **Unverändert:** Die chronologische Ermittlung der fünften aktiven gelben Karte nach `training_date_snapshot ASC, id ASC`, Team-/Saison-/Datums-/Statusregeln, Ausnahmen, manuelle Zielreservierungen, Berechtigungsprüfungen und Auditierung.
+- **Datenumfang:** Keine Tabellen, Spalten, Daten, Trigger, RLS-Policies oder Grants werden geändert. Die bisherigen Einstellungsdaten und RPCs bleiben erhalten, werden von der Sperrenlogik aber nicht mehr ausgewertet.
+- **Migration:** `supabase/migrations/20261112070000_e05_all_matchdays_suspension_targets.sql`.
+- **Rollback:** `supabase/rollback/20261112070000_e05_all_matchdays_suspension_targets_rollback.sql`.
+- **Technische Spezifikation:** `docs/E05_DB_MIG_2026_010_SPIELARTENKONFIGURATION_ENTKOPPELN.md`.
+- **Ausgangsprüfung:** Read-only; erwartete Funktionssignaturen und SECURITY DEFINER bestätigt, drei Spielartfilter in der Zuordnungsfunktion sowie Spielart-NULL-Prüfungen in Korrektur/Ableistung nachgewiesen. Migration nicht in der DB-Historie vorhanden.
+- **DEV / PROD:** Keine Datenbankänderung ausgeführt. PROD und `main` unverändert. Frontend folgt nach separater DB-Freigabe und DEV-Abnahme.
