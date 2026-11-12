@@ -622,3 +622,12 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - **Technische Spezifikation:** `docs/E05_DB_MIG_2026_010_SPIELARTENKONFIGURATION_ENTKOPPELN.md`.
 - **Testumfang:** Read-only Funktions-/Metadatenprüfung abgeschlossen; synthetische fachliche Funktionstests und Frontend-E2E stehen noch aus.
 - **DEV / PROD:** DEV umgesetzt. PROD und `main` unverändert. Frontend folgt als separater Schritt.
+
+
+## 12.11.2026 – E05 Saisonzuordnung DEV korrigiert
+
+- 8 saisonlose Spieltage und 12 saisonlose Trainings der DEV Mannschaft wurden nach ausdrücklicher Freigabe der aktiven Saison 2026/2027 zugeordnet.
+- Vorher: 8/10 Spieltage und 12/15 Trainings ohne Saison; nachher: 0 ohne Saison. G-Junioren unverändert und vollständig zugeordnet.
+- Ursache: Die Saison wurde nach den Terminen angelegt; Frontend übergab bei fehlender aktiver Saison `NULL`. Keine automatische DB-Zuordnung vorhanden.
+- Reine Datenkorrektur (DML), keine Schemaänderung/Migration. PROD und `main` unverändert.
+- Details und SQL-Nachweis: `docs/E05_DATA_REPAIR_SEASON_ASSIGNMENT_DEV_2026-11-12.md`.
