@@ -890,3 +890,17 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **Wichtige Ausnahmebehandlung:** Die Prüfung akzeptiert ausschließlich einen nicht widerrufenen Ausnahme-Datensatz für genau die betreffende Sperre und den betreffenden Spieltag. Die bestehende Grant-Funktion verschiebt das offene Sperrziel; der Ausnahme-Datensatz bleibt als Nachweis des ursprünglichen Spieltags erhalten.
 - **Freigabegrenze:** Nur Entwurf. Keine SQL-Ausführung, keine Migration registriert, keine Frontendänderung. PROD und GitHub `main` unverändert.
 - **Nach Freigabe zu testen:** gesperrte Empfehlung abweisen; ungesperrte Empfehlung zulassen; direkte Nominierung ohne Ausnahme abweisen; Nominierung mit Ausnahme zulassen; nach Widerruf erneut abweisen; Team-/Saisonkontext, RLS, ACLs, bestehende Trigger und Audit prüfen.
+
+
+## DB-MIG-2026-011 – E05 Sperrenprüfung bei Kaderempfehlung und Nominierung (12.11.2026)
+
+- **Status:** Nach ausdrücklicher Freigabe erfolgreich in Supabase DEV ausgeführt; technische Nachprüfung bestanden, Praxistests noch offen.
+- **Migration:** `20261112191000_e05_suspension_nomination_guard`; registrierte Supabase-Version `20261112181910`.
+- **Änderungen:** `save_matchday_recommendation(uuid,uuid[])` um Sperrenprüfung ergänzt; neue SECURITY INVOKER Triggerfunktion `prevent_suspended_matchday_nomination()`; neuer BEFORE INSERT/UPDATE-Trigger `matchday_players_prevent_suspended_nomination`.
+- **Nachprüfung:** Migration registriert; neuer Trigger vorhanden; alle drei bisherigen Trigger auf `matchday_players` erhalten; Empfehlungs-RPC bleibt SECURITY INVOKER mit unveränderter ACL; acht RLS-Policies unverändert vorhanden.
+- **Ausnahmeverhalten:** Nur eine nicht widerrufene Ausnahme für exakt die betreffende Sperre und den betreffenden Spieltag erlaubt Empfehlung/Nominierung. Bestehende Grant-/Revoke-RPCs unverändert.
+- **Keine Datenkorrektur:** Keine bestehenden Sperren, Ausnahmen oder Nominierungen verändert; keine Tabellen-/Spalten-/RLS-Änderung.
+- **Offen:** Kontrollierte DEV-Positiv-/Negativtests und Rollen-/Ausnahmepraxistest.
+- **PROD / main:** unverändert.
+- **Rollback:** `supabase/rollback/20261112191000_e05_suspension_nomination_guard_rollback.sql`.
+- **Details:** `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
