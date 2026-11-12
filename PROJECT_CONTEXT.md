@@ -1,3 +1,13 @@
+# Aktueller Stand – DB-MIG-2026-011 (12.11.2026)
+
+- Vollständiges Freigabepaket für E05 Sperrenprüfung bei Kaderempfehlung und Nominierung in GitHub `develop` vorbereitet.
+- Migration: `supabase/migrations/20261112191000_e05_suspension_nomination_guard.sql`; Rollback: `supabase/rollback/20261112191000_e05_suspension_nomination_guard_rollback.sql`; Spezifikation: `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
+- Fachregel: regulär gesperrte Spieler werden für den zugeordneten Spieltag bei Empfehlung/Nominierung abgewiesen. Eine nicht widerrufene Ausnahme für exakt diese Sperre und diesen Spieltag erlaubt die Teilnahme. Bestehende Grant-/Revoke-RPCs bleiben unverändert.
+- **Wichtig: nur Entwurf. Noch keine SQL-Ausführung, keine Migration registriert, keine Frontendänderung.** PROD und `main` unverändert.
+- DB-MIG-2026-011 und DB_CHANGELOG dokumentieren den Entwurfsstatus.
+
+---
+
 # Aktueller Stand – DB-MIG-2026-011 vorbereitet (12.11.2026)
 
 - DB-MIG-2026-011 zur Sperrprüfung in Kaderempfehlung und Nominierung ist als Freigabepaket auf `develop` abgelegt.
