@@ -194,3 +194,12 @@ Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nich
 - Fix-Commits: `8bcfccf77ef514cb4df386cff9f6aea0800b13e2` und `c1329fa7b326f89cd5ea820ff682240ddd74f37b`.
 - `openMatchday()` startet jetzt das Laden auch beim Wechsel aus einem anderen Tab und rendert nach Abschluss erneut. Nach erfolgreicher Grant-RPC wird der bestätigte Ausnahmezustand lokal für die laufende Ansicht erhalten. Gesperrte und ausnahmeberechtigte Kacheln erhalten rote Umrandung/Hintergrund und einen Textstatus: „Gesperrt · Ausnahme möglich“ bzw. „Gesperrt · Ausnahme erteilt“.
 - JavaScript-Syntaxprüfung erfolgreich. iPhone-/Browser-Praxistest nach DEV-Deployment noch erforderlich.
+
+
+### Visuelle Priorisierung Sperrstatus (12.11.2026)
+
+- Rückmeldung im iPhone-Darkmode: Badge korrekt, aber Kachelfläche blieb dunkel und unterschied sich zu wenig.
+- Ursache: nachfolgende CSS-Regeln für normale, empfohlene und nominierte Kacheln überschrieben die früher definierten Sperrfarben. Die Sperrfarbe hatte keine durchgängige visuelle Priorität.
+- Fix-Commit: `8fe45438bdf30a25261a6ad8b4e66081b6e8cd7b`.
+- Am Ende von `index.html` wird jetzt ein abschließender CSS-Block geladen, der für `.isSuspended` und `.hasSuspensionException` eine deutlich rote Kachelfläche, rote Umrandung und helle Textfarbe erzwingt – unabhängig von Light-/Darkmode sowie Empfehlungs-/Nominierungsstatus. Der Hinweis-Chip bleibt separat sichtbar.
+- JavaScript-Syntaxprüfung erfolgreich; CSS-Visualtest im iPhone-Browser steht nach Deployment aus.
