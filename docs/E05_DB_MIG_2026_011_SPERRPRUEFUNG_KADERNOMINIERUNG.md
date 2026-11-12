@@ -159,3 +159,11 @@ Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nich
 - Die Ranglistenfunktion akzeptiert jetzt `includeSuspended`. Die Spieltagsansicht zeigt alle Spieler inklusive gesperrter Spieler; die Berechnung/Speicherung der Empfehlung verwendet weiterhin die gefilterte Standardrangliste.
 - Gesperrte Spieler erhalten zusätzlich den sichtbaren Hinweis „Gesperrt · Ausnahme möglich“; bei aktiver Ausnahme „Ausnahme erteilt“.
 - JavaScript-Syntaxprüfung erneut erfolgreich. Browser-Praxistest weiterhin ausstehend.
+
+
+### Hotfix Mannschaftsöffnung (12.11.2026)
+
+- Fehlerursache: Bei der vorherigen Korrektur wurde der Spieltagsstatus-Ausdruck versehentlich auch in `renderPlayers()` (aktive und inaktive allgemeine Spielerliste) eingefügt. Dort existiert keine lokale Variable `md`; dadurch entstand beim Öffnen des Mannschaftskontexts „Can't find variable: md“.
+- Hotfix-Commit: `66c9619336e9627758956c21aa6543db43263cd0`.
+- Die beiden spieltagfremden Ausdrücke wurden aus `renderPlayers()` entfernt. Der Spieltagskader behält die Sperrkennzeichnung. JavaScript-Syntaxprüfung erneut erfolgreich.
+- Browser-Retest nach Deployment erforderlich. PROD und `main` unverändert.
