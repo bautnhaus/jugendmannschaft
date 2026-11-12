@@ -89,3 +89,24 @@ Bei Rücknahmen muss der Dialog die unmittelbare Auswirkung erklären. Bei Ausna
 ## 9. Freigabegrenzen
 
 Dieser Vorschlag dokumentiert den geplanten Umfang. Er ist keine Freigabe zur Code- oder Datenbankänderung. Vor Implementierung werden die read-only DB-Prüfung und ggf. ein separater SQL-Entwurf vorgelegt. DEV ist das einzige Ziel; main und PROD bleiben unverändert.
+## 10. Ergebnis der tatsächlichen DEV-Prüfung (12.11.2026)
+
+### Datenbank
+- Alle vier erwarteten Nutzer-RPCs sind im aktuellen Supabase-DEV-Projekt vorhanden.
+- revoke_suspension_exception(uuid,text) entfernt keine bestehende Nominierung aus matchday_players.
+- Der aktuelle Nominierungs-Guard blockiert neue/aktualisierte Nominierungen ohne Ausnahme, entfernt aber keine bestehende Nominierung und sperrt die Spielerzeile vor dem Statuscheck nicht. Damit besteht ein Parallelitätsrisiko, das vor einer zuverlässigen Sofortwirkung geschlossen werden muss.
+- Die matchday_players-Tabelle besitzt den zusammengesetzten Primärschlüssel (matchday_id,player_id) und eine passende Delete-RLS-Policy. Der Widerrufs-RPC ist SECURITY DEFINER und kann die gezielte Entfernung innerhalb seiner Transaktion durchführen.
+- cancel_early_suspension_reset(uuid,text) kann nur eine Vormerkung mit Status pending zurücknehmen. Bereits angewendete Vorgänge sind geschützt und werden nicht rückwirkend verändert.
+
+### Datenbank-Entwurf
+Ein SQL-Entwurf liegt unter docs/drafts/DB-MIG-DRAFT_E05_EXCEPTION_REVOKE_IMMEDIATE_2026-11-12.sql. Er ergänzt den Widerrufs-RPC um die transaktionale Entfernung einer vorhandenen Nominierung und erweitert den Nominierungs-Guard um einen Spielerzeilen-Lock in derselben Reihenfolge wie der Widerrufs-RPC. Die Auditdaten sollen festhalten, ob eine Nominierung entfernt wurde.
+
+Der Entwurf ist **nicht ausgeführt** und nicht als Migration registriert. Vor Ausführung sind vollständige SQL-Prüfung, Abgleich gegen den Live-Stand und separate ausdrückliche Freigabe erforderlich.
+
+### Frontend-Bestand
+- Die Spielerkacheln werden aktuell als Button gerendert; ein weiteres Options-Button-Element darf nicht darin verschachtelt werden.
+- Für das Optionsmenü wird ein Wrapper mit zwei Geschwisterelementen benötigt: bestehende Kachel als Hauptaktion und Drei-Punkte-Optionsbutton mit statusabhängigem Menü.
+- Die bestehende Ausnahme-Erteilung ist bereits über grant_suspension_exception angebunden. Widerruf und vorzeitiger Sperrausgleich haben noch keinen Kachel-Optionsflow.
+
+### Reihenfolge / aktueller Stopp
+Die Schritte 1 und 2 sind abgeschlossen; Schritt 3 (DB-Entwurf) ist vorbereitet. Schritt 4 (Frontend-Implementierung) wird bewusst erst nach separater Freigabe, Ausführung und erfolgreicher DEV-Prüfung des DB-Entwurfs begonnen. So wird keine Oberfläche ausgeliefert, die eine Sofortwirkung verspricht, die die Datenbank noch nicht garantiert.
