@@ -6,7 +6,7 @@
 - Die chronologische Gelbkartenermittlung bleibt nach `training_date_snapshot ASC, id ASC`; bei nachgetragenen Karten ist das Trainingsdatum und nicht der Eingabezeitpunkt maßgeblich.
 - Frontend-Vereinfachung wurde in `develop/index.html` umgesetzt (Commit `74842c6632b512b57015d78dbdf29da91d4df5cf`): Vereins- und Mannschaftseinstellungen, Navigation, Render-/Save-Handler und die zugehörigen vier Settings-RPC-Aufrufe wurden aus der Oberfläche entfernt. Spielart bleibt als normales Spieltagsfeld erhalten.
 - Die vorhandenen Einstellungsdaten, Tabellen und vier Settings-RPCs bleiben in der Datenbank bestehen; keine Datenbereinigung oder zusätzliche SQL-Änderung durchgeführt.
-- JavaScript-Syntaxprüfung beider Inline-Scripts erfolgreich; statische Suche nach alten Einstellungsreferenzen ohne Treffer.
+- JavaScript-Syntaxprüfung beider Inline-Scripts erfolgreich; statische Suche nach alten Einstellungsreferenzen ohne Treffer. Der Deploy-DEV-Workflow lief anschließend erfolgreich durch (GitHub Actions Run `43166097833`; Browser-Praxistests bleiben offen).
 - Führende Frontend-Dokumentation: `docs/E05_FRONTEND_SPIELARTEN_ENTKOPPELN_2026-11-12.md`. DB-Nachweis: `docs/E05_DB_MIG_2026_010_SPIELARTENKONFIGURATION_ENTKOPPELN.md`, `DB_MIGRATION_LOG.md` und `DB_CHANGELOG.md`.
 - **Noch offen:** DEV-Praxistests der Vereins-/Team-/Superadmin-Ansichten, automatische Sperrenzuordnung bei allen Spielarten einschließlich NULL, manuelle Sperrenkorrektur, normale Spielartpflege sowie iPhone-/Darkmode-Darstellung.
 - PROD, GitHub `main` und die PROD-Website wurden nicht verändert. Keine Freigabe für einen PROD-Release erteilt.
