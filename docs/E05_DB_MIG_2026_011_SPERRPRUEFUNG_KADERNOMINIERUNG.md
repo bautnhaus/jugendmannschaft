@@ -224,3 +224,14 @@ Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nich
 - Die Ausnahme-Klasse überschreibt nicht mehr den normalen Status; die rote Gestaltung gilt ausschließlich für `.isSuspended`.
 - Beide JavaScript-Scriptblöcke wurden syntaktisch geprüft. DEV-Browser-/iPhone-Praxistest steht noch aus.
 - Keine SQL-, Datenbank-, RLS-, Auth-, PROD- oder `main`-Änderung.
+
+
+### Fachliche Entscheidung Optionsmenü / Rücknahmen (12.11.2026)
+
+- Nutzerentscheidung: Drei-Punkte-Optionsmenü auf allen Spielerkacheln.
+- Jede Erteilung und jede Rücknahme benötigt eine verpflichtende Begründung.
+- Ausnahme zurücknehmen: sofortige Wiederherstellung der regulären Sperre für den konkreten Spieltag. Der Spieler muss sofort aus einer ggf. bestehenden Nominierung entfernt bzw. deren Fortbestand sicher verhindert werden.
+- Vorzeitigen Sperrausgleich erteilen/zurücknehmen ebenfalls im Optionsmenü; Rücknahme muss die offene Sperrzuordnung sofort anhand der bestehenden AP05.2-Regeln neu bewerten. Abgeschlossene Vorgänge bleiben unverändert.
+- Keine Hard Deletes; Audit-Historie bleibt erhalten.
+- Technische Bestandsaufnahme der bereits dokumentierten DEV-Pakete: revoke_suspension_exception(uuid,text) ist in Paket 6 vorhanden; schedule_early_suspension_reset(...) und cancel_early_suspension_reset(...) sind in Paket 8 vorhanden. Vor Frontend-Integration sind deren exakte Signaturen, Rückgabewerte, Berechtigungen und Seiteneffekte gegen den aktuellen DEV-Datenbankstand zu verifizieren.
+- Kritischer offener Prüfpunkt: Der dokumentierte Widerrufs-RPC muss darauf geprüft werden, ob eine bereits bestehende matchday_players-Nominierung unmittelbar und atomar entfernt/verhindert wird. Falls nicht, ist vor Umsetzung ein separater DB-Änderungsentwurf inkl. Audit, Rollback und Tests vorzulegen. Noch keine DB-Änderung freigegeben.
