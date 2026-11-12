@@ -184,3 +184,13 @@ Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nich
 - Korrektur-Commit: `4d9bafc5b6c00d9cf41b5aff685d9300a857c4f1`.
 - Kachel enthält jetzt Badge „Gesperrt · Ausnahme möglich“ bzw. „Gesperrt · Ausnahme erteilt“. Rotdarstellung und Badge-Farben sind explizit für Light- und Darkmode definiert. Die Sperre bleibt nach Ausnahme rot gekennzeichnet; manuelle Nominierung bleibt möglich.
 - JavaScript-Syntaxprüfung beider Script-Blöcke erfolgreich. Browser-Retest erforderlich.
+
+
+### Korrektur Statusanzeige / Lade-Reihenfolge (12.11.2026)
+
+- Ursache 1: Beim Öffnen eines Spieltags aus einem anderen Tab-Kontext kehrte `openMatchday()` nach `showTab('matchday')` vor dem Laden des Sperrstatus zurück. Die erste Darstellung erfolgte dadurch ohne Sperrdaten; das anschließende asynchrone Rendern war nicht in allen Navigationspfaden zuverlässig.
+- Ursache 2: Nach erfolgreicher Ausnahme wurde der Spieltag neu geladen. Falls die RLS-Lesepolicy den gerade erteilten Exception-Datensatz nicht zurücklieferte, fehlte der sichtbare Status trotz erfolgreicher Grant-RPC.
+- Ursache 3: Die Statusklassen waren bereits im Kachel-Markup vorgesehen, aber es fehlte eine robuste, explizite Badge-Darstellung im Darkmode.
+- Fix-Commits: `8bcfccf77ef514cb4df386cff9f6aea0800b13e2` und `c1329fa7b326f89cd5ea820ff682240ddd74f37b`.
+- `openMatchday()` startet jetzt das Laden auch beim Wechsel aus einem anderen Tab und rendert nach Abschluss erneut. Nach erfolgreicher Grant-RPC wird der bestätigte Ausnahmezustand lokal für die laufende Ansicht erhalten. Gesperrte und ausnahmeberechtigte Kacheln erhalten rote Umrandung/Hintergrund und einen Textstatus: „Gesperrt · Ausnahme möglich“ bzw. „Gesperrt · Ausnahme erteilt“.
+- JavaScript-Syntaxprüfung erfolgreich. iPhone-/Browser-Praxistest nach DEV-Deployment noch erforderlich.
