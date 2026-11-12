@@ -51,7 +51,7 @@ Die drei Funktionen werden per `CREATE OR REPLACE` auf Basis ihrer in DEV vorhan
 ## 4. Dateien
 
 - Migration: `supabase/migrations/20261112055415_e05_all_matchdays_suspension_targets.sql`
-- Rollback: `supabase/rollback/20261112070000_e05_all_matchdays_suspension_targets_rollback.sql`
+- Rollback: `supabase/rollback/20261112055415_e05_all_matchdays_suspension_targets_rollback.sql`
 
 Die Migration ist eine guarded source transformation der drei aktuellen DEV-Funktionsdefinitionen. Sie ist absichtlich keine Tabellenmigration und ändert keine fachlichen Daten.
 
@@ -67,7 +67,7 @@ Am 12.11.2026 wurden in Supabase DEV folgende Befunde read-only erhoben:
 - Die chronologische Reconciliation verwendet `training_date_snapshot` und die Sortierung `training_date_snapshot, id`.
 - Migration `20261112070000` ist noch nicht in der Supabase-Migrationshistorie registriert.
 
-Die read-only Prüfung beweist den Ausgangszustand, nicht die erfolgreiche Ausführung der vorbereiteten Migration. Die Migration und ihr Rollback wurden nicht in der Datenbank ausgeführt.
+Die read-only Prüfung beweist den Ausgangszustand, nicht die erfolgreiche Ausführung der vorbereiteten Migration. Die Migration wurde am 12.11.2026 in Supabase DEV ausgeführt. Das Rollback wurde nicht ausgeführt und nicht live getestet.
 
 ## 6. Verifikation nach späterer Freigabe und Ausführung
 
@@ -105,6 +105,7 @@ Das Rollback stellt die vorherige Spielartenlogik in den drei Funktionen wieder 
 - [x] SQL-Freigabe zur Ausführung in DEV
 - [x] DEV-Migration ausgeführt und read-only verifiziert
 - [ ] Frontend-Anpassung separat vorbereitet und freigegeben
+- [ ] Fachliche DEV-Praxistests mit realistischen Testfällen
 - [ ] PROD-Freigabe (separater Vorgang)
 
 **Wichtig:** Die bloße Ablage der Migrationsdatei in GitHub ist keine Ausführung. Bis zur ausdrücklichen SQL-Freigabe bleibt Supabase DEV unverändert.
