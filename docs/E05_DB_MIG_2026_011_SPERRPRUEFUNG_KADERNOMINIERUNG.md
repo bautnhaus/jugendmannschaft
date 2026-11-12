@@ -235,3 +235,19 @@ Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nich
 - Keine Hard Deletes; Audit-Historie bleibt erhalten.
 - Technische Bestandsaufnahme der bereits dokumentierten DEV-Pakete: revoke_suspension_exception(uuid,text) ist in Paket 6 vorhanden; schedule_early_suspension_reset(...) und cancel_early_suspension_reset(...) sind in Paket 8 vorhanden. Vor Frontend-Integration sind deren exakte Signaturen, Rückgabewerte, Berechtigungen und Seiteneffekte gegen den aktuellen DEV-Datenbankstand zu verifizieren.
 - Kritischer offener Prüfpunkt: Der dokumentierte Widerrufs-RPC muss darauf geprüft werden, ob eine bereits bestehende matchday_players-Nominierung unmittelbar und atomar entfernt/verhindert wird. Falls nicht, ist vor Umsetzung ein separater DB-Änderungsentwurf inkl. Audit, Rollback und Tests vorzulegen. Noch keine DB-Änderung freigegeben.
+
+## Read-only Prüfung der sofortigen Ausnahme-Rücknahme (12.11.2026)
+
+**Live-DEV-Befund:** Die RPCs grant_suspension_exception(uuid,uuid,text), revoke_suspension_exception(uuid,text), schedule_early_suspension_reset(uuid,uuid,text) und cancel_early_suspension_reset(uuid,text) sind vorhanden. Die vier RPCs verlangen jeweils eine Begründung und prüfen Teamrolle Trainer/Admin oder Superadmin im ausgewählten Teamkontext. Die RPC-Execute-Rechte liegen für die vier Nutzeraktionen bei authenticated; interne Helfer sind nicht als öffentliche Nutzer-RPCs freigegeben.
+
+**Kritischer Befund:** revoke_suspension_exception widerruft die Ausnahme, schreibt den Audit-Eintrag und stößt die Neuzuordnung der offenen Sperre an. Die Funktion entfernt jedoch keine vorhandene Zeile aus matchday_players. Der bestehende Trigger prevent_suspended_matchday_nomination() blockiert nur INSERT/UPDATE einer Nominierung, wenn keine aktive Ausnahme vorliegt. Er entfernt keine bereits vorhandene Nominierung und sperrt derzeit auch nicht zuerst die Spielerzeile, um konkurrierende Nominierung und Ausnahme-Widerruf zu serialisieren.
+
+**Tabellenbefund:** matchday_players hat den Primärschlüssel (matchday_id,player_id), eine Delete-RLS-Policy für berechtigte Teammitglieder und einen separaten Trigger zur Stornierung vorgemerkter vorzeitiger Sperrausgleiche bei Nominierung. Es gibt keinen Trigger, der eine bestehende Nominierung bei Ausnahme-Widerruf entfernt.
+
+**Folgerung:** Sofortige Rücknahme ist mit dem aktuellen DB-Stand nicht vollständig gewährleistet. Ein Frontend allein kann dies nicht sicher lösen. Vor der UI-Integration ist eine atomare DB-Erweiterung notwendig: Widerrufs-RPC entfernt innerhalb derselben Transaktion eine vorhandene Nominierung für exakt den betroffenen Spieltag und ergänzt den Audit-Payload um die Information, ob eine Nominierung entfernt wurde. Der Nominierungs-Guard muss die Spielerzeile vor seiner Sperrprüfung mit demselben Lock-Order sperren, damit parallele Nominierungen nicht nach dem Widerruf durchrutschen.
+
+**Entwurf:** docs/drafts/DB-MIG-DRAFT_E05_EXCEPTION_REVOKE_IMMEDIATE_2026-11-12.sql auf develop. Dieser Entwurf ist nicht als Supabase-Migration angelegt, nicht ausgeführt und benötigt vor Ausführung vollständige Prüfung und separate ausdrückliche Freigabe.
+
+**Frontend-Read-only-Befund:** index.html enthält derzeit den Ablauf zur Ausnahme-Erteilung, aber noch keinen Widerrufs- oder Sperrausgleich-Optionsflow auf den Spielerkacheln. Spielerkacheln werden derzeit als Button gerendert; das Optionsmenü muss deshalb als Geschwisterelement in einem Wrapper umgesetzt werden, nicht als verschachtelter Button. Die vorhandenen Klassen .matchdayOptionsWrap und .matchdayOptionsMenu aus den Trainingskomponenten können als Stil-/Interaktionsbasis dienen.
+
+**Status:** Datenbankprüfung und Frontend-Bestandsaufnahme abgeschlossen. Keine SQL-Ausführung und keine Frontend-Codeänderung. Frontend-Umsetzung bleibt bis zur Freigabe und erfolgreichen DEV-Prüfung der DB-Erweiterung zurückgestellt.
