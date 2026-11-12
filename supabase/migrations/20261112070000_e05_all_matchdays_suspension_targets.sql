@@ -63,6 +63,7 @@ $new_config$);
   end if;
   v_def := replace(v_def,'and m.game_type = any(v_types)'||E'\n','');
   v_def := replace(v_def,'    if cardinality(v_types) > 0 then'||E'\n','');
+  v_def := replace(v_def,'      select m.id, m.match_date, m.opponent'||E'\n','    select m.id, m.match_date, m.opponent'||E'\n');
   v_def := replace(v_def,
     '      for update;'||E'\n'||'    end if;'||E'\n'||E'\n'||
     '    if v_matchday_id is not null then',
