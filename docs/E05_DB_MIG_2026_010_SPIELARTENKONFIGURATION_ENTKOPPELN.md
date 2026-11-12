@@ -104,8 +104,8 @@ Das Rollback stellt die vorherige Spielartenlogik in den drei Funktionen wieder 
 - [x] Migrations- und Rollbackdatei in `develop` vorbereitet.
 - [x] SQL-Freigabe zur Ausführung in DEV
 - [x] DEV-Migration ausgeführt und read-only verifiziert
-- [ ] Frontend-Anpassung separat vorbereitet und freigegeben
+- [x] Frontend-Anpassung in `develop/index.html` umgesetzt und statisch geprüft
 - [ ] Fachliche DEV-Praxistests mit realistischen Testfällen
 - [ ] PROD-Freigabe (separater Vorgang)
 
-**Wichtig:** Die bloße Ablage der Migrationsdatei in GitHub ist keine Ausführung. Bis zur ausdrücklichen SQL-Freigabe bleibt Supabase DEV unverändert.
+**Wichtig:** DB-MIG-2026-010 ist in Supabase DEV ausgeführt. Die Frontend-Praxistests bleiben offen; PROD und `main` sind unverändert.
