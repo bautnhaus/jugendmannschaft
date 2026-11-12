@@ -129,3 +129,24 @@ Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nich
 - Keine Tabellen-/Spaltenänderung und keine bestehenden Sperren, Ausnahmen oder Nominierungen bearbeitet.
 - **Noch offen:** Funktionale Negativ-/Positivtests mit kontrollierten DEV-Testdaten sowie Rollen-/Ausnahmepraxistest. Bis dahin gilt die technische Installation als verifiziert, die fachliche Abnahme aber als offen.
 - PROD und GitHub `main` unverändert.
+
+
+## 10. Eigenständige Tests und Frontend-Anbindung (12.11.2026)
+
+### Datenbanktests
+- **Negativtest Nominierung:** Direkter INSERT-Versuch für Tom (offene Sperre, Spieltag 14.11.2026) wurde durch `prevent_suspended_matchday_nomination()` mit SQLSTATE `23514` und verständlicher Sperrmeldung abgewiesen. Es wurde kein Datensatz angelegt.
+- **Positivtest Nominierung:** Direkter INSERT-Versuch für einen nicht gesperrten aktiven Spieler wurde innerhalb einer Transaktion ausgeführt und sofort zurückgerollt. Trigger ließ den Vorgang passieren; keine Bestandsänderung blieb bestehen.
+- **Bestandskontrolle:** Tom und Spieler Dreißig sind weiterhin nicht für den Spieltag nominiert; es existiert weiterhin keine Ausnahme für diesen Spieltag.
+- **Nicht automatisiert testbar:** Die Empfehlungs-RPC und die Ausnahme-RPCs benötigen einen authentifizierten Nutzer mit Teamrolle/ausgewähltem Superadmin-Kontext. Ein SQL-Admin-Call kann `auth.uid()` und die echte Benutzerrolle nicht repräsentieren. Diese Tests folgen im Browser.
+
+### Frontend
+- Commit auf `develop`: `32afa447a7b6e9baf46d1c55412fd03023c39339`.
+- Aktiver Spieltag lädt offene Sperren und Ausnahmen team-/spieltagsbezogen.
+- Regulär gesperrte Spieler werden aus `top16Ranking()` ausgeschlossen, bleiben aber in der Spieltagsliste sichtbar.
+- Gesperrte Kacheln sind rot markiert und zeigen „Gesperrt · Ausnahme möglich“.
+- Klick auf gesperrten Spieler öffnet den begründungspflichtigen Ausnahmedialog; Aufruf von `grant_suspension_exception(p_suspension_id,p_matchday_id,p_reason)`.
+- Nach erfolgreicher Ausnahme werden Sperren/Ausnahmen neu geladen; die Kachel bleibt rot und zeigt „Ausnahme erteilt“. Danach ist eine manuelle Nominierung möglich.
+- Gespeicherte Empfehlung wird vor Übernahme erneut auf Sperren geprüft.
+- JavaScript-Syntaxprüfung der beiden Script-Blöcke erfolgreich.
+- **Noch offen:** Browser-Praxistest mit Trainerkonto, Ausnahme/Widerruf, Rollen und iPhone-Layout. Die UI enthält in diesem Schritt noch keine separate Widerrufsaktion; bestehende Widerrufs-RPC bleibt unberührt und kann im nächsten UI-Feinschliff angebunden werden.
+
