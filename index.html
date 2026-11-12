@@ -5431,3 +5431,39 @@ html[data-theme="dark"] .trainingEventStat.red{color:#F87171}
 html[data-theme="dark"] .e05EventSymbol.yellow_card .e05CardMark{background:#FACC15}html[data-theme="dark"] .e05EventSymbol.red_card .e05CardMark{background:#F87171}html[data-theme="dark"] .e05EventSymbol.positive_star{color:#FBBF24}
 
 \n/* E05 status visibility in dark and light themes */\n.playerListRow.matchdaySquadTile.isSuspended,.playerListRow.matchdaySquadTile.hasSuspensionException{background:rgba(220,38,38,.16)!important;border:2px solid rgba(239,68,68,.85)!important}\n.matchdaySuspensionBadge,.matchdaySuspensionExceptionBadge{display:inline-flex!important;align-items:center;width:max-content;max-width:100%;margin:4px 0 2px;padding:4px 8px;border-radius:7px;background:#fee2e2!important;color:#991b1b!important;border:1px solid #fca5a5;font-size:12px;font-weight:750;line-height:1.25}\n</style>
+
+<style id="e05-suspension-tile-visual-priority">
+/* E05: Sperrstatus hat Vorrang vor Empfehlung/Nominierung – auch im Darkmode. */
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended,
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.hasSuspensionException,
+html[data-theme="light"] .playerListRow.matchdaySquadTile.isSuspended,
+html[data-theme="light"] .playerListRow.matchdaySquadTile.hasSuspensionException,
+.playerListRow.matchdaySquadTile.isSuspended,
+.playerListRow.matchdaySquadTile.hasSuspensionException{
+  background:#57252d!important;
+  background-color:#57252d!important;
+  border:2px solid #f87171!important;
+  color:#fff1f2!important;
+  box-shadow:inset 0 0 0 1px rgba(248,113,113,.18)!important;
+}
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended .playerListName,
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.hasSuspensionException .playerListName,
+html[data-theme="light"] .playerListRow.matchdaySquadTile.isSuspended .playerListName,
+html[data-theme="light"] .playerListRow.matchdaySquadTile.hasSuspensionException .playerListName,
+.playerListRow.matchdaySquadTile.isSuspended .playerListName,
+.playerListRow.matchdaySquadTile.hasSuspensionException .playerListName{color:#fff1f2!important}
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended .playerListPositions,
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.hasSuspensionException .playerListPositions,
+html[data-theme="light"] .playerListRow.matchdaySquadTile.isSuspended .playerListPositions,
+html[data-theme="light"] .playerListRow.matchdaySquadTile.hasSuspensionException .playerListPositions,
+.playerListRow.matchdaySquadTile.isSuspended .playerListPositions,
+.playerListRow.matchdaySquadTile.hasSuspensionException .playerListPositions{color:#ffe4e6!important}
+html[data-theme="dark"] .matchdaySuspensionBadge,
+html[data-theme="dark"] .matchdaySuspensionExceptionBadge,
+html[data-theme="light"] .matchdaySuspensionBadge,
+html[data-theme="light"] .matchdaySuspensionExceptionBadge,
+.matchdaySuspensionBadge,.matchdaySuspensionExceptionBadge{
+  display:inline-flex!important;background:#ffe4e6!important;color:#9f1239!important;
+  border:1px solid #fda4af!important;font-weight:800!important;
+}
+</style>
