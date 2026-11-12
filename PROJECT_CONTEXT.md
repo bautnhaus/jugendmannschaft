@@ -1,3 +1,7 @@
+**E05 Frontend-Anbindung 12.11.2026:** Commit `32afa447a7b6e9baf46d1c55412fd03023c39339` auf develop. Spieltagsansicht lädt Sperren/Ausnahmen; regulär gesperrte Spieler aus Rangliste gefiltert aber sichtbar rot markiert; Klick öffnet Begründungsdialog und ruft bestehende Grant-RPC auf; nach Ausnahme bleibt Kachel rot mit „Ausnahme erteilt“, Nominierung möglich. Empfehlung wird vor Übernahme erneut geprüft. JS-Syntaxprüfung bestanden. DB-Test: gesperrter Direkt-INSERT abgewiesen, ungesperrter Test-INSERT innerhalb Transaktion zurückgerollt. Browser-Praxistest, Rollenprüfung und Ausnahme-Widerruf-UI noch offen. Keine PROD-/main-Änderung.
+
+---
+
 **DEV-Nachtrag 12.11.2026 – DB-MIG-2026-011:** E05-Sperrenprüfung für Kaderempfehlung und Nominierung nach ausdrücklicher Freigabe in Supabase DEV angewendet. Supabase-Version `20261112181910`; neue Triggerfunktion und BEFORE-Trigger vorhanden. Empfehlungs-RPC bleibt SECURITY INVOKER und behält ihre bisherige ACL. Bestehende Trigger und RLS-Policies erhalten. Keine Bestandsdaten verändert. Funktionale Positiv-/Negativtests und Rollen-/Ausnahmepraxistest stehen aus. PROD und GitHub `main` unverändert. Dokumentation: `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
 
 ---
