@@ -63,6 +63,11 @@ $restore_assign$);
     '      for update;'||E'\n'||
     '    end if;'||E'\n'||E'\n'||
     '    if v_matchday_id is not null then');
+  if position('v_types text[];' in v_def)=0
+     or position('if cardinality(v_types) > 0 then' in v_def)=0
+     or (length(v_def)-length(replace(v_def,'and m.game_type = any(v_types)','')))/length('and m.game_type = any(v_types)') <> 3 then
+    raise exception 'Rollback stopped: assignment restoration did not reproduce the expected game-type rules';
+  end if;
   execute v_def;
 
   -- correct_suspension
@@ -110,6 +115,10 @@ $restore_correct$
 
   if v_target.id = v_suspension.intended_matchday_id then
 $restore_correct$);
+  if position('v_target.game_type is null' in v_def)=0
+     or position('Target matchday game type is not configured as suspension-relevant' in v_def)=0 then
+    raise exception 'Rollback stopped: correction restoration did not reproduce the expected game-type rule';
+  end if;
   execute v_def;
 
   -- serve_matchday_suspensions
@@ -150,6 +159,10 @@ $restore_serve$
 
   for v_suspension in
 $restore_serve$);
+  if position('v_game_type is null' in v_def)=0
+     or position('This matchday game type is not relevant for suspensions' in v_def)=0 then
+    raise exception 'Rollback stopped: serving restoration did not reproduce the expected game-type rule';
+  end if;
   execute v_def;
 end
 $rollback$;
