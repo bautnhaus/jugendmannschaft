@@ -110,3 +110,60 @@ Der Entwurf ist **nicht ausgeführt** und nicht als Migration registriert. Vor A
 
 ### Reihenfolge / aktueller Stopp
 Die Schritte 1 und 2 sind abgeschlossen; Schritt 3 (DB-Entwurf) ist vorbereitet. Schritt 4 (Frontend-Implementierung) wird bewusst erst nach separater Freigabe, Ausführung und erfolgreicher DEV-Prüfung des DB-Entwurfs begonnen. So wird keine Oberfläche ausgeliefert, die eine Sofortwirkung verspricht, die die Datenbank noch nicht garantiert.
+
+## 10. Ergebnisse der technischen Prüfung (12.11.2026)
+
+### 10.1 Supabase DEV – Ist-Stand
+Read-only direkt im DEV-Projekt geprüft:
+
+- Die RPC-Signaturen sind vorhanden:
+  - `grant_suspension_exception(uuid,uuid,text)`
+  - `revoke_suspension_exception(uuid,text)`
+  - `schedule_early_suspension_reset(uuid,uuid,text)`
+  - `cancel_early_suspension_reset(uuid,text)`
+- Alle vier verlangen Authentifizierung, Teamrolle Trainer/Admin oder Superadmin im ausgewählten Teamkontext und eine nicht leere Begründung.
+- Die Ausnahme-RPCs schreiben Audit-Ereignisse; der Widerruf erhält den Exception-Datensatz und setzt Widerrufsmetadaten.
+- Der Widerruf ruft `e05_assign_player_suspensions` zur Neuzuordnung auf.
+- Die vorzeitige Ausgleichsvormerkung ist nur für einen zukünftigen geplanten Spieltag, aktive Spieler und eine aktive Saison möglich; eine bereits bestehende Nominierung verhindert die Vormerkung.
+- Die Rücknahme eines vorzeitigen Ausgleichs akzeptiert ausschließlich den Status `pending`. Bereits angewendete Ausgleiche sind damit nicht manuell rücknehmbar.
+- `matchday_players` besitzt eine DELETE-RLS-Policy für Teammitglieder; die Widerrufs-RPC ist SECURITY DEFINER. Die tatsächliche Löschung muss trotzdem in der RPC mit Matchday-/Spielerbindung abgesichert sein.
+
+### 10.2 Nachgewiesene Lücke bei Ausnahme-Widerruf
+Der aktuell installierte `revoke_suspension_exception(uuid,text)` widerruft die Ausnahme, auditiert den Vorgang und weist die offene Sperre neu zu. Er entfernt jedoch keine bereits vorhandene Zeile aus `matchday_players`.
+
+Der aktuelle Trigger `prevent_suspended_matchday_nomination()` blockiert neue INSERTs bzw. relevante UPDATEs bei einer aktiven Sperre ohne Ausnahme. Er ist kein nachträglicher Bereinigungsmechanismus. Eine schon vorhandene Nominierung bleibt daher ohne Ergänzung bestehen.
+
+### 10.3 Vorgelegter SQL-Entwurf
+Für die Lücke wurde ein separater Review-Entwurf erstellt:
+
+- `docs/E05_SQL_ENTWURF_WIDERRUF_AUSNAHME_MIT_NOMINIERUNGSENTFERNUNG_2026-11-12.sql`
+- `docs/E05_SQL_ROLLBACK_ENTWURF_WIDERRUF_AUSNAHME_2026-11-12.sql`
+
+Der Entwurf:
+- synchronisiert Widerruf und neue/geänderte Nominierungen über einen transaktionsgebundenen Advisory Lock pro Spieler;
+- entfernt nur die Nominierungszuordnung des betroffenen Spielers am betroffenen zukünftigen geplanten Spieltag;
+- bricht ab, falls `played=true` bereits einen tatsächlichen Einsatz dokumentiert;
+- speichert den entfernten `matchday_players`-Datensatz als Snapshot im bestehenden Audit-Eintrag;
+- verändert keine Tabellenstruktur, RLS-Policies oder PROD-Daten.
+
+**Wichtige Freigabegrenze:** Beide SQL-Dateien sind ausschließlich Prüfentwürfe. Sie wurden nicht ausgeführt. Der Rollback stellt Funktionsdefinitionen wieder her, rekonstruiert aber keine zuvor entfernte Nominierung automatisch; eine solche Wiederherstellung müsste kontrolliert anhand des Audit-Snapshots erfolgen.
+
+### 10.4 Frontend – Read-only Befund
+Die aktuelle `index.html` auf `develop` wurde gelesen (Blob SHA `1f38ceb255b391c9fce7b9d1d04f79fa8dc280ff`):
+
+- Die Kaderplanung rendert Spielerkacheln aktuell als jeweils ein äußeres `button`; das Antippen schaltet die Nominierung um.
+- Für eine Ausnahme existiert bereits ein eigener Begründungsdialog und der Aufruf von `grant_suspension_exception`.
+- Eine UI für `revoke_suspension_exception`, `schedule_early_suspension_reset` und `cancel_early_suspension_reset` ist in diesem Kaderplanungsflow noch nicht integriert.
+- CSS-Klassen für `matchdayOptionsWrap` und `matchdayOptionsMenu` sind bereits vorhanden und werden in anderen Bereichen verwendet. Ein Drei-Punkte-Menü an den Kader-Spielerkacheln ist im geprüften Markup jedoch noch nicht eingebaut.
+- Das aktuelle Laden des Sperrstatus lädt offene Sperren und Ausnahmen, aber keine Datensätze aus `matchday_early_suspension_resets`. Für die statusabhängigen Menüaktionen muss dieser Status ergänzt werden.
+
+### 10.5 Konsequenz für die Reihenfolge
+Die UI-Implementierung wird noch nicht begonnen, weil die sofortige Rücknahme einer Ausnahme fachlich beschlossen, im installierten DB-Stand aber nicht vollständig abgesichert ist. Zuerst muss der SQL-Entwurf geprüft und separat freigegeben sowie in DEV ausgeführt und getestet werden. Danach kann die Frontend-Integration gegen den verifizierten RPC-Vertrag erfolgen.
+
+### 10.6 Nächste konkrete Schritte nach Freigabe
+1. SQL-Entwurf fachlich/technisch prüfen und ausdrücklich zur Ausführung in DEV freigeben.
+2. In DEV mit Testdaten positive, negative und konkurrierende Nominierungsfälle testen.
+3. Erst nach erfolgreicher DB-Verifikation den Kaderplanungsflow in `index.html` umbauen: Kachelbutton und separates Optionsmenü als Geschwisterelemente, keine verschachtelten Buttons.
+4. Frühzeitige Ausgleichsdatensätze je Spieltag laden und Statusaktionen anzeigen.
+5. RPC-Aufrufe mit Pflichtbegründung integrieren, nach Erfolg Daten frisch laden und UI neu rendern.
+6. iPhone-Light-/Darkmode, Rollen, Mehrfachklicks und parallele Requests testen.
