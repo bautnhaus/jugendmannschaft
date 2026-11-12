@@ -1,3 +1,7 @@
+**DEV-Nachtrag 12.11.2026 – DB-MIG-2026-011:** E05-Sperrenprüfung für Kaderempfehlung und Nominierung nach ausdrücklicher Freigabe in Supabase DEV angewendet. Supabase-Version `20261112181910`; neue Triggerfunktion und BEFORE-Trigger vorhanden. Empfehlungs-RPC bleibt SECURITY INVOKER und behält ihre bisherige ACL. Bestehende Trigger und RLS-Policies erhalten. Keine Bestandsdaten verändert. Funktionale Positiv-/Negativtests und Rollen-/Ausnahmepraxistest stehen aus. PROD und GitHub `main` unverändert. Dokumentation: `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
+
+---
+
 # Aktueller Stand – DB-MIG-2026-011 (12.11.2026)
 
 - Vollständiges Freigabepaket für E05 Sperrenprüfung bei Kaderempfehlung und Nominierung in GitHub `develop` vorbereitet.
