@@ -167,3 +167,11 @@ Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nich
 - Hotfix-Commit: `66c9619336e9627758956c21aa6543db43263cd0`.
 - Die beiden spieltagfremden Ausdrücke wurden aus `renderPlayers()` entfernt. Der Spieltagskader behält die Sperrkennzeichnung. JavaScript-Syntaxprüfung erneut erfolgreich.
 - Browser-Retest nach Deployment erforderlich. PROD und `main` unverändert.
+
+
+### Zweite Korrektur Spieltagsliste (12.11.2026)
+
+- Ursache des weiterhin leeren/verkürzten Kaders: `renderMatchday()` rief weiterhin `top16Ranking()` ohne `includeSuspended=true` auf. Die zuvor ergänzte Option war nur für die allgemeine Spielerverwaltung verwendet worden. Zusätzlich nutzte die Sortierung in `matchdayFilteredPlayers()` weiterhin den gefilterten Rang.
+- Korrektur-Commit: `2ddd68328d24282386ef375974f284c93a4e2eea`.
+- Spieltagsliste und deren Sortier-Rangliste verwenden nun `top16Ranking(true)`: alle Spieler bleiben sichtbar; die Empfehlungsermittlung nutzt weiterhin standardmäßig `top16Ranking()` und schließt gesperrte Spieler aus.
+- JavaScript-Syntaxprüfung beider Script-Blöcke erfolgreich. Browser-Retest nach Deployment erforderlich.
