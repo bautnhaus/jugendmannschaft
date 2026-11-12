@@ -48,9 +48,9 @@ $restore_assign$
   end if;
 
 $restore_assign$);
-  v_def := replace(v_def,'and m.status = ''planned'''||E'\n',
-    'and m.status = ''planned'''||E'\n'||
-    '        and m.game_type = any(v_types)'||E'\n');
+  v_def := replace(v_def,'    and m.status = ''planned'''||E'\n',
+    '    and m.status = ''planned'''||E'\n'||
+    '    and m.game_type = any(v_types)'||E'\n');
   v_def := replace(v_def,'and m.match_date > v_trigger_date'||E'\n',
     'and m.match_date > v_trigger_date'||E'\n'||
     '        and m.game_type = any(v_types)'||E'\n');
