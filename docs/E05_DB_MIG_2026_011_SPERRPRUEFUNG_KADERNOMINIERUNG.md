@@ -213,3 +213,14 @@ Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nich
 - Beide Chips müssen identische Höhe, Schriftgröße, Schriftgewicht, Zeilenhöhe, Innen-/Außenabstände, Rundung und Position direkt unter dem Spielernamen besitzen.
 - Gelb bleibt für den vorgemerkten vorzeitigen Sperrausgleich reserviert.
 - Diese Änderung ist eine verbindliche UI-Präzisierung. Noch keine Umsetzung in `index.html`; keine SQL-, DB-, RLS-, Auth- oder PROD-Änderung.
+
+
+### Frontend-Umsetzung Ausnahme-Kachelstatus (12.11.2026)
+
+- Commit: `03b353d7e43ee8146a2c23aafd417b4c698241c2` auf `develop`, ausschließlich `index.html`.
+- Bei offener regulärer Sperre wird die Kachel sanft rot hinterlegt und rot konturiert; Chip „Gesperrt · Ausnahme möglich“.
+- Bei erteilter Ausnahme für den aktuellen Spieltag wird die rote Hinterlegung/Umrandung entfernt. Die normale Kacheldarstellung greift wieder; Empfehlungs- und Nominierungsfarben bleiben unabhängig davon erhalten. Chiptext lautet nur „Ausnahme erteilt“.
+- Beide Chiptexte verwenden dieselbe CSS-Klasse `.matchdayStatusChip` und damit identische Geometrie (min-height, Schrift, Zeilenhöhe, Padding, Margin, Radius, Position im Markup).
+- Die Ausnahme-Klasse überschreibt nicht mehr den normalen Status; die rote Gestaltung gilt ausschließlich für `.isSuspended`.
+- Beide JavaScript-Scriptblöcke wurden syntaktisch geprüft. DEV-Browser-/iPhone-Praxistest steht noch aus.
+- Keine SQL-, Datenbank-, RLS-, Auth-, PROD- oder `main`-Änderung.
