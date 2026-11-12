@@ -904,3 +904,11 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - **PROD / main:** unverändert.
 - **Rollback:** `supabase/rollback/20261112191000_e05_suspension_nomination_guard_rollback.sql`.
 - **Details:** `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
+
+
+## DB-MIG-2026-011 – Nachtrag Frontend-/DB-Tests (12.11.2026)
+
+- DB-Direktinsert eines regulär gesperrten Spielers für den zugeordneten Spieltag wurde mit SQLSTATE 23514 abgewiesen. Keine Zeile angelegt.
+- Positivkontrolle für ungesperrten Spieler innerhalb einer Transaktion erfolgreich; Transaktion zurückgerollt.
+- Frontend-Commit `32afa447a7b6e9baf46d1c55412fd03023c39339`: Sperrstatus im Spieltagskader sichtbar, Ausschluss aus Empfehlung, begründungspflichtiger Ausnahmeaufruf und erneute Prüfung gespeicherter Empfehlung.
+- JS-Syntaxprüfung erfolgreich. Browser-/Rollen-/Widerrufstest ausstehend.
