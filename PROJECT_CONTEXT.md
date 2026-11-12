@@ -1,3 +1,16 @@
+# Aktueller Stand – DB-MIG-2026-011 vorbereitet (12.11.2026)
+
+- DB-MIG-2026-011 zur Sperrprüfung in Kaderempfehlung und Nominierung ist als Freigabepaket auf `develop` abgelegt.
+- Migration: `supabase/migrations/20261112120000_e05_suspension_nomination_guard.sql`.
+- Rollback: `supabase/rollback/20261112120000_e05_suspension_nomination_guard_rollback.sql`.
+- Spezifikation: `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
+- Ergänzungen in `DB_MIGRATION_LOG.md` und `DB_CHANGELOG.md`.
+- Paket nicht ausgeführt und nicht in Supabase-Migrationshistorie registriert. Gesonderte Nutzerfreigabe erforderlich.
+- Fachregel: regulär gesperrte Spieler werden für den zugeordneten Spieltag bei Empfehlung/Nominierung abgewiesen; aktive Ausnahme genau für diesen Spieltag erlaubt Teilnahme. Ausnahme-RPCs bleiben unverändert.
+- PROD und GitHub `main` unverändert.
+
+---
+
 # Aktueller Stand – E05 Sperrenkorrektur DEV (12.11.2026)
 
 - Saisonlose Spieltage/Trainings der DEV Mannschaft wurden bereits korrigiert (8 Spieltage, 12 Trainings); danach 0 NULL-Saisonzuordnungen.
