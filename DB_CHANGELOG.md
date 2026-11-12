@@ -640,3 +640,12 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Vorherige NULL-Zielzuordnungen durch Aufruf der bestehenden Reconciliation-/Assignment-Funktionen korrigiert; Audit-Einträge erzeugt.
 - Keine direkte Tabellenänderung, keine Schemaänderung/Migration. PROD und `main` unverändert.
 - Details: `docs/E05_SUSPENSION_REPAIR_DEV_2026-11-12.md`.
+
+
+## 12.11.2026 – DB-MIG-2026-011 vorbereitet: Sperrprüfung Kaderempfehlung/Nominierung
+
+- Freigabepaket auf `develop` vorbereitet: neue Sperren-Guard-Funktion, Trigger auf Empfehlungs- und Nominierungszeilen sowie Erweiterung der bestehenden Empfehlungs-RPC.
+- Eine aktive Ausnahme für exakt den betroffenen Spieltag erlaubt weiterhin Empfehlung/Nominierung; Sperren-Lifecycle und bestehende Ausnahme-RPCs bleiben unverändert.
+- Keine RLS-, Tabellen-, Daten- oder Frontendänderungen vorgesehen.
+- **Nicht ausgeführt.** Supabase DEV wartet auf gesonderte Freigabe; PROD und `main` unverändert.
+- Details: `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
