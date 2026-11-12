@@ -609,15 +609,16 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - **Noch offen:** Browser-/Rollen-Praxistests und Negativtests; die Metadaten-/Grant-Prüfung ist bestanden.
 
 
-## DB-MIG-2026-010 – E05: Alle Spieltage als Sperrziele (Vorbereitung, 12.11.2026)
+## DB-MIG-2026-010 – E05: Alle Spieltage als Sperrziele (DEV, 12.11.2026)
 
-- **Status:** SQL-Entwurf in `develop`; noch nicht ausgeführt und nicht zur Ausführung freigegeben.
-- **Fachliche Regel:** Jeder Spieltag ist sperrenrelevant, unabhängig von `game_type`; auch ein leerer Spielartwert (NULL) schließt einen Spieltag nicht aus.
-- **Funktionen:** `e05_assign_player_suspensions`, `correct_suspension` und `serve_matchday_suspensions` werden von der bisherigen Vereins-/Mannschaftskonfiguration entkoppelt.
-- **Unverändert:** Die chronologische Ermittlung der fünften aktiven gelben Karte nach `training_date_snapshot ASC, id ASC`, Team-/Saison-/Datums-/Statusregeln, Ausnahmen, manuelle Zielreservierungen, Berechtigungsprüfungen und Auditierung.
-- **Datenumfang:** Keine Tabellen, Spalten, Daten, Trigger, RLS-Policies oder Grants werden geändert. Die bisherigen Einstellungsdaten und RPCs bleiben erhalten, werden von der Sperrenlogik aber nicht mehr ausgewertet.
-- **Migration:** `supabase/migrations/20261112070000_e05_all_matchdays_suspension_targets.sql`.
-- **Rollback:** `supabase/rollback/20261112070000_e05_all_matchdays_suspension_targets_rollback.sql`.
+- **Status:** Erfolgreich in Supabase DEV ausgeführt; Migration `20261112055415`, Name `e05_all_matchdays_suspension_targets`; Supabase meldete `success: true`.
+- **Fachliche Regel:** Jeder geplante Spieltag ist unabhängig von `game_type` als Sperrziel zulässig, einschließlich `game_type IS NULL`. Die Sperrenableistung erfolgt weiterhin nur über tatsächlich abgeschlossene und zugeordnete Spieltage.
+- **Betroffene Funktionen:** `e05_assign_player_suspensions`, `correct_suspension`, `serve_matchday_suspensions`.
+- **Verifikation:** Signaturen, Eigentümer `postgres`, SECURITY DEFINER, Suchpfad `pg_catalog, public, auth` und bestehende EXECUTE-ACLs read-only geprüft. Keine Spielarten-Konfigurationsreferenzen/Filter mehr in den drei Funktionen. `anon` hat kein EXECUTE.
+- **Chronologie:** Unverändert; Reconciliation nutzt weiterhin `training_date_snapshot ASC, id ASC`.
+- **Datenumfang:** Keine Tabellen, Spalten, Daten, Trigger, RLS-Policies oder Grants geändert. Vereins-/Mannschaftseinstellungen bleiben gespeichert, werden von diesen Sperrenfunktionen aber nicht mehr ausgewertet.
+- **Migration:** `supabase/migrations/20261112055415_e05_all_matchdays_suspension_targets.sql`.
+- **Rollback:** `supabase/rollback/20261112055415_e05_all_matchdays_suspension_targets_rollback.sql`; vorbereitet, nicht ausgeführt oder live getestet.
 - **Technische Spezifikation:** `docs/E05_DB_MIG_2026_010_SPIELARTENKONFIGURATION_ENTKOPPELN.md`.
-- **Ausgangsprüfung:** Read-only; erwartete Funktionssignaturen und SECURITY DEFINER bestätigt, drei Spielartfilter in der Zuordnungsfunktion sowie Spielart-NULL-Prüfungen in Korrektur/Ableistung nachgewiesen. Migration nicht in der DB-Historie vorhanden.
-- **DEV / PROD:** Keine Datenbankänderung ausgeführt. PROD und `main` unverändert. Frontend folgt nach separater DB-Freigabe und DEV-Abnahme.
+- **Testumfang:** Read-only Funktions-/Metadatenprüfung abgeschlossen; synthetische fachliche Funktionstests und Frontend-E2E stehen noch aus.
+- **DEV / PROD:** DEV umgesetzt. PROD und `main` unverändert. Frontend folgt als separater Schritt.
