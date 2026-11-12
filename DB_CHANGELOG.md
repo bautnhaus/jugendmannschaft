@@ -658,3 +658,13 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Bestehende Ausnahme-RPCs, Tabellen, Daten, RLS-Policies und vorhandene Trigger bleiben unverändert.
 - Dateien: `supabase/migrations/20261112191000_e05_suspension_nomination_guard.sql`, `supabase/rollback/20261112191000_e05_suspension_nomination_guard_rollback.sql`, `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
 - Status: ausschließlich Entwurf zur gesonderten Freigabe. Supabase DEV nicht verändert; PROD und `main` unverändert.
+
+
+## 12.11.2026 – DB-MIG-2026-011 in DEV ausgeführt
+
+- E05: Serverseitige Sperrenprüfung bei Kaderempfehlung und Nominierung installiert.
+- Regulär gesperrte Spieler werden für den konkret zugeordneten Spieltag abgewiesen; aktive Ausnahme für exakt diesen Spieltag erlaubt die Teilnahme.
+- Technische Nachprüfung bestanden: Migration registriert, neuer Trigger vorhanden, vorhandene Trigger/RLS-Policies erhalten, Empfehlungs-RPC-Berechtigungen unverändert.
+- Funktionale Praxistests stehen noch aus.
+- PROD und GitHub `main` unverändert.
+- Details: `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md`.
