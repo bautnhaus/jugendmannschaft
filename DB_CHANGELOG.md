@@ -631,3 +631,12 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Ursache: Die Saison wurde nach den Terminen angelegt; Frontend übergab bei fehlender aktiver Saison `NULL`. Keine automatische DB-Zuordnung vorhanden.
 - Reine Datenkorrektur (DML), keine Schemaänderung/Migration. PROD und `main` unverändert.
 - Details und SQL-Nachweis: `docs/E05_DATA_REPAIR_SEASON_ASSIGNMENT_DEV_2026-11-12.md`.
+
+
+## 12.11.2026 – E05 bestehende Sperrenzuordnungen in DEV korrigiert
+
+- Tom Achtzehn Jahre: offene gelbe Sperre auf chronologisch fünfte aktive gelbe Karte (Trainingsdatum 09.11.2026) korrigiert und auf Spieltag 14.11.2026 (Flensburg) zugeordnet.
+- Spieler Dreißig: offene rote Sperre ebenfalls auf 14.11.2026 (Flensburg) zugeordnet.
+- Vorherige NULL-Zielzuordnungen durch Aufruf der bestehenden Reconciliation-/Assignment-Funktionen korrigiert; Audit-Einträge erzeugt.
+- Keine direkte Tabellenänderung, keine Schemaänderung/Migration. PROD und `main` unverändert.
+- Details: `docs/E05_SUSPENSION_REPAIR_DEV_2026-11-12.md`.
