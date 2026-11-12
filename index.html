@@ -1866,7 +1866,7 @@ window.grantMatchdaySuspensionException=async(suspensionId,playerId)=>{
   try{
     const {error}=await getClient().rpc('grant_suspension_exception',{p_suspension_id:suspensionId,p_matchday_id:md.id,p_reason:reason});
     if(error)throw error;
-    closeModal();matchdayExceptionRows=[...(matchdayExceptionRows||[]).filter(x=>!(x.suspension_id===suspensionId&&x.matchday_id===md.id)),{id:'local-'+suspensionId,suspension_id:suspensionId,player_id:playerId,matchday_id:md.id,reason,revoked_at:null,granted_at:new Date().toISOString()}];await loadMatchdaySuspensions(md.id,true);renderMatchday();
+    closeModal();await loadMatchdaySuspensions(md.id,true);matchdayExceptionRows=[...(matchdayExceptionRows||[]).filter(x=>!(x.suspension_id===suspensionId&&x.matchday_id===md.id)),{id:'local-'+suspensionId,suspension_id:suspensionId,player_id:playerId,matchday_id:md.id,reason,revoked_at:null,granted_at:new Date().toISOString()}];renderMatchday();
     showStatus('Ausnahme erteilt. Die Sperre bleibt bestehen und wurde neu zugeordnet.','ok');
   }catch(e){showStatus('Ausnahme konnte nicht erteilt werden: '+(e.message||e),'error');}
 };
