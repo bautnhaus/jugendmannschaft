@@ -256,3 +256,35 @@ Die Ausnahme gilt ausschließlich für den konkreten Spieltag und löscht/erledi
 Beide Status-Chips müssen dieselbe Höhe, Schriftgröße, Schriftstärke, Zeilenhöhe, Innen-/Außenabstände, Rundung und Position direkt unter dem Spielernamen verwenden. Unterschiedliche Chiptexte dürfen keine abweichende Höhe oder vertikale Kachelgeometrie erzeugen.
 
 Gelb bleibt dem vorgemerkten vorzeitigen Sperrausgleich vorbehalten (Abschnitte 4.4–4.6). Diese UI-Präzisierung ändert die fachliche Sperr- und Ausnahme-Logik aus AP05.2 nicht.
+
+
+## 9. Verbindliche Entscheidung – Sperrmaßnahmen im Spielerkachel-Menü (12.11.2026)
+
+### Optionsmenü
+- Auf jeder Spielerkachel wird ein Drei-Punkte-Optionsmenü angeboten (Nutzerentscheidung: „both“).
+- Das Menü zeigt ausschließlich Aktionen, die für den konkreten Spieler und den aktuellen Spieltag fachlich zulässig sind.
+- Das normale Antippen der Kachel bleibt der Kaderplanung vorbehalten. Sperrmaßnahmen werden über das Optionsmenü ausgelöst.
+
+### Statusabhängige Aktionen
+- Offene Sperre für diesen Spieltag, noch keine Ausnahme: „Ausnahme erteilen“.
+- Aktive Ausnahme für diesen Spieltag: „Ausnahme zurücknehmen“.
+- Zulässiger vorgemerkter vorzeitiger Sperrausgleich: „Vorzeitigen Sperrausgleich zurücknehmen“.
+- Spieler ohne aktive Sperre, aber mit fachlich zulässiger Möglichkeit zum vorzeitigen Sperrausgleich: „Vorzeitigen Sperrausgleich erteilen“.
+- Nicht zulässige, bereits angewendete oder historisch abgeschlossene Aktionen werden nicht als ausführbare Menüoption angeboten. Die genauen Freigabebedingungen müssen den bestehenden AP05.2-RPCs entsprechen.
+
+### Begründung und Audit
+- Für jede Erteilung und jede Rücknahme ist eine nicht leere Begründung verpflichtend.
+- Alle Änderungen laufen ausschließlich über die bestehenden abgesicherten RPCs; keine direkten Tabellen-Schreibzugriffe aus dem Frontend.
+- Historische Datensätze werden nicht gelöscht. Erteilungen und Rücknahmen bleiben mit Akteur, Zeitpunkt und Begründung nachvollziehbar.
+
+### Sofortige Wirkung
+- Die Rücknahme einer Ausnahme wirkt unmittelbar auf den aktuellen Spieltag: Der Spieler ist sofort wieder regulär gesperrt, erhält die rote Kacheldarstellung und kann nicht mehr nominiert werden.
+- Eine bereits bestehende Nominierung muss bei Rücknahme atomar bzw. unmittelbar entfernt/verhindert werden. Vor Umsetzung ist zu prüfen, ob der bestehende RPC diese Wirkung bereits sicherstellt; falls nicht, ist ein DB-Änderungsentwurf erforderlich.
+- Die Rücknahme eines vorzeitigen Sperrausgleichs wirkt entsprechend der bestehenden AP05.2-Fachlogik und muss die Sperrzuordnung unmittelbar neu bewerten.
+
+### Kachelzustände
+- Nach erteilter Ausnahme entfällt die Sperr-Hinterlegung. Die normale Kontur und der normale Empfehlungs-/Nominierungszustand bleiben vollständig erhalten; Chip „Ausnahme erteilt“.
+- Bei Nominierung muss die Kachel exakt dieselbe Darstellung wie jede andere nominierte Kachel erhalten, zuzüglich des Chips „Ausnahme erteilt“.
+- Status-Chips haben einheitliche Geometrie und Position.
+
+Diese Entscheidungen ergänzen AP05.2/AP05.3. Sie autorisieren noch keine SQL- oder Frontend-Änderung.
