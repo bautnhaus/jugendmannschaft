@@ -175,3 +175,12 @@ Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nich
 - Korrektur-Commit: `2ddd68328d24282386ef375974f284c93a4e2eea`.
 - Spieltagsliste und deren Sortier-Rangliste verwenden nun `top16Ranking(true)`: alle Spieler bleiben sichtbar; die Empfehlungsermittlung nutzt weiterhin standardmäßig `top16Ranking()` und schließt gesperrte Spieler aus.
 - JavaScript-Syntaxprüfung beider Script-Blöcke erfolgreich. Browser-Retest nach Deployment erforderlich.
+
+
+### Sichtbarkeit von Sperre und Ausnahme (12.11.2026)
+
+- Nutzer-Rückmeldung: Spieler korrekt aus Empfehlung ausgeschlossen und sichtbar; Sperrstatus jedoch optisch nicht dargestellt. Nach Ausnahme blieb Kachel optisch unverändert.
+- Ursache: Kachel-Markup setzte CSS-Klassen, enthielt aber keinen Sperr-/Ausnahme-Badge. Nach Grant wird die offene Sperre auf den Folge-Spieltag verschoben; der Ausnahme-Datensatz für den ursprünglichen Spieltag bleibt bestehen. Die UI konnte daher die Ausnahme erkennen, zeigte aber keinen Status.
+- Korrektur-Commit: `4d9bafc5b6c00d9cf41b5aff685d9300a857c4f1`.
+- Kachel enthält jetzt Badge „Gesperrt · Ausnahme möglich“ bzw. „Gesperrt · Ausnahme erteilt“. Rotdarstellung und Badge-Farben sind explizit für Light- und Darkmode definiert. Die Sperre bleibt nach Ausnahme rot gekennzeichnet; manuelle Nominierung bleibt möglich.
+- JavaScript-Syntaxprüfung beider Script-Blöcke erfolgreich. Browser-Retest erforderlich.
