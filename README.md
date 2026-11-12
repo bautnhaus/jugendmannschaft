@@ -8,6 +8,7 @@
 - [SQL-Migrationsprotokoll](DB_MIGRATION_LOG.md) – tatsächliche Ausführungsnachweise für schreibende SQL-Anweisungen
 
 ## Releases und fachliche Dokumentation
+- [E05 – Frontend-Vereinfachung der Sperrenlogik (12.11.2026)](docs/E05_FRONTEND_SPIELARTEN_ENTKOPPELN_2026-11-12.md)
 - [Release Notes 1.5.2](RELEASE_NOTES_1.5.2_PROD_2026-11-02.md)\n- [Hotfix 09.11.2026 – Spielerstatistiken ab Mannschaftsbeitritt und Main Deploy](docs/HOTFIX_PLAYER_STATS_JOIN_DATE_2026-11-09.md)
 - [AP01–AP03 Release-Katalog](docs/AP01-03_RELEASE_KATALOG_2026-11-01.md)
 - [AP01–AP03 Migrations- und Testzuordnung](docs/AP01-03_MIGRATION_TEST_MAPPING_2026-11-01.md)
