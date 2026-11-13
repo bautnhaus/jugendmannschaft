@@ -3255,6 +3255,9 @@ async function saveMatchdaySelection(){
     if(add.length){const rows=add.map(player_id=>({matchday_id:md.id,player_id,team_number:null,goalkeeper:false}));const {error}=await getClient().from('matchday_players').insert(rows);if(error)throw error;}
     md.selected=wanted;
     md.playerRows=(md.playerRows||[]).filter(r=>!remove.includes(r.player_id)).concat(add.map(player_id=>({matchday_id:md.id,player_id,team_number:null,goalkeeper:false,played:null})));
+    // Eine Nominierung storniert eine offene Sperrausgleich-Vormerkung serverseitig.
+    // Deshalb den Status nach erfolgreichem INSERT erneut laden, bevor die Kacheln gerendert werden.
+    if(add.length)await loadMatchdaySuspensions(md.id,true);
     renderMatchday();
   }catch(e){matchdaySelection=new Set(md.selected||[]);showStatus('Spielerauswahl konnte nicht gespeichert werden: '+(e.message||e),'error');renderMatchday();}
 }
