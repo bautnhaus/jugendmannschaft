@@ -81,3 +81,23 @@ Der Nutzer hat am 13.11.2026 bestätigt, dass die Karte nach einem vollständige
 Die Änderung am Filter „Karten“ (Commit `27eb0dd`) ist davon unabhängig: Sie sorgt dafür, dass auch Trainings mit ausschließlich stornierten Kartenereignissen im Kartenfilter auffindbar sind. Sie war nicht die Ursache für das zunächst fehlende aktive Kartenereignis.
 
 Keine Änderung an Datenbank oder PROD.
+
+
+## Manueller DEV-Test: Gelbe Karte storniert
+
+**Ergebnis: Bestanden (13.11.2026).**
+
+Der Nutzer hat die gelbe Karte von Spieler Nosson bautnhaus im Training vom 09.11.2026 über die Spielercard storniert. Die UI zeigt das Training im Filter „Karten“ weiterhin an und kennzeichnet es mit „Nur zurückgenommene Ereignisse“. Das ist das erwartete Verhalten.
+
+Read-only Datenbankkontrolle bestätigt:
+- Ereignis-ID: `a2f1c8c8-23a1-415e-8ed8-528f22d17b7e`
+- Ereignistyp: `yellow_card`
+- Status: `voided`
+- Stornierungsbegründung: `Test`
+- Audit-Aktionen: `created`, `voided` (2 Einträge)
+- Zugehörige Sperren: keine (0)
+- Zugehörige Sperren-Audits: keine (0)
+
+Damit sind Kartenfilter-Auffindbarkeit, Stornierungsstatus und Ereignis-Audit für diesen Fall bestätigt. Da keine Sperre aus diesem Ereignis entstanden ist, gibt es in diesem Testfall keine Sperrenauswirkung zu prüfen.
+
+**Nächster Schritt:** Dasselbe Ereignis wiederherstellen und danach Status, Audit-Aktion `restored`, Kartenkonto und Filterdarstellung erneut kontrollieren. Keine Testdaten wurden angelegt; die bestehende Karte soll in ihren ursprünglichen aktiven Zustand zurückgeführt werden.
