@@ -228,3 +228,22 @@ Test innerhalb einer SQL-Transaktion, danach vollständiges `ROLLBACK`:
 Nach dem erfolgreichen Lauf wurde die Transaktion zurückgerollt. Unabhängige Restbestandsprüfung: 0 Testspieler, 0 Testereignisse, 0 Testsperren, 0 zugehörige Audit-Einträge. Der reale Spieltag 15.11.2026 steht weiterhin auf `planned`. Keine dauerhaften Datenänderungen, keine Migration, keine PROD-Änderung.
 
 Damit ist die automatische Freigabe und Neuzuordnung bei Ungültigkeit einer manuellen Zielbindung auf Datenbankfunktionsebene bestätigt. Nicht geprüft: UI-Anzeige und Berechtigungen unter echten Trainer-/Admin-Sitzungen.
+
+
+## Rollenbezogener DEV-Praxistest – Mannschaftsadmin (14.11.2026)
+
+**Ergebnis: A1–A6 vom Nutzer bestätigt.**
+
+Der Nutzer hat die sechs vorgesehenen Mannschaftsadmin-Prüffälle vollständig bestätigt:
+- A1: Spielercard und Ereignis-/Sperrenhistorie sichtbar.
+- A2: Gelbe Karte stornieren/wiederherstellen.
+- A3: Rote Karte stornieren/wiederherstellen.
+- A4: Auditdetails einsehen.
+- A5: Sperrenzuordnung ändern.
+- A6: Sperrausnahme erteilen/widerrufen.
+
+Damit ist der manuelle Mannschaftsadmin-Praxistest für AP05.4 abgeschlossen. Es wurden im Rahmen dieser Rückmeldung keine weiteren Datenbankänderungen oder Testdaten angelegt.
+
+**Noch offen:** Die entsprechenden Trainer-Prüffälle T1–T8. Der Nutzer benötigt dafür zunächst einen separaten Trainer-Account ohne Mannschaftsadmin-Rolle. Bis dieser Account verfügbar ist, werden keine Trainer-Ergebnisse vorweggenommen und keine Rollenänderung vorgenommen. Anschließend erfolgt der Test mit diesem reinen Trainerkonto.
+
+Keine SQL-/Schema-/RLS-Änderung; PROD und GitHub `main` unverändert.
