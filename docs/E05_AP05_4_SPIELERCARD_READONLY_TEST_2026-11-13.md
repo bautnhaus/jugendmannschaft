@@ -132,3 +132,21 @@ Der Nutzer bestätigte, dass die rote Karte von „Spieler Vorsicht“ bereits s
 - Sperren-Audit: 5 Einträge; Aktionen `target_changed → created → voided → reinstated → target_changed`
 
 Damit sind Stornierung/Wiederherstellung einer roten Karte und die dazugehörige Sperren-Lebenszyklus-Auditkette im DEV-Fall bestätigt. Die rote Karte und die offene Sperre stehen wieder im aktiven Zustand. Es wurden keine zusätzlichen Testdaten angelegt und keine Datensätze gelöscht.
+
+
+## Manueller DEV-Test: Sperrenzuordnung geändert
+
+**Ergebnis: Speicherung und Audit bestanden (13.11.2026).**
+
+Der Nutzer hat die offene rote Sperre von „Spieler Vorsicht“ manuell neu zugeordnet. Die anschließende read-only Datenbankprüfung bestätigt:
+- Ereignis-ID: `8004ea0d-0d2b-4085-a5f5-46e967993443`, Typ `red_card`, Status `active`.
+- Sperren-ID: `e443c3d7-8caf-454b-9f9c-7c97e3415a32`, Status `open`.
+- Neue Zielzuordnung: Spieltag am 15.11.2026, Status `planned`.
+- Audit-Aktion `corrected` vorhanden (insgesamt 6 Sperren-Audit-Einträge).
+- Audit dokumentiert alten Zielspieltag 14.11.2026 gegen Flensburg und neuen Zielspieltag 15.11.2026.
+- `manual_target_locked=true` bestätigt die manuelle Zielbindung.
+- Sperre blieb während der Korrektur `open`.
+
+Damit sind Speichern, alter/neuer Zielwert, Audit-Nachvollziehbarkeit und Erhalt des offenen Sperrstatus bestätigt. Der neue Zielspieltag hat keinen Gegner-Snapshot; das entspricht dem aktuellen Datensatz des Zielspieltags. Ob die UI die manuelle Zielbindung nach späteren automatischen Neuberechnungen respektiert, ist noch nicht durch einen Folge-/Regressionstest belegt.
+
+Keine Testdaten angelegt oder gelöscht; keine SQL-/Datenbankänderung.
