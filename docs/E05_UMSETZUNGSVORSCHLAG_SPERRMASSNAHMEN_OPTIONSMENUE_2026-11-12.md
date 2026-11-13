@@ -184,3 +184,26 @@ Nach der Ausführung wurden die beiden Funktionsdefinitionen, SECURITY-Attribute
 - Keine Tabellenstruktur, Datensätze, RLS-Policies oder PROD-Objekte wurden durch diese Migration geändert.
 
 **Wichtige Abgrenzung:** Die Migration ist technisch installiert und ihre Katalogdefinitionen wurden verifiziert. Der praktische Positiv-/Negativ- und Konkurrenztest mit isolierten DEV-Testdaten steht noch aus. Die Migration ist deshalb noch nicht als fachlich vollständig abgenommen zu betrachten. Die Frontend-Integration beginnt erst nach diesen Tests.
+
+
+### 10.8 Isolierte DEV-Praxistests (13.11.2026)
+
+Alle Tests wurden in Supabase DEV innerhalb expliziter Transaktionen ausgeführt und anschließend mit `ROLLBACK` vollständig zurückgesetzt. Es wurden keine Testdatensätze dauerhaft angelegt.
+
+**Ergebnis: bestanden**
+
+1. **Bestehende Nominierung, `played=false`:** Widerruf erfolgreich; Nominierung aus `matchday_players` entfernt; vollständiger JSON-Snapshot im `exception_revoked`-Audit gespeichert.
+2. **Trigger-Schutz nach Widerruf:** erneuter INSERT derselben Spieler-/Spieltag-Zuordnung wurde mit Check-Constraint-Fehler abgewiesen.
+3. **Tatsächlicher Einsatz, `played=true`:** Widerruf mit SQLSTATE `23514` abgebrochen; Exception blieb aktiv, Nominierung blieb unverändert, kein Widerrufs-Audit wurde geschrieben.
+4. **Keine bestehende Nominierung:** Widerruf erfolgreich; Audit dokumentiert `nomination_removed=false` und Snapshot `null`.
+5. **Berechtigung:** autorisierter Teamadmin-/Trainer-Kontext konnte den RPC ausführen; ein nicht berechtigter Auth-Kontext wurde mit `42501` abgewiesen.
+6. **RPC-Integration:** `grant_suspension_exception` erzeugte Exception und Grant-Audit; automatische Ziel-Neuzuordnung wurde nachvollzogen; anschließender Widerruf ordnete die Sperre zurück zu und entfernte die Nominierung auf dem nun wieder gesperrten Spieltag.
+
+**Rollback-Kontrolle:** anschließende read-only Zählung ergab jeweils 0 Datensätze mit dem Testpräfix in `players`, `training_behavior_events`, `training_suspensions`, `training_suspension_exceptions` und `matchdays`.
+
+**Noch offen / nicht durch diese Tests belegt:**
+- Ein echter Konkurrenztest mit zwei gleichzeitig aktiven Datenbank-Sessions (INSERT gegen Widerruf) wurde nicht ausgeführt. Die gemeinsame Advisory-Lock-ID und Sperrreihenfolge sind im installierten Trigger/RPC sichtbar; das ersetzt keinen parallelen Laufzeittest.
+- Der Superadmin-only-Zweig wurde nicht unabhängig getestet, da der verfügbare Superadmin im DEV-Team zusätzlich die Trainerrolle besitzt. Der Negativtest für einen nicht berechtigten Auth-Kontext ist bestanden.
+- Der Praxistest erfolgte über die Datenbank-RPCs; ein UI-/Frontendtest ist noch nicht erfolgt.
+
+**Abnahmeempfehlung:** Datenbankseitige Funktionsprüfungen für den Widerruf sind bestanden. Vor Frontend-Abnahme bleibt der echte Zwei-Session-Konkurrenztest als gezielter Restpunkt dokumentiert. Keine PROD-Freigabe und keine Änderung an `main`.
