@@ -4893,6 +4893,42 @@ html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended .matchdaySt
   color:#fecaca!important;
 }
 </style>
+
+<style id="e05-exception-nominated-green-parity">
+/* E05: Eine nominierte Ausnahme folgt immer der grünen Kaderdarstellung,
+   auch wenn die gespeicherte Empfehlung zusätzlich isRecommended setzt. */
+html[data-theme="light"] .playerListRow.matchdaySquadTile.hasSuspensionException.isNominated,
+html:not([data-theme]) .playerListRow.matchdaySquadTile.hasSuspensionException.isNominated {
+  background:#f0fdf4!important;
+  background-color:#f0fdf4!important;
+  border:2px solid #86efac!important;
+  color:var(--text)!important;
+  box-shadow:none!important;
+}
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.hasSuspensionException.isNominated,
+html:not([data-theme="light"]) .playerListRow.matchdaySquadTile.hasSuspensionException.isNominated {
+  background:#102f24!important;
+  background-color:#102f24!important;
+  border:2px solid #6ee7a0!important;
+  color:#f1f5f9!important;
+  box-shadow:none!important;
+}
+.playerListRow.matchdaySquadTile.hasSuspensionException.isNominated .playerListName,
+.playerListRow.matchdaySquadTile.hasSuspensionException.isNominated .playerListLevel {
+  color:inherit!important;
+}
+.playerListRow.matchdaySquadTile.hasSuspensionException.isNominated .matchdayStatusChip {
+  background:#ffe4e6!important;
+  border:1px solid #fda4af!important;
+  color:#9f1239!important;
+}
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.hasSuspensionException.isNominated .matchdayStatusChip,
+html:not([data-theme="light"]) .playerListRow.matchdaySquadTile.hasSuspensionException.isNominated .matchdayStatusChip {
+  background:#5b2029!important;
+  border:1px solid #f87171!important;
+  color:#fecaca!important;
+}
+</style>
 </body></html>
 
 <style>
