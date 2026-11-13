@@ -210,3 +210,21 @@ Alle Assertions liefen ohne SQL-Exception durch. Die Testtransaktion wurde ansch
 **Hinweis zur Ausführung:** Ein erster Testlauf wurde vor Abschluss abgebrochen, weil das Audit-Log append-only ist und DELETE verhindert. Dieser Lauf war nicht erfolgreich abgeschlossen. Der anschließende erfolgreiche Test nutzte deshalb konsequent eine Transaktion mit vollständigem ROLLBACK; die Audit-Schutzregel blieb unverändert.
 
 **Abgrenzung:** Geprüft ist der Schutz gültiger manueller Zielbindungen bei erneutem Aufruf der zentralen Zuordnungsroutine. Nicht geprüft wurden UI-Verhalten, RPC-Berechtigungen unter echten Trainer-/Admin-Sitzungen oder automatische Neuzuordnung nach Ungültigkeit eines manuell gebundenen Spieltags. Keine Änderungen an DEV-Daten nach Testende, keine Migration und keine PROD-Änderung.
+
+
+## Isolierter DEV-Regressionstest: Manuelles Ziel wird ungültig
+
+**Datum:** 14.11.2026 · **Ergebnis:** PASS · **Umgebung:** Supabase DEV
+
+Test innerhalb einer SQL-Transaktion, danach vollständiges `ROLLBACK`:
+- Isolierter Testspieler, rotes Ereignis und offene Sperre wurden temporär angelegt.
+- Manuelles Ziel war der geplante Spieltag 15.11.2026 mit `manual_target_locked=true`.
+- Innerhalb derselben Transaktion wurde dieser Spieltag testweise auf `cancelled` gesetzt.
+- Erneuter Aufruf von `e05_assign_player_suspensions` gab die manuelle Bindung frei und wählte den nächsten weiterhin gültigen Spieltag 14.11.2026.
+- Assertions: neues Ziel 14.11.2026, `manual_target_locked=false`, Sperrenstatus weiterhin `open`, Rückgabewert meldet eine Änderung.
+
+**Wichtige Testkorrektur:** Der erste Lauf erwartete fälschlich den 21.11.2026. Die Funktion wählte korrekt den 14.11.2026, da dieser vor dem 15.11. liegt und nach dem Trainingsdatum 09.11. weiterhin der früheste gültige Spieltag ist. Der Lauf wurde durch die Assertion abgebrochen und nicht als bestanden gewertet. Der korrigierte Lauf mit fachlich richtiger Erwartung war erfolgreich.
+
+Nach dem erfolgreichen Lauf wurde die Transaktion zurückgerollt. Unabhängige Restbestandsprüfung: 0 Testspieler, 0 Testereignisse, 0 Testsperren, 0 zugehörige Audit-Einträge. Der reale Spieltag 15.11.2026 steht weiterhin auf `planned`. Keine dauerhaften Datenänderungen, keine Migration, keine PROD-Änderung.
+
+Damit ist die automatische Freigabe und Neuzuordnung bei Ungültigkeit einer manuellen Zielbindung auf Datenbankfunktionsebene bestätigt. Nicht geprüft: UI-Anzeige und Berechtigungen unter echten Trainer-/Admin-Sitzungen.
