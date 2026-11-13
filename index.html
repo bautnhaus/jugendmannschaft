@@ -2686,7 +2686,7 @@ function renderPlayerEventTrainingList(playerId,filter='all'){
   const filters=[['all','Alle'],['cards','Karten'],['suspensions','Sperren'],['stars','Sterne']];
   const chips=filters.map(([key,label])=>'<button type="button" class="playerFilterChip '+(filter===key?'active':'')+'" aria-pressed="'+(filter===key?'true':'false')+'" onclick="window.setPlayerEventFilter(\''+playerId+'\',\''+key+'\')">'+label+'</button>').join('');
   const trainings=cached.trainings.filter(t=>{
-    if(filter==='cards')return t.currentEvents.some(e=>e.event_type==='yellow_card'||e.event_type==='red_card');
+    if(filter==='cards')return t.allEvents.some(e=>e.event_type==='yellow_card'||e.event_type==='red_card');
     if(filter==='suspensions')return t.suspensions.length>0;
     if(filter==='stars')return t.currentEvents.some(e=>e.event_type==='positive_star');
     return true;
