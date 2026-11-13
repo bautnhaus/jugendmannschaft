@@ -342,3 +342,14 @@ Alle drei gehören zum selben DEV-Team. Jeder Datensatz besitzt bereits je einen
 - Die geöffnete Optionsmenü-Wrapper-Ebene behält ihren erhöhten Stacking-Kontext, damit Symbole benachbarter Kacheln nicht über das geöffnete Menü gelegt werden.
 - Rechter Abstand des Symbols zur Kachelkontur von 12 px auf 6 px reduziert; oberer Abstand bleibt 12 px.
 - JavaScript-Modul syntaktisch geprüft. Visueller iPhone-Test nach Deployment ausstehend.
+
+
+### 10.19 DEV-Praxistest Ausnahme und Korrektur System-Darkmode (13.11.2026)
+
+- Nutzerbestätigung: Ausnahme lässt sich im Spieltags-Optionsmenü korrekt erteilen; die anschließende Ausnahmedarstellung ist fachlich korrekt.
+- Nutzer meldet eine Abweichung ausschließlich im systemabhängigen Darkmode: gesperrte Kachel behält helle Sperrfläche; Positions-Chips und Level-Beschriftung sind nicht ausreichend lesbar. Der direkt in KADAssist gewählte Darkmode stellt die Kachel korrekt dar.
+- Ursache im CSS eingegrenzt: Die Sperr-Kachel hatte allgemeine Hellmodus-Regeln und separate explizite Darkmode-Regeln, aber keine gleichwertige, ausreichend spezifische Regel für den Systemmodus ohne `data-theme`-Attribut.
+- Ergänzt wurde eine eng begrenzte `prefers-color-scheme: dark`-Regel nur für `html:not([data-theme="light"]):not([data-theme="dark"])` und regulär gesperrte, nicht nominierte Spieltagskacheln. Dunkle rote Kachelfläche/Kontur, helle Namens-/Levelschrift, kontrastreiche Positionschips und Status-Chip.
+- Ausnahme-, Empfehlungs- und Nominierungslogik sowie explizite Theme-Auswahl bleiben unverändert.
+- JavaScript-Modul syntaktisch geprüft; CSS-Strukturprüfung erfolgreich.
+- Noch ausstehend: iPhone-Visueller Nachtest im System-Darkmode. Keine SQL-/Datenbankänderung; nur `develop`/DEV.
