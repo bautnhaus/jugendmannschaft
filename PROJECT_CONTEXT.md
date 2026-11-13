@@ -370,3 +370,6 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 
 
 **Klarstellung E05 AP05.4 (13.11.2026):** Die zunächst fehlende gelbe Karte in der Spielercard-Historie wurde nach vollständigem Neuladen der DEV-Seite in Safari sichtbar. Ursache war ein veralteter Browser-Cache; DB-Datensatz und Ereigniszuordnung waren korrekt. Der Kartenfilter-Fix `27eb0dd` bleibt als separate Verbesserung für ausschließlich stornierte Kartenereignisse bestehen und war nicht Ursache dieses Anzeigeproblems.
+
+
+**E05 AP05.4 – gelbe Karte storniert (DEV-Praxistest 13.11.2026):** Nutzer hat die gelbe Karte von Spieler Nosson bautnhaus (Training 09.11.2026) storniert. UI zeigt im Filter „Karten“ erwartungsgemäß „Nur zurückgenommene Ereignisse“. DB read-only bestätigt Event-ID `a2f1c8c8-23a1-415e-8ed8-528f22d17b7e`, Typ `yellow_card`, Status `voided`, void_reason `Test`, Audit-Aktionen `created` und `voided` (2 Einträge), keine zugehörige Sperre. Stornierung und Audit damit bestätigt. Nächster Schritt: Ereignis wiederherstellen und `restored`-Audit, Kartenkonto und UI prüfen. Bericht `docs/E05_AP05_4_SPIELERCARD_READONLY_TEST_2026-11-13.md`.
