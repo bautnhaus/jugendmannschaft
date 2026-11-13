@@ -343,3 +343,16 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 
 
 **E05-UI-Entscheidung 12.11.2026 – Darstellung nach Spieltagsausnahme:** Nutzer hat verbindlich festgelegt: regulär gesperrte Spieler erhalten eine sanft rot hinterlegte gesamte Kachel plus Chip „Gesperrt · Ausnahme möglich“. Wird eine begründungspflichtige Ausnahme für genau diesen Spieltag erteilt, entfällt die rote Hinterlegung; die Kachel kehrt zur normalen bzw. unabhängig davon geltenden Empfehlungs-/Nominierungsdarstellung zurück. Chip „Ausnahme erteilt“ bleibt an derselben Position sichtbar; der Spieler ist für diesen Spieltag wieder empfehlungs- und nominierungsfähig. Die offene Sperre bleibt bestehen und wird gemäß AP05.2 auf den nächsten relevanten Spieltag verschoben; dort greift die rote Darstellung erneut, solange keine eigene Ausnahme vorliegt. Beide Chips müssen geometrisch identisch sein (Höhe, Schrift, Zeilenhöhe, Padding, Margins, Rundung, Position unter dem Namen). Gelb bleibt dem vorgemerkten vorzeitigen Sperrausgleich vorbehalten. UI-Entscheidung in E05 UI-Leitlinie, AP05.3 Userflows und E05-Migrationsdokumentation nachgetragen. Noch keine Frontend-Implementierung; keine DB-/SQL-/PROD-Änderung.
+
+
+---
+
+# DEV-Nachtrag 13.11.2026 – E05 Vormerkungsstatus nach Nominierung
+
+- Ursache des veralteten gelben Chips: Nach erfolgreicher Nominierung wurde `matchdayEarlyResetRows` nicht erneut aus der Datenbank geladen, obwohl der bestehende DB-Trigger die offene Vormerkung korrekt auf `cancelled` setzt.
+- Frontend-Fix in `index.html`: `saveMatchdaySelection()` ruft nach erfolgreichem Hinzufügen von Nominierungen `loadMatchdaySuspensions(md.id,true)` auf, bevor `renderMatchday()` ausgeführt wird. Damit werden Sperren, Ausnahmen und Sperrausgleich-Vormerkungen frisch geladen. Der Fix gilt auch für den Weg über „Empfohlene Spieler nominieren“.
+- Commit der Codeänderung: `a7ccf0dd0de4844927962c18acd00cb4aa3121e2`.
+- Dokumentation: `docs/E05_FRONTEND_FIX_VORMERKUNG_NACH_NOMINIERUNG_2026-11-13.md`.
+- **Status:** Code in `develop` geschrieben und anschließend erneut abgerufen/verifiziert. DEV-Deploy-/Syntaxprüfung und manueller Browser-Praxistest stehen noch aus.
+- **Test:** Peter am Spieltag 14.11.2026 nominieren; der gelbe Chip „Sperrausgleich vorgemerkt“ muss nach erfolgreichem Speichern verschwinden, weil die DB den Status `cancelled` liefert. Eine offene Vormerkung bei einem nicht nominierten Spieler muss weiterhin gelb erscheinen.
+- Keine SQL-Ausführung, keine Schema-/RLS-/Triggeränderung. PROD und GitHub `main` unverändert.
