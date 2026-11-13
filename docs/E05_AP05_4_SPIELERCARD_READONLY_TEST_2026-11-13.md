@@ -183,3 +183,30 @@ Keine Testdaten angelegt oder gelöscht; keine SQL-/Datenbankänderung.
 **Testdesign:** Für einen kontrollierten Test wird ein isolierter DEV-Testspieler mit eigenem roten Kartenereignis und offener Sperre benötigt. Nach manueller Zielkorrektur wird der bestehende Aufrufweg `assign_next_suspension_matchday` ausgelöst und anschließend geprüft, dass Zielspieltag, `manual_target_locked=true` und Status `open` erhalten bleiben. Danach alle Testdatensätze samt abhängigen Audit-Einträgen vollständig entfernen und per SELECT auf Restbestände prüfen.
 
 Es wurde noch kein Testspieler angelegt und keine Funktion ausgeführt. Ausschließlich Metadaten-/Funktionsdefinitionen lesend geprüft. Keine SQL-Schreiboperation, keine Änderung an DEV-Daten, PROD oder `main`.
+
+
+## Isolierter DEV-Funktionstest: Schutz manueller Sperrenzuordnung
+
+**Datum:** 14.11.2026 · **Ergebnis:** PASS · **Umgebung:** Supabase DEV
+
+Der Test wurde in einer einzelnen SQL-Transaktion mit fest reservierten Test-UUIDs ausgeführt und am Ende vollständig zurückgerollt.
+
+**Testaufbau**
+- Isolierter Testspieler: `ZZ_TEST_E05_MANUAL_TARGET_LOCK`
+- Quelle: vorhandenes abgeschlossenes Training vom 09.11.2026 (nur als Referenz; nicht verändert)
+- Isoliertes rotes Kartenereignis und offene rote Sperre
+- Zunächst automatische Zuordnung auf den nächsten relevanten geplanten Spieltag (14.11.2026)
+- Danach manuelle Zielbindung auf den geplanten Spieltag 21.11.2026 mit `manual_target_locked=true`
+- Erneuter Aufruf der zentralen Routine `e05_assign_player_suspensions`
+
+**Assertions**
+1. Automatische Erstzuordnung erfolgte auf den erwarteten nächsten Spieltag 14.11.2026.
+2. Nach erneuter Ausführung der Zuordnungsroutine blieb die manuelle Zielzuordnung auf 21.11.2026 bestehen.
+3. `manual_target_locked=true` blieb erhalten.
+4. Der Sperrstatus blieb `open`.
+
+Alle Assertions liefen ohne SQL-Exception durch. Die Testtransaktion wurde anschließend mit `ROLLBACK` beendet. Dadurch wurden auch die durch die Routine angelegten Audit-Einträge zurückgerollt. Eine nachgelagerte unabhängige Restbestandsprüfung ergab jeweils **0 Zeilen** für Testspieler, Testereignis, Testsperre und zugehörige Sperren-Audit-Einträge.
+
+**Hinweis zur Ausführung:** Ein erster Testlauf wurde vor Abschluss abgebrochen, weil das Audit-Log append-only ist und DELETE verhindert. Dieser Lauf war nicht erfolgreich abgeschlossen. Der anschließende erfolgreiche Test nutzte deshalb konsequent eine Transaktion mit vollständigem ROLLBACK; die Audit-Schutzregel blieb unverändert.
+
+**Abgrenzung:** Geprüft ist der Schutz gültiger manueller Zielbindungen bei erneutem Aufruf der zentralen Zuordnungsroutine. Nicht geprüft wurden UI-Verhalten, RPC-Berechtigungen unter echten Trainer-/Admin-Sitzungen oder automatische Neuzuordnung nach Ungültigkeit eines manuell gebundenen Spieltags. Keine Änderungen an DEV-Daten nach Testende, keine Migration und keine PROD-Änderung.
