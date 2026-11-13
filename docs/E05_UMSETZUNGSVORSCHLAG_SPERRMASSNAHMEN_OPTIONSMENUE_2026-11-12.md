@@ -381,3 +381,15 @@ Alle drei gehören zum selben DEV-Team. Jeder Datensatz besitzt bereits je einen
   - manueller Hellmodus: weiße Kachelfläche, normale Kontur/Textfarben.
 - Empfehlungs- und Nominierungsdarstellung wird durch die Regeln ausdrücklich ausgenommen. Der rote Ausnahme-Chip bleibt separat geregelt. Der System-Darkmode wird nicht verändert, da er laut Nutzerprüfung bereits korrekt ist.
 - JavaScript-Modul syntaktisch geprüft; Selektor-/Scope-Prüfungen erfolgreich. Visueller DEV-Nachtest nach Deployment steht aus.
+
+
+### 10.23 Korrektur: nominierte Ausnahme-Kachel übernimmt Kaderdarstellung (13.11.2026)
+
+- Nutzerprüfung bestätigte zunächst die Theme-Darstellung der nicht nominierten Ausnahme-Kachel und des roten Ausnahme-Chips. Beim anschließenden Nominieren wurde die Ausnahme-Kachel jedoch fälschlich blau statt grün dargestellt.
+- Ursache: Die Empfehlungsfarbe hatte Vorrang vor der grünen Nominierungsdarstellung, wenn eine Ausnahme-Kachel zugleich die Klassen `isRecommended` und `isNominated` trug.
+- Ergänzt wurde eine eng begrenzte CSS-Regel für `.hasSuspensionException.isNominated`:
+  - Hellmodus: hellgrüne Fläche und grüne Kontur.
+  - Manueller und systemabhängiger Darkmode: dunkelgrüne Fläche und grüne Kontur.
+  - Ausnahme-Chip bleibt rot; im Darkmode dunkelrot mit heller Schrift.
+- Die reguläre Sperrkachel ohne Ausnahme bleibt unverändert. Keine JavaScript-Logik, Datenbank-, RPC-, RLS- oder PROD-Änderung.
+- JavaScript-Modul-Syntaxprüfung erfolgreich. Nutzer hat den korrigierten Zustand in DEV visuell bestätigt: **passt in allen geprüften Darstellungsmodi**.
