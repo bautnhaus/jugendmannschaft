@@ -353,3 +353,11 @@ Alle drei gehören zum selben DEV-Team. Jeder Datensatz besitzt bereits je einen
 - Ausnahme-, Empfehlungs- und Nominierungslogik sowie explizite Theme-Auswahl bleiben unverändert.
 - JavaScript-Modul syntaktisch geprüft; CSS-Strukturprüfung erfolgreich.
 - Noch ausstehend: iPhone-Visueller Nachtest im System-Darkmode. Keine SQL-/Datenbankänderung; nur `develop`/DEV.
+
+
+### 10.20 Vereinheitlichung der Sperrkachel in beiden Darkmode-Varianten (13.11.2026)
+
+- Nutzerprüfung nach 10.19: System-Darkmode visuell verbessert; explizit in KADAssist aktivierter Darkmode zeigte weiterhin einen helleren Sperr-Chip.
+- Die im System-Darkmode bestätigte Darstellung wurde auf den expliziten Darkmode übertragen: dunkler roter Sperr-Chip (`#5b2029`), helle rote Schrift (`#fecaca`), rote Kontur (`#f87171`). Auch Kachelfläche, Positions-Chips und Textfarben verwenden nun identische Werte.
+- Änderung ausschließlich CSS für `html[data-theme="dark"]` und regulär gesperrte, nicht nominierte Spieltagskacheln. Keine Änderung an Ausnahme-, Empfehlungs-, Nominierungs- oder Datenbanklogik.
+- JavaScript-Modul syntaktisch geprüft. Visueller iPhone-Nachtest beider Darkmode-Wege steht noch aus.
