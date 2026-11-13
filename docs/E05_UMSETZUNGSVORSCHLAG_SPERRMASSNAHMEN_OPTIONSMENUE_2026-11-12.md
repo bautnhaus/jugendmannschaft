@@ -270,3 +270,14 @@ Die Testspieler/-ereignisse/-sperren/-ausnahmen wurden mit eindeutigem `E05 CONC
 **Statische Prüfung:** Das JavaScript-Modul wurde nach der Änderung erfolgreich syntaktisch geparst. Strukturprüfungen bestätigten den zusätzlichen Reset-Read, genau einen Reset-State, die Menü-Renderingfunktion, die drei neuen RPC-Aufrufe und den anschließenden Daten-Refresh.
 
 **Noch ausstehend:** Browser-/DEV-Praxistest durch den Nutzer, insbesondere iPhone-Bedienung, Klicktrennung zwischen Kachel und Optionsmenü, Light-/Darkmode sowie die vier tatsächlichen RPC-Abläufe mit geeigneten DEV-Testfällen. Es wurde keine Datenbankänderung und kein SQL ausgeführt; `main` und PROD blieben unangetastet.
+
+
+### 10.13 Frontend-Nachbesserung nach iPhone-Screenshot (13.11.2026)
+
+**Commit:** `c6e1c45a453e081af3ae91e713788fa477f5b0c6`
+
+- Optionsbutton auf der rechten Seite vertikal zentriert.
+- Kader-Chip bleibt oben rechts separat sichtbar; nominierte Kacheln erhalten ausreichende Mindesthöhe, damit Chip und Optionsbutton nicht überlappen.
+- Helle Sperr-Kachel im Hellmodus auf eine dezente hellrote Fläche mit gut lesbarer dunkler Schrift umgestellt. Darkmode-Regeln bleiben bestehen.
+- JavaScript-Modul nach CSS-Änderung erneut syntaktisch geprüft; erfolgreich.
+- Noch ausstehend: visueller DEV-/iPhone-Praxistest.
