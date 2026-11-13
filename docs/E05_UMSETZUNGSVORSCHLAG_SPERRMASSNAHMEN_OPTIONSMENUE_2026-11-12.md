@@ -393,3 +393,15 @@ Alle drei gehören zum selben DEV-Team. Jeder Datensatz besitzt bereits je einen
   - Ausnahme-Chip bleibt rot; im Darkmode dunkelrot mit heller Schrift.
 - Die reguläre Sperrkachel ohne Ausnahme bleibt unverändert. Keine JavaScript-Logik, Datenbank-, RPC-, RLS- oder PROD-Änderung.
 - JavaScript-Modul-Syntaxprüfung erfolgreich. Nutzer hat den korrigierten Zustand in DEV visuell bestätigt: **passt in allen geprüften Darstellungsmodi**.
+
+
+### 10.24 Vormerkung als gelber Status-Chip und Ausschluss verwaister Trainingsereignisse (13.11.2026)
+
+- Die Vormerkung eines vorzeitigen Sperrausgleichs wird in der Spieltagskaderplanung **nicht** als gelbe Kachel dargestellt. Gelbe Kacheln bleiben der allgemeinen Spielerliste als Warnung vor einer drohenden Sperre vorbehalten.
+- In der Spieltagskaderplanung bleibt die Kachel in ihrer normalen Grund-, Empfehlungs- oder Nominierungsdarstellung. Direkt unter dem Namen erscheint bei einer offenen Vormerkung ausschließlich der gelbe Chip **„Sperrausgleich vorgemerkt“**. Kein zusätzliches Icon. Der Spieler bleibt auswählbar.
+- Chip-Farben: Hellmodus hellgelber Hintergrund mit dunkler Schrift; manueller Darkmode und systemabhängiger Darkmode dunkler gelber Hintergrund mit heller Schrift. Die bestehende rote Sperr-/Ausnahme-Chipdarstellung bleibt unberührt.
+- Trainingsereignisse werden für die Statistik zusätzlich gegen die gültigen Spieler-IDs des aktuellen Mannschaftskontexts geprüft. Ereignisse ohne player_id oder mit einer nicht mehr gültigen Spielerzuordnung zählen nicht zu Sternen, gelben Karten oder roten Karten. Die Ereignisliste zeigt weiterhin nur die tatsächlich anwesenden Spieler.
+- Die Ladeabfrage schließt bereits Datensätze mit player_id IS NULL aus; die zusätzliche Frontend-Prüfung filtert auch verwaiste Fremdschlüssel/IDs aus den angezeigten Summen.
+- Umsetzung ausschließlich in index.html auf develop; keine SQL-, Datenbank-, RLS-, RPC- oder PROD-Änderung.
+- Commit: cc8530ff2ce07e8e598d858800a0841ad9e8cb00.
+- Noch durch Nutzer in DEV zu prüfen: Darstellung des gelben Chips in Hellmodus, manuellem Darkmode und Systemmodus; korrekte Summen bei Test-/verwaisten Ereignissen; Nominierung eines Spielers mit offener Vormerkung.
