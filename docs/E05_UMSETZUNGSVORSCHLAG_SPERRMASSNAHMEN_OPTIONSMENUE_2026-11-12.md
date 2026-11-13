@@ -281,3 +281,16 @@ Die Testspieler/-ereignisse/-sperren/-ausnahmen wurden mit eindeutigem `E05 CONC
 - Helle Sperr-Kachel im Hellmodus auf eine dezente hellrote Fläche mit gut lesbarer dunkler Schrift umgestellt. Darkmode-Regeln bleiben bestehen.
 - JavaScript-Modul nach CSS-Änderung erneut syntaktisch geprüft; erfolgreich.
 - Noch ausstehend: visueller DEV-/iPhone-Praxistest.
+
+
+### 10.14 DEV-Testdaten aus aktivem Kader entfernen (13.11.2026)
+
+Die drei im Screenshot sichtbaren Datensätze wurden read-only eindeutig als die dokumentierten E05-Concurrency-Fixtures identifiziert:
+
+- `E05 CONCURRENCY TEST`
+- `E05 CONCURRENCY TEST 2`
+- `E05 CONCURRENCY TEST 3`
+
+Alle drei gehören zum selben DEV-Team. Jeder Datensatz besitzt bereits je einen Behavior-Event-, Sperr- und Ausnahme-Datensatz. Aufgrund der Audit-/Foreign-Key-Beziehungen werden die Testhistorien nicht physisch gelöscht. Auf ausdrücklichen Wunsch, die Testspieler aus dem aktiven Kader zu entfernen, wird ausschließlich das jeweilige `players.active` auf `false` gesetzt. Dadurch bleiben Audit und Historie nachvollziehbar; die Spieler werden aus der aktiven Kaderplanung herausgenommen und bleiben in der Inaktiv-Liste reaktivierbar.
+
+**Geplante Datenänderung:** ausschließlich `UPDATE public.players SET active=false` für die drei oben genannten IDs im DEV-Projekt `pzazqvvoruqnqhcorbwx`. Keine Löschung von Events, Sperren, Ausnahmen oder Audit-Einträgen. Kein PROD-Zugriff.
