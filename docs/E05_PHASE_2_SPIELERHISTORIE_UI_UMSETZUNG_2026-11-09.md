@@ -85,3 +85,12 @@ Die aktuelle DB-Funktion kann Ereignisstatus von Karten korrigieren, aber weder 
 - JavaScript-Syntaxprüfung erfolgreich.
 - Commit: `f5269e46319aae9c45cfcc07faef5ea899a06dcf`.
 - DEV-Praxistest weiterhin ausstehend; PROD unverändert.
+
+
+### DEV-Prüfnachtrag 13.11.2026 – Read-only Daten-/Codeprüfung
+- Supabase DEV enthält 19 Ereignisse, 21 Ereignis-Audits, 6 Sperren und 25 Sperren-Audits. Integritätsprüfung: keine fehlenden Trainings-/Spieler-Snapshots, keine verwaisten Quellereignisse und keine fehlenden Audit-Kernfelder.
+- Ein vorhandenes storniertes Kartenereignis wurde durch den bisherigen Filter „Karten“ ausgeblendet, weil dieser nur aktive Ereignisse berücksichtigte. Behoben: Filter nutzt jetzt `allEvents` und zeigt auch stornierte gelbe/rote Karten.
+- Codecommit `27eb0dd188016418f4625dc801e19a8c923a659e`; DEV-Spiegel-Blob identisch verifiziert.
+- Audit-Namensauflösung bleibt eingeschränkt: fehlende Akteur-Snapshots können Trainer aufgrund der bestehenden `profiles_select`-RLS-Policy nicht zuverlässig durch Profil-Lookup ergänzen. Separate SQL-Lösung nicht Teil dieser Prüfung.
+- Ausschließlich SELECT-Abfragen; keine Testdaten angelegt, keine Daten verändert, keine SQL-/Schema-/RLS-/PROD-Änderung.
+- Browser-/RPC-Praxistests der Storno-/Wiederherstellungs- und Sperrenkorrektur bleiben offen. Details: `docs/E05_AP05_4_SPIELERCARD_READONLY_TEST_2026-11-13.md`.
