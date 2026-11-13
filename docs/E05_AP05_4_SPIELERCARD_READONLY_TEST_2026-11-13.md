@@ -3,7 +3,7 @@
 **Datum:** 13.11.2026  
 **Umgebung:** Supabase DEV `pzazqvvoruqnqhcorbwx`  
 **Branch:** `develop`  
-**Status:** Read-only Daten-/Codeprüfung abgeschlossen; ein Filterfehler behoben und in DEV-Spiegel verifiziert. Interaktive Browser-/RPC-Praxistests bleiben offen.
+**Status:** AP05.4 manuell im DEV mit Trainer- und Mannschaftsadmin-Rolle abgenommen; Read-only Daten-/Codeprüfung abgeschlossen. Ein Filterfehler wurde behoben und im DEV-Spiegel verifiziert. Automatisierte Negativtests einzelner RPC-Grenzfälle sind nicht Teil der bestätigten Rollen-Praxistests.
 
 ## 1. Vorgehen und Datensicherheit
 
@@ -260,3 +260,16 @@ Zusammen mit den zuvor bestätigten Mannschaftsadmin-Fällen A1–A6 ist die rol
 **Abgrenzung:** Dokumentiert wird die Nutzerbestätigung der praktischen UI-/Rollenfälle. Sie ersetzt keine separate automatisierte Prüfung sämtlicher RLS-Policies oder SQL-RPC-Berechtigungen. Es wurden im Rahmen dieser Rückmeldung keine weiteren Datenbankänderungen oder Testdaten angelegt.
 
 Keine SQL-/Schema-/RLS-Änderung; PROD und GitHub `main` unverändert.
+
+
+## Abschluss AP05.4 – Rollenbezogene DEV-Abnahme (14.11.2026)
+
+**Status: MANUELLE ROLLEN-PRAXISTESTS ABGESCHLOSSEN.**
+
+- Mannschaftsadmin: A1–A6 vom Nutzer bestätigt.
+- Trainer: T1–T8 mit separatem Trainer-Account ohne Mannschaftsadmin-Rolle vom Nutzer bestätigt.
+- Damit sind Spielercard-/Historie-Sichtbarkeit, Kartenkorrektur, Auditansicht, Sperrenkorrektur und Ausnahmeaktionen in den vorgesehenen UI-Rollenfällen manuell abgenommen.
+
+**Abgrenzung:** Die Nutzerbestätigung belegt die praktischen UI-Abläufe in DEV. Sie ist keine vollständige automatisierte RLS-/RPC-Sicherheitsprüfung. Die bereits dokumentierte Audit-Namensauflösungsgrenze (fehlender Actor-Snapshot bei älteren Einträgen und bestehende Profile-RLS) bleibt als bekannte Einschränkung bestehen und wird nicht durch diese Abnahme behoben.
+
+Keine SQL-/Schema-/RLS-Änderung, keine weiteren Testdaten. PROD und GitHub `main` unverändert.
