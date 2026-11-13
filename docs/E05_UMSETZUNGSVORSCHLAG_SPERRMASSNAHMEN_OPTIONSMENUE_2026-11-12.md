@@ -325,3 +325,12 @@ Alle drei gehören zum selben DEV-Team. Jeder Datensatz besitzt bereits je einen
 - Für beide Elemente ist rechts zusätzlicher Innenabstand reserviert; das Menü bleibt ein separates, nicht verschachteltes Bedienelement und löst keine Nominierung aus.
 - Nominierte Kacheln erhalten eine ausreichende Mindesthöhe, damit Symbol und Chip nicht kollidieren.
 - JavaScript-Modul syntaktisch geprüft. Visueller DEV-Praxistest (iPhone sowie Hell-/Darkmode) steht noch aus.
+
+
+### 10.17 Feinschliff Optionsmenü – Eckabstand und Overlay (13.11.2026)
+
+- Drei-Punkte-Symbol auf 32×32 px unsichtbarer Klickfläche mit 12 px Abstand zur oberen/rechten Kachelkante positioniert; Symbolgröße 23 px für weniger gedrängte Darstellung.
+- Menü beginnt unterhalb des Auslösers.
+- Beim Öffnen erhält der betreffende Optionsbereich einen eigenen höheren Stacking-Kontext; dadurch liegen nachfolgende Kachel-Icons nicht mehr über dem geöffneten Menü.
+- Der Auslöser des geöffneten Menüs wird währenddessen unsichtbar geschaltet, damit keine Punkte durch die Menüfläche hindurch erscheinen. Klickfläche und Menübedienung bleiben erhalten.
+- JavaScript-Modul syntaktisch geprüft. Visueller iPhone-Test nach DEV-Deployment ausstehend.
