@@ -3041,6 +3041,9 @@ window.saveTrainingBehaviorEvent=async(trainingId,playerId,eventType)=>{
       p_training_id:trainingId,p_player_id:playerId,p_event_type:eventType,p_reason:reason||null
     });
     if(error)throw error;
+    // A newly recorded event must invalidate the per-player history cache as well.
+    // Otherwise the player card can show fresh counters while the event list stays stale.
+    if(window.playerEventTrainingCache)delete window.playerEventTrainingCache[playerId];
     delete trainingBehaviorEventsLoaded[trainingId];
     await loadTrainingBehaviorEvents(trainingId,true);
     closeModal();
