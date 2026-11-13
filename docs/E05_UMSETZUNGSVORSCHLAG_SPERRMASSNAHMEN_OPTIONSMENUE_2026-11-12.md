@@ -315,3 +315,13 @@ Alle drei gehören zum selben DEV-Team. Jeder Datensatz besitzt bereits je einen
 - Ausnahme-Kachel: neutrale sichtbare Kontur im Grundzustand ergänzt; Empfehlung und Nominierung behalten ihre jeweiligen blauen Konturen.
 - JavaScript-Modul syntaktisch geprüft; erfolgreich.
 - Noch ausstehend: visueller Praxistest mit Super Admin im ausgewählten Teamkontext und Hell-/Darkmode.
+
+
+### 10.16 Kachel-Aktionsbereich – Menü ohne Buttonkontur (13.11.2026)
+
+- Drei-Punkte-Menü sitzt oben rechts an der Spielerkachel.
+- Die Menü-Schaltfläche ist optisch transparent: keine eigene Kontur, Fläche oder Buttonbox; nur das Drei-Punkte-Symbol bleibt sichtbar.
+- Der grüne „Kader“-Chip sitzt separat unten rechts unterhalb des Menüs.
+- Für beide Elemente ist rechts zusätzlicher Innenabstand reserviert; das Menü bleibt ein separates, nicht verschachteltes Bedienelement und löst keine Nominierung aus.
+- Nominierte Kacheln erhalten eine ausreichende Mindesthöhe, damit Symbol und Chip nicht kollidieren.
+- JavaScript-Modul syntaktisch geprüft. Visueller DEV-Praxistest (iPhone sowie Hell-/Darkmode) steht noch aus.
