@@ -373,3 +373,6 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 
 
 **E05 AP05.4 – gelbe Karte storniert (DEV-Praxistest 13.11.2026):** Nutzer hat die gelbe Karte von Spieler Nosson bautnhaus (Training 09.11.2026) storniert. UI zeigt im Filter „Karten“ erwartungsgemäß „Nur zurückgenommene Ereignisse“. DB read-only bestätigt Event-ID `a2f1c8c8-23a1-415e-8ed8-528f22d17b7e`, Typ `yellow_card`, Status `voided`, void_reason `Test`, Audit-Aktionen `created` und `voided` (2 Einträge), keine zugehörige Sperre. Stornierung und Audit damit bestätigt. Nächster Schritt: Ereignis wiederherstellen und `restored`-Audit, Kartenkonto und UI prüfen. Bericht `docs/E05_AP05_4_SPIELERCARD_READONLY_TEST_2026-11-13.md`.
+
+
+**E05 AP05.4 – gelbe Karte wiederhergestellt (DEV-Praxistest 13.11.2026):** Nutzer hat das zuvor stornierte Ereignis wiederhergestellt. DB read-only bestätigt Status `active`, keine Stornierungsfelder, Audit-Kette `created → voided → reinstated` (3 Einträge), keine zugehörige Sperre. Stornierung und Wiederherstellung sind damit fachlich und anhand der Auditdaten bestätigt. Bericht `docs/E05_AP05_4_SPIELERCARD_READONLY_TEST_2026-11-13.md`.
