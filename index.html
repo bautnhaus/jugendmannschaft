@@ -1700,6 +1700,33 @@ html[data-theme="dark"] .modalbox button.weekdayChip { box-shadow:none; }
 .mehrView{min-width:0}.mehrContext{margin:0 0 12px;padding:8px 2px}.mehrMenu{display:flex;flex-direction:column;gap:8px}.mehrPageHeader{margin:4px 0 16px;align-items:center}.mehrPageHeader h2{font-size:20px}.mehrMenu .playerListRow{width:100%;text-align:left;cursor:pointer}.mehrMenu .playerListIdentity{min-width:0}.mehrMenu .playerListName{display:block}
 </style>
 
+
+<style id="e05-matchday-options-and-light-suspension-fix">
+/* E05: Optionsbutton mittig rechts; Kader-Chip bleibt separat oben rechts sichtbar. */
+.matchdaySquadTileWrap .matchdaySquadTile{position:relative;padding-right:52px!important}
+.matchdayPlayerOptionsWrap{right:7px!important;top:50%!important;transform:translateY(-50%)!important}
+.matchdaySquadTile.isNominated{min-height:96px!important}
+.matchdaySquadTile .matchdayNominationBadge{position:absolute!important;top:7px!important;right:7px!important;margin:0!important;z-index:1}
+.matchdayPlayerOptionsWrap{z-index:3!important}
+/* Hellmodus: Sperrstatus bleibt deutlich, aber als helle Kachel passend zum übrigen Kader. */
+html[data-theme="light"] .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated),
+html:not([data-theme]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated){
+  background:#fff1f2!important;background-color:#fff1f2!important;
+  border:2px solid #fda4af!important;color:#881337!important;
+  box-shadow:0 1px 3px #0f172a08!important;
+}
+html[data-theme="light"] .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .playerListName,
+html:not([data-theme]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .playerListName{color:#881337!important}
+html[data-theme="light"] .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .playerListPositions,
+html[data-theme="light"] .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .playerListLevel,
+html:not([data-theme]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .playerListPositions,
+html:not([data-theme]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .playerListLevel{color:#7f1d1d!important}
+html[data-theme="light"] .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .matchdayStatusChip,
+html:not([data-theme]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .matchdayStatusChip{
+  background:#ffe4e6!important;border:1px solid #fda4af!important;color:#9f1239!important;
+}
+</style>
+
 </head>
 <body>
 <div id="loginView">
