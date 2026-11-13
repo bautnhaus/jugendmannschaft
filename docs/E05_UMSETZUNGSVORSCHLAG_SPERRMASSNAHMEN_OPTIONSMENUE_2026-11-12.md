@@ -207,3 +207,28 @@ Alle Tests wurden in Supabase DEV innerhalb expliziter Transaktionen ausgeführt
 - Der Praxistest erfolgte über die Datenbank-RPCs; ein UI-/Frontendtest ist noch nicht erfolgt.
 
 **Abnahmeempfehlung:** Datenbankseitige Funktionsprüfungen für den Widerruf sind bestanden. Vor Frontend-Abnahme bleibt der echte Zwei-Session-Konkurrenztest als gezielter Restpunkt dokumentiert. Keine PROD-Freigabe und keine Änderung an `main`.
+
+
+### 10.9 Zwei-Session-Konkurrenztest erfolgreich (13.11.2026)
+
+Ein echter paralleler Lauf wurde mit zwei gleichzeitig gestarteten Supabase-SQL-Aufrufen auf isolierten DEV-Testdaten durchgeführt.
+
+**Testaufbau (dritter, sauberer Fixture-Datensatz):**
+- Spieler: `E05 CONCURRENCY TEST 3`
+- Ausnahme war aktiv und bezog sich auf denselben Spieltag wie die offene Sperre.
+- Vor dem Rennen bestand noch keine Nominierung.
+- Session A erhielt den spielerbezogenen Advisory Lock, wartete drei Sekunden und führte anschließend den INSERT in `matchday_players` aus.
+- Session B startete eine Sekunde später, wartete kurz und rief `revoke_suspension_exception` auf. Damit konkurrierten INSERT-Trigger und Widerrufs-RPC um denselben Advisory Lock.
+
+**Ergebnis:**
+- Beide SQL-Aufrufe wurden erfolgreich abgeschlossen.
+- Der INSERT konnte unter aktiver Ausnahme zuerst committen.
+- Der Widerruf wurde serialisiert danach ausgeführt.
+- Der Widerrufs-RPC entfernte die inzwischen bestehende Nominierung innerhalb seiner Transaktion.
+- Read-only Nachprüfung: Ausnahme widerrufen, keine Nominierung mehr vorhanden, Audit enthält `nomination_removed=true` und `played=false)-Snapshot.
+
+**Bewertung: BESTANDEN.** Der kritische Konkurrenzfall „Nominierung während gleichzeitigem Ausnahme-Widerruf“ wurde mit zwei echten Datenbanksitzungen nachgewiesen. Der Spieler kann nach dem Widerruf nicht im gesperrten Spieltag nominiert verbleiben.
+
+### 10.10 Testdaten und Audit-Aufbewahrung
+
+Die Testspieler/-ereignisse/-sperren/-ausnahmen wurden mit eindeutigem `E05 CONCURRENCY TEST`-Präfix angelegt. Die unveränderlichen Sperren-Audit-Einträge verhindern eine vollständige Löschung der zugehörigen Testhistorie (FK `ON DELETE RESTRICT` und append-only Trigger). Diese Datensätze bleiben daher als gekennzeichnete DEV-Testartefakte erhalten; es wurde kein Audit-Schutz umgangen und keine Audit-Zeile gelöscht. Keine dieser Testdaten betrifft PROD.
