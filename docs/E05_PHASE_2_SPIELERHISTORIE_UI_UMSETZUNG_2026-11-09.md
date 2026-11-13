@@ -94,3 +94,12 @@ Die aktuelle DB-Funktion kann Ereignisstatus von Karten korrigieren, aber weder 
 - Audit-Namensauflösung bleibt eingeschränkt: fehlende Akteur-Snapshots können Trainer aufgrund der bestehenden `profiles_select`-RLS-Policy nicht zuverlässig durch Profil-Lookup ergänzen. Separate SQL-Lösung nicht Teil dieser Prüfung.
 - Ausschließlich SELECT-Abfragen; keine Testdaten angelegt, keine Daten verändert, keine SQL-/Schema-/RLS-/PROD-Änderung.
 - Browser-/RPC-Praxistests der Storno-/Wiederherstellungs- und Sperrenkorrektur bleiben offen. Details: `docs/E05_AP05_4_SPIELERCARD_READONLY_TEST_2026-11-13.md`.
+
+
+### DEV-Nachtrag 13.11.2026 – Ereignis nach Erfassung nicht in Spielercard sichtbar
+- Nutzer meldete: gerade vergebene Karte fehlte in der Ereignisübersicht, obwohl die Kennzahl auf der Spielercard aktualisiert war.
+- Supabase DEV bestätigte das Ereignis als korrekt gespeichert: aktive gelbe Karte, Begründung „Test“, Training 09.11.2026 „Test für dreißig“. Kein Speicher-/RPC-Fehler.
+- Ursache im Frontend gefunden: `window.playerEventTrainingCache[playerId]` wurde nach erfolgreichem `award_training_behavior_event` nicht invalidiert. Dadurch blieb die Trainingshistorie auf einem älteren Cache-Stand, während die Kennzahlen frisch aus der DB geladen wurden.
+- Behoben in `index.html`: nach erfolgreicher RPC wird der Spieler-Historiencache gelöscht; Trainingsereignisse werden anschließend neu geladen.
+- Commit: `4d127cd39c2ca86e11b7f5c8fbda642f504cdea1`. DEV-Spiegel `jugendmannschaft-dev/main` enthält exakt denselben vollständigen `index.html`-Inhalt wie `develop`; beide vorherigen Fixes (stornierte Karten im Kartenfilter und Cache-Invalidierung) sind enthalten.
+- Keine Datenbankänderung, keine Testdaten angelegt oder geändert, keine PROD-Änderung. Nutzer soll Ereignisübersicht erneut öffnen/aktualisieren und Sichtbarkeit bestätigen.
