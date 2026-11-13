@@ -103,3 +103,7 @@ Die aktuelle DB-Funktion kann Ereignisstatus von Karten korrigieren, aber weder 
 - Behoben in `index.html`: nach erfolgreicher RPC wird der Spieler-Historiencache gelöscht; Trainingsereignisse werden anschließend neu geladen.
 - Commit: `4d127cd39c2ca86e11b7f5c8fbda642f504cdea1`. DEV-Spiegel `jugendmannschaft-dev/main` enthält exakt denselben vollständigen `index.html`-Inhalt wie `develop`; beide vorherigen Fixes (stornierte Karten im Kartenfilter und Cache-Invalidierung) sind enthalten.
 - Keine Datenbankänderung, keine Testdaten angelegt oder geändert, keine PROD-Änderung. Nutzer soll Ereignisübersicht erneut öffnen/aktualisieren und Sichtbarkeit bestätigen.
+
+
+### Nachtrag 13.11.2026 – Safari-Cache
+Nutzer bestätigte: Nach vollständigem Neuladen der DEV-Seite in Safari erschien die bereits korrekt gespeicherte und zugeordnete gelbe Karte in der Spielercard-Historie. Ursache der zunächst fehlenden Anzeige war ein veralteter Browser-Cache, kein Fehler in Datenbank oder Ereigniszuordnung. Der Kartenfilter-Fix aus Commit `27eb0dd` ist davon unabhängig und betrifft weiterhin die Auffindbarkeit von Trainings mit ausschließlich stornierten Karten.
