@@ -361,3 +361,12 @@ Alle drei gehören zum selben DEV-Team. Jeder Datensatz besitzt bereits je einen
 - Die im System-Darkmode bestätigte Darstellung wurde auf den expliziten Darkmode übertragen: dunkler roter Sperr-Chip (`#5b2029`), helle rote Schrift (`#fecaca`), rote Kontur (`#f87171`). Auch Kachelfläche, Positions-Chips und Textfarben verwenden nun identische Werte.
 - Änderung ausschließlich CSS für `html[data-theme="dark"]` und regulär gesperrte, nicht nominierte Spieltagskacheln. Keine Änderung an Ausnahme-, Empfehlungs-, Nominierungs- oder Datenbanklogik.
 - JavaScript-Modul syntaktisch geprüft. Visueller iPhone-Nachtest beider Darkmode-Wege steht noch aus.
+
+
+### 10.21 Korrektur nach Screenshotvergleich: nur Ausnahme-Chip im Darkmode angleichen (13.11.2026)
+
+- Nutzer meldet nach 10.20 eine unerwünschte Änderung: Die explizite Darkmode-Regel hatte nicht nur den Chip, sondern die gesamte Ausnahme-Kachel rot eingefärbt. Der System-Darkmode zeigte dagegen die gewünschte normale dunkle Kachel mit rotem Ausnahme-Chip.
+- Die zu breit gefasste explizite Darkmode-Sperrkachelregel wurde vollständig entfernt.
+- Neue, eng begrenzte Regeln formatieren ausschließlich `.matchdayStatusChip` innerhalb einer `.hasSuspensionException`-Kachel dunkelrot mit roter Kontur und heller Schrift (`#5b2029`, `#f87171`, `#fecaca`) – sowohl bei explizitem Darkmode als auch bei System-Darkmode.
+- Kachelfläche, Kachelkontur, Positions-Chips, Empfehlung und Nominierung bleiben unverändert. Die System-Darkmode-Darstellung der Ausnahme-Kachel dient als verbindliche Blaupause.
+- JavaScript-Modul syntaktisch geprüft; CSS-Selektoren auf beide Darkmode-Wege geprüft. Visueller iPhone-Nachtest steht noch aus.
