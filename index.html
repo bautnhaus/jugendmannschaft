@@ -1754,6 +1754,34 @@ html:not([data-theme]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNomin
 .matchdaySquadTile.isNominated{min-height:104px!important}
 </style>
 
+<style id="e05-matchday-suspension-system-dark-fix">
+/* E05: System-Darkmode für gesperrte Spieltagskacheln.
+   Greift nur bei Systemmodus ohne explizite Theme-Auswahl. */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]):not([data-theme="dark"]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) {
+    background:#3b2027!important;
+    background-color:#3b2027!important;
+    border:2px solid #f87171!important;
+    color:#fef2f2!important;
+  }
+  html:not([data-theme="light"]):not([data-theme="dark"]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .playerListName,
+  html:not([data-theme="light"]):not([data-theme="dark"]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .playerListLevel {
+    color:#fef2f2!important;
+  }
+  html:not([data-theme="light"]):not([data-theme="dark"]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .playerListPositions,
+  html:not([data-theme="light"]):not([data-theme="dark"]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .positionBadge {
+    background:#263449!important;
+    border-color:#475569!important;
+    color:#e2e8f0!important;
+  }
+  html:not([data-theme="light"]):not([data-theme="dark"]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .matchdayStatusChip {
+    background:#5b2029!important;
+    border-color:#f87171!important;
+    color:#fecaca!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="loginView">
