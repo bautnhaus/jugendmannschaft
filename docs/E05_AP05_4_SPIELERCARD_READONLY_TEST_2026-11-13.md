@@ -168,3 +168,18 @@ Der Nutzer hat die offene rote Sperre von „Spieler Vorsicht“ manuell neu zug
 Damit sind Speichern, alter/neuer Zielwert, Audit-Nachvollziehbarkeit und Erhalt des offenen Sperrstatus bestätigt. Der neue Zielspieltag hat keinen Gegner-Snapshot; das entspricht dem aktuellen Datensatz des Zielspieltags. Ob die UI die manuelle Zielbindung nach späteren automatischen Neuberechnungen respektiert, ist noch nicht durch einen Folge-/Regressionstest belegt.
 
 Keine Testdaten angelegt oder gelöscht; keine SQL-/Datenbankänderung.
+
+
+## Read-only Analyse: Auslöser der automatischen Sperren-Neuzuordnung
+
+**Datum:** 14.11.2026 · **Umgebung:** Supabase DEV · **Ergebnis:** Mechanismus identifiziert, keine Datenänderung.
+
+- Es existiert kein Trigger auf `matchdays`, `training_behavior_events`, `training_suspensions` oder `training_suspension_exceptions`, der bei beliebigen Spieltagsänderungen automatisch `e05_assign_player_suspensions` ausführt.
+- Die zentrale Routine `e05_assign_player_suspensions(p_team_id,p_player_id,p_actor_id)` schützt gültige manuelle Zielbindungen: Sie reserviert zuerst gültige Ziele mit `manual_target_locked=true` und überspringt diese Sperren anschließend unverändert.
+- Wird eine manuelle Zielbindung ungültig (z. B. Zielspieltag nicht mehr geplant, nicht mehr zukünftig oder durch aktive Ausnahme ausgeschlossen), wird die Sperre entsperrt und automatisch neu zugeordnet; dies wird auditiert.
+- Die Routine wird u. a. von `assign_next_suspension_matchday`, `award_training_behavior_event`, `e05_reconcile_suspensions_after_event_correction`, `grant_suspension_exception`, `revoke_suspension_exception` und `serve_matchday_suspensions` aufgerufen.
+- Die manuelle Korrektur selbst erfolgt über `correct_suspension`; sie setzt `manual_target_locked=true`.
+
+**Testdesign:** Für einen kontrollierten Test wird ein isolierter DEV-Testspieler mit eigenem roten Kartenereignis und offener Sperre benötigt. Nach manueller Zielkorrektur wird der bestehende Aufrufweg `assign_next_suspension_matchday` ausgelöst und anschließend geprüft, dass Zielspieltag, `manual_target_locked=true` und Status `open` erhalten bleiben. Danach alle Testdatensätze samt abhängigen Audit-Einträgen vollständig entfernen und per SELECT auf Restbestände prüfen.
+
+Es wurde noch kein Testspieler angelegt und keine Funktion ausgeführt. Ausschließlich Metadaten-/Funktionsdefinitionen lesend geprüft. Keine SQL-Schreiboperation, keine Änderung an DEV-Daten, PROD oder `main`.
