@@ -356,3 +356,6 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 - **Status:** Code in `develop` geschrieben und anschließend erneut abgerufen/verifiziert. DEV-Deploy-/Syntaxprüfung und manueller Browser-Praxistest stehen noch aus.
 - **Test:** Peter am Spieltag 14.11.2026 nominieren; der gelbe Chip „Sperrausgleich vorgemerkt“ muss nach erfolgreichem Speichern verschwinden, weil die DB den Status `cancelled` liefert. Eine offene Vormerkung bei einem nicht nominierten Spieler muss weiterhin gelb erscheinen.
 - Keine SQL-Ausführung, keine Schema-/RLS-/Triggeränderung. PROD und GitHub `main` unverändert.
+
+
+**DEV-Praxistest bestanden (13.11.2026):** Nutzer hat bestätigt, dass der gelbe Chip „Sperrausgleich vorgemerkt“ nach erfolgreicher Nominierung unmittelbar verschwindet. E05-Frontend-Korrektur damit fachlich abgeschlossen. Keine SQL-/Datenbankänderung. PROD und GitHub `main` unverändert.
