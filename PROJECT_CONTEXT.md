@@ -379,3 +379,6 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 
 
 **E05 AP05.4 – rote Karte storniert/wiederhergestellt (13.11.2026):** Nutzer bestätigt beide Aktionen für Spieler Vorsicht. Read-only DB-Prüfung: Event `8004ea0d-0d2b-4085-a5f5-46e967993443` ist `active`, Ereignis-Audit `created → voided → reinstated` (3). Zugehörige Sperre ist `open`, zugeordnet zum 14.11.2026 gegen Flensburg; 5 Sperren-Audits mit Aktionen `target_changed → created → voided → reinstated → target_changed`. Rote Karte und Sperre stehen wieder aktiv. Keine zusätzlichen Testdaten angelegt oder gelöscht. Details im E05 AP05.4 Prüfbericht.
+
+
+**E05 AP05.4 – manuelle Sperrenzuordnung (13.11.2026):** Nutzer hat die offene rote Sperre von Spieler Vorsicht neu zugeordnet. Read-only DB-Prüfung: Event bleibt `active`; Sperre bleibt `open`; Zielspieltag wurde von 14.11.2026 (Flensburg) auf 15.11.2026 (`planned`) geändert; Audit-Aktion `corrected` vorhanden und dokumentiert beide Zielwerte; `manual_target_locked=true`. Speicherung, Audit und Statuserhalt bestätigt. Folgeprüfung, ob die manuelle Zielbindung automatische Neuberechnungen übersteht, bleibt offen. Keine Testdaten oder SQL-Änderungen. Details im AP05.4 Prüfbericht.
