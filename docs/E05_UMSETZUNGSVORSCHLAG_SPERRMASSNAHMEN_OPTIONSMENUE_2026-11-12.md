@@ -248,3 +248,25 @@ Die Testspieler/-ereignisse/-sperren/-ausnahmen wurden mit eindeutigem `E05 CONC
 - JavaScript-Modul wurde nach der Änderung erfolgreich syntaktisch geparst. Strukturprüfungen bestätigten genau einen neuen Kachel-Wrapper, den separaten Optionsbutton, den Toggle-Handler und den unveränderten Nominierungshandler.
 
 **Abgrenzung:** Dies ist der erste strukturelle Frontend-Schritt, noch keine vollständige Umsetzung aller vier Sperraktionen. Widerruf der Ausnahme sowie Planen/Abbrechen des vorzeitigen Sperrendes sind noch nicht verdrahtet. Ebenso stehen DEV-Browser-/iPhone-Tests (Light-/Darkmode, Menüverhalten und Nominierung) noch aus. Keine Datenbankänderung, kein SQL und keine PROD-Änderung.
+
+
+### 10.12 Frontend – vier Sperraktionen im Kachel-Optionsmenü (13.11.2026)
+
+**Branch:** `develop`  
+**Datei:** `index.html`  
+**Commit:** `afd6f11d1d371fc5ecbdad88278419df931e0929`
+
+- Der Sperrstatus-Loader liest zusätzlich `matchday_early_suspension_resets` für den ausgewählten Team-/Spieltagkontext.
+- Das Drei-Punkte-Menü zeigt abhängig vom aktuellen Zustand:
+  - „Ausnahme erteilen“ bei offener Sperre ohne aktive Ausnahme;
+  - „Ausnahme zurücknehmen“ bei aktiver Ausnahme;
+  - „Sperrausgleich vormerken“ bei zukünftigem geplantem Spieltag, aktivem und nicht nominiertem Spieler ohne bereits vorgemerkten oder angewendeten Reset;
+  - „Vormerkung zurücknehmen“ bei einem noch offenen Reset.
+- Die bestehende Ausnahme-Erteilung und die drei weiteren Aktionen verwenden jeweils die vorhandenen RPCs. Für jede Aktion ist eine nicht leere Begründung erforderlich. Die RPCs bleiben die maßgebliche Berechtigungs- und Zustandsprüfung.
+- Nach erfolgreichem RPC werden Sperr-/Ausnahmestatus und die tatsächlichen `matchday_players`-Zeilen neu geladen. Die UI übernimmt keine optimistische lokale Nominierungs- oder Ausnahmeänderung.
+- Mehrfachausführung wird während eines laufenden Requests im Frontend verhindert.
+- Das Menü erhält ergänzende explizite Darkmode-Regeln.
+
+**Statische Prüfung:** Das JavaScript-Modul wurde nach der Änderung erfolgreich syntaktisch geparst. Strukturprüfungen bestätigten den zusätzlichen Reset-Read, genau einen Reset-State, die Menü-Renderingfunktion, die drei neuen RPC-Aufrufe und den anschließenden Daten-Refresh.
+
+**Noch ausstehend:** Browser-/DEV-Praxistest durch den Nutzer, insbesondere iPhone-Bedienung, Klicktrennung zwischen Kachel und Optionsmenü, Light-/Darkmode sowie die vier tatsächlichen RPC-Abläufe mit geeigneten DEV-Testfällen. Es wurde keine Datenbankänderung und kein SQL ausgeführt; `main` und PROD blieben unangetastet.
