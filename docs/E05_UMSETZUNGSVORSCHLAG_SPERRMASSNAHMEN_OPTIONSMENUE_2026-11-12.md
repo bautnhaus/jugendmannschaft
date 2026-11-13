@@ -370,3 +370,14 @@ Alle drei gehören zum selben DEV-Team. Jeder Datensatz besitzt bereits je einen
 - Neue, eng begrenzte Regeln formatieren ausschließlich `.matchdayStatusChip` innerhalb einer `.hasSuspensionException`-Kachel dunkelrot mit roter Kontur und heller Schrift (`#5b2029`, `#f87171`, `#fecaca`) – sowohl bei explizitem Darkmode als auch bei System-Darkmode.
 - Kachelfläche, Kachelkontur, Positions-Chips, Empfehlung und Nominierung bleiben unverändert. Die System-Darkmode-Darstellung der Ausnahme-Kachel dient als verbindliche Blaupause.
 - JavaScript-Modul syntaktisch geprüft; CSS-Selektoren auf beide Darkmode-Wege geprüft. Visueller iPhone-Nachtest steht noch aus.
+
+
+### 10.22 Theme-Korrektur nach erneutem iPhone-Screenshotvergleich (13.11.2026)
+
+- Nutzerprüfung zeigt: System-Darkmode ist korrekt. Im explizit gewählten Darkmode blieb die Ausnahme-Kachel jedoch rot eingefärbt; im Hellmodus ebenfalls. Der Ausnahme-Chip selbst war bereits korrekt rot.
+- Ursache: ältere, spezifischere Theme-Regeln aus dem früheren Kachel-CSS färbten auch `.hasSuspensionException` wie eine offene Sperre. Die vorherige Korrektur hatte diese Kachelregeln nicht mit ausreichender Selektorspezifität neutralisiert.
+- Ergänzt wurden gezielte Theme-Regeln mit höherer Spezifität für Ausnahme-Kacheln ohne Empfehlung/Nominierung:
+  - manueller Darkmode: neutrale dunkle Kachelfläche (`#111827`), normale Kontur/Textfarben;
+  - manueller Hellmodus: weiße Kachelfläche, normale Kontur/Textfarben.
+- Empfehlungs- und Nominierungsdarstellung wird durch die Regeln ausdrücklich ausgenommen. Der rote Ausnahme-Chip bleibt separat geregelt. Der System-Darkmode wird nicht verändert, da er laut Nutzerprüfung bereits korrekt ist.
+- JavaScript-Modul syntaktisch geprüft; Selektor-/Scope-Prüfungen erfolgreich. Visueller DEV-Nachtest nach Deployment steht aus.
