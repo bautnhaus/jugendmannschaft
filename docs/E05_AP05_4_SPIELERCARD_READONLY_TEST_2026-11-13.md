@@ -67,3 +67,8 @@ Ohne authentifizierte Browser-Sitzung eines Trainers/Mannschaftsadmins wurden ke
 
 Für diese Schreibtests sollen ausschließlich klar gekennzeichnete Testdatensätze verwendet werden. Falls sie angelegt werden, müssen IDs protokolliert und sämtliche abhängigen Datensätze/Audits nach Abschluss kontrolliert entfernt werden. Keine Änderung an vorhandenen echten DEV-Ereignissen.
 
+
+
+## 6. Nutzerbefund und Cachefehler (13.11.2026)
+
+Der Nutzer meldete eine soeben vergebene Karte, die in der Ereignisübersicht fehlte, während die Kennzahl auf der Spielercard aktualisiert war. Die DEV-Datenbank bestätigte das Ereignis als korrekt gespeichert (aktive gelbe Karte, Begründung „Test“, Training 09.11.2026 „Test für dreißig“). Ursache war ein nicht invalidierter `window.playerEventTrainingCache[playerId]` nach erfolgreicher `award_training_behavior_event`-RPC. Die Kennzahlen wurden frisch geladen, die Trainingsliste verwendete dagegen einen alten Cache. Behoben: Cache wird nach erfolgreicher RPC gelöscht und Trainingsereignisse werden neu geladen. Commit `4d127cd39c2ca86e11b7f5c8fbda642f504cdea1`. Der vollständige DEV-Spiegel-`index.html`-Inhalt entspricht exakt dem develop-Inhalt. Keine Datenbank-/Datenänderung und keine Testdaten.
