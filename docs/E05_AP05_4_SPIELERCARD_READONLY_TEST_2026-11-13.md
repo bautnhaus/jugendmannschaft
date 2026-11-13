@@ -116,3 +116,19 @@ Der Nutzer hat das zuvor stornierte Kartenereignis wiederhergestellt. Die anschl
 - Zugehörige Sperren: keine
 
 Damit sind Stornierung und Wiederherstellung einschließlich vollständiger Audit-Kette bestätigt. Das Ereignis ist wieder aktiv; es wurde kein künstlicher Testdatensatz angelegt oder gelöscht.
+
+
+## Manueller DEV-Test: Rote Karte storniert und wiederhergestellt
+
+**Ergebnis: Bestanden (13.11.2026; Nutzerbestätigung plus read-only DB-Prüfung).**
+
+Der Nutzer bestätigte, dass die rote Karte von „Spieler Vorsicht“ bereits storniert und wiederhergestellt wurde. Die Datenbankkontrolle bestätigt den wiederhergestellten Zustand:
+- Ereignis-ID: `8004ea0d-0d2b-4085-a5f5-46e967993443`
+- Typ: `red_card`
+- Ereignisstatus: `active`
+- Ereignis-Audit: `created → voided → reinstated` (3 Einträge)
+- Zugehörige Sperre: `open`
+- Sperrzuordnung: 14.11.2026, Gegner Flensburg
+- Sperren-Audit: 5 Einträge; Aktionen `target_changed → created → voided → reinstated → target_changed`
+
+Damit sind Stornierung/Wiederherstellung einer roten Karte und die dazugehörige Sperren-Lebenszyklus-Auditkette im DEV-Fall bestätigt. Die rote Karte und die offene Sperre stehen wieder im aktiven Zustand. Es wurden keine zusätzlichen Testdaten angelegt und keine Datensätze gelöscht.
