@@ -37,5 +37,5 @@ Die zentrale Stelle deckt sowohl die direkte Kachelnominierung als auch andere A
 - Änderung nach dem aktuellen `develop/index.html`-Stand vorgenommen.
 - Commit erfolgreich auf `develop` geschrieben.
 - Datei anschließend erneut aus `develop` geladen; die Änderung ist im aktuellen Blob enthalten.
-- **Noch ausstehend:** JavaScript-Syntax-/Deploy-Prüfung über den DEV-Workflow und manueller Browser-Test: Peter nominieren, gelben Chip muss nach erfolgreichem Speichern verschwinden; Datenbankstatus bleibt `cancelled`. Zusätzlich prüfen, dass eine weiterhin offene Vormerkung ohne Nominierung gelb angezeigt wird.
+- **Manueller DEV-Praxistest am 13.11.2026: bestanden (Nutzerbestätigung).** Nach der Nominierung verschwindet der gelbe Chip unmittelbar. Die Korrektur ist damit fachlich bestätigt. PROD und `main` bleiben unverändert.
 - Kein PROD-Release.
