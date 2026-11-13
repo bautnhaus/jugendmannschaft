@@ -1732,6 +1732,25 @@ html:not([data-theme]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNomin
 .playerListRow.matchdaySquadTile.hasSuspensionException:not(.isSuspended):not(.isRecommended):not(.isNominated){border:2px solid var(--line)!important;}
 </style>
 
+<style id="e05-matchday-tile-actions-layout">
+/* E05: Drei-Punkte-Menü oben rechts ohne Buttonfläche; Kader-Chip darunter. */
+.matchdaySquadTileWrap .matchdaySquadTile{padding-right:76px!important;}
+.matchdayPlayerOptionsWrap{right:10px!important;top:8px!important;transform:none!important;z-index:3!important;}
+.matchdayPlayerOptionsButton{
+ width:28px!important;height:28px!important;min-height:28px!important;
+ padding:0!important;border:0!important;border-radius:0!important;
+ background:transparent!important;box-shadow:none!important;
+ color:var(--muted)!important;display:flex;align-items:center;justify-content:center;
+}
+.matchdayPlayerOptionsButton .material-symbols-outlined{font-size:25px;line-height:1}
+.matchdayPlayerOptionsWrap .matchdayOptionsMenu{top:32px;right:0}
+.matchdaySquadTile .matchdayNominationBadge{
+ position:absolute!important;top:auto!important;bottom:8px!important;right:9px!important;
+ margin:0!important;z-index:2;max-width:calc(100% - 18px);
+}
+.matchdaySquadTile.isNominated{min-height:104px!important}
+</style>
+
 </head>
 <body>
 <div id="loginView">
