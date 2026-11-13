@@ -1784,6 +1784,33 @@ html:not([data-theme]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNomin
 
 
 
+<style id="e05-exception-tile-theme-parity">
+/* E05: Ausnahme ohne Empfehlung/Nominierung ist eine normale Kachel.
+   Überschreibt ältere Theme-Regeln, die Ausnahme fälschlich wie Sperre einfärben. */
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.hasSuspensionException:not(.isRecommended):not(.isNominated) {
+  background:#111827!important;
+  background-color:#111827!important;
+  border:2px solid var(--line)!important;
+  color:var(--text)!important;
+  box-shadow:none!important;
+}
+html[data-theme="light"] .playerListRow.matchdaySquadTile.hasSuspensionException:not(.isRecommended):not(.isNominated) {
+  background:#ffffff!important;
+  background-color:#ffffff!important;
+  border:2px solid var(--line)!important;
+  color:var(--text)!important;
+  box-shadow:none!important;
+}
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.hasSuspensionException:not(.isRecommended):not(.isNominated) .playerListName,
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.hasSuspensionException:not(.isRecommended):not(.isNominated) .playerListLevel {
+  color:var(--text)!important;
+}
+html[data-theme="light"] .playerListRow.matchdaySquadTile.hasSuspensionException:not(.isRecommended):not(.isNominated) .playerListName,
+html[data-theme="light"] .playerListRow.matchdaySquadTile.hasSuspensionException:not(.isRecommended):not(.isNominated) .playerListLevel {
+  color:var(--text)!important;
+}
+</style>
+
 <style id="e05-exception-chip-darkmode">
 /* E05: Ausnahme-Kachel bleibt im Grundstil; nur ihr Status-Chip wird im Darkmode dunkelrot. */
 html[data-theme="dark"] .playerListRow.matchdaySquadTile.hasSuspensionException .matchdayStatusChip {
