@@ -1,5 +1,7 @@
 -- E05 / AP05 – Prüfentwurf: Ausnahme-Widerruf entfernt bestehende Nominierung atomar
--- Status: REVIEW ONLY – NICHT AUSGEFÜHRT
+-- Status: AM 13.11.2026 als Supabase-DEV-Migration ausgeführt
+-- Migration: e05_atomic_exception_revocation_20261113
+-- Rollback-Entwurf separat dokumentiert; nicht ausgeführt
 -- Ziel nach Freigabe: ausschließlich Supabase DEV
 -- Grundlage: read-only Ist-Stand Supabase DEV am 12.11.2026
 --
