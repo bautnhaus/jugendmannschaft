@@ -334,3 +334,11 @@ Alle drei gehören zum selben DEV-Team. Jeder Datensatz besitzt bereits je einen
 - Beim Öffnen erhält der betreffende Optionsbereich einen eigenen höheren Stacking-Kontext; dadurch liegen nachfolgende Kachel-Icons nicht mehr über dem geöffneten Menü.
 - Der Auslöser des geöffneten Menüs wird währenddessen unsichtbar geschaltet, damit keine Punkte durch die Menüfläche hindurch erscheinen. Klickfläche und Menübedienung bleiben erhalten.
 - JavaScript-Modul syntaktisch geprüft. Visueller iPhone-Test nach DEV-Deployment ausstehend.
+
+
+### 10.18 Korrektur Sichtbarkeit aktiver Menüauslöser und rechter Abstand (13.11.2026)
+
+- Korrektur der vorherigen Anpassung: Das Drei-Punkte-Symbol der aktuell geöffneten Kachel bleibt sichtbar.
+- Die geöffnete Optionsmenü-Wrapper-Ebene behält ihren erhöhten Stacking-Kontext, damit Symbole benachbarter Kacheln nicht über das geöffnete Menü gelegt werden.
+- Rechter Abstand des Symbols zur Kachelkontur von 12 px auf 6 px reduziert; oberer Abstand bleibt 12 px.
+- JavaScript-Modul syntaktisch geprüft. Visueller iPhone-Test nach Deployment ausstehend.
