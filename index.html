@@ -202,6 +202,14 @@ textarea{font:inherit;width:100%;border:1px solid #cbd5e1;border-radius:9px;padd
 /* E08.2 – Angleichung der Spieltagsdetails an die Trainingskomponenten */
 .matchdaySquadTileWrap{position:relative;min-width:0}.matchdaySquadTileWrap .matchdaySquadTile{width:100%;box-sizing:border-box;padding-right:52px}.matchdayPlayerOptionsWrap{position:absolute;right:7px;top:7px;z-index:2}.matchdayPlayerOptionsButton{width:36px;height:36px;min-height:36px;padding:0;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center}.matchdayPlayerOptionsWrap .matchdayOptionsMenu{top:40px;right:0;min-width:205px;max-width:calc(100vw - 40px)}.matchdayPlayerOptionsEmpty{display:block;padding:10px;color:var(--muted);font-size:13px}
 .matchdayOptionsWrap{position:relative;flex:0 0 auto}.matchdayOptionsMenu{position:absolute;z-index:50;right:0;top:44px;min-width:170px;padding:5px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px #0f172a1f}.matchdayOptionsMenu button{display:flex;align-items:center;gap:8px;width:100%;border:0;background:#fff;text-align:left;padding:10px;border-radius:8px;min-height:40px}.matchdayOptionsMenu button:hover{background:#f8fafc}.matchdayOptionsMenu .dangerText{color:#dc2626}
+html[data-theme="dark"] .matchdayPlayerOptionsWrap .matchdayOptionsMenu{background:#111c2e;border-color:#334155;color:#e2e8f0}
+html[data-theme="dark"] .matchdayPlayerOptionsWrap .matchdayOptionsMenu button{background:transparent;color:#e2e8f0}
+html[data-theme="dark"] .matchdayPlayerOptionsWrap .matchdayOptionsMenu button:hover{background:#1e293b}
+@media(prefers-color-scheme:dark){
+ html:not([data-theme="light"]):not([data-theme="dark"]) .matchdayPlayerOptionsWrap .matchdayOptionsMenu{background:#111c2e;border-color:#334155;color:#e2e8f0}
+ html:not([data-theme="light"]):not([data-theme="dark"]) .matchdayPlayerOptionsWrap .matchdayOptionsMenu button{background:transparent;color:#e2e8f0}
+ html:not([data-theme="light"]):not([data-theme="dark"]) .matchdayPlayerOptionsWrap .matchdayOptionsMenu button:hover{background:#1e293b}
+}
 .matchdayTrainingPlayerList{margin-top:8px}.matchdayTrainingPlayerList .trainingPlayerRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #eef2f7;min-width:0}.matchdayTrainingPlayerList .trainingPlayerIdentity{min-width:0;flex:1}.matchdayTrainingPlayerList .trainingPlayerMeta{min-width:0}.matchdayTrainingPlayerList .matchdayAttendanceTags{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:3px}.matchdayTrainingPlayerList .trainingPlayerName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.matchdayRecommendedRow{background:#f0f7ff;border-radius:10px;padding:8px!important;margin:3px 0;border:1px solid #dbeafe}.matchdayRecommendationLabel{display:inline-block;font-size:11px;font-weight:700;color:#1d4ed8;background:#dbeafe;border-radius:999px;padding:2px 7px;margin-top:4px}.matchdayNominationControl{display:flex;align-items:center;gap:5px;flex:0 0 auto;font-size:12px;color:#475569;white-space:nowrap}.matchdayNominationControl input{width:20px;height:20px;min-height:20px;flex:0 0 auto}.matchdayPlayedToggle{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}.matchdayPlayedToggle button{min-height:32px;padding:5px 8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#475569;font-size:12px;white-space:nowrap}.matchdayPlayedToggle button.active.yes{background:#dcfce7;border-color:#86efac;color:#166534;font-weight:700}.matchdayPlayedToggle button.active.no{background:#fef2f2;border-color:#fecaca;color:#b91c1c;font-weight:700}.matchdayNoteLine.expanded .trainingNoteText{display:block!important;-webkit-line-clamp:unset!important;line-clamp:unset!important}.matchdayNoteLine.expanded .material-symbols-outlined:last-child{transform:rotate(180deg)}
 @media(max-width:600px){.matchdayTrainingPlayerList .trainingPlayerRow{gap:7px}.matchdayNominationControl{font-size:11px}.matchdayPlayedToggle button{font-size:11px;padding:5px 6px}.matchdayOptionsMenu{top:40px}}
 
@@ -1824,6 +1832,7 @@ let matchdaySelection=new Set();
 let currentMatchdayId=null;
 let matchdaySuspensionRows=[];
 let matchdayExceptionRows=[];
+let matchdayEarlyResetRows=[];
 let matchdaySuspensionLoadedFor=null;
 let matchdaySuspensionLoading=null;
 function matchdaySuspensionFor(playerId,matchdayId=currentMatchdayId){
@@ -1831,6 +1840,7 @@ function matchdaySuspensionFor(playerId,matchdayId=currentMatchdayId){
   const exception=matchdayExceptionRows.find(x=>x.player_id===playerId&&x.matchday_id===matchdayId&&x.revoked_at==null);
   return {suspension:suspension||null,exception:exception||null,blocked:!!suspension&&!exception};
 }
+
 async function loadMatchdaySuspensions(matchdayId,force=false){
   if(!matchdayId)return;
   if(!force&&matchdaySuspensionLoadedFor===matchdayId)return;
@@ -1838,17 +1848,16 @@ async function loadMatchdaySuspensions(matchdayId,force=false){
   matchdaySuspensionLoading=(async()=>{
     try{
       const c=getClient();
-      const [s,e]=await Promise.all([
+      const [s,e,r]=await Promise.all([
         c.from('training_suspensions').select('id,player_id,player_name_snapshot,suspension_type,status,intended_matchday_id,intended_matchday_date_snapshot,intended_matchday_opponent_snapshot').eq('team_id',team).eq('status','open').not('intended_matchday_id','is',null),
-        c.from('training_suspension_exceptions').select('id,suspension_id,player_id,matchday_id,reason,revoked_at,granted_at').eq('team_id',team).eq('matchday_id',matchdayId)
+        c.from('training_suspension_exceptions').select('id,suspension_id,player_id,matchday_id,reason,revoked_at,granted_at').eq('team_id',team).eq('matchday_id',matchdayId),
+        c.from('matchday_early_suspension_resets').select('id,player_id,matchday_id,status,reason,created_at,applied_at,cancelled_at').eq('team_id',team).eq('matchday_id',matchdayId)
       ]);
-      if(s.error)throw s.error;if(e.error)throw e.error;
-      matchdaySuspensionRows=s.data||[];
-      matchdayExceptionRows=e.data||[];
+      if(s.error)throw s.error;if(e.error)throw e.error;if(r.error)throw r.error;
+      matchdaySuspensionRows=s.data||[];matchdayExceptionRows=e.data||[];matchdayEarlyResetRows=r.data||[];
       matchdaySuspensionLoadedFor=matchdayId;
     }catch(err){
-      matchdaySuspensionLoadedFor=null;
-      console.error('Sperrstatus konnte nicht geladen werden:',err);
+      matchdaySuspensionLoadedFor=null;console.error('Sperrstatus konnte nicht geladen werden:',err);
       showStatus('Sperrstatus konnte nicht geladen werden. Bitte erneut versuchen.','error');
     }finally{matchdaySuspensionLoading=null;}
   })();
@@ -1867,10 +1876,79 @@ window.grantMatchdaySuspensionException=async(suspensionId,playerId)=>{
   try{
     const {error}=await getClient().rpc('grant_suspension_exception',{p_suspension_id:suspensionId,p_matchday_id:md.id,p_reason:reason});
     if(error)throw error;
-    closeModal();await loadMatchdaySuspensions(md.id,true);matchdayExceptionRows=[...(matchdayExceptionRows||[]).filter(x=>!(x.suspension_id===suspensionId&&x.matchday_id===md.id)),{id:'local-'+suspensionId,suspension_id:suspensionId,player_id:playerId,matchday_id:md.id,reason,revoked_at:null,granted_at:new Date().toISOString()}];renderMatchday();
+    closeModal();matchdayPlayerOptionsOpenId=null;await refreshMatchdayAfterSuspensionAction(md);renderMatchday();
     showStatus('Ausnahme erteilt. Die Sperre bleibt bestehen und wurde neu zugeordnet.','ok');
   }catch(e){showStatus('Ausnahme konnte nicht erteilt werden: '+(e.message||e),'error');}
 };
+
+function matchdayPlayerOptionsHtml(player,md){
+  const info=matchdaySuspensionFor(player.id,md.id);
+  const reset=matchdayEarlyResetRows.find(x=>x.player_id===player.id&&x.status==='pending');
+  const resetAlreadyApplied=matchdayEarlyResetRows.some(x=>x.player_id===player.id&&x.status==='applied');
+  const actions=[];
+  if(info.blocked)actions.push("<button type=\"button\" onclick=\"closeMatchdayPlayerOptions();openE05MatchdayAction('grant','"+player.id+"')\">"+materialIcon('verified')+" Ausnahme erteilen</button>");
+  if(info.exception)actions.push("<button type=\"button\" onclick=\"closeMatchdayPlayerOptions();openE05MatchdayAction('revoke','"+player.id+"','"+info.exception.id+"')\">"+materialIcon('undo')+" Ausnahme zurücknehmen</button>");
+  if(reset)actions.push("<button type=\"button\" onclick=\"closeMatchdayPlayerOptions();openE05MatchdayAction('cancelReset','"+player.id+"','"+reset.id+"')\">"+materialIcon('event_busy')+" Vormerkung zurücknehmen</button>");
+  else if(md.status==='planned'&&String(md.date||'')>=todayISO()&&!((md.selected||[]).includes(player.id))&&player.active!==false&&!resetAlreadyApplied)
+    actions.push("<button type=\"button\" onclick=\"closeMatchdayPlayerOptions();openE05MatchdayAction('scheduleReset','"+player.id+"')\">"+materialIcon('event_available')+" Sperrausgleich vormerken</button>");
+  return actions.length?actions.join(''):'<span class="matchdayPlayerOptionsEmpty">Keine Optionen verfügbar</span>';
+}
+window.openE05MatchdayAction=(action,playerId,recordId=null)=>{
+  if(action==='grant'){window.openSuspensionException(playerId);return;}
+  const md=state.matchdays.find(x=>x.id===currentMatchdayId),p=state.players.find(x=>x.id===playerId);
+  if(!md||!p)return;
+  const info=matchdaySuspensionFor(playerId,md.id);
+  const labels={
+    revoke:['Ausnahme zurücknehmen','Die Sperre wird für diesen Spieltag wieder wirksam. Eine noch nicht als Einsatz markierte Nominierung wird bei Bedarf atomar entfernt.','Ausnahme zurücknehmen'],
+    scheduleReset:['Vorzeitigen Sperrausgleich vormerken','Der Sperrausgleich wird für diesen zukünftigen Spieltag vorgemerkt. Eine spätere Nominierung oder Spieltagsabsage storniert die Vormerkung automatisch.','Vormerkung speichern'],
+    cancelReset:['Vormerkung zurücknehmen','Die offene Vormerkung wird storniert. Bereits angewendete Sperrausgleiche bleiben unverändert.','Vormerkung zurücknehmen']
+  };
+  const cfg=labels[action];
+  if(!cfg){showStatus('Unbekannte Sperraktion.','error');return;}
+  if(action==='revoke'&&!info.exception){showStatus('Für diesen Spieltag ist keine aktive Ausnahme vorhanden.','error');return;}
+  if(action==='cancelReset'&&!matchdayEarlyResetRows.some(x=>x.id===recordId&&x.status==='pending')){showStatus('Es gibt keine offene Vormerkung, die zurückgenommen werden kann.','error');return;}
+  if(action==='scheduleReset'&&(md.status!=='planned'||String(md.date||'')<todayISO()||(md.selected||[]).includes(playerId)||p.active===false||matchdayEarlyResetRows.some(x=>x.player_id===playerId&&['pending','applied'].includes(x.status)))){showStatus('Eine Vormerkung ist für diesen Spieler und Spieltag aktuell nicht möglich.','error');return;}
+  const html='<div class="detailHeader"><h2>'+esc(cfg[0])+'</h2></div><p><strong>'+esc(displayName(p))+'</strong> · '+esc(fmtDate(md.date))+(md.opponent?' · '+esc(md.opponent):'')+'</p><p class="muted small">'+esc(cfg[1])+'</p><label class="field"><span>Begründung (Pflichtfeld)</span><textarea id="e05MatchdayActionReason" rows="3" maxlength="1000" placeholder="Begründung eingeben"></textarea></label><div class="toolbar"><button type="button" onclick="closeModal()">Abbrechen</button><button id="e05MatchdayActionSubmit" type="button" class="primary" onclick="submitE05MatchdayAction(\''+action+'\',\''+playerId+'\',\''+(recordId||'')+'\')">'+esc(cfg[2])+'</button></div>';
+  openModal(html);
+};
+async function refreshMatchdayAfterSuspensionAction(md){
+  await loadMatchdaySuspensions(md.id,true);
+  if(matchdaySuspensionLoadedFor!==md.id)throw new Error('Die Aktion wurde gespeichert, aber der Sperrstatus konnte nicht neu geladen werden. Bitte den Spieltag erneut öffnen.');
+  const {data,error}=await getClient().from('matchday_players').select('matchday_id,player_id,team_number,goalkeeper,played').eq('matchday_id',md.id);
+  if(error)throw error;
+  const rows=data||[];
+  md.playerRows=rows;md.selected=rows.map(x=>x.player_id);md.played={};
+  rows.forEach(x=>{md.played[x.player_id]=x.played===true?true:(x.played===false?false:null);});
+  md.teams=rows.filter(x=>x.team_number).reduce((acc,x)=>{const n=Number(x.team_number);(acc[n]||(acc[n]=[])).push(x.player_id);return acc;},{});
+  md.goalkeepers=rows.filter(x=>x.team_number&&x.goalkeeper).reduce((acc,x)=>{acc[Number(x.team_number)]=x.player_id;return acc;},{});
+  matchdaySelection=new Set(md.selected);
+}
+let matchdayActionBusy=false;
+window.submitE05MatchdayAction=async(action,playerId,recordId)=>{
+  if(matchdayActionBusy)return;
+  const md=state.matchdays.find(x=>x.id===currentMatchdayId),reason=$('e05MatchdayActionReason')?.value?.trim();
+  if(!md||!reason){showStatus('Bitte eine Begründung eingeben.','error');return;}
+  const btn=$('e05MatchdayActionSubmit');matchdayActionBusy=true;if(btn)btn.disabled=true;
+  let rpcSucceeded=false;
+  try{
+    let rpc,args;
+    if(action==='revoke'){
+      const info=matchdaySuspensionFor(playerId,md.id);
+      if(!info.exception||info.exception.id!==recordId)throw new Error('Die aktive Ausnahme wurde nicht gefunden.');
+      rpc='revoke_suspension_exception';args={p_exception_id:recordId,p_revoke_reason:reason};
+    }else if(action==='scheduleReset'){rpc='schedule_early_suspension_reset';args={p_matchday_id:md.id,p_player_id:playerId,p_reason:reason};}
+    else if(action==='cancelReset'){rpc='cancel_early_suspension_reset';args={p_reset_id:recordId,p_reason:reason};}
+    else throw new Error('Unbekannte Sperraktion.');
+    const {error}=await getClient().rpc(rpc,args);if(error)throw error;
+    rpcSucceeded=true;closeModal();matchdayPlayerOptionsOpenId=null;
+    await refreshMatchdayAfterSuspensionAction(md);renderMatchday();
+    showStatus(action==='revoke'?'Ausnahme zurückgenommen. Sperrstatus und Nominierung wurden aktualisiert.':action==='scheduleReset'?'Vorzeitiger Sperrausgleich wurde vorgemerkt.':'Vormerkung wurde zurückgenommen.','ok');
+  }catch(e){
+    showStatus((rpcSucceeded?'Aktion gespeichert; Aktualisierung der Anzeige fehlgeschlagen: ':'Sperraktion konnte nicht ausgeführt werden: ')+(e.message||e),'error');
+    if(btn)btn.disabled=false;
+  }finally{matchdayActionBusy=false;}
+};
+
 let matchdaySubTab='squad';
 let matchdayTeamTab=0;
 let matchdayOptionsOpen=false;
@@ -3101,7 +3179,7 @@ function renderMatchday(){
       const ranked=top16Ranking(true);
       body=`<div class="matchdayActionStack"><button type="button" class="trainingBulkAction" onclick="saveMatchdayRecommendation()">${materialIcon('refresh')} Neu berechnen</button><button type="button" class="trainingBulkAction" onclick="nominateRecommendedPlayers()" ${md.recommendation?.length?'':'disabled'}>${materialIcon('check_circle')} Empfehlung nominieren</button><button type="button" class="trainingBulkAction" onclick="clearMatchday()">${materialIcon('close')} Auswahl leeren</button></div>
       ${md.recommendationAt?`<p class="small muted matchdaySnapshotNote">${materialIcon('lock')} Gespeicherte Empfehlung · ${esc(new Date(md.recommendationAt).toLocaleString('de-DE'))}. Sie bleibt unverändert, bis du sie neu berechnest.</p>`:''}
-      ${matchdayControlsMarkup()}<div class="matchdaySquadTileList">${matchdayFilteredPlayers(ranked).map(p=>`<div class="matchdaySquadTileWrap"><button type="button" class="playerListRow matchdaySquadTile ${recIds.has(p.id)?'isRecommended':''} ${selectedIds.has(p.id)?'isNominated':''} ${matchdaySuspensionFor(p.id,md.id).blocked?'isSuspended':''} ${matchdaySuspensionFor(p.id,md.id).exception?'hasSuspensionException':''}" onclick="toggleMatchdayNomination('${p.id}')" aria-pressed="${selectedIds.has(p.id)}"><span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}${selectedIds.has(p.id)?materialIcon('apparel','playerCardSquadIcon'):''}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span>${matchdaySuspensionFor(p.id,md.id).blocked?'<span class="matchdayStatusChip">Gesperrt · Ausnahme möglich</span>':matchdaySuspensionFor(p.id,md.id).exception?'<span class="matchdayStatusChip">Ausnahme erteilt</span>':''}<span class="playerListPositions">${playerPositionsHtml(p)}</span><span class="playerListLevel">${playerLevelHtml(p)}</span></span>${selectedIds.has(p.id)?'<span class="matchdayNominationBadge">Kader</span>':''}</button><div class="matchdayPlayerOptionsWrap"><button type="button" class="iconMore matchdayPlayerOptionsButton" aria-label="Optionen für ${esc(displayName(p))}" aria-expanded="${matchdayPlayerOptionsOpenId===p.id}" onclick="toggleMatchdayPlayerOptions(event,'${p.id}')">${materialIcon('more_vert')}</button>${matchdayPlayerOptionsOpenId===p.id?`<div class="matchdayOptionsMenu">${matchdaySuspensionFor(p.id,md.id).blocked?`<button type="button" onclick="closeMatchdayPlayerOptions();openSuspensionException('${p.id}')">${materialIcon('verified')} Ausnahme erteilen</button>`:'<span class="matchdayPlayerOptionsEmpty">Keine Optionen verfügbar</span>'}</div>`:''}</div></div>`).join('')||'<p class="muted playerRecordEmpty">Keine passenden Spieler gefunden.</p>'}</div>`;
+      ${matchdayControlsMarkup()}<div class="matchdaySquadTileList">${matchdayFilteredPlayers(ranked).map(p=>`<div class="matchdaySquadTileWrap"><button type="button" class="playerListRow matchdaySquadTile ${recIds.has(p.id)?'isRecommended':''} ${selectedIds.has(p.id)?'isNominated':''} ${matchdaySuspensionFor(p.id,md.id).blocked?'isSuspended':''} ${matchdaySuspensionFor(p.id,md.id).exception?'hasSuspensionException':''}" onclick="toggleMatchdayNomination('${p.id}')" aria-pressed="${selectedIds.has(p.id)}"><span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}${selectedIds.has(p.id)?materialIcon('apparel','playerCardSquadIcon'):''}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span>${matchdaySuspensionFor(p.id,md.id).blocked?'<span class="matchdayStatusChip">Gesperrt · Ausnahme möglich</span>':matchdaySuspensionFor(p.id,md.id).exception?'<span class="matchdayStatusChip">Ausnahme erteilt</span>':''}<span class="playerListPositions">${playerPositionsHtml(p)}</span><span class="playerListLevel">${playerLevelHtml(p)}</span></span>${selectedIds.has(p.id)?'<span class="matchdayNominationBadge">Kader</span>':''}</button><div class="matchdayPlayerOptionsWrap"><button type="button" class="iconMore matchdayPlayerOptionsButton" aria-label="Optionen für ${esc(displayName(p))}" aria-expanded="${matchdayPlayerOptionsOpenId===p.id}" onclick="toggleMatchdayPlayerOptions(event,'${p.id}')">${materialIcon('more_vert')}</button>${matchdayPlayerOptionsOpenId===p.id?`<div class="matchdayOptionsMenu">${matchdayPlayerOptionsHtml(p,md)}</div>`:'' }</div></div>`).join('')||'<p class="muted playerRecordEmpty">Keine passenden Spieler gefunden.</p>'}</div>`;
     }else if(matchdaySubTab==='attendance'){
       const nominated=state.players.filter(p=>selectedIds.has(p.id));
       body=`<div class="matchdayActionRow"><button type="button" class="primary" onclick="setAllMatchdayAttendance(true)"><span class="material-symbols-outlined">check</span><span>Alle Spieler als anwesend markieren</span></button></div>
