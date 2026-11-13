@@ -232,3 +232,19 @@ Ein echter paralleler Lauf wurde mit zwei gleichzeitig gestarteten Supabase-SQL-
 ### 10.10 Testdaten und Audit-Aufbewahrung
 
 Die Testspieler/-ereignisse/-sperren/-ausnahmen wurden mit eindeutigem `E05 CONCURRENCY TEST`-Präfix angelegt. Die unveränderlichen Sperren-Audit-Einträge verhindern eine vollständige Löschung der zugehörigen Testhistorie (FK `ON DELETE RESTRICT` und append-only Trigger). Diese Datensätze bleiben daher als gekennzeichnete DEV-Testartefakte erhalten; es wurde kein Audit-Schutz umgangen und keine Audit-Zeile gelöscht. Keine dieser Testdaten betrifft PROD.
+
+
+### 10.11 Frontend-Umsetzung – erster struktureller Schritt (13.11.2026)
+
+**Branch:** `develop`  
+**Datei:** `index.html`  
+**Commit:** `4231b86f3e0370ef0356a77761a582e77bfbc735`
+
+- Die bisherige Kaderkachel bleibt ein eigener Button und behält unverändert `toggleMatchdayNomination(playerId)` als Klickaktion.
+- Die Kachel liegt nun in einem umschließenden Container; der separate Drei-Punkte-Button ist ein Geschwisterelement und kein verschachtelter Button.
+- Das Optionsmenü kann geöffnet und durch Klick außerhalb geschlossen werden. Der Menübutton verhindert die Weitergabe des Klicks an die Nominierungsaktion.
+- Der bestehende Ausnahme-Dialog wird im gesperrten Zustand aus dem separaten Menü aufgerufen.
+- CSS ergänzt Positionierung und Touch-Ziel für schmale Ansichten; bestehende Menügestaltung wird wiederverwendet.
+- JavaScript-Modul wurde nach der Änderung erfolgreich syntaktisch geparst. Strukturprüfungen bestätigten genau einen neuen Kachel-Wrapper, den separaten Optionsbutton, den Toggle-Handler und den unveränderten Nominierungshandler.
+
+**Abgrenzung:** Dies ist der erste strukturelle Frontend-Schritt, noch keine vollständige Umsetzung aller vier Sperraktionen. Widerruf der Ausnahme sowie Planen/Abbrechen des vorzeitigen Sperrendes sind noch nicht verdrahtet. Ebenso stehen DEV-Browser-/iPhone-Tests (Light-/Darkmode, Menüverhalten und Nominierung) noch aus. Keine Datenbankänderung, kein SQL und keine PROD-Änderung.
