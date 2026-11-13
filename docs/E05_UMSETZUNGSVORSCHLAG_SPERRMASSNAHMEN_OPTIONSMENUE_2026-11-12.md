@@ -297,3 +297,21 @@ Alle drei gehören zum selben DEV-Team. Jeder Datensatz besitzt bereits je einen
 
 
 **Ausführungshinweis (13.11.2026):** Der direkte Datenbank-UPDATE-Versuch wurde durch den bestehenden Trigger `protect_player_active_status()` mit SQLSTATE `42501` abgewiesen, da die direkte SQL-Sitzung keinen autorisierten Mannschaftsadmin-Kontext besitzt. Es wurde **kein Datensatz geändert**. Die drei Spieler müssen über die bestehende Admin-Funktion `deletePlayer(id)` in der App aus dem aktiven Kader entfernt werden; diese setzt `active=false`, erhält Spielerhistorie und ist für den Mannschaftsadmin vorgesehen. Keine Umgehung des Triggers.
+
+
+### 10.15 Vollständige Entfernung der drei E05-Concurrency-Testspieler und Super-Admin-Korrektur (13.11.2026)
+
+**DEV-Datenbereinigung:** Die drei eindeutig identifizierten Testspieler wurden aus `public.players` vollständig gelöscht (IDs fest zugeordnet und zusätzlich über Team-ID sowie exakten Namen abgesichert). Die Löschung gab drei Spielerzeilen zurück. Read-only Nachprüfung: `players_remaining = 0`.
+
+- Reguläre abhängige Planungs-/Zuordnungsdaten haben keine Datensätze für diese Spieler enthalten; CASCADE-Beziehungen waren daher ohne weitere operative Daten.
+- Die drei E05-Test-Events, drei Test-Sperren und drei Test-Ausnahmen bleiben als historische Snapshots erhalten. Ihre `player_id`-Bezüge wurden durch die vorgesehenen `ON DELETE SET NULL`-Beziehungen gelöst.
+- Unveränderliche Sperr-Audit-Einträge wurden nicht gelöscht oder verändert. Es wurden keine Audit-Trigger umgangen.
+- Nur DEV-Projekt `pzazqvvoruqnqhcorbwx`; PROD unberührt.
+
+**Super-Admin-Berechtigung im Frontend:**
+- Ursache gefunden: Die Spieler-Lifecycle-Aktionen (Aus aktivem Kader entfernen / Reaktivieren, Inaktiv-Liste, zugehörige Schaltflächen) prüften ausschließlich `role === 'admin'`. Ein Super Admin kann im ausgewählten Teamkontext jedoch intern weiterhin die Rolle `trainer` aus einer bestehenden Mitgliedschaft tragen, obwohl der Datenbank-Trigger Super Admins im explizit ausgewählten Teamkontext zulässt.
+- Neuer zentraler Frontend-Guard `canManagePlayerLifecycle()`: Mannschaftsadmin oder Super Admin mit aktivem, ausdrücklich ausgewähltem Mannschaftskontext. Der Guard steuert UI und Handler einheitlich. Kein globaler Super-Admin-Zugriff ohne Teamkontext.
+- Die bestehende DB-Schutzfunktion bleibt unverändert und erzwingt weiterhin den ausgewählten Mannschaftskontext.
+- Ausnahme-Kachel: neutrale sichtbare Kontur im Grundzustand ergänzt; Empfehlung und Nominierung behalten ihre jeweiligen blauen Konturen.
+- JavaScript-Modul syntaktisch geprüft; erfolgreich.
+- Noch ausstehend: visueller Praxistest mit Super Admin im ausgewählten Teamkontext und Hell-/Darkmode.
