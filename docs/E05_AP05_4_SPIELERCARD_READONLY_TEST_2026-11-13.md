@@ -247,3 +247,16 @@ Damit ist der manuelle Mannschaftsadmin-Praxistest für AP05.4 abgeschlossen. Es
 **Noch offen:** Die entsprechenden Trainer-Prüffälle T1–T8. Der Nutzer benötigt dafür zunächst einen separaten Trainer-Account ohne Mannschaftsadmin-Rolle. Bis dieser Account verfügbar ist, werden keine Trainer-Ergebnisse vorweggenommen und keine Rollenänderung vorgenommen. Anschließend erfolgt der Test mit diesem reinen Trainerkonto.
 
 Keine SQL-/Schema-/RLS-Änderung; PROD und GitHub `main` unverändert.
+
+
+## Rollenbezogener DEV-Praxistest – Trainer (14.11.2026)
+
+**Ergebnis: T1–T8 vom Nutzer bestätigt.**
+
+Der Nutzer hat die acht vorgesehenen Trainer-Prüffälle mit einem separaten Trainer-Account ohne Mannschaftsadmin-Rolle vollständig als funktionierend bestätigt. Damit sind die Trainer-Tests für AP05.4 abgeschlossen.
+
+Zusammen mit den zuvor bestätigten Mannschaftsadmin-Fällen A1–A6 ist die rollenbezogene manuelle Praxistest-Runde für beide Rollen abgeschlossen.
+
+**Abgrenzung:** Dokumentiert wird die Nutzerbestätigung der praktischen UI-/Rollenfälle. Sie ersetzt keine separate automatisierte Prüfung sämtlicher RLS-Policies oder SQL-RPC-Berechtigungen. Es wurden im Rahmen dieser Rückmeldung keine weiteren Datenbankänderungen oder Testdaten angelegt.
+
+Keine SQL-/Schema-/RLS-Änderung; PROD und GitHub `main` unverändert.
