@@ -359,3 +359,6 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 
 
 **DEV-Praxistest bestanden (13.11.2026):** Nutzer hat bestätigt, dass der gelbe Chip „Sperrausgleich vorgemerkt“ nach erfolgreicher Nominierung unmittelbar verschwindet. E05-Frontend-Korrektur damit fachlich abgeschlossen. Keine SQL-/Datenbankänderung. PROD und GitHub `main` unverändert.
+
+
+**E05.3 DEV-Praxistest Spieltagskader/Sperren bestanden (13.11.2026):** Nutzer hat alle sechs Prüffälle ausdrücklich bestätigt: (1) regulär gesperrter Spieler rot dargestellt; (2) nach Ausnahme wieder nominierbar; (3) nach Ausnahme-Widerruf wieder gesperrt; (4) offene Sperre dem nächsten relevanten Spieltag zugeordnet; (5) Kaderempfehlung berücksichtigt Sperrenstatus; (6) Trainer und Mannschaftsadmin sehen die vorgesehenen Bedienmöglichkeiten. Abnahmeprotokoll: `docs/E05_AP05_3_SPIELTAGSKADER_SPERRREN_DEV_ABNAHME_2026-11-13.md`. Keine SQL-/Datenbankänderung; PROD und GitHub `main` unverändert. Nächster E05-Block: End-to-End-Abnahme der Spielercard-Historie und Kartenkorrekturen/Auditdetails.
