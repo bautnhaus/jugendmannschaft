@@ -376,3 +376,6 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 
 
 **E05 AP05.4 – gelbe Karte wiederhergestellt (DEV-Praxistest 13.11.2026):** Nutzer hat das zuvor stornierte Ereignis wiederhergestellt. DB read-only bestätigt Status `active`, keine Stornierungsfelder, Audit-Kette `created → voided → reinstated` (3 Einträge), keine zugehörige Sperre. Stornierung und Wiederherstellung sind damit fachlich und anhand der Auditdaten bestätigt. Bericht `docs/E05_AP05_4_SPIELERCARD_READONLY_TEST_2026-11-13.md`.
+
+
+**E05 AP05.4 – rote Karte storniert/wiederhergestellt (13.11.2026):** Nutzer bestätigt beide Aktionen für Spieler Vorsicht. Read-only DB-Prüfung: Event `8004ea0d-0d2b-4085-a5f5-46e967993443` ist `active`, Ereignis-Audit `created → voided → reinstated` (3). Zugehörige Sperre ist `open`, zugeordnet zum 14.11.2026 gegen Flensburg; 5 Sperren-Audits mit Aktionen `target_changed → created → voided → reinstated → target_changed`. Rote Karte und Sperre stehen wieder aktiv. Keine zusätzlichen Testdaten angelegt oder gelöscht. Details im E05 AP05.4 Prüfbericht.
