@@ -167,3 +167,20 @@ Die UI-Implementierung wird noch nicht begonnen, weil die sofortige Rücknahme e
 4. Frühzeitige Ausgleichsdatensätze je Spieltag laden und Statusaktionen anzeigen.
 5. RPC-Aufrufe mit Pflichtbegründung integrieren, nach Erfolg Daten frisch laden und UI neu rendern.
 6. iPhone-Light-/Darkmode, Rollen, Mehrfachklicks und parallele Requests testen.
+
+
+### 10.7 DEV-Migration ausgeführt und verifiziert (13.11.2026)
+
+**Migration:** `e05_atomic_exception_revocation_20261113`
+**Supabase-Projekt:** DEV (`pzazqvvoruqnqhcorbwx`)
+**Migrationsergebnis:** erfolgreich; Eintrag in `supabase_migrations.schema_migrations` vorhanden (`20261113035705`).
+
+Nach der Ausführung wurden die beiden Funktionsdefinitionen, SECURITY-Attribute, ACLs und die Triggerbindung read-only erneut ausgelesen:
+
+- `revoke_suspension_exception(uuid,text)`: vorhanden, SECURITY DEFINER, EXECUTE weiterhin ausschließlich für `authenticated` (neben Owner postgres).
+- `prevent_suspended_matchday_nomination()`: vorhanden, SECURITY INVOKER, bestehende Ausführungsrechte `postgres` und `service_role` unverändert.
+- Der bestehende Trigger `matchday_players_prevent_suspended_nomination` bleibt an diese Funktion gebunden.
+- Die weiteren bestehenden Trigger auf `matchday_players` sind weiterhin vorhanden.
+- Keine Tabellenstruktur, Datensätze, RLS-Policies oder PROD-Objekte wurden durch diese Migration geändert.
+
+**Wichtige Abgrenzung:** Die Migration ist technisch installiert und ihre Katalogdefinitionen wurden verifiziert. Der praktische Positiv-/Negativ- und Konkurrenztest mit isolierten DEV-Testdaten steht noch aus. Die Migration ist deshalb noch nicht als fachlich vollständig abgenommen zu betrachten. Die Frontend-Integration beginnt erst nach diesen Tests.
