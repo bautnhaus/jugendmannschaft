@@ -1782,6 +1782,32 @@ html:not([data-theme]) .playerListRow.matchdaySquadTile.isSuspended:not(.isNomin
 }
 </style>
 
+<style id="e05-matchday-suspension-darkmode-parity">
+/* E05: Einheitliche Sperrkachel im expliziten und systemabhängigen Darkmode.
+   Gleiche Farben wie die bestätigte System-Darkmode-Darstellung. */
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) {
+  background:#3b2027!important;
+  background-color:#3b2027!important;
+  border:2px solid #f87171!important;
+  color:#fef2f2!important;
+}
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .playerListName,
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .playerListLevel {
+  color:#fef2f2!important;
+}
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .playerListPositions,
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .positionBadge {
+  background:#263449!important;
+  border-color:#475569!important;
+  color:#e2e8f0!important;
+}
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isSuspended:not(.isNominated) .matchdayStatusChip {
+  background:#5b2029!important;
+  border-color:#f87171!important;
+  color:#fecaca!important;
+}
+</style>
+
 </head>
 <body>
 <div id="loginView">
