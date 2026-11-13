@@ -223,21 +223,6 @@ begin
   select pr.display_name into v_actor_name
   from public.profiles pr where pr.id=v_actor;
 
-  -- Nur den Kaderzuordnungsdatensatz entfernen, nicht den Spieler oder die
-  -- Sperr-/Ausnahmehistorie. Einen tatsächlichen Einsatz niemals löschen.
-  select to_jsonb(mp)
-    into v_nomination_snapshot
-    from public.matchday_players mp
-   where mp.matchday_id=v_exception.matchday_id
-     and mp.player_id=v_exception.player_id
-   for update;
-
-  if v_nomination_snapshot is not null
-     and coalesce((v_nomination_snapshot->>'played')::boolean,false) is true then
-    raise exception using errcode='23514',
-      message='Widerruf abgebrochen: Für diesen Spieler ist bereits ein tatsächlicher Einsatz dokumentiert.';
-  end if;
-
   update public.training_suspension_exceptions
   set revoked_by=v_actor,
       revoked_by_snapshot=v_actor_name,
@@ -245,10 +230,52 @@ begin
       revoke_reason=btrim(p_revoke_reason)
   where id=v_exception.id;
 
-  if v_nomination_snapshot is not null then
-    delete from public.matchday_players
-     where matchday_id=v_exception.matchday_id
-       and player_id=v_exception.player_id;
+  -- Erst nach der regelkonformen Neuzuordnung feststellen, ob der widerrufene
+  -- Spieler an genau diesem Spieltag tatsächlich wieder gesperrt ist.
+  -- Das verhindert das Entfernen einer Nominierung, falls die offene Sperre
+  -- aufgrund anderer gültiger Zielbindungen auf einen anderen Spieltag fällt.
+  if v_suspension.player_id is not null then
+    v_reassigned:=public.e05_assign_player_suspensions(
+      v_suspension.team_id,v_suspension.player_id,v_actor
+    );
+  end if;
+
+  if exists (
+    select 1
+      from public.training_suspensions s
+     where s.team_id=v_exception.team_id
+       and s.player_id=v_exception.player_id
+       and s.status='open'
+       and s.intended_matchday_id=v_exception.matchday_id
+       and not exists (
+         select 1
+           from public.training_suspension_exceptions e
+          where e.suspension_id=s.id
+            and e.matchday_id=v_exception.matchday_id
+            and e.revoked_at is null
+       )
+  ) then
+    -- Nur eine dadurch wieder unzulässige Nominierung entfernen. Einen
+    -- tatsächlichen Einsatz niemals löschen; in diesem Fall Rollback des
+    -- gesamten Widerrufs inklusive Audit und Neuzuordnung.
+    select to_jsonb(mp)
+      into v_nomination_snapshot
+      from public.matchday_players mp
+     where mp.matchday_id=v_exception.matchday_id
+       and mp.player_id=v_exception.player_id
+     for update;
+
+    if v_nomination_snapshot is not null
+       and coalesce((v_nomination_snapshot->>'played')::boolean,false) is true then
+      raise exception using errcode='23514',
+        message='Widerruf abgebrochen: Für diesen Spieler ist bereits ein tatsächlicher Einsatz dokumentiert.';
+    end if;
+
+    if v_nomination_snapshot is not null then
+      delete from public.matchday_players
+       where matchday_id=v_exception.matchday_id
+         and player_id=v_exception.player_id;
+    end if;
   end if;
 
   v_old_values:=jsonb_build_object(
@@ -276,12 +303,6 @@ begin
     v_exception.id,'exception_revoked',v_old_values,v_new_values,
     btrim(p_revoke_reason),v_actor,now()
   );
-
-  if v_suspension.player_id is not null then
-    v_reassigned:=public.e05_assign_player_suspensions(
-      v_suspension.team_id,v_suspension.player_id,v_actor
-    );
-  end if;
 
   return v_exception.id;
 end;
