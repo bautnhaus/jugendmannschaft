@@ -101,3 +101,18 @@ Read-only Datenbankkontrolle bestätigt:
 Damit sind Kartenfilter-Auffindbarkeit, Stornierungsstatus und Ereignis-Audit für diesen Fall bestätigt. Da keine Sperre aus diesem Ereignis entstanden ist, gibt es in diesem Testfall keine Sperrenauswirkung zu prüfen.
 
 **Nächster Schritt:** Dasselbe Ereignis wiederherstellen und danach Status, Audit-Aktion `restored`, Kartenkonto und Filterdarstellung erneut kontrollieren. Keine Testdaten wurden angelegt; die bestehende Karte soll in ihren ursprünglichen aktiven Zustand zurückgeführt werden.
+
+
+## Manueller DEV-Test: Gelbe Karte wiederhergestellt
+
+**Ergebnis: Bestanden (13.11.2026).**
+
+Der Nutzer hat das zuvor stornierte Kartenereignis wiederhergestellt. Die anschließende read-only Datenbankkontrolle bestätigt:
+- Ereignis-ID: `a2f1c8c8-23a1-415e-8ed8-528f22d17b7e`
+- Typ: `yellow_card`
+- Status: `active`
+- Stornierungsfelder `voided_at` und `void_reason`: beide `NULL`
+- Audit-Aktionen in Reihenfolge: `created`, `voided`, `reinstated` (3 Einträge)
+- Zugehörige Sperren: keine
+
+Damit sind Stornierung und Wiederherstellung einschließlich vollständiger Audit-Kette bestätigt. Das Ereignis ist wieder aktiv; es wurde kein künstlicher Testdatensatz angelegt oder gelöscht.
