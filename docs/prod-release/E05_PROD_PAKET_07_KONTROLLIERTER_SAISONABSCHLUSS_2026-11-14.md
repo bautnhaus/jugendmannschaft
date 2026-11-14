@@ -115,3 +115,30 @@ Paket 7 ist nach erfolgreichem isoliertem CI-Lauf zur ausdrücklichen PROD-Ausf�
 ### CI-Korrekturschleife
 
 Vor dem grünen Lauf schlugen drei frühe CI-Versuche aufgrund von Fehlern im Test-Harness fehl (Fixture-Lebensdauer über Transaktions-Rollbacks und Cleanup über den append-only-Audit-FK). Die Paketmigration selbst wurde in diesen Läufen jeweils erfolgreich angewendet. Die Testskripte wurden korrigiert; der abschließende Lauf `43642743485` bestand einschließlich Rollback vollständig. Die Fehlversuche waren keine PROD-/DEV-Datenbankausführungen und haben keine Supabase-Projekte verändert.
+
+## 8. Isolierter PostgreSQL-CI-Test
+
+- Workflow: `.github/workflows/e05-prod-package-07-ci.yml`
+- Erfolgreicher Lauf: [GitHub Actions 43642771857](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43642771857)
+- Commit: `cc545e9a1a055a29e02600e671c94161403c64a9`
+- PostgreSQL: 17.6
+- Ergebnis: **success**
+
+Erfolgreich geprüft:
+1. Minimaler AP02-/E05-Prüfunterbau.
+2. Exakte Paket-7-PROD-Migration.
+3. Tabelle, RLS, finale Teamkontext-SELECT-Policy und Append-only-Trigger.
+4. SECURITY DEFINER, EXECUTE-Rechte und fehlende direkte Schreibrechte.
+5. Positivtest: aktive Saison wird geschlossen.
+6. Zwei offene Sperren werden abgelöst und einzeln auditiert; eine bereits abgeleistete Sperre bleibt unverändert.
+7. Saisonabschluss-Audit speichert Begründung und korrekte Anzahl.
+8. Negativtests: Trainer ohne Adminrolle und nicht authentifizierter Aufruf werden abgewiesen.
+9. Guarded Rollback und anschließende Assertions: alle Paket-7-Objekte werden entfernt, ohne Auditdaten zu löschen.
+
+Die Testfixture läuft ausschließlich in einem kurzlebigen PostgreSQL-17.6-CI-Container. Es wird kein Supabase-Projekt kontaktiert.
+
+Frühere CI-Läufe schlugen wegen fehlerhafter Testfixture-/Testreihenfolge fehl (Saisonfixture im Negativtest nicht verfügbar bzw. ein unnötiger direkter Audit-Manipulationsversuch). Die Testsequenz wurde korrigiert; der oben genannte finale Lauf ist vollständig erfolgreich. Die Migration selbst lief in den isolierten Läufen bereits erfolgreich durch.
+
+## 9. Freigabestatus
+
+**Paket 7 ist jetzt zur ausdrücklichen PROD-Ausführungsfreigabe vorbereitet.** Es wurde weder in DEV noch PROD erneut ausgeführt; die bereits bestehende DEV-Umsetzung bleibt unverändert. GitHub `main` und Frontend bleiben unverändert.
