@@ -3,7 +3,7 @@
 - **Datum:** 14.11.2026
 - **Branch:** `develop`
 - **Zielumgebung:** Jugendmannschaft DEV
-- **Status:** Erste Frontend-Umsetzung committed; DEV-Deploy und manueller Praxistest ausstehend
+- **Status:** In DEV deployed und manuell abgenommen; letzter visueller Nachtest System-Lightmode/Tabnavigation am 14.11.2026 bestätigt
 - **Grundlage:** `docs/E05_UI_KONZEPT_UMSETZUNGSLEITLINIE_2026-11-07.md`, Abschnitt 4; `docs/AP05_3_USERFLOWS_UI_KONZEPT_2026-11-07.md`, Abschnitt 3.2
 
 ## 1. Fachliche Umsetzung
@@ -44,7 +44,7 @@ Die vorhandene Spielerkachel, Suche und Navigation in die bestehende Spielercard
 - Keine SQL-Ausführung, keine Datenbank-/Schema-/RLS-/RPC-Änderung.
 - Keine Testdaten angelegt oder verändert.
 - Keine Änderung an `main` oder PROD.
-- **Noch offen:** DEV-Deploy-Status prüfen; manueller Test beider Tabs, Filterdefinitionen, Prioritätssortierung, Team-/Saisonkontext, Light-/Darkmode und iPhone-Breite.
+- **Historischer Zwischenstatus:** Die nachfolgenden manuellen DEV-Tests wurden inzwischen durchgeführt und sind in Abschnitt 6 sowie im Konsolidierungsnachtrag dokumentiert.
 
 ## 5. Commits
 
@@ -68,3 +68,15 @@ Der Nutzer hat die Funktionen der zentralen Ereignisübersicht anhand der vorhan
 **Bewusste Abgrenzung:** Eine Stornierungs-/Korrekturoption für positive Sterne wird vorerst nicht umgesetzt. Der Nutzer hält sie grundsätzlich für konsistent, stellt sie wegen der geringeren Auswirkungen gegenüber Karten aber zurück. Keine Erweiterung von RPCs, Datenbank oder UI in diesem Punkt.
 
 Keine SQL-/Datenbank-/RLS-/RPC-Änderung und keine Testdatenänderung im Rahmen dieser Bestätigung. PROD und GitHub main unverändert.
+
+
+## Konsolidierungsnachtrag – Abschluss der Phase-3-Praxistests (14.11.2026)
+
+- Die Nutzerbestätigung in Abschnitt 6 deckt Filter/Darstellungen einschließlich Highlights, Handlungspriorität und alphabetische Sortierungen, die Standardsortierungen sowie Superadmin-Fälle ab.
+- Der Mannschaftswechsel wurde bereits getestet und ist kein offener Prüfpunkt. Er wird nicht erneut als offene Aufgabe geführt.
+- Ein Saisonwechsel ist derzeit kein Feature der App und ausdrücklich nicht Bestandteil dieser Abnahme.
+- Der systemabhängige Lightmode der Ereigniskarten wurde korrigiert und visuell geprüft.
+- Die Korrektur der Tabnavigation für den systemabhängigen Lightmode wurde am 14.11.2026 nach DEV-Deploy vom Nutzer mit „Passt“ bestätigt. Die Tabnavigation im System-Lightmode ist damit abgenommen.
+- Die bewusste Zurückstellung einer Stornierungs-/Korrekturfunktion für positive Sterne bleibt bestehen.
+
+**Status Phase 3:** Die in diesem Dokument beschriebenen und für Phase 3 vorgesehenen manuellen DEV-Praxistests sind abgeschlossen. Nicht Bestandteil der Abnahme sind ein Saisonwechsel (Feature existiert nicht) sowie die bewusst zurückgestellte Korrekturfunktion positiver Sterne. Keine SQL-/Datenbank-/PROD-Änderung durch diese Dokumentationskonsolidierung.
