@@ -16,13 +16,12 @@
 - Eine Stornierungs-/Korrekturfunktion für positive Sterne wird vorerst nicht umgesetzt.
 - Ältere Ereignis-/Sperren-Auditzeilen besitzen teilweise keinen Actor-Snapshot. Für Trainer ist die Profil-Namensauflösung durch die bestehende profiles-RLS eingeschränkt. Eine dauerhafte SQL-Lösung wurde nicht freigegeben und nicht umgesetzt.
 - Die manuelle UI-/Rollenabnahme ist keine vollständige automatisierte Sicherheitsprüfung sämtlicher RLS-Policies und RPC-Grenzfälle.
-- Für den Mannschaftswechsel angelegte synthetische Testdaten in G-Junioren sind laut Testdokumentation noch nicht bereinigt. Eine gezielte, markerbasierte Bereinigung mit vorheriger ID-/Count-Prüfung steht aus; keine pauschale Löschung.
+- **Synthetische G-Junioren-Testdaten bleiben bewusst dauerhaft in Supabase DEV bestehen und dienen künftig als Regressionstestbestand.** Nicht löschen oder verändern, außer der Nutzer gibt eine konkrete Änderung ausdrücklich frei. Die Datensätze sind über den Marker `KADAssist E05 TESTDATEN` in den Notizen sowie die dokumentierten Testnamen `TEST G1` bis `TEST G5` identifizierbar. Der Bestand umfasst fünf Testspieler, vier Testpositionen, fünf Spieler-Positions-Zuordnungen, zwei abgeschlossene Testtrainings, zehn Anwesenheitsdatensätze, einen geplanten Testspieltag sowie zwei aktive Verhaltensevents mit Audit-Einträgen. Details: `docs/E05_PHASE_3_IPHONE_FEEDBACK_KORREKTUREN_2026-11-14.md`.
 
 ## Aktuelle Restliste – keine bereits erledigten Tests wiederholen
 
-1. **Testdatenbereinigung G-Junioren:** kontrollierte, markerbasierte Entfernung der eigens für den Mannschaftswechsel angelegten Testspieler, Positionen, Trainings, Anwesenheiten, Spieltag- und Ereignisdaten samt Abhängigkeiten/Audits. Vorher IDs/Counts read-only prüfen; schreibende Bereinigung nur nach separater ausdrücklicher Freigabe.
-2. **Audit-Snapshot-Thema entscheiden:** entweder als bekannte Einschränkung dokumentiert belassen oder ein separates SQL-Konzept für Actor-Snapshots vorbereiten. Keine SQL-Ausführung ohne Freigabe.
-3. **Abschlussabgleich E05:** nach Testdatenbereinigung die Dokumentations-/Migrationsnachweise final prüfen und eine E05-Abschluss-/Release-Empfehlung erstellen. PROD und `main` bleiben bis zu einer separaten Freigabe unangetastet.
+1. **Audit-Snapshot-Thema entscheiden:** entweder als bekannte Einschränkung dokumentiert belassen oder ein separates SQL-Konzept für Actor-Snapshots vorbereiten. Keine SQL-Ausführung ohne Freigabe.
+2. **Abschlussabgleich E05:** Dokumentations-/Migrationsnachweise final prüfen und eine E05-Abschluss-/Release-Empfehlung erstellen. PROD und `main` bleiben bis zu einer separaten Freigabe unangetastet.
 
 **Nicht offen:** erneuter Mannschaftswechseltest, Saisonwechseltest, erneute Lightmode-/Tabnavigation-Korrektur sowie Wiederholung der bereits bestätigten A1–A6-, T1–T8- und sechs Sperren-Praxistests – außer bei einem konkreten Regressionhinweis.
 
