@@ -41,3 +41,8 @@
 ## Nachkorrektur Abstände (14.11.2026)
 
 Der obere und untere Außenabstand der Tabs „Anwesenheit / Ereignisse“ wurde auf `10px` gesetzt und entspricht damit dem vertikalen Abstand der `.trainingSegmented`-Bedienelemente im Trainingsbereich. Commit: `5c4949f746331d5f3d7ebbe8d54c5a112f383f7e`. DEV-Deploy/Praxistest noch ausstehend.
+
+
+## Ereignis-Chips – dezente Kontur (14.11.2026)
+
+Die Ereignis-Chips erhalten analog zu den Positions-Chips eine feine Kontur (`1px solid #0000000a`). Im Darkmode wird eine dezente helle Kontur (`#ffffff14`) verwendet. Ziel ist eine bessere Abgrenzung und Lesbarkeit ohne stärkere visuelle Gewichtung. Commit: `4046d40ab25864332b40182db277f3d19a62872d`. DEV-Deploy/Praxistest ausstehend.
