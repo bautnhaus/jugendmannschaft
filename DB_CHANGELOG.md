@@ -809,3 +809,14 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Isolierter PostgreSQL-17.6-CI-Lauf [43642771857](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43642771857) erfolgreich, inklusive Saisonabschluss-Funktionstest, Rollen-Negativtests und Rollback.
 - Keine PROD- oder DEV-Ausführung; GitHub `main` und Frontend unverändert.
 - Details: `docs/prod-release/E05_PROD_PAKET_07_KONTROLLIERTER_SAISONABSCHLUSS_2026-11-14.md`.
+
+### E05 PROD Paket 7 – kontrollierter Saisonabschluss erfolgreich ausgeführt (14.11.2026)
+
+- Supabase PROD Migration `20261114213745 e05_prod_paket_07_controlled_season_closure` erfolgreich registriert.
+- Audit-Tabelle `team_season_closure_audit`, append-only Trigger, finale Super-Admin-Teamkontext-RLS-Policy und RPC `close_team_season(uuid,text)` strukturell und ACL-seitig read-only nachkontrolliert.
+- Audit-SELECT ausschließlich für `authenticated` via Teammitgliedschaft oder explizit ausgewähltem Teamkontext; keine direkten Schreibrechte für `authenticated`/`anon`.
+- Datenbestand unverändert: 1 aktive Saison (`2026/2027`), 0 offene Sperren, 0 Sperren-Auditzeilen, 0 Saisonabschluss-Auditzeilen. Die Saisonabschluss-RPC wurde nicht aufgerufen.
+- Security Advisor: 50 SECURITY DEFINER-Warnungen (eine zusätzliche, erwartete Warnung für die neue autorisierte RPC); bestehende globale Hinweise nicht Teil dieses Pakets. Health Advisor ohne Findings.
+- CI PostgreSQL 17.6: [Run 43642771857](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43642771857) erfolgreich einschließlich guarded Rollback.
+- Rollback nicht ausgeführt; nach erstmaliger Saisonabschluss-Auditierung ist er absichtlich gesperrt.
+- Vollständiger Ausführungsnachweis: `docs/prod-release/E05_PROD_PAKET_07_KONTROLLIERTER_SAISONABSCHLUSS_2026-11-14.md` und `DB_MIGRATION_LOG.md`.
