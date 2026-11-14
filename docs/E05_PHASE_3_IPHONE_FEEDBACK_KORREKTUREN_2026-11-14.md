@@ -46,3 +46,11 @@ Der obere und untere Außenabstand der Tabs „Anwesenheit / Ereignisse“ wurde
 ## Ereignis-Chips – dezente Kontur (14.11.2026)
 
 Die Ereignis-Chips erhalten analog zu den Positions-Chips eine feine Kontur (`1px solid #0000000a`). Im Darkmode wird eine dezente helle Kontur (`#ffffff14`) verwendet. Ziel ist eine bessere Abgrenzung und Lesbarkeit ohne stärkere visuelle Gewichtung. Commit: `4046d40ab25864332b40182db277f3d19a62872d`. DEV-Deploy/Praxistest ausstehend.
+
+
+## Sortierung Ereignisliste und Rechtsfuß-Icon (14.11.2026)
+
+- In der Ereignisansicht ist neben dem Suchfeld nun eine Sortierauswahl mit **Name A–Z** und **Name Z–A** vorhanden. Die bisherige Prioritätssortierung der Ereignisansicht wurde durch die gewünschte alphabetische Sortierung ersetzt. Die Sortierauswahl der Anwesenheitsansicht bleibt unverändert.
+- Das Rechtsfuß-Symbol in der Spielercard erhält jetzt die CSS-Klassen `footIcon mirrored`; damit greift die vorhandene horizontale Spiegelung auch in der Spielkarten-Metazeile. Die Auswahl im Spielerformular verwendete die Spiegelung bereits korrekt.
+- Beide Inline-JavaScript-Blöcke erfolgreich syntaktisch geprüft. DEV-Deploy und iPhone-Praxistest ausstehend.
+- Commits: `9511e1f`, `303fe8d`, `5a3b82c`.
