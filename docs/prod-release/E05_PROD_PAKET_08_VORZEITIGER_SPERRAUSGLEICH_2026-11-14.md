@@ -96,11 +96,28 @@ Nach PROD-Ausführung:
 - [x] PROD-spezifische Abgrenzung zu Paket 9/10 und DB-MIG-2026-010/011 dokumentiert.
 - [x] Migration und guarded Rollback erstellt.
 - [x] Read-only Nachkontrollabfragen erstellt.
-- [ ] Isolierter PostgreSQL-17.6-CI-Test der exakten Migration und des Rollbacks.
-- [ ] SQL-/Syntaxprüfung in isolierter Datenbank.
+- [x] Isolierter PostgreSQL-17.6-CI-Test der exakten Migration und des guarded Rollbacks.
+- [x] SQL-/Syntaxprüfung in isolierter Datenbank.
 - [ ] Finale fachliche/technische PROD-Freigabe.
 - [ ] Backup-/PITR-Preflight unmittelbar vor Ausführung.
 - [ ] PROD-Ausführung.
 - [ ] Read-only PROD-Nachkontrolle.
 
-**Aktueller Status:** Zur technischen Prüfung und ausdrücklichen PROD-Freigabe vorbereitet. Noch nicht ausgeführt. Keine Änderung an Supabase DEV, Supabase PROD oder GitHub `main` im Rahmen dieser Vorbereitung.
+
+## 7. Isolierter PostgreSQL-17.6-CI-Test
+
+- **Workflow:** `.github/workflows/e05-prod-package-08-ci.yml`
+- **Lauf:** [GitHub Actions 43645493709](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43645493709)
+- **Commit:** `3a11540baede304fb69c484a47272a6c7da4560e`
+- **Ergebnis:** `success`.
+- **Testumgebung:** kurzlebiger PostgreSQL-17.6-Container mit synthetischer Minimal-Baseline; keine Verbindung zu Supabase DEV oder PROD.
+- **Erfolgreich geprüft:** exakte Paket-8-Migration; Tabellen/RLS/Policies; öffentliche RPC-EXECUTE-Rechte und gesperrte interne Helfer; Source-Transformation der bestehenden Paket-2-Award-RPC; Anwendung bei `done`; automatische Stornierung bei nachträglicher Nominierung; automatische Stornierung bei Spieltagsabsage; Ablehnung eines bereits nominierten Spielers; genau einmaliger Anwendungs-Audit; leerer Datenbestand nach Rollback der Testtransaktion; guarded Paket-8-Rollback und Rückkehr des ursprünglichen Award-Source-Blocks.
+- **Testgrenze:** Die CI-Baseline bildet die für Paket 8 erforderlichen Datenbankobjekte minimal nach. Sie ersetzt weder einen vollständigen Supabase-Auth-/RLS-End-to-End-Test noch die unmittelbare Live-Preflight-Prüfung in PROD. Die fachlichen DEV-Tests aus der Paket-8-Abnahme bleiben die maßgebliche Praxistestgrundlage.
+
+## 8. Unveränderliche Artefakt-Referenzen
+
+- Migration: `supabase/migrations/20261114230000_e05_prod_paket_08_early_suspension_reset.sql`, Blob-SHA `898ded0944f7dcf175765f0b700f89f8cfdbf4b2`.
+- Rollback: `supabase/rollback/20261114230000_e05_prod_paket_08_early_suspension_reset_rollback.sql`, Blob-SHA `3068e34095c3fd28d1ecf58842394baddb58bae6`.
+- Dossier liegt auf `develop`; CI-Workflow-Blob-SHA `03dc5438cc95b48a2820f2feff38661cd71bb856`.
+
+**Aktueller Status:** Technisch vorbereitet und isoliert erfolgreich getestet; zur abschließenden Prüfung und ausdrücklichen PROD-Ausführungsfreigabe vorgelegt. Noch nicht ausgeführt. Keine Änderung an Supabase DEV, Supabase PROD oder GitHub `main` im Rahmen dieser Vorbereitung.
