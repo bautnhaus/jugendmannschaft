@@ -1,3 +1,9 @@
+## Entscheidung – Audit-Namensauflösung vergangener Ereignisse (14.11.2026)
+
+Der Nutzer akzeptiert die eingeschränkte Namensauflösung bei vergangenen Ereignis-/Sperren-Auditzeilen, denen ein gespeicherter Actor-Snapshot fehlt. Diese Einschränkung wird als bekannte historische Grenze dokumentiert. Keine rückwirkende Datenkorrektur, keine SQL-/Schema-/RLS-Änderung und keine zusätzliche Migration. Eine mögliche Verbesserung für künftig erzeugte Audit-Einträge ist nicht Teil dieser Entscheidung und bedarf bei Bedarf einer separaten Spezifikation und Freigabe.
+
+---
+
 # E05 – Konsolidierter aktueller Stand (14.11.2026)
 
 **Dieser Abschnitt hat Vorrang vor den darunter erhaltenen historischen Zwischenständen.** Ältere Aussagen wie „Browser-Praxistest ausstehend“, „Migration nicht ausgeführt“ oder „Ausnahme-Widerruf-UI offen“ beschreiben damalige Zwischenstände und sind anhand der nachfolgenden Abschlussnachweise überholt.
@@ -14,14 +20,13 @@
 ## Bewusst zurückgestellt oder bekannte Grenzen
 
 - Eine Stornierungs-/Korrekturfunktion für positive Sterne wird vorerst nicht umgesetzt.
-- Ältere Ereignis-/Sperren-Auditzeilen besitzen teilweise keinen Actor-Snapshot. Für Trainer ist die Profil-Namensauflösung durch die bestehende profiles-RLS eingeschränkt. Eine dauerhafte SQL-Lösung wurde nicht freigegeben und nicht umgesetzt.
+- **Entscheidung vom 14.11.2026:** Die eingeschränkte Namensauflösung bei vergangenen Ereignis-/Sperren-Auditzeilen ohne gespeicherten Actor-Snapshot wird als bekannte historische Einschränkung akzeptiert. Für diese Alt-Datensätze erfolgt keine nachträgliche SQL-/Datenkorrektur. Die bestehende Audit-Historie bleibt unverändert. Eine weitergehende Lösung für künftig erzeugte Audit-Einträge ist mit dieser Entscheidung nicht automatisch beschlossen und müsste bei Bedarf separat spezifiziert und freigegeben werden.
 - Die manuelle UI-/Rollenabnahme ist keine vollständige automatisierte Sicherheitsprüfung sämtlicher RLS-Policies und RPC-Grenzfälle.
 - **Synthetische G-Junioren-Testdaten bleiben bewusst dauerhaft in Supabase DEV bestehen und dienen künftig als Regressionstestbestand.** Nicht löschen oder verändern, außer der Nutzer gibt eine konkrete Änderung ausdrücklich frei. Die Datensätze sind über den Marker `KADAssist E05 TESTDATEN` in den Notizen sowie die dokumentierten Testnamen `TEST G1` bis `TEST G5` identifizierbar. Der Bestand umfasst fünf Testspieler, vier Testpositionen, fünf Spieler-Positions-Zuordnungen, zwei abgeschlossene Testtrainings, zehn Anwesenheitsdatensätze, einen geplanten Testspieltag sowie zwei aktive Verhaltensevents mit Audit-Einträgen. Details: `docs/E05_PHASE_3_IPHONE_FEEDBACK_KORREKTUREN_2026-11-14.md`.
 
 ## Aktuelle Restliste – keine bereits erledigten Tests wiederholen
 
-1. **Audit-Snapshot-Thema entscheiden:** entweder als bekannte Einschränkung dokumentiert belassen oder ein separates SQL-Konzept für Actor-Snapshots vorbereiten. Keine SQL-Ausführung ohne Freigabe.
-2. **Abschlussabgleich E05:** Dokumentations-/Migrationsnachweise final prüfen und eine E05-Abschluss-/Release-Empfehlung erstellen. PROD und `main` bleiben bis zu einer separaten Freigabe unangetastet.
+1. **Abschlussabgleich E05:** Dokumentations-/Migrationsnachweise final prüfen und eine E05-Abschluss-/Release-Empfehlung erstellen. PROD und `main` bleiben bis zu einer separaten Freigabe unangetastet.
 
 **Nicht offen:** erneuter Mannschaftswechseltest, Saisonwechseltest, erneute Lightmode-/Tabnavigation-Korrektur sowie Wiederholung der bereits bestätigten A1–A6-, T1–T8- und sechs Sperren-Praxistests – außer bei einem konkreten Regressionhinweis.
 
