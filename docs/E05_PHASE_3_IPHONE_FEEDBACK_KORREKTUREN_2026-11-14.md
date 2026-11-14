@@ -3,7 +3,7 @@
 - **Datum:** 14.11.2026
 - **Branch:** `develop`
 - **Ziel:** DEV
-- **Status:** Umsetzung committed; DEV-Deploy und erneuter iPhone-Praxistest ausstehend
+- **Status:** Korrekturen in DEV deployed; iPhone-Praxistests der Ereignisübersicht und Tabnavigation vom Nutzer bestätigt
 
 ## Rückmeldungen und Umsetzung
 
@@ -108,5 +108,10 @@ Ursache des unveränderten Erscheinungsbilds: Die frühere Darkmode-Regel `html:
 - Korrektur in `develop/index.html`: expliziter Darkmode über `html[data-theme="dark"]`; systemabhängiger Darkmode ausschließlich innerhalb von `@media (prefers-color-scheme: dark)` und `html:not([data-theme])`.
 - Im manuellen und systemabhängigen Lightmode bleibt damit die helle Grundgestaltung der Tabs aktiv. Manueller und systemabhängiger Darkmode behalten die dunkle Gestaltung.
 - Commit: `36eac9e9304dd5a7ed4dabc49b9f62d2f2365530`.
-- DEV-Deploy und visueller iPhone-Praxistest stehen noch aus.
+- DEV-Deploy und visueller iPhone-Praxistest wurden anschließend durchgeführt und bestätigt.
 - Keine SQL-/Datenbank-/RLS-/RPC-Änderung; keine Änderung an `main` oder PROD.
+
+
+## Abschließende Nutzerbestätigung – System-Lightmode / Tabnavigation (14.11.2026)
+
+Die nach dem letzten Fix bereitgestellte DEV-Version wurde auf dem iPhone im systemabhängigen Lightmode geprüft. Der Nutzer bestätigte mit „Passt“, dass die Tabnavigation nun korrekt dargestellt wird. Damit ist die letzte offene visuelle Prüfung der Tabs abgeschlossen. Der Codefix ist auf `develop`; keine Änderung an `main` oder PROD.
