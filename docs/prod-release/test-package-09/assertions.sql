@@ -62,7 +62,7 @@ begin
  end loop;
 
  v_def:=pg_get_functiondef('public.correct_training_behavior_event(uuid,text,text)'::regprocedure);
- if position('PERFORM p.id' in upper(v_def))=0 or position('SELECT p.id' in upper(v_def))>0 then
+ if position('PERFORM P.ID' in upper(v_def))=0 or position('SELECT P.ID' in upper(v_def))>0 then
   raise exception 'Player row lock must use the corrected PERFORM statement';
  end if;
 
