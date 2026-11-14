@@ -446,3 +446,13 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 
 
 **E05 Phase 3 – DEV-Praxistest-Nachtrag (14.11.2026):** Nutzer bestätigt anhand der aktuellen DEV-Testdaten Filter/Darstellungen einschließlich Highlights, Handlungspriorität und alphabetische Sortierungen sowie die Standardsortierungen Anwesenheit = Kaderempfehlung und Ereignisse = Handlungspriorität. Die Superadmin-Fälle sind ebenfalls bestätigt. Offen bleibt ausschließlich der gesonderte Test des Mannschafts- und Saisonwechsels in der Ereignisübersicht. Eine Stornierungs-/Korrekturoption für positive Sterne wird bewusst zurückgestellt; vorerst keine Erweiterung von UI, RPC oder Datenbank. Keine SQL-/Datenbank-/RLS-Änderung, keine Testdatenänderung; PROD und GitHub main unverändert. Detailnachweis: docs/E05_PHASE_3_ZENTRALE_EREIGNISUEBERSICHT_2026-11-14.md.
+
+
+## E05 – Migrations-/Releaseabgleich (14.11.2026)
+
+- Read-only-Abgleich Supabase DEV bestätigt DB-MIG-2026-010 (Version `20261112055415`) und DB-MIG-2026-011 (Version `20261112181910`) als registriert.
+- Die Live-Definitionen von Empfehlungsprüfung und Nominierungs-Guard stimmen mit der tatsächlich registrierten Fassung von DB-MIG-2026-011 überein. Ältere Entwurfsbeschreibungen mit zwei Triggern bzw. einer SECURITY DEFINER-Guard-Funktion sind nicht der Live-Stand.
+- Zusätzlich ist DEV-Migration `20261113035705` / `e05_atomic_exception_revocation_20261113` registriert. Live bestätigt die atomare Ausnahme-Rücknahme inklusive spielerbezogenem Advisory Lock, Neuzuordnung, bedingter Entfernung einer noch nicht gespielten Nominierung und Audit-Snapshot.
+- **Release-Gate:** Die Original-Migrationsdatei und das Rollback für `20261113035705` fehlen im aktuellen GitHub-Baum. Der Live-Funktionsstand ersetzt nicht den unveränderlichen SQL-Ausführungsnachweis. Vor PROD-Rollout Original-SQL/Backup wiederfinden oder die Nachweislücke ausdrücklich behandeln und freigeben.
+- Die Dokumentation wurde in `DB_MIGRATION_LOG.md` und `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md` ergänzt. Details und Nachweisgrenzen stehen dort.
+- Keine SQL-Schreiboperation, keine Supabase-Änderung, kein `main`-/PROD-Eingriff im Rahmen dieses Abgleichs.
