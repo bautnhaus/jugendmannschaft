@@ -162,7 +162,7 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerListRow.hasOpenSuspension{border:1px solid #f2b8b5;background:#fff1f0}
 .playerListRow.hasYellowWarning{border:1px solid #ead18a;background:#fff8df}
 .playerEventMarkers{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-top:5px}
-.playerEventMarker{display:inline-flex;align-items:center;gap:3px;font-size:11px;line-height:18px;padding:0 6px;border-radius:999px;background:#f1f5f9;color:#475569;white-space:nowrap}
+.playerEventMarker{display:inline-flex;align-items:center;gap:3px;font-size:11px;line-height:18px;padding:0 6px;border-radius:999px;background:#f1f5f9;color:#475569;border:1px solid #0000000a;white-space:nowrap}
 .playerEventMarker .material-symbols-outlined{font-size:14px}
 .playerListRow.hasOpenSuspension .playerEventMarker.suspension{background:#fee2e2;color:#991b1b}
 .playerListRow.hasYellowWarning .playerEventMarker.warning{background:#fef3c7;color:#92400e}
@@ -5810,6 +5810,7 @@ html:not([data-theme="light"]) .playerListRow.hasYellowWarning{background:#3b321
 html:not([data-theme="light"]) .playerEventMarker{background:#263244!important;color:#cbd5e1!important}
 html:not([data-theme="light"]) .playerListRow.hasOpenSuspension .playerEventMarker.suspension{background:#5b2529!important;color:#fecaca!important}
 html:not([data-theme="light"]) .playerListRow.hasYellowWarning .playerEventMarker.warning{background:#59451d!important;color:#fde68a!important}
+html:not([data-theme="light"]) .playerEventMarker{border-color:#ffffff14!important}
 
 /* E05: einheitliche Tabs und Kartenstruktur der Spielerliste */
 .playerListModeTabs{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:10px 0 10px;padding:3px;border:1px solid var(--line);border-radius:13px;background:var(--surface-2,var(--bg))}
