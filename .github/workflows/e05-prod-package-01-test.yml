@@ -51,4 +51,4 @@ jobs:
       - name: Verify guarded rollback and clean removal
         run: |
           psql -v ON_ERROR_STOP=1 -f docs/prod-release/E05_PROD_PAKET_01_TRAININGSEREIGNISSE_2026-11-14_ROLLBACK.sql
-          psql -v ON_ERROR_STOP=1 -c "DO \\$\$ BEGIN IF to_regclass('public.training_behavior_events') IS NOT NULL OR to_regclass('public.training_behavior_event_audit') IS NOT NULL OR to_regprocedure('public.e05_reject_event_audit_mutation()') IS NOT NULL THEN RAISE EXCEPTION 'Rollback left Paket-1 objects behind'; END IF; END \\$\$;"
+          psql -v ON_ERROR_STOP=1 -f docs/prod-release/test-package-01/rollback_assertions.sql
