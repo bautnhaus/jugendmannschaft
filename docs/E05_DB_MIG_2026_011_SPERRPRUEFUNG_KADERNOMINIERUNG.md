@@ -278,3 +278,13 @@ Dieser Abschnitt hat Vorrang vor älteren Entwurfs- und Zwischenstandsformulieru
 Die manuellen DEV-Abnahmen der Sperren-/Ausnahmefälle, der Spielercard und der Rollen (A1–A6 sowie T1–T8) sind in den E05-Abnahmeunterlagen dokumentiert. Die sechs Spieltagskader-/Sperrenfälle wurden ebenfalls vom Nutzer bestätigt. Die Migration 011 ist damit nicht mehr als „Praxistest ausstehend“ zu führen. Eine vollständige automatisierte Prüfung sämtlicher RLS-Policies und RPC-Berechtigungsgrenzfälle wurde jedoch nicht durchgeführt.
 
 PROD und GitHub `main` wurden durch diesen Abgleich nicht verändert.
+
+
+## 12. Nachweis der nachfolgenden atomaren Ausnahme-Rücknahme (14.11.2026)
+
+Der Original-SQL-Nachweis wurde im Repository gefunden. Die vorherige Aussage, die Original-Migrationsdatei sei nicht vorhanden, war falsch; sie lag unter `docs/` und nicht unter `supabase/migrations/`.
+
+- Original-SQL: `docs/E05_SQL_ENTWURF_WIDERRUF_AUSNAHME_MIT_NOMINIERUNGSENTFERNUNG_2026-11-12.sql` (Git-Blob-SHA `5b5ac4fd8c14be5bc00ff8d4774ad1d1ac9800b0`).
+- Rollback-Entwurf: `docs/E05_SQL_ROLLBACK_ENTWURF_WIDERRUF_AUSNAHME_2026-11-12.sql` (Git-Blob-SHA `630c6949faa6e45daf9c758364cb11eb86b09a65`); nicht ausgeführt.
+- Ausführungs-/Testnachweis: `docs/E05_UMSETZUNGSVORSCHLAG_SPERRMASSNAHMEN_OPTIONSMENUE_2026-11-12.md`, Abschnitte 10.7–10.10. Dort sind DEV-Migrationseintrag `20261113035705`, Live-Verifikation, isolierte Funktionstests und ein bestandener Zwei-Session-Konkurrenztest dokumentiert.
+- Das PROD-Gate ist daher nicht mehr das Wiederfinden des SQL, sondern die Erstellung einer sauber versionierten PROD-Migration und die Prüfung des Rollback-/Wiederherstellungsplans. Die bestehende Rollback-Datei ist nur ein Review-Entwurf.
