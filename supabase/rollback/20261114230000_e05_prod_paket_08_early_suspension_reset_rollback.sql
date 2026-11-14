@@ -28,7 +28,11 @@ begin
   if to_regclass('public.matchday_early_suspension_resets') is null
      or to_regclass('public.matchday_early_suspension_reset_audit') is null
      or to_regprocedure('public.schedule_early_suspension_reset(uuid,uuid,text)') is null
-     or to_regprocedure('public.cancel_early_suspension_reset(uuid,text)') is null then
+     or to_regprocedure('public.cancel_early_suspension_reset(uuid,text)') is null
+     or to_regprocedure('public.e05_transition_early_reset(uuid,text,text,uuid)') is null
+     or to_regprocedure('public.e05_cancel_early_reset_on_nomination()') is null
+     or to_regprocedure('public.e05_reconcile_early_resets_on_matchday_status()') is null
+     or to_regprocedure('public.e05_reject_early_reset_audit_mutation()') is null then
     raise exception 'Paket-8-Rollback: erwarteter Paket-8-Objektstand fehlt; manueller Abgleich erforderlich';
   end if;
   if exists(select 1 from public.matchday_early_suspension_resets)
