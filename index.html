@@ -2664,7 +2664,7 @@ window.openPlayerCard=async id=>{
         <h2 class="playerCardName">${esc(displayName(p))}</h2>
         <div class="playerCardMeta">
           <span>${materialIcon('cake')} ${p.birth_year?esc(p.birth_year):'Jahrgang offen'}</span>
-          <span>${p.preferred_foot&&footLabels[p.preferred_foot]?materialIcon(footIcons[p.preferred_foot],p.preferred_foot==='rechts'?'mirrored':'')+' '+footLabels[p.preferred_foot]:'Spielbein offen'}</span>
+          <span>${p.preferred_foot&&footLabels[p.preferred_foot]?materialIcon(footIcons[p.preferred_foot],p.preferred_foot==='rechts'?'footIcon mirrored':'footIcon')+' '+footLabels[p.preferred_foot]:'Spielbein offen'}</span>
         </div>
         <div class="playerCardPositions">${isInactive?'<span class="inactiveStatusChip">Inaktiv</span>':''}${positionHtml}</div>
         <div class="playerCardLevel"><span class="playerCardStars">${levelStars}</span><span>${esc(p.level||'Nicht angegeben')}</span></div>
