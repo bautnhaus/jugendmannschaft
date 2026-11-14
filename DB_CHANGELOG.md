@@ -823,7 +823,7 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 
 ### E05 PROD Paket 8 – Vorzeitiger Sperrausgleich vorbereitet (14.11.2026)
 
-- Status: technischer Freigabekandidat auf `develop`; noch nicht in Supabase ausgeführt.
+- Status: in Supabase PROD erfolgreich ausgeführt und nachkontrolliert (Ledger `20261114222833`).
 - PROD-Baseline: Pakete 1–7 in der PROD-Migrationshistorie bestätigt; Paket-8-Objekte fehlen.
 - DEV-Quelle und DEV-Abnahme vom 08.11.2026 geprüft; Positiv-, Negativ-, Berechtigungs- und Regressionstests dokumentiert.
 - PROD-spezifische Abgrenzung: Die bestehende PROD-Paket-2-`award_training_behavior_event`-RPC wird nur um den zusätzlichen `applied_at`-Zeitanker ergänzt. Spätere DEV-Paket-9/10- und DB-MIG-2026-010/011-Logik wird nicht vorgezogen.
@@ -832,18 +832,26 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Read-only Nachkontrolle: `docs/prod-release/E05_PROD_PAKET_08_VORZEITIGER_SPERRAUSGLEICH_TESTQUERIES_2026-11-14.sql`.
 - Isolierter PostgreSQL-17.6-CI-Lauf [43645581297](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43645581297), Commit `8b45a76aa23f77f452ec38c70ea1219d0468209a`: success. Migration, Tabellen/RLS/ACL, Statusübergänge, automatische Stornierungen, Audit, Source-Rückführung und guarded Rollback erfolgreich.
 - Testgrenze: CI nutzt eine synthetische Minimal-Baseline und ersetzt keine authentifizierten Supabase-End-to-End-Tests oder den Live-PROD-Preflight.
-- Keine DEV-/PROD-Ausführung, keine Änderung an `main` oder Frontend.
+- PROD-Ausführung am 14.11.2026 erfolgreich; DEV, GitHub `main` und Frontend unverändert.
 - Vollständiges Freigabedossier: `docs/prod-release/E05_PROD_PAKET_08_VORZEITIGER_SPERRAUSGLEICH_2026-11-14.md`.
 
 **Hinweis:** `DB_MIGRATION_LOG.md` wird gemäß seiner verbindlichen Regel erst nach einer tatsächlich begonnenen schreibenden SQL-Ausführung ergänzt; die Vorbereitung allein ist dort kein Ausführungsdatensatz.
 
-### E05 PROD Paket 8 – Freigabe erteilt, Live-Preflight blockiert (14.11.2026)
+### E05 PROD Paket 8 – Vorheriger Live-Preflight-Hinweis (14.11.2026, durch spätere Entscheidung abgelöst)
 
 - Benutzerfreigabe zur PROD-Ausführung liegt vor.
 - Live-Projekt verifiziert: `qdugtpzgefpswnnqbusd`, ACTIVE_HEALTHY, PostgreSQL 17.6; DEV-Projekt nicht verwendet.
 - PROD-Migrationshistorie enthält E05 Pakete 1–7; Paket-8-Objekte fehlen. Exakter Paket-2-Quelltextanker vorhanden. Read-only-Datenbefund: 1 aktive Saison, 0 offene Sperren.
 - Organisation läuft auf Free Plan. Ein wiederherstellbarer Backup-/PITR-Punkt konnte nicht bestätigt werden; Supabase dokumentiert Backup-Download-Beschränkungen im Free Plan und PITR als kostenpflichtiges Add-on.
-- Deshalb Migration vorerst nicht gestartet: verbindlicher Backup-/PITR-Gate aus dem Freigabedossier nicht erfüllt.
-- Keine schreibenden SQL-Aktionen; DEV, PROD und `main` unverändert.
-- Details und offizielle Referenzen: `docs/prod-release/E05_PROD_PAKET_08_VORZEITIGER_SPERRAUSGLEICH_2026-11-14.md`.
+- Der Backup-/PITR-Hinweis wurde anschließend mit dem Projektverantwortlichen geklärt: Der bisherige PROD-Release-Prozess ohne kostenpflichtiges Backup/PITR soll fortgeführt werden. Die Zusatzbedingung wurde daher nicht als Release-Gate angewendet.
+- Paket 8 wurde danach am 14.11.2026 erfolgreich in PROD ausgeführt und nachkontrolliert. Maßgeblich ist der Ausführungsnachweis in `DB_MIGRATION_LOG.md` und Abschnitt 10 des Paket-8-Dossiers.
 
+
+
+### E05 PROD Paket 8 – Ausführung abgeschlossen (14.11.2026)
+
+- Supabase PROD Migration `20261114222833 e05_prod_paket_08_early_suspension_reset`: `success: true`.
+- Nachkontrolle erfolgreich: Tabellen/RLS/Policies, Indizes, Constraints, Trigger, Funktionen und RPC-ACL geprüft.
+- Datenbestand: 0 Reset-Zeilen, 0 Audit-Zeilen; 1 aktive Saison, 0 offene Sperren. Keine fachlichen Daten verändert.
+- Keine DEV-, `main)- oder Frontend-Änderung.
+- Vollständiger Nachweis: `DB_MIGRATION_LOG.md` (DB-MIG-2026-019) und Paket-8-Dossier Abschnitt 10.
