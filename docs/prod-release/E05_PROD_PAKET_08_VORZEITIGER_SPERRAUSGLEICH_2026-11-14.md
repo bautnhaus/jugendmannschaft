@@ -121,3 +121,20 @@ Nach PROD-Ausführung:
 - Dossier liegt auf `develop`; CI-Workflow-Blob-SHA `03dc5438cc95b48a2820f2feff38661cd71bb856`.
 
 **Aktueller Status:** Technisch vorbereitet und isoliert erfolgreich getestet; zur abschließenden Prüfung und ausdrücklichen PROD-Ausführungsfreigabe vorgelegt. Noch nicht ausgeführt. Keine Änderung an Supabase DEV, Supabase PROD oder GitHub `main` im Rahmen dieser Vorbereitung.
+
+
+## 9. PROD-Freigabe und Live-Preflight (14.11.2026)
+
+- **Ausführungsfreigabe:** vom Benutzer ausdrücklich erteilt.
+- **Zielprojekt live verifiziert:** `qdugtpzgefpswnnqbusd`, Projektname `Jugendmannschaft`, Region `eu-west-1`, Status `ACTIVE_HEALTHY`, PostgreSQL `17.6.1.166`.
+- **DEV-Projekt gegengeprüft:** `pzazqvvoruqnqhcorbwx`; nicht als Ausführungsziel verwendet.
+- **Migrationshistorie live:** sieben E05-Pakete (1–7) vorhanden; Paket 8 fehlt; keine Paket-9/10- oder DB-MIG-2026-010/011-Migrationen registriert.
+- **Objekt-Preflight:** Paket-8-Tabellen, RPCs und Trigger fehlen vollständig.
+- **Quelltext-Preflight:** erwarteter Paket-2-Source-Block in `award_training_behavior_event` exakt einmal vorhanden; Owner `postgres`, SECURITY DEFINER, search_path `pg_catalog, public, auth`, EXECUTE für `authenticated` bestätigt.
+- **Datenbestand:** 1 aktive Saison, 0 offene Sperren. Die Abfrage war read-only.
+- **Supabase-Organisation:** Plan `free`. Laut offizieller Supabase-Dokumentation sind Datenbank-Backups auf dem Free Plan nicht zum Download verfügbar; PITR ist ein kostenpflichtiges Add-on. Über die verfügbaren Projektinformationen konnte kein bestätigter, wiederherstellbarer Backup-/PITR-Punkt nachgewiesen werden. Referenz: https://supabase.com/docs/guides/platform/backups und https://supabase.com/docs/guides/deployment/going-into-prod.
+- **Entscheidung:** Migration **nicht gestartet**. Der im Freigabedossier definierte Backup-/PITR-Preflight ist nicht erfüllt. Die Benutzerfreigabe liegt vor, ersetzt aber nicht den ausdrücklich dokumentierten Wiederherstellbarkeits-Gate.
+- **Keine schreibenden Datenbankaktionen:** weder `apply_migration` noch sonstige schreibende SQL-Ausführung erfolgte. DEV, PROD-Schema und PROD-Daten blieben unverändert.
+- **Advisor-Ausgangsbefund:** Security Advisor meldet 50 bestehende SECURITY DEFINER-Warnungen, eine mutable-search_path-Warnung (`public.set_updated_at`) und deaktivierten Leaked-Password-Schutz; Health Advisor ohne Findings. Diese bestehenden Hinweise wurden nicht verändert.
+
+**Nächster notwendiger Schritt:** Vor Migration einen belastbaren Wiederherstellungsweg für PROD bereitstellen und bestätigen (z. B. passender Supabase-Plan/Backup- bzw. PITR-Verfügbarkeit oder ein verifizierter externer Datenbank-Backup- und Restore-Prozess). Danach Live-Preflight erneut durchführen. Bis dahin bleibt Paket 8 freigegeben, aber nicht ausgeführt.
