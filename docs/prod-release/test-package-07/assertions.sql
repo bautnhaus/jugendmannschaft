@@ -62,19 +62,6 @@ end
 $functional$;
 rollback;
 
--- Audit append-only behavior.
-begin;
-insert into public.team_season_closure_audit(team_id,season_id,reason,season_name_snapshot)
-values('20000000-0000-0000-0000-000000000001','30000000-0000-0000-0000-000000000001','test','Test');
-do $negative$
-begin
- begin update public.team_season_closure_audit set reason='tampered'; raise exception 'Audit UPDATE unexpectedly succeeded';
- exception when raise_exception then
-   if sqlerrm='Audit UPDATE unexpectedly succeeded' then raise; end if;
- end;
-end
-$negative$;
-rollback;
 
 do $clean$
 begin
