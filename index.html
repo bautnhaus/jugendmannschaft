@@ -159,6 +159,19 @@ input[type=text],input[type=date],input[type=email],input[type=password],input[t
 .playerListRows{display:flex;flex-direction:column;gap:8px}
 .playerListRow{width:100%;display:flex;align-items:center;gap:10px;text-align:left;padding:10px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--text);min-width:0;min-height:0;box-shadow:0 1px 3px #0f172a08}
 .playerListRow.isRecommended{border:2px solid #93c5fd;padding:9px;background:#eff6ff}
+.playerListRow.hasOpenSuspension{border:1px solid #f2b8b5;background:#fff1f0}
+.playerListRow.hasYellowWarning{border:1px solid #ead18a;background:#fff8df}
+.playerEventMarkers{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-top:5px}
+.playerEventMarker{display:inline-flex;align-items:center;gap:3px;font-size:11px;line-height:18px;padding:0 6px;border-radius:999px;background:#f1f5f9;color:#475569;white-space:nowrap}
+.playerEventMarker .material-symbols-outlined{font-size:14px}
+.playerListRow.hasOpenSuspension .playerEventMarker.suspension{background:#fee2e2;color:#991b1b}
+.playerListRow.hasYellowWarning .playerEventMarker.warning{background:#fef3c7;color:#92400e}
+body.dark .playerListRow.hasOpenSuspension{background:#3b2022;border-color:#7f3538}
+body.dark .playerListRow.hasYellowWarning{background:#3b321d;border-color:#786027}
+body.dark .playerEventMarker{background:#263244;color:#cbd5e1}
+body.dark .playerListRow.hasOpenSuspension .playerEventMarker.suspension{background:#5b2529;color:#fecaca}
+body.dark .playerListRow.hasYellowWarning .playerEventMarker.warning{background:#59451d;color:#fde68a}
+
 .playerListAvatar{width:54px;height:54px;flex:0 0 54px;display:flex;align-items:center;justify-content:center;overflow:visible}
 .clubCrestAvatar{width:72px;height:72px;flex:0 0 72px}
 .clubCrestAvatar .playerCardAvatarWrap,.clubCrestAvatar .playerAvatar{width:72px!important;height:72px!important;min-width:72px!important;border-radius:12px!important;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--surface-2,#f1f5f9)!important}
@@ -1957,6 +1970,12 @@ let playerSort={key:'lastName',dir:'asc'};
 let playerPositionFilter='Alle';
 let playerSearchText='';
 let playerRosterView='active';
+let playerListMode='attendance';
+let playerEventFilter='all';
+let playerEventStats={};
+let playerEventStatsTeam=null;
+let playerEventStatsSeason=null;
+let playerEventStatsLoading=false;
 const LEVEL_POINTS={Einsteiger:1,Fortgeschritten:2,Stark:3,Profi:4};
 const POSITION_COLORS=['#dbeafe','#dcfce7','#fef3c7','#fee2e2','#ede9fe','#cffafe','#fce7f3','#e2e8f0'];
 let supabase=null, currentUser=null, team=null, season=null, role='trainer', currentTeamRoles=[], currentClubId=null, canManageClub=false, clubOnlyMode=false, clubMemberOnlyMode=false, isSuperAdmin=false, contextReadOnly=false, openingAdminContext=false, adminContextActive=false;
@@ -2487,15 +2506,54 @@ function isSquad(p){const rank=top16Ranking();return rank.slice(0,Math.max(1,Num
 
 function levelBadge(level){if(!level)return '<span class="badge">kein Level</span>';const c=level==='Profi'?'outstanding':level==='Stark'?'strong':level==='Fortgeschritten'?'medium':'weak';return `<span class="badge ${c}">${esc(LEVEL_LABELS[level]||level)}</span>`;}
 window.setPlayerSort=key=>{playerSort={key,dir:'asc'};renderPlayers();};
+async function loadPlayerEventStats(force=false){
+  if(!team||!season?.id)return;
+  if(!force&&playerEventStatsTeam===team&&playerEventStatsSeason===season.id)return;
+  if(playerEventStatsLoading)return;
+  playerEventStatsLoading=true;
+  try{
+    const c=getClient();
+    const [events,suspensions]=await Promise.all([
+      c.from('training_behavior_events').select('player_id,event_type,status').eq('team_id',team).eq('season_id',season.id).eq('status','active'),
+      c.from('training_suspensions').select('player_id,status').eq('team_id',team).eq('season_id',season.id).eq('status','open')
+    ]);
+    if(events.error)throw events.error;
+    if(suspensions.error)throw suspensions.error;
+    const next={};
+    state.players.forEach(p=>next[p.id]={yellow:0,red:0,stars:0,suspensions:0});
+    (events.data||[]).forEach(e=>{
+      const row=next[e.player_id];if(!row)return;
+      if(e.event_type==='yellow_card')row.yellow++;
+      else if(e.event_type==='red_card')row.red++;
+      else if(e.event_type==='positive_star')row.stars++;
+    });
+    (suspensions.data||[]).forEach(x=>{if(next[x.player_id])next[x.player_id].suspensions++;});
+    playerEventStats=next;playerEventStatsTeam=team;playerEventStatsSeason=season.id;
+  }catch(err){
+    console.error('Zentrale Ereignisübersicht konnte nicht geladen werden:',err);
+    showStatus('Ereignisübersicht konnte nicht geladen werden. Bitte erneut versuchen.','error');
+    playerEventStatsTeam=null;playerEventStatsSeason=null;
+  }finally{playerEventStatsLoading=false;}
+}
+window.setPlayerListMode=async mode=>{
+  playerListMode=mode==='events'?'events':'attendance';
+  if(playerListMode==='events')await loadPlayerEventStats();
+  renderPlayers();
+};
+window.setPlayerEventOverviewFilter=filter=>{playerEventFilter=['all','suspensions','warnings','clear'].includes(filter)?filter:'all';renderPlayers();};
 function renderPlayers(){
   if(canManagePlayerLifecycle()&&playerRosterView==='inactive'){
-    const rows=[...state.inactivePlayers].sort((a,b)=>String(a.last_name||'').localeCompare(String(b.last_name||''),'de',{sensitivity:'base'})||displayName(a).localeCompare(displayName(b),'de')).map(p=>{const stars=p.level&&LEVEL_STARS[p.level]?`${'★'.repeat(LEVEL_STARS[p.level])}${'☆'.repeat(4-LEVEL_STARS[p.level])}`:'–';const positions=orderedPositions(p.positions||[]).map(x=>`<span class="playerListPosition">${esc(x)}</span>`).join('');return `<button type="button" class="playerListRow inactivePlayerRow" data-player-card="${esc(p.id)}" aria-label="Spielerkarte ${esc(displayName(p))}"><span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span><span class="playerListPositions">${positions||'<span class="playerListNoPosition">Keine Position</span>'}</span><span class="playerListLevel"><span class="playerListStars">${stars}</span><span>${esc(p.level||'Kein Level')}</span></span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>`;}).join('');
+    const rows=[...state.inactivePlayers].sort((a,b)=>String(a.last_name||'').localeCompare(String(b.last_name||''),'de',{sensitivity:'base'})||displayName(a).localeCompare(displayName(b),'de')).map(p=>{const stars=p.level&&LEVEL_STARS[p.level]?'${'★'.repeat(LEVEL_STARS[p.level])}${'☆'.repeat(4-LEVEL_STARS[p.level])}':'–';const positions=orderedPositions(p.positions||[]).map(x=>`<span class="playerListPosition">${esc(x)}</span>`).join('');return `<button type="button" class="playerListRow inactivePlayerRow" data-player-card="${esc(p.id)}" aria-label="Spielerkarte ${esc(displayName(p))}"><span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span><span class="playerListPositions">${positions||'<span class="playerListNoPosition">Keine Position</span>'}</span><span class="playerListLevel"><span class="playerListStars">${stars}</span><span>${esc(p.level||'Kein Level')}</span></span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>`;}).join('');
     $('playerTable').innerHTML=`<div class="trainingSegmented rosterViewTabs"><button type="button" onclick="setPlayerRosterView('active')">Aktiver Kader (${state.players.length})</button><button type="button" class="active" onclick="setPlayerRosterView('inactive')">Inaktive Spieler (${state.inactivePlayers.length})</button></div>${rows?`<div class="playerListRows">${rows}</div>`:'<div class="playerRecordEmpty">Keine inaktiven Spieler vorhanden.</div>'}`;return;
   }
-  const ranked=top16Ranking(true);
-  const rankMap=new Map(ranked.map((p,i)=>[p.id,i]));
+  const ranked=top16Ranking(true),rankMap=new Map(ranked.map((p,i)=>[p.id,i]));
   const cmpText=(a,b)=>String(a||'').localeCompare(String(b||''),'de',{sensitivity:'base'});
   const sorted=[...state.players].sort((a,b)=>{
+    if(playerListMode==='events'){
+      const A=playerEventStats[a.id]||{},B=playerEventStats[b.id]||{};
+      const priority=x=>x.suspensions>0?0:x.yellow>=4?1:x.yellow>0?2:3;
+      return priority(A)-priority(B)||cmpText(displayName(a),displayName(b));
+    }
     let v=0;
     if(playerSort.key==='firstName')v=cmpText(a.first_name,b.first_name);
     else if(playerSort.key==='lastName')v=cmpText(a.last_name,b.last_name);
@@ -2506,27 +2564,36 @@ function renderPlayers(){
   });
   const query=playerSearchText.trim().toLocaleLowerCase('de');
   const filtered=sorted.filter(p=>{
-    const matchesQuery=playerSearchMatches(p, query);
-    const matchesPosition=playerPositionFilter==='Alle'||(p.positions||[]).includes(playerPositionFilter);
-    return matchesQuery&&matchesPosition;
+    const matchesQuery=playerSearchMatches(p,query);
+    if(playerListMode==='events'){
+      const x=playerEventStats[p.id]||{yellow:0,suspensions:0};
+      const matchesEvent=playerEventFilter==='suspensions'?x.suspensions>0:playerEventFilter==='warnings'?x.yellow>=4:playerEventFilter==='clear'?x.suspensions===0&&x.yellow<4:true;
+      return matchesQuery&&matchesEvent;
+    }
+    return matchesQuery&&(playerPositionFilter==='Alle'||(p.positions||[]).includes(playerPositionFilter));
   });
   const rows=filtered.map(p=>{
     const a=attendanceStats(p),top=rankMap.get(p.id)<Math.max(1,Number(recommendedSquadSize)||16);
     const positions=orderedPositions(p.positions||[]).map(name=>{const pr=state.positionRows.find(x=>x.name===name);const bg=/^#[0-9a-f]{6}$/i.test(pr?.color||'')?pr.color:'#e2e8f0';return `<span class="playerListPosition" style="background:${esc(bg)}">${esc(name)}</span>`;}).join('');
     const stars=p.level&&LEVEL_STARS[p.level]?`${'★'.repeat(LEVEL_STARS[p.level])}${'☆'.repeat(4-LEVEL_STARS[p.level])}`:'–';
-    const pct=Math.round(a.rate*100);
-    return `<button type="button" class="playerListRow ${top?'isRecommended':''}" data-player-card="${esc(p.id)}" aria-label="Spielerkarte ${esc(displayName(p))}">
+    const pct=Math.round(a.rate*100),x=playerEventStats[p.id]||{yellow:0,red:0,stars:0,suspensions:0};
+    const isSuspended=x.suspensions>0,isWarning=x.yellow>=4;
+    const eventMarkers=playerListMode==='events'?`<span class="playerEventMarkers">${isSuspended?'<span class="playerEventMarker suspension"><span class="material-symbols-outlined">block</span>Offene Sperre</span>':''}${isWarning?'<span class="playerEventMarker warning"><span class="material-symbols-outlined">warning</span>4 gelbe Karten</span>':''}${x.yellow>0?'<span class="playerEventMarker"><span class="material-symbols-outlined">style</span>'+x.yellow+'</span>':''}${x.red>0?'<span class="playerEventMarker"><span class="material-symbols-outlined">do_not_disturb_on</span>'+x.red+'</span>':''}${x.stars>0?'<span class="playerEventMarker"><span class="material-symbols-outlined">star</span>'+x.stars+'</span>':''}</span>`:'';
+    return `<button type="button" class="playerListRow ${playerListMode==='attendance'&&top?'isRecommended':''} ${playerListMode==='events'&&isSuspended?'hasOpenSuspension':playerListMode==='events'&&isWarning?'hasYellowWarning':''}" data-player-card="${esc(p.id)}" aria-label="Spielerkarte ${esc(displayName(p))}">
       <span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}</span></span>
-      <span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span><span class="playerListPositions">${positions||'<span class="playerListNoPosition">Keine Position</span>'}</span><span class="playerListLevel"><span class="playerListStars">${stars}</span><span>${esc(p.level||'Kein Level')}</span></span></span>
-      <span class="playerListTraining"><span class="playerListDonut" style="--progress:${pct}"><span>${pct}%</span></span><span class="playerListTrainingLabel">Training</span></span>
+      <span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span><span class="playerListPositions">${positions||'<span class="playerListNoPosition">Keine Position</span>'}</span><span class="playerListLevel"><span class="playerListStars">${stars}</span><span>${esc(p.level||'Kein Level')}</span></span>${eventMarkers}</span>
+      ${playerListMode==='attendance'?'<span class="playerListTraining"><span class="playerListDonut" style="--progress:'+pct+'"><span>'+pct+'%</span></span><span class="playerListTrainingLabel">Training</span></span>':''}
       <span class="material-symbols-outlined playerListChevron">chevron_right</span>
     </button>`;
   }).join('');
   const positionOptions=['Alle',...state.positionRows.map(p=>p.name).filter(n=>n!=='Trainer')];
-  const chips=positionOptions.map(name=>`<button type="button" class="playerFilterChip ${playerPositionFilter===name?'active':''}" data-player-filter="${esc(name)}">${esc(name)}${name==='Alle'?` (${state.players.length})`:''}</button>`).join('');
+  const chips=playerListMode==='events'?[['all','Alle'],['suspensions','Sperren'],['warnings','Warnungen'],['clear','Ohne Auffälligkeiten']].map(([key,label])=>`<button type="button" class="playerFilterChip ${playerEventFilter===key?'active':''}" aria-pressed="${playerEventFilter===key}" onclick="setPlayerEventOverviewFilter('${key}')">${label}</button>`).join(''):positionOptions.map(name=>`<button type="button" class="playerFilterChip ${playerPositionFilter===name?'active':''}" data-player-filter="${esc(name)}">${esc(name)}${name==='Alle'?` (${state.players.length})`:''}</button>`).join('');
   const sortOptions=[['top16','Kaderempfehlung'],['lastName','Nachname A–Z'],['firstName','Vorname A–Z'],['training','Anwesenheit']].map(([v,label])=>`<option value="${v}" ${playerSort.key===v?'selected':''}>${label}</option>`).join('');
   const rosterTabs=canManagePlayerLifecycle()?`<div class="trainingSegmented rosterViewTabs"><button type="button" class="active" onclick="setPlayerRosterView('active')">Aktiver Kader (${state.players.length})</button><button type="button" onclick="setPlayerRosterView('inactive')">Inaktive Spieler (${state.inactivePlayers.length})</button></div>`:'';
-  $('playerTable').innerHTML=rosterTabs+(state.players.length?`<div class="playerListControls"><label class="playerSearchWrap"><span class="material-symbols-outlined">search</span><input id="playerListSearch" type="search" placeholder="Suche nach Name, Vorname, Position oder Verein …" value="${esc(playerSearchText)}" oninput="setPlayerSearch(this.value)">${playerSearchText?'<button type="button" class="playerSearchClear" aria-label="Suchbegriff löschen" onclick="clearPlayerSearch(event)"><span class="material-symbols-outlined">close</span></button>':''}</label><label class="playerSortWrap"><span class="material-symbols-outlined">sort</span><select aria-label="Spieler sortieren" onchange="setPlayerSort(this.value)">${sortOptions}</select></label></div><div class="playerFilterChips">${chips}</div><div class="playerListRows">${rows||'<p class="muted">Keine passenden Spieler gefunden.</p>'}</div><div class="playerListFooter"><span>${filtered.length} von ${state.players.length} Spielern</span><span>${playerSort.key==='top16'?'Nach Kaderempfehlung sortiert':playerSort.key==='training'?'Nach Anwesenheit sortiert':playerSort.key==='firstName'?'Nach Vorname sortiert':'Nach Nachname sortiert'}</span></div>`:'<p class="muted">Noch keine Spieler angelegt.</p>');
+  const modeTabs=`<div class="trainingSegmented playerListModeTabs"><button type="button" class="${playerListMode==='attendance'?'active':''}" onclick="setPlayerListMode('attendance')">Anwesenheit</button><button type="button" class="${playerListMode==='events'?'active':''}" onclick="setPlayerListMode('events')">Ereignisse</button></div>`;
+  const controls=`<div class="playerListControls"><label class="playerSearchWrap"><span class="material-symbols-outlined">search</span><input id="playerListSearch" type="search" placeholder="Suche nach Name, Vorname, Position oder Verein …" value="${esc(playerSearchText)}" oninput="setPlayerSearch(this.value)">${playerSearchText?'<button type="button" class="playerSearchClear" aria-label="Suchbegriff löschen" onclick="clearPlayerSearch(event)"><span class="material-symbols-outlined">close</span></button>':''}</label>${playerListMode==='attendance'?'<label class="playerSortWrap"><span class="material-symbols-outlined">sort</span><select aria-label="Spieler sortieren" onchange="setPlayerSort(this.value)">'+sortOptions+'</select></label>':''}</div>`;
+  const eventLoading=playerListMode==='events'&&!playerEventStatsTeam?'<p class="muted small">Ereignisdaten werden geladen …</p>':'';
+  $('playerTable').innerHTML=rosterTabs+modeTabs+(state.players.length?controls+`<div class="playerFilterChips">${chips}</div>${eventLoading}<div class="playerListRows">${rows||'<p class="muted">Keine passenden Spieler gefunden.</p>'}</div><div class="playerListFooter"><span>${filtered.length} von ${state.players.length} Spielern</span><span>${playerListMode==='events'?'Nach Handlungspriorität sortiert':playerSort.key==='top16'?'Nach Kaderempfehlung sortiert':playerSort.key==='training'?'Nach Anwesenheit sortiert':playerSort.key==='firstName'?'Nach Vorname sortiert':'Nach Nachname sortiert'}</span></div>`:'<p class="muted">Noch keine Spieler angelegt.</p>');
 }
 window.setPlayerPositionFilter=name=>{playerPositionFilter=name;renderPlayers();};
 window.setPlayerSearch=value=>{playerSearchText=value;const el=$('playerListSearch');const pos=el?.selectionStart;renderPlayers();const next=$('playerListSearch');if(next){next.focus();if(pos!==null&&pos!==undefined&&next.type!=='search')next.setSelectionRange(pos,pos);}};window.clearPlayerSearch=e=>{e?.preventDefault();playerSearchText='';renderPlayers();const next=$('playerListSearch');if(next){next.focus();}};
