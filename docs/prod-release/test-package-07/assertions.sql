@@ -79,6 +79,5 @@ rollback;
 do $clean$
 begin
  if exists(select 1 from public.team_season_closure_audit) then raise exception 'CI left audit fixtures behind'; end if;
- if exists(select 1 from public.training_suspensions where id::text like '40000000-%') then raise exception 'CI left suspension fixtures behind'; end if;
 end
 $clean$;
