@@ -59,3 +59,12 @@ Die Ereignis-Chips erhalten analog zu den Positions-Chips eine feine Kontur (`1p
 ## Handlungspriorität als Sortieroption (14.11.2026)
 
 Die Ereignisansicht bietet jetzt drei Sortieroptionen: **Handlungspriorität**, **Name A–Z** und **Name Z–A**. Die Handlungspriorität ordnet offene Sperren zuerst, danach Spieler mit mindestens vier aktiven gelben Karten ohne offene Sperre, anschließend Spieler mit sonstigen aktiven gelben Karten und zuletzt Spieler ohne diese Auffälligkeiten. Innerhalb einer Prioritätsgruppe wird alphabetisch sortiert. Die Auswahl wird im UI-Footer benannt. Commit: `dd55071bb7f6b8e065479cb0c8a3cd6e23c07c9f`.
+
+
+## Standard-Sortierung festgelegt (14.11.2026)
+
+Beim initialen Öffnen der Spielerliste gelten jetzt diese Voreinstellungen:
+- **Anwesenheit:** Kaderempfehlung (`top16`).
+- **Ereignisse:** Handlungspriorität (`priority`).
+
+Die Auswahl bleibt während der laufenden Ansicht durch die vorhandenen Sortier-Controls änderbar. Es wird keine zusätzliche Persistenz in Datenbank oder Local Storage eingeführt; nach einem vollständigen Neuaufbau der Seite greifen wieder die definierten Standardwerte. JavaScript-Syntaxprüfung beider Inline-Scripts erfolgreich. Commit: `54ac055c73d3e4622289a15efc373793af9224cd`.
