@@ -73,3 +73,20 @@ Die Auswahl bleibt während der laufenden Ansicht durch die vorhandenen Sortier-
 ## Abstand Kaderstatus-Tabs (14.11.2026)
 
 Die Tabs „Aktiver Kader / Inaktive Spieler“ erhalten jetzt `margin:10px 0 10px` und damit denselben vertikalen Außenabstand wie die übrigen segmented controls. Änderung in `develop/index.html`, Commit `352f76cd9a1ed82029c6f5814c7ccf016fc3fee3`. Syntaxprüfung der Inline-Scripts: Script 0: PASS; Script 1: PASS.
+
+## E05 – isolierter Mannschaftswechsel-Testbestand in G-Junioren (14.11.2026)
+
+Auf ausdrückliche Freigabe wurden ausschließlich in Supabase DEV für Team **G-Junioren** (Team-ID `1c793e3f-d2e1-4419-a933-4a113a00aef3`, Saison `2026/2027`) synthetische Testdaten angelegt. Die DEV-Mannschaft mit 25 Spielern blieb unverändert; PROD wurde nicht berührt.
+
+Angelegt und anschließend per unabhängiger Zählabfrage verifiziert:
+- 5 aktive Testspieler (`TEST G1` bis `TEST G5`), jeweils mit dem Marker `KADAssist E05 TESTDATEN` in den Notizen
+- 4 nur für G-Junioren angelegte Testpositionen (`TEST Tor/Abwehr/Mittelfeld/Sturm`)
+- 5 Spieler-Positions-Zuordnungen
+- 2 abgeschlossene Testtrainings am 11.11. und 13.11.2026
+- 10 Anwesenheitsdatensätze
+- 1 geplanter Test-Spieltag am 22.11.2026
+- 2 aktive Verhaltensevents am 11.11.2026: eine gelbe Karte (TEST G2 – Ben) und ein positiver Stern (TEST G3 – Charlie), jeweils mit Audit-Eintrag
+
+Verifikation: 5 Spieler, 4 Positionen, 2 Trainings, 1 Spieltag, 2 Events und 10 Anwesenheitsdatensätze gefunden. Testdaten sind eindeutig über die Marker auffindbar. Es wurden keine realen Spieler- oder Mannschaftsdaten geändert.
+
+**Bereinigung nach Abschluss der manuellen Tests:** Zuerst die Event-Auditzeilen zu den markierten Testevents löschen, dann die markierten Events, Anwesenheitseinträge der markierten Testtrainings, Spieler-Positions-Zuordnungen und Testspieler, danach Testtrainings, Testspieltag und Testpositionen löschen. Keine pauschalen Team-Löschungen verwenden. Vor dem Löschen IDs/Counts über dieselben Marker erneut prüfen. Es wurden noch keine Testdaten entfernt.
