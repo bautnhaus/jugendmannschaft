@@ -2542,6 +2542,7 @@ window.setPlayerListMode=async mode=>{
   renderPlayers();
 };
 window.setPlayerEventOverviewFilter=filter=>{playerEventFilter=['all','suspensions','warnings','highlights'].includes(filter)?filter:'all';renderPlayers();};
+window.setPlayerEventSort=dir=>{playerEventSort=dir==='desc'?'desc':'asc';renderPlayers();};
 function renderPlayers(){
   if(canManagePlayerLifecycle()&&playerRosterView==='inactive'){
     const rows=[...state.inactivePlayers].sort((a,b)=>String(a.last_name||'').localeCompare(String(b.last_name||''),'de',{sensitivity:'base'})||displayName(a).localeCompare(displayName(b),'de')).map(p=>{const stars=p.level&&LEVEL_STARS[p.level]?`${'★'.repeat(LEVEL_STARS[p.level])}${'☆'.repeat(4-LEVEL_STARS[p.level])}`:'–';const positions=orderedPositions(p.positions||[]).map(x=>`<span class="playerListPosition">${esc(x)}</span>`).join('');return `<button type="button" class="playerListRow inactivePlayerRow" data-player-card="${esc(p.id)}" aria-label="Spielerkarte ${esc(displayName(p))}"><span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span><span class="playerListPositions">${positions||'<span class="playerListNoPosition">Keine Position</span>'}</span><span class="playerListLevel"><span class="playerListStars">${stars}</span><span>${esc(p.level||'Kein Level')}</span></span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>`;}).join('');
