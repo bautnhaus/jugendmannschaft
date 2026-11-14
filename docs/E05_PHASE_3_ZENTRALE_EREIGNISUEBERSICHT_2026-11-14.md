@@ -63,7 +63,7 @@ Der Nutzer hat die Funktionen der zentralen Ereignisübersicht anhand der vorhan
 - Standardsortierung: Anwesenheit = Kaderempfehlung; Ereignisse = Handlungspriorität.
 - Superadmin-Fälle wurden anhand der aktuellen Testdaten ebenfalls bestätigt.
 
-**Noch offen:** Team- und Saisonwechsel. Dieser Kontextwechsel ist gesondert zu prüfen; bis dahin ist die Phase-3-Abnahme nicht vollständig abgeschlossen.
+**Klarstellung zum Testumfang (14.11.2026):** Der Mannschaftswechsel wurde bereits zuvor getestet und ist kein offener Prüfpunkt. Ein Saisonwechsel ist derzeit kein Bestandteil der App und daher nicht Gegenstand der Phase-3-Abnahme. Die zuvor aufgeführte offene Prüfung entfällt.
 
 **Bewusste Abgrenzung:** Eine Stornierungs-/Korrekturoption für positive Sterne wird vorerst nicht umgesetzt. Der Nutzer hält sie grundsätzlich für konsistent, stellt sie wegen der geringeren Auswirkungen gegenüber Karten aber zurück. Keine Erweiterung von RPCs, Datenbank oder UI in diesem Punkt.
 
