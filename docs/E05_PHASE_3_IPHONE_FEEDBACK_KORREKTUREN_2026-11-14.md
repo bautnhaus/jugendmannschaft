@@ -95,3 +95,8 @@ Verifikation: 5 Spieler, 4 Positionen, 2 Trainings, 1 Spieltag, 2 Events und 10 
 ## Ereigniskarten – Lightmode-Farbkonsistenz (14.11.2026)
 
 Die Karten mit offener Sperre (hellrot) und gelber Warnung (hellgelb) erhalten im manuellen Lightmode (`data-theme=light`) und im systembedingten Lightmode (kein Theme-Attribut bei `prefers-color-scheme: light`) dieselben Hintergrund-, Rahmen- und Textfarben. Damit bleiben Namen und Leistungsstufen auf den farbigen Flächen lesbar. Darkmode-Regeln wurden nicht verändert. Commit: `4a5c751ac9dc18b0f6617afd59243e6111aa7f25`. JavaScript-Syntaxprüfung: Script 0: PASS; Script 1: PASS. Visuelle iPhone-Prüfung beider Lightmode-Varianten steht noch aus.
+
+
+## Korrektur der Lightmode-Ursache in Ereigniskarten (14.11.2026)
+
+Ursache des unveränderten Erscheinungsbilds: Die frühere Darkmode-Regel `html:not([data-theme="light"])` griff auch dann, wenn kein manuelles Theme-Attribut gesetzt war – also ebenso im systembedingten Lightmode. Durch `!important` überschrieb sie die hellen Kartenfarben. Die Darkmode-Regeln sind jetzt korrekt auf `html[data-theme="dark"]` bzw. auf fehlendes Theme-Attribut **innerhalb** von `@media (prefers-color-scheme: dark)` begrenzt. Damit bleiben System-Lightmode und manueller Lightmode beide hell und farblich identisch; Darkmode behält die dunklen Kartenfarben. Commit: `6abf614d39f1d470b2b63fdf11d035e5eb047e45`.
