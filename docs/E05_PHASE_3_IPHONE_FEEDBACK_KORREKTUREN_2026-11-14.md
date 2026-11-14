@@ -54,3 +54,8 @@ Die Ereignis-Chips erhalten analog zu den Positions-Chips eine feine Kontur (`1p
 - Das Rechtsfuß-Symbol in der Spielercard erhält jetzt die CSS-Klassen `footIcon mirrored`; damit greift die vorhandene horizontale Spiegelung auch in der Spielkarten-Metazeile. Die Auswahl im Spielerformular verwendete die Spiegelung bereits korrekt.
 - Beide Inline-JavaScript-Blöcke erfolgreich syntaktisch geprüft. DEV-Deploy und iPhone-Praxistest ausstehend.
 - Commits: `9511e1f`, `303fe8d`, `5a3b82c`.
+
+
+## Handlungspriorität als Sortieroption (14.11.2026)
+
+Die Ereignisansicht bietet jetzt drei Sortieroptionen: **Handlungspriorität**, **Name A–Z** und **Name Z–A**. Die Handlungspriorität ordnet offene Sperren zuerst, danach Spieler mit mindestens vier aktiven gelben Karten ohne offene Sperre, anschließend Spieler mit sonstigen aktiven gelben Karten und zuletzt Spieler ohne diese Auffälligkeiten. Innerhalb einer Prioritätsgruppe wird alphabetisch sortiert. Die Auswahl wird im UI-Footer benannt. Commit: `dd55071bb7f6b8e065479cb0c8a3cd6e23c07c9f`.
