@@ -793,3 +793,11 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - End-to-End- und Parallelitätstests bleiben vor Frontend-Rollout in DEV/isolierter Testumgebung offen.
 - GitHub `main` und Frontend-Index weiterhin unverändert.
 - Details: `docs/prod-release/E05_PROD_PAKET_06_ATOMARER_AUSNAHMEWIDERRUF_2026-11-14.md`.
+
+### E05 PROD Paket 7 – kontrollierter Saisonabschluss vorbereitet
+
+- Saisonabschluss-RPC, append-only Saisonabschluss-Audit und RLS-Lesepolicy mit ausgewähltem Super-Admin-Teamkontext als PROD-Paket vorbereitet.
+- DEV-Quellen und zwei erfolgreiche DEV-Migrationen vom 08.11.2026 dokumentiert.
+- Isolierter PostgreSQL-17.6-CI-Lauf [43642743485](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43642743485) erfolgreich, einschließlich guarded Rollback.
+- Paket 7 noch nicht in PROD ausgeführt; kein Frontend-/main-Deploy.
+- Details: `docs/prod-release/E05_PROD_PAKET_07_KONTROLLIERTER_SAISONABSCHLUSS_2026-11-14.md`.
