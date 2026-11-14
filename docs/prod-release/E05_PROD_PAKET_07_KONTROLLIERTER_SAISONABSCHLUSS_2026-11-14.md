@@ -86,3 +86,28 @@ CI/isolierte Tests ersetzen keine authentifizierten End-to-End-Tests mit echten 
 ## 7. Freigabegrenze
 
 Diese Vorbereitung ist **keine Ausführungsfreigabe**. Die Migration wird erst nach einer separaten ausdrücklichen Freigabe in Supabase PROD ausgeführt. GitHub `main`, Frontend-Index und PROD-Daten bleiben bis dahin unverändert.
+
+## 8. Isolierter PostgreSQL-CI-Test
+
+- Workflow: `.github/workflows/e05-prod-package-07-ci.yml`
+- Lauf: [GitHub Actions 43642743485](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43642743485)
+- Commit: `075d1e559614e7711dca6e9aa8179ae75151c91e`
+- PostgreSQL: 17.6
+- **Ergebnis: success** – alle Jobs/Schritte erfolgreich.
+
+Bestanden:
+1. Paketmigration mit Minimal-Baseline erfolgreich angewendet.
+2. Audit-Tabelle, RPC, RLS, ausgewählter Teamkontext, Append-only-Trigger und ACL geprüft.
+3. Funktionaler Positivtest: aktive Saison wird geschlossen.
+4. Zwei offene Sperren (gelb/rot) derselben Team-/Saisonkombination werden auf `expired` gesetzt und auditiert.
+5. Bereits abgeleistete Sperre bleibt `served`.
+6. Saisonabschluss-Audit enthält Grund und korrekte Anzahl abgelaufener Sperren.
+7. Trainer ohne Adminrolle und nicht authentifizierter Aufruf werden abgewiesen.
+8. Audit-Manipulation wird durch Append-only-Trigger verhindert.
+9. Guarded Rollback und Rollback-Assertions erfolgreich.
+
+Der CI-Test verwendet eine isolierte PostgreSQL-17.6-Datenbank mit synthetischer Minimal-Baseline. Er ist kein authentifizierter End-to-End-Test gegen Supabase Auth/RLS mit echten Nutzer-Sessions und ersetzt nicht die bereits dokumentierten DEV-Rollenprüfungen.
+
+## 9. Freigabestatus
+
+Paket 7 ist nach erfolgreichem isoliertem CI-Lauf zur ausdrücklichen PROD-Ausführungsfreigabe vorbereitet. **Es wurde weder in DEV noch PROD erneut ausgeführt.** Die zwei DEV-Migrationen vom 08.11.2026 sind bereits registriert und erfolgreich dokumentiert. GitHub `main`, Frontend-Index und PROD-Daten bleiben unverändert.
