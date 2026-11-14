@@ -1135,3 +1135,26 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **PROD-Freigabe:** separate ausdrückliche Freigabe erforderlich.
 - **GitHub main/Frontend:** unverändert.
 - **Dossier:** `docs/prod-release/E05_PROD_PAKET_07_KONTROLLIERTER_SAISONABSCHLUSS_2026-11-14.md`.
+
+### DB-MIG-2026-018 – E05 PROD Paket 7: Kontrollierter Saisonabschluss – PROD-Ausführung
+
+- **Ausführungsdatensatz:** PROD
+- **Datum/Uhrzeit (mit Zeitzone):** 14.11.2026, 22:37:45 CET (21:37:45 UTC; Supabase-Ledger-Version `20261114213745`).
+- **Umgebung:** Supabase PROD, Projekt `qdugtpzgefpswnnqbusd` (PostgreSQL 17.6.1.166, eu-west-1).
+- **Ausführungsweg:** Supabase MCP `apply_migration`; Migration atomar ausgeführt.
+- **Anlass/Zweck:** Bereitstellung des kontrollierten Saisonabschlusses gemäß ausdrücklicher Freigabe des Projektverantwortlichen vom 14.11.2026.
+- **Betroffene Objekte:** `public.team_season_closure_audit`; `public.close_team_season(uuid,text)`; `public.e05_reject_season_closure_audit_mutation()`; SELECT-RLS-Policy `team_season_closure_audit_select_team`; Append-only-Trigger `team_season_closure_audit_no_mutation`.
+- **Freigabe:** Ausdrücklich erteilt: „Freigabe erteilt für E05 PROD Paket 7. Bitte Migration ausführen, nachkontrollieren und lückenlos dokumentieren.“
+- **Ausführender:** ChatGPT über die verbundene Supabase-Projektintegration im Auftrag des Projektverantwortlichen.
+- **Status:** Erfolgreich; anschließende read-only Verifikation bestanden.
+- **Tatsächlich ausgeführtes SQL bzw. unveränderlicher Verweis:** `supabase/migrations/20261114220000_e05_prod_paket_07_controlled_season_closure.sql`; Git-Blob-SHA `1493cff2a67e2478af7aad6d7c419c353a9dd9ad`. Der ausgeführte SQL-Text entspricht der auf `develop` geprüften Fassung.
+- **Supabase-Migrationshistorie:** Eintrag `20261114213745 e05_prod_paket_07_controlled_season_closure` vorhanden; Pakete 1–7 sind damit in PROD registriert.
+- **Ergebnis:** `apply_migration` meldete `success: true`. Kein Fehler und kein Teilstatus.
+- **Read-only-Verifikation:** Audit-Tabelle vorhanden; alle 8 Spalten vorhanden; RLS aktiviert; eine SELECT-Policy für `authenticated` mit `is_team_member(team_id) OR has_selected_team_context(team_id)`; `authenticated` besitzt ausschließlich SELECT, `anon` besitzt keine Tabellenrechte; PK/FKs/UNIQUE/Checks vorhanden; PK- und UNIQUE-Index auf `season_id`; Append-only-Trigger für UPDATE/DELETE/TRUNCATE vorhanden; Triggerfunktion SECURITY DEFINER mit festem search_path und ohne EXECUTE-Rechte für API-Rollen; Saisonabschluss-RPC SECURITY DEFINER mit festem search_path, EXECUTE für `authenticated` ja und für `anon`, `service_role`, PUBLIC nein.
+- **Datenbestand:** 1 Saison insgesamt, 1 aktiv, 0 inaktiv; 0 offene Sperren; 0 Sperren-Auditzeilen; 0 Saisonabschluss-Auditzeilen. Die aktive Saison `2026/2027` blieb aktiv. Die RPC `close_team_season` wurde nicht aufgerufen.
+- **Advisor:** Health ohne Findings. Security Advisor zeigt 50 authentifizierbare SECURITY DEFINER-Funktionen (vorher 49; die neue autorisierte Saisonabschluss-RPC ist der zusätzliche Eintrag), eine bereits vorhandene mutable-search_path-Warnung sowie deaktivierten Leaked-Password-Schutz. Keine bestehenden Funktionen/Policies geändert.
+- **Rollback/Wiederherstellung:** Guarded Rollback `supabase/rollback/20261114220000_e05_prod_paket_07_controlled_season_closure_rollback.sql`, Blob-SHA `340c69fafc800a80033b57b4967ba698618be23e`, nicht ausgeführt. Bricht ab, sobald Saisonabschluss-Auditdaten existieren; stellt weder Saisonstatus noch Sperrenzustände wieder her.
+- **Gegenstück in der anderen Umgebung:** DEV-Paket 7 bleibt mit den Migrationen `20261108180535` und `20261108180944` erfolgreich vorhanden; keine DEV-Änderung in diesem Schritt.
+- **CI-Nachweis:** [Run 43642771857](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43642771857), Commit `cc545e9a1a055a29e02600e671c94161403c64a9`, PostgreSQL 17.6, `success` einschließlich Migration, Struktur-/ACL-/RLS-Assertions, Positiv-/Negativtests und guarded Rollback.
+- **Abweichung im vorbereitenden Dossier:** Ein älterer Snapshot notierte 2 aktive Saisons. Die unmittelbar vor Ausführung live abgefragte PROD-Basis ergab 1 Saison (`2026/2027`), davon 1 aktiv. Maßgeblich ist der aktuelle Live-Befund; keine Saison wurde verändert.
+- **Änderungsgrenzen:** Keine fachlichen Daten angelegt oder verändert; keine Saison geschlossen; keine Sperre abgelöst; kein Frontend-Index, GitHub `main` oder DEV-Projekt verändert.
