@@ -1972,6 +1972,7 @@ let playerSearchText='';
 let playerRosterView='active';
 let playerListMode='attendance';
 let playerEventFilter='all';
+let playerEventSort='asc';
 let playerEventStats={};
 let playerEventStatsTeam=null;
 let playerEventStatsSeason=null;
@@ -2550,9 +2551,8 @@ function renderPlayers(){
   const cmpText=(a,b)=>String(a||'').localeCompare(String(b||''),'de',{sensitivity:'base'});
   const sorted=[...state.players].sort((a,b)=>{
     if(playerListMode==='events'){
-      const A=playerEventStats[a.id]||{},B=playerEventStats[b.id]||{};
-      const priority=x=>x.suspensions>0?0:x.yellow>=4?1:x.yellow>0?2:3;
-      return priority(A)-priority(B)||cmpText(displayName(a),displayName(b));
+      const nameOrder=cmpText(displayName(a),displayName(b));
+      return playerEventSort==='desc'?-nameOrder:nameOrder;
     }
     let v=0;
     if(playerSort.key==='firstName')v=cmpText(a.first_name,b.first_name);
@@ -2591,9 +2591,9 @@ function renderPlayers(){
   const sortOptions=[['top16','Kaderempfehlung'],['lastName','Nachname A–Z'],['firstName','Vorname A–Z'],['training','Anwesenheit']].map(([v,label])=>`<option value="${v}" ${playerSort.key===v?'selected':''}>${label}</option>`).join('');
   const rosterTabs=canManagePlayerLifecycle()?`<div class="trainingSegmented rosterViewTabs"><button type="button" class="active" onclick="setPlayerRosterView('active')">Aktiver Kader (${state.players.length})</button><button type="button" onclick="setPlayerRosterView('inactive')">Inaktive Spieler (${state.inactivePlayers.length})</button></div>`:'';
   const modeTabs=`<div class="trainingSegmented playerListModeTabs"><button type="button" class="${playerListMode==='attendance'?'active':''}" onclick="setPlayerListMode('attendance')">Anwesenheit</button><button type="button" class="${playerListMode==='events'?'active':''}" onclick="setPlayerListMode('events')">Ereignisse</button></div>`;
-  const controls=`<div class="playerListControls"><label class="playerSearchWrap"><span class="material-symbols-outlined">search</span><input id="playerListSearch" type="search" placeholder="Suche nach Name, Vorname, Position oder Verein …" value="${esc(playerSearchText)}" oninput="setPlayerSearch(this.value)">${playerSearchText?'<button type="button" class="playerSearchClear" aria-label="Suchbegriff löschen" onclick="clearPlayerSearch(event)"><span class="material-symbols-outlined">close</span></button>':''}</label>${playerListMode==='attendance'?'<label class="playerSortWrap"><span class="material-symbols-outlined">sort</span><select aria-label="Spieler sortieren" onchange="setPlayerSort(this.value)">'+sortOptions+'</select></label>':''}</div>`;
+  const controls=`<div class="playerListControls"><label class="playerSearchWrap"><span class="material-symbols-outlined">search</span><input id="playerListSearch" type="search" placeholder="Suche nach Name, Vorname, Position oder Verein …" value="${esc(playerSearchText)}" oninput="setPlayerSearch(this.value)">${playerSearchText?'<button type="button" class="playerSearchClear" aria-label="Suchbegriff löschen" onclick="clearPlayerSearch(event)"><span class="material-symbols-outlined">close</span></button>':''}</label>${playerListMode==='attendance'?'<label class="playerSortWrap"><span class="material-symbols-outlined">sort</span><select aria-label="Spieler sortieren" onchange="setPlayerSort(this.value)">'+sortOptions+'</select></label>':'<label class="playerSortWrap"><span class="material-symbols-outlined">sort</span><select aria-label="Ereignisliste nach Namen sortieren" onchange="setPlayerEventSort(this.value)"><option value="asc" '+(playerEventSort==='asc'?'selected':'')+'>Name A–Z</option><option value="desc" '+(playerEventSort==='desc'?'selected':'')+'>Name Z–A</option></select></label>'}</div>`;
   const eventLoading=playerListMode==='events'&&!playerEventStatsTeam?'<p class="muted small">Ereignisdaten werden geladen …</p>':'';
-  $('playerTable').innerHTML=rosterTabs+modeTabs+(state.players.length?controls+`<div class="playerFilterChips">${chips}</div>${eventLoading}<div class="playerListRows">${rows||'<p class="muted">Keine passenden Spieler gefunden.</p>'}</div><div class="playerListFooter"><span>${filtered.length} von ${state.players.length} Spielern</span><span>${playerListMode==='events'?'Nach Handlungspriorität sortiert':playerSort.key==='top16'?'Nach Kaderempfehlung sortiert':playerSort.key==='training'?'Nach Anwesenheit sortiert':playerSort.key==='firstName'?'Nach Vorname sortiert':'Nach Nachname sortiert'}</span></div>`:'<p class="muted">Noch keine Spieler angelegt.</p>');
+  $('playerTable').innerHTML=rosterTabs+modeTabs+(state.players.length?controls+`<div class="playerFilterChips">${chips}</div>${eventLoading}<div class="playerListRows">${rows||'<p class="muted">Keine passenden Spieler gefunden.</p>'}</div><div class="playerListFooter"><span>${filtered.length} von ${state.players.length} Spielern</span><span>${playerListMode==='events'?'Nach Namen '+(playerEventSort==='desc'?'Z–A':'A–Z')+' sortiert':playerSort.key==='top16'?'Nach Kaderempfehlung sortiert':playerSort.key==='training'?'Nach Anwesenheit sortiert':playerSort.key==='firstName'?'Nach Vorname sortiert':'Nach Nachname sortiert'}</span></div>`:'<p class="muted">Noch keine Spieler angelegt.</p>');
 }
 window.setPlayerPositionFilter=name=>{playerPositionFilter=name;renderPlayers();};
 window.setPlayerSearch=value=>{playerSearchText=value;const el=$('playerListSearch');const pos=el?.selectionStart;renderPlayers();const next=$('playerListSearch');if(next){next.focus();if(pos!==null&&pos!==undefined&&next.type!=='search')next.setSelectionRange(pos,pos);}};window.clearPlayerSearch=e=>{e?.preventDefault();playerSearchText='';renderPlayers();const next=$('playerListSearch');if(next){next.focus();}};
@@ -2652,7 +2652,7 @@ window.openPlayerCard=async id=>{
   const footLabels={links:'Linksfuß',rechts:'Rechtsfuß',beidfüßig:'Beidfüßig'};
   const footIcons={links:'barefoot',rechts:'barefoot',beidfüßig:'all_inclusive'};
   const foot=p.preferred_foot&&footLabels[p.preferred_foot]
-    ? `<span class="playerCardInfoValue">${materialIcon(footIcons[p.preferred_foot],p.preferred_foot==='rechts'?'mirrored':'')} ${footLabels[p.preferred_foot]}</span>`
+    ? `<span class="playerCardInfoValue">${materialIcon(footIcons[p.preferred_foot],p.preferred_foot==='rechts'?'footIcon mirrored':'footIcon')} ${footLabels[p.preferred_foot]}</span>`
     : '<span class="muted">Nicht angegeben</span>';
   const matchdayHtml=history.length
     ? history.map(({md,selected,goalkeeper,played})=>{const status=played===true?['strong','Eingesetzt']:played===false?['weak','Nicht eingesetzt']:selected?['medium','Kader']:['weak','Nicht nominiert'];return `<div class="playerrow"><span>${fmtDate(md.date)}${md.name?` · ${esc(md.name)}`:''}</span><span><span class="badge ${status[0]} participationBadge">${status[1]}</span>${goalkeeper?'<span class="badge goalkeeperBadge participationBadge">Torwart</span>':''}</span></div>`}).join('')
