@@ -912,3 +912,35 @@ GRANT EXECUTE ON FUNCTION public.get_club_members_v3(uuid)
 - Positivkontrolle für ungesperrten Spieler innerhalb einer Transaktion erfolgreich; Transaktion zurückgerollt.
 - Frontend-Commit `32afa447a7b6e9baf46d1c55412fd03023c39339`: Sperrstatus im Spieltagskader sichtbar, Ausschluss aus Empfehlung, begründungspflichtiger Ausnahmeaufruf und erneute Prüfung gespeicherter Empfehlung.
 - JS-Syntaxprüfung erfolgreich. Browser-/Rollen-/Widerrufstest ausstehend.
+
+
+## E05 DEV-Konsolidierungsnachtrag – DB-MIG-2026-011 und atomare Ausnahme-Rücknahme (14.11.2026)
+
+Dieser Nachtrag korrigiert ältere Zwischenstände in diesem Protokoll. Die Einträge vom 12.11.2026 mit Status „nicht ausgeführt“, „Praxistests ausstehend“ oder „Widerruf nicht atomar“ sind historische Momentaufnahmen und nicht der aktuelle DEV-Stand.
+
+### DB-MIG-2026-011 – Sperrprüfung Kaderempfehlung und Nominierung
+
+- **Status:** In Supabase DEV registriert und live vorhanden.
+- **Supabase-Version/Name:** `20261112181910` / `20261112191000_e05_suspension_nomination_guard`.
+- **Tatsächlich registrierte Datei:** `supabase/migrations/20261112191000_e05_suspension_nomination_guard.sql`. Die ältere Datei `20261112120000_e05_suspension_nomination_guard.sql` ist ein früher Entwurfsstand, nicht die registrierte Version.
+- **Live-Nachweis:** `save_matchday_recommendation(uuid,uuid[])` enthält die Sperrenprüfung und bleibt SECURITY INVOKER. `prevent_suspended_matchday_nomination()` ist SECURITY INVOKER; Trigger `matchday_players_prevent_suspended_nomination` ist auf `matchday_players` aktiv. Die drei zuvor vorhandenen Trigger sind ebenfalls vorhanden.
+- **Funktionale Tests:** Direkter gesperrter Nominierungs-INSERT wurde mit SQLSTATE 23514 abgewiesen; ungesperrter Positivtest wurde transaktional zurückgerollt. Die Nutzerabnahme der sechs Sperren-/Spieltagfälle sowie der Rollenfälle A1–A6 und T1–T8 ist in den E05-Testdokumenten festgehalten.
+- **PROD:** Nicht ausgeführt; keine Freigabe.
+
+### Nachfolgende DEV-Migration – atomare Ausnahme-Rücknahme
+
+- **Supabase-Version/Name:** `20261113035705` / `e05_atomic_exception_revocation_20261113`.
+- **Live-Nachweis:** `revoke_suspension_exception(uuid,text)` sperrt den Spieler über einen Advisory Lock und die Spielerzeile, widerruft die Ausnahme, berechnet die Sperrenzuordnung neu und entfernt eine bestehende Nominierung nur dann, wenn die Sperre danach wieder genau dem ursprünglichen Spieltag zugeordnet ist. Bei bereits dokumentiertem Einsatz (`played=true`) wird der Widerruf abgebrochen. Das Audit enthält den Status `nomination_removed` sowie den Snapshot der entfernten Nominierung.
+- **Synchronisierung:** `prevent_suspended_matchday_nomination()` verwendet denselben spielerbezogenen Advisory Lock.
+- **Original-SQL-Nachweis:** Die Migrationsversion ist in Supabase DEV registriert, aber die zugehörige Migrationsdatei und ein Rollback konnten im aktuellen GitHub-Baum nicht gefunden werden. Der exakte tatsächlich ausgeführte SQL-Text ist damit derzeit nicht revisionssicher über GitHub referenziert. Nicht rekonstruieren oder als vorhandene Datei ausgeben; als Release-Gate offen halten, bis der Originaltext/Export wiedergefunden oder eine dokumentierte Ausnahmeentscheidung getroffen wurde.
+- **PROD:** Nicht ausgeführt; keine Freigabe.
+
+### Release-Gate
+
+Vor einem PROD-Rollout sind mindestens erforderlich:
+1. Original-SQL und Rollback für Version `20261113035705` wiederfinden bzw. den fehlenden Nachweis explizit behandeln.
+2. DEV- und PROD-Livebestand getrennt read-only vergleichen.
+3. Eine konsolidierte, ausführbare PROD-Migrationsreihenfolge mit Vorbedingungen, Prüfabfragen und Rollback-/Wiederherstellungsplan erstellen.
+4. Ausdrückliche separate Freigabe einholen.
+
+Keine SQL-Ausführung, keine Supabase-Schreiboperation und keine Änderung an `main` oder PROD im Rahmen dieses Nachtrags.
