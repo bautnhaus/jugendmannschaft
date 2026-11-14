@@ -138,3 +138,22 @@ Nach PROD-Ausführung:
 - **Advisor-Ausgangsbefund:** Security Advisor meldet 50 bestehende SECURITY DEFINER-Warnungen, eine mutable-search_path-Warnung (`public.set_updated_at`) und deaktivierten Leaked-Password-Schutz; Health Advisor ohne Findings. Diese bestehenden Hinweise wurden nicht verändert.
 
 **Nächster notwendiger Schritt:** Vor Migration einen belastbaren Wiederherstellungsweg für PROD bereitstellen und bestätigen (z. B. passender Supabase-Plan/Backup- bzw. PITR-Verfügbarkeit oder ein verifizierter externer Datenbank-Backup- und Restore-Prozess). Danach Live-Preflight erneut durchführen. Bis dahin bleibt Paket 8 freigegeben, aber nicht ausgeführt.
+
+
+## 10. PROD-Ausführung und Nachkontrolle (14.11.2026)
+
+**<badge>Erfolgreich ausgeführt</badge>**
+
+- **Freigabe:** Benutzerfreigabe liegt vor; der Benutzer hat nach Klärung ausdrücklich bestätigt, dass PROD-Releases weiterhin wie bisher ohne kostenpflichtiges Backup/PITR durchgeführt werden. Die zusätzliche Backup-/PITR-Bedingung aus Abschnitt 9 wurde daher nicht als verbindliches Release-Gate angewendet. Das Free-Plan-Wiederherstellungsrisiko bleibt bekannt.
+- **Ausführung:** Supabase PROD `qdugtpzgefpswnnqbusd`; Supabase `apply_migration`; Ergebnis `success: true`.
+- **Ledger:** Version `20261114222833`, Name `e05_prod_paket_08_early_suspension_reset`.
+- **Ausgeführte Datei:** `supabase/migrations/20261114230000_e05_prod_paket_08_early_suspension_reset.sql`, Blob-SHA `0a302bf476aea108e44e9c7287f9a45944f296cc`.
+- **Read-only Nachkontrolle:** beide Tabellen vorhanden und RLS aktiviert; beide SELECT-Policies vorhanden; PK/FK/CHECK-Constraints und erwartete Indizes vorhanden; alle drei Trigger vorhanden; alle Paket-8-Funktionen vorhanden.
+- **ACL/RPC:** `authenticated` hat ausschließlich SELECT auf beiden Tabellen; `anon` hat keine Tabellenrechte. Die beiden öffentlichen RPCs sind für `authenticated` ausführbar und für `anon`/ `service_role` nicht; interne Helfer sind für API-Rollen nicht ausführbar. `service_role` behält seine privilegierten Supabase-Tabellenrechte.
+- **Award-RPC:** Paket-8-Source-Erweiterung nachgewiesen; Owner `postgres`, SECURITY DEFINER, fester search_path `pg_catalog, public, auth`; EXECUTE nur für `authenticated` unter den geprüften API-Rollen.
+- **Daten:** 0 Reset-Zeilen, 0 Audit-Zeilen, 1 aktive Saison, 0 offene Sperren. Keine fachlichen Daten durch die Migration erzeugt oder verändert.
+- **Advisor:** Health ohne Findings. Security Advisor 52 SECURITY DEFINER-Warnungen (zuvor 50; zwei neue, beabsichtigte Paket-8-RPCs), eine bestehende mutable-search_path-Warnung (`public.set_updated_at`) und deaktivierter Leaked-Password-Schutz.
+- **Rollback:** nicht ausgeführt; guarded Rollback bleibt unter den dokumentierten Leerstands-/Abhängigkeitsbedingungen verfügbar.
+- **Keine Änderungen:** DEV, GitHub `main` und Frontend-Index blieben unverändert.
+
+**Maßgeblicher Status:** Paket 8 ist in PROD erfolgreich installiert und strukturell/berechtigungsseitig nachkontrolliert. Fachliche Browser-/Session-Praxistests sind weiterhin getrennt durchzuführen; die isolierte CI ersetzt diese nicht.
