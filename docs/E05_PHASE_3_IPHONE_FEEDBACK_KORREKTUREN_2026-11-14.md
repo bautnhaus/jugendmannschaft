@@ -68,3 +68,8 @@ Beim initialen Öffnen der Spielerliste gelten jetzt diese Voreinstellungen:
 - **Ereignisse:** Handlungspriorität (`priority`).
 
 Die Auswahl bleibt während der laufenden Ansicht durch die vorhandenen Sortier-Controls änderbar. Es wird keine zusätzliche Persistenz in Datenbank oder Local Storage eingeführt; nach einem vollständigen Neuaufbau der Seite greifen wieder die definierten Standardwerte. JavaScript-Syntaxprüfung beider Inline-Scripts erfolgreich. Commit: `54ac055c73d3e4622289a15efc373793af9224cd`.
+
+
+## Abstand Kaderstatus-Tabs (14.11.2026)
+
+Die Tabs „Aktiver Kader / Inaktive Spieler“ erhalten jetzt `margin:10px 0 10px` und damit denselben vertikalen Außenabstand wie die übrigen segmented controls. Änderung in `develop/index.html`, Commit `352f76cd9a1ed82029c6f5814c7ccf016fc3fee3`. Syntaxprüfung der Inline-Scripts: Script 0: PASS; Script 1: PASS.
