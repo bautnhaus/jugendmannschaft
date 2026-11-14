@@ -100,3 +100,13 @@ Die Karten mit offener Sperre (hellrot) und gelber Warnung (hellgelb) erhalten i
 ## Korrektur der Lightmode-Ursache in Ereigniskarten (14.11.2026)
 
 Ursache des unveränderten Erscheinungsbilds: Die frühere Darkmode-Regel `html:not([data-theme="light"])` griff auch dann, wenn kein manuelles Theme-Attribut gesetzt war – also ebenso im systembedingten Lightmode. Durch `!important` überschrieb sie die hellen Kartenfarben. Die Darkmode-Regeln sind jetzt korrekt auf `html[data-theme="dark"]` bzw. auf fehlendes Theme-Attribut **innerhalb** von `@media (prefers-color-scheme: dark)` begrenzt. Damit bleiben System-Lightmode und manueller Lightmode beide hell und farblich identisch; Darkmode behält die dunklen Kartenfarben. Commit: `6abf614d39f1d470b2b63fdf11d035e5eb047e45`.
+
+
+## System-Lightmode – Tabnavigation der Spielerliste (14.11.2026)
+
+- Ursache: Die Darkmode-Regeln für `.playerListModeTabs` verwendeten `html:not([data-theme="light"])`. Bei Systemsteuerung ohne manuelles Theme-Attribut griffen sie dadurch auch im System-Lightmode.
+- Korrektur in `develop/index.html`: expliziter Darkmode über `html[data-theme="dark"]`; systemabhängiger Darkmode ausschließlich innerhalb von `@media (prefers-color-scheme: dark)` und `html:not([data-theme])`.
+- Im manuellen und systemabhängigen Lightmode bleibt damit die helle Grundgestaltung der Tabs aktiv. Manueller und systemabhängiger Darkmode behalten die dunkle Gestaltung.
+- Commit: `36eac9e9304dd5a7ed4dabc49b9f62d2f2365530`.
+- DEV-Deploy und visueller iPhone-Praxistest stehen noch aus.
+- Keine SQL-/Datenbank-/RLS-/RPC-Änderung; keine Änderung an `main` oder PROD.
