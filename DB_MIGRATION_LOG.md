@@ -1158,3 +1158,24 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **CI-Nachweis:** [Run 43642771857](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43642771857), Commit `cc545e9a1a055a29e02600e671c94161403c64a9`, PostgreSQL 17.6, `success` einschließlich Migration, Struktur-/ACL-/RLS-Assertions, Positiv-/Negativtests und guarded Rollback.
 - **Abweichung im vorbereitenden Dossier:** Ein älterer Snapshot notierte 2 aktive Saisons. Die unmittelbar vor Ausführung live abgefragte PROD-Basis ergab 1 Saison (`2026/2027`), davon 1 aktiv. Maßgeblich ist der aktuelle Live-Befund; keine Saison wurde verändert.
 - **Änderungsgrenzen:** Keine fachlichen Daten angelegt oder verändert; keine Saison geschlossen; keine Sperre abgelöst; kein Frontend-Index, GitHub `main` oder DEV-Projekt verändert.
+
+
+### DB-MIG-2026-019 – E05 PROD Paket 8: Vorzeitiger Sperrausgleich – PROD-Ausführung
+
+- **Ausführungsdatensatz:** PROD
+- **Datum/Uhrzeit (mit Zeitzone):** 14.11.2026, 23:28:33 CET (22:28:33 UTC; Supabase-Ledger-Version `20261114222833`).
+- **Umgebung:** Supabase PROD, Projekt `qdugtpzgefpswnnqbusd` (Jugendmannschaft, eu-west-1, PostgreSQL 17.6.1.166).
+- **Ausführungsweg:** Supabase MCP `apply_migration`; Migration atomar ausgeführt.
+- **Anlass/Zweck:** Bereitstellung des vorzeitigen Sperrausgleichs nach ausdrücklicher Benutzerfreigabe. Die zuvor als zusätzliche Vorsichtsmaßnahme vorgeschlagene Backup-/PITR-Bedingung wurde nach Klärung mit dem Projektverantwortlichen nicht als Release-Gate angewendet; der etablierte PROD-Release-Prozess wurde fortgeführt. Das verbleibende Wiederherstellungsrisiko des Free-Plans ist bekannt.
+- **Freigabe:** Bereits ausdrücklich erteilt und im aktuellen Gespräch bestätigt: „Freigabe erteilt“.
+- **Migration:** `supabase/migrations/20261114230000_e05_prod_paket_08_early_suspension_reset.sql`; Git-Blob-SHA `0a302bf476aea108e44e9c7287f9a45944f296cc`. Der auf `develop` dokumentierte und CI-geprüfte SQL-Stand wurde unverändert ausgeführt.
+- **Ergebnis:** `apply_migration` meldete `success: true`; Migration vollständig und atomar angewendet. Supabase-Migrationshistorie enthält `20261114222833 e05_prod_paket_08_early_suspension_reset`.
+- **Read-only Nachkontrolle:** Tabellen `matchday_early_suspension_resets` und `matchday_early_suspension_reset_audit` vorhanden; RLS auf beiden aktiviert; erwartete SELECT-Policies vorhanden; Indizes, PK/FK-/CHECK-Constraints vorhanden; alle drei Trigger vorhanden; alle internen Paket-8-Helfer vorhanden.
+- **Berechtigungen:** `authenticated` besitzt auf beiden Tabellen SELECT, aber keine INSERT-/UPDATE-/DELETE-Rechte; `anon` besitzt keine Tabellenrechte. `service_role` behält die Supabase-typischen privilegierten Tabellenrechte. Öffentliche Vormerkungs- und Storno-RPCs sind für `authenticated` ausführbar, nicht für `anon` oder `service_role`; interne Übergangs-/Trigger-/Audit-Helfer sind für API-Rollen nicht ausführbar.
+- **Award-RPC-Integration:** `award_training_behavior_event(uuid,uuid,text,text)` enthält die Paket-8-Erweiterung. Owner `postgres`, SECURITY DEFINER, search_path `pg_catalog, public, auth`; EXECUTE für `authenticated` ja, für `anon` und `service_role` nein.
+- **Datenbestand nach Migration:** 0 Reset-Datensätze, 0 Audit-Datensätze; 1 aktive Saison; 0 offene Sperren. Die Migration hat keine fachlichen Reset-/Audit-Datensätze angelegt, keine Saison geändert und keine Sperre abgelöst.
+- **Advisor:** Health Advisor ohne Findings. Security Advisor: 52 SECURITY DEFINER-Warnungen (vorher 50; zwei neue, beabsichtigte und rollenbeschränkte Paket-8-RPCs), eine bestehende mutable-search_path-Warnung für `public.set_updated_at` und deaktivierter Leaked-Password-Schutz. Keine globale Advisor-Korrektur Bestandteil dieses Pakets.
+- **Rollback:** Guarded Rollback `supabase/rollback/20261114230000_e05_prod_paket_08_early_suspension_reset_rollback.sql`, Blob-SHA `7c8f358ded8e1f077addfa1d96b6bee3f7f98337`, nicht ausgeführt. Er bleibt vor einer Feature-Nutzung nur bei leerem Reset-/Auditbestand und ohne spätere Abhängigkeiten möglich; nach Feature-Nutzung absichtlich gesperrt.
+- **CI:** PostgreSQL 17.6, [GitHub Actions Run 43645581297](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43645581297), Commit `8b45a76aa23f77f452ec38c70ea1219d0468209a`, success.
+- **Änderungsgrenzen:** Keine DEV-Änderung; kein GitHub-`main)-Merge; kein Frontend-Index-Deploy; keine fachliche Nutzung des neuen Features im Rahmen der Migration.
+- **Dossier:** `docs/prod-release/E05_PROD_PAKET_08_VORZEITIGER_SPERRAUSGLEICH_2026-11-14.md`.
