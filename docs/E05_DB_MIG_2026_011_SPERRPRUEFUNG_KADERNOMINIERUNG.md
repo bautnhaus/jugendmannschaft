@@ -251,3 +251,30 @@ Dieses Paket ist zur fachlichen und technischen Prüfung bestimmt. Es wurde nich
 **Frontend-Read-only-Befund:** index.html enthält derzeit den Ablauf zur Ausnahme-Erteilung, aber noch keinen Widerrufs- oder Sperrausgleich-Optionsflow auf den Spielerkacheln. Spielerkacheln werden derzeit als Button gerendert; das Optionsmenü muss deshalb als Geschwisterelement in einem Wrapper umgesetzt werden, nicht als verschachtelter Button. Die vorhandenen Klassen .matchdayOptionsWrap und .matchdayOptionsMenu aus den Trainingskomponenten können als Stil-/Interaktionsbasis dienen.
 
 **Status:** Datenbankprüfung und Frontend-Bestandsaufnahme abgeschlossen. Keine SQL-Ausführung und keine Frontend-Codeänderung. Frontend-Umsetzung bleibt bis zur Freigabe und erfolgreichen DEV-Prüfung der DB-Erweiterung zurückgestellt.
+
+## 11. Konsolidierter Live-Abgleich Supabase DEV (14.11.2026)
+
+Dieser Abschnitt hat Vorrang vor älteren Entwurfs- und Zwischenstandsformulierungen in den Abschnitten 1–10.
+
+### Tatsächlich registrierter Migrationsstand
+
+- DB-MIG-2026-011 ist in Supabase DEV unter Version `20261112181910`, Name `20261112191000_e05_suspension_nomination_guard`, registriert.
+- Die tatsächlich registrierte Fassung ist die Migration `supabase/migrations/20261112191000_e05_suspension_nomination_guard.sql`. Die frühere Datei mit Präfix `20261112120000` ist ein älterer Entwurfsstand und nicht die registrierte Fassung.
+- Live vorhanden ist `public.save_matchday_recommendation(uuid,uuid[])` als SECURITY INVOKER mit search_path `pg_catalog, public`; die Funktion enthält die Sperrenprüfung.
+- Live vorhanden ist `public.prevent_suspended_matchday_nomination()` als SECURITY INVOKER mit search_path `pg_catalog, public`.
+- Live vorhanden ist der Trigger `matchday_players_prevent_suspended_nomination` auf `matchday_players` für BEFORE INSERT OR UPDATE OF `matchday_id, player_id`.
+- Die drei bestehenden Trigger auf `matchday_players` sind ebenfalls vorhanden. Der neue Guard verwendet einen transaktionsbezogenen Advisory Lock auf der Spieler-ID, damit er mit der Ausnahme-Rücknahme synchronisiert werden kann.
+- Die ältere Entwurfsbeschreibung in Abschnitt 3 (dedizierte SECURITY DEFINER-Funktion und zwei Trigger einschließlich `matchday_recommendation_players`) beschreibt nicht die tatsächlich registrierte Fassung und ist nicht als Live-Architektur zu verwenden.
+
+### Nachfolgende Migration zur atomaren Ausnahme-Rücknahme
+
+- Die Supabase-DEV-Migrationshistorie enthält zusätzlich Version `20261113035705`, Name `e05_atomic_exception_revocation_20261113`.
+- Die Live-Definition von `revoke_suspension_exception(uuid,text)` bestätigt: Spielerbezogener Advisory Lock und Players-Zeilensperre; Widerruf und Sperren-Neuzuordnung innerhalb derselben Transaktion; Entfernung einer bestehenden Nominierung nur dann, wenn die Sperre nach Neuzuordnung wieder genau diesem Spieltag zugeordnet ist; tatsächlicher Einsatz (`played=true`) verhindert den Widerruf; Audit-Payload enthält `nomination_removed` und den Snapshot der entfernten Nominierung.
+- Der Live-Nominierungs-Trigger verwendet denselben Advisory-Lock-Mechanismus. Die Prüfung auf parallele Nominierung und Widerruf ist damit in der aktuellen DEV-Definition synchronisiert.
+- **Nachweisgrenze:** Die zu Version `20261113035705` gehörende Original-Migrationsdatei und ein zugehöriges Rollback konnten im GitHub-Verzeichnis `supabase/migrations` bzw. `supabase/rollback` nicht gefunden werden. Die Live-Definition belegt den aktuellen Funktionsstand, ersetzt aber nicht den fehlenden unveränderlichen Nachweis des tatsächlich ausgeführten SQL-Texts. Dieser Nachweis ist vor einem PROD-Rollout zu ergänzen oder ausdrücklich als nicht verfügbar zu akzeptieren und separat freizugeben.
+
+### Aktueller Test-/Abnahmestatus
+
+Die manuellen DEV-Abnahmen der Sperren-/Ausnahmefälle, der Spielercard und der Rollen (A1–A6 sowie T1–T8) sind in den E05-Abnahmeunterlagen dokumentiert. Die sechs Spieltagskader-/Sperrenfälle wurden ebenfalls vom Nutzer bestätigt. Die Migration 011 ist damit nicht mehr als „Praxistest ausstehend“ zu führen. Eine vollständige automatisierte Prüfung sämtlicher RLS-Policies und RPC-Berechtigungsgrenzfälle wurde jedoch nicht durchgeführt.
+
+PROD und GitHub `main` wurden durch diesen Abgleich nicht verändert.
