@@ -2,7 +2,7 @@
 
 - **Paket:** E05 PROD Paket 7
 - **Fachlicher Umfang:** kontrollierter Abschluss einer Team-Saison und revisionssicheres Ablösen offener Sperren derselben Saison.
-- **Status:** vorbereitet zur Freigabe; noch nicht in PROD ausgeführt.
+- **Status:** erfolgreich in PROD ausgeführt und read-only nachkontrolliert am 14.11.2026.
 - **DEV-Projekt:** `pzazqvvoruqnqhcorbwx`
 - **PROD-Projekt:** `qdugtpzgefpswnnqbusd`
 - **DEV-Quellen:**
@@ -142,3 +142,52 @@ Frühere CI-Läufe schlugen wegen fehlerhafter Testfixture-/Testreihenfolge fehl
 ## 9. Freigabestatus
 
 **Paket 7 ist jetzt zur ausdrücklichen PROD-Ausführungsfreigabe vorbereitet.** Es wurde weder in DEV noch PROD erneut ausgeführt; die bereits bestehende DEV-Umsetzung bleibt unverändert. GitHub `main` und Frontend bleiben unverändert.
+
+## 10. Tatsächliche PROD-Ausführung und Nachkontrolle (14.11.2026)
+
+- **Freigabe:** Ausdrücklich erteilt am 14.11.2026.
+- **PROD-Projekt:** `qdugtpzgefpswnnqbusd`, PostgreSQL 17.6.1.166.
+- **Supabase-Migrationshistorie:** `20261114213745 e05_prod_paket_07_controlled_season_closure`, erfolgreich registriert.
+- **Ausgeführte Datei:** `supabase/migrations/20261114220000_e05_prod_paket_07_controlled_season_closure.sql`; Blob-SHA `1493cff2a67e2478af7aad6d7c419c353a9dd9ad`.
+- **Rollback-Datei:** `supabase/rollback/20261114220000_e05_prod_paket_07_controlled_season_closure_rollback.sql`; Blob-SHA `340c69fafc800a80033b57b4967ba698618be23e`; nicht ausgeführt.
+- **Ausführungsergebnis:** `success: true`.
+
+### Read-only Nachkontrolle
+
+| Prüfpunkt | PROD-Ergebnis |
+|---|---|
+| Audit-Tabelle | Vorhanden |
+| Tabellenspalten | 8/8 wie spezifiziert |
+| RLS | Aktiviert |
+| Audit-SELECT-Policy | Eine Policy: Teammitgliedschaft ODER ausgewählter Teamkontext |
+| Direkte Schreibrechte authenticated/anon | Nicht vorhanden |
+| Constraints | PK, FK, UNIQUE Saison, Reason-Check, Count-Check vorhanden |
+| Indizes | PK und UNIQUE auf season_id |
+| Append-only-Trigger | UPDATE/DELETE/TRUNCATE geschützt |
+| Triggerfunktion | SECURITY DEFINER, fester search_path, keine API-EXECUTE-Rechte |
+| Saisonabschluss-RPC | SECURITY DEFINER, fester search_path |
+| RPC EXECUTE | authenticated ja; anon/service_role/PUBLIC nein |
+| aktive Saisons | 1 von 1 |
+| offene Sperren | 0 |
+| Sperren-Auditzeilen | 0 |
+| Saisonabschluss-Auditzeilen | 0 |
+
+**Datenintegrität:** Die aktive Saison `2026/2027` blieb aktiv. `close_team_season` wurde nicht aufgerufen. Keine Saison, Sperre, Historie, Nominierung oder Einsatz wurde durch Paket 7 verändert.
+
+### Korrektur des vorherigen PROD-Snapshots
+
+Das vorbereitende Dossier enthielt einen älteren Befund „2 Saisons, davon 2 aktiv“. Die unmittelbar vor Migration erneut ausgeführte Live-Abfrage ergab tatsächlich 1 Saison (`2026/2027`), davon 1 aktiv. Maßgeblich ist der aktuelle Live-Befund; es wurde keine Datenkorrektur vorgenommen.
+
+### Advisor-Nachkontrolle
+
+- Health Advisor: keine Findings.
+- Security Advisor: 50 Warnungen für authentifizierbare SECURITY DEFINER-Funktionen (zuvor 49; die neue `close_team_season`-RPC ist der erwartete zusätzliche Eintrag), eine bereits bestehende mutable-search_path-Warnung sowie deaktivierter Leaked-Password-Schutz.
+- Keine fremden Advisor-Findings oder bestehenden Funktionen/Policies wurden geändert.
+
+### CI und Testgrenze
+
+GitHub Actions [Run 43642771857](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43642771857), PostgreSQL 17.6, erfolgreich. Isolierte Tests decken Struktur, RLS/ACL, Saisonabschluss-Positivpfad, Sperren-Audit, Rollen-Negativpfade und guarded Rollback ab. Kein authentifizierter End-to-End-Test mit echten Supabase-Nutzer-Sessions in PROD; keine Testdaten wurden in PROD angelegt.
+
+### Abschlussstatus
+
+**Paket 7 ist in PROD erfolgreich installiert und strukturell/berechtigungsseitig verifiziert.** Der fachliche Saisonabschluss bleibt ein separater, späterer RPC-Vorgang mit eigener fachlicher Entscheidung. GitHub `main`, Frontend-Index und DEV blieben unverändert.
