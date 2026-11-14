@@ -1123,3 +1123,15 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **CI:** [Run 43642743485](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43642743485), PostgreSQL 17.6; Migration, Struktur/ACL/RLS, Positiv-/Negativtests und Rollback erfolgreich.
 - **Freigabedossier:** `docs/prod-release/E05_PROD_PAKET_07_KONTROLLIERTER_SAISONABSCHLUSS_2026-11-14.md`.
 - **Freigabe:** Separate ausdrückliche Freigabe zur PROD-Ausführung erforderlich.
+
+### DB-MIG-2026-018 – E05 PROD Paket 7: Kontrollierter Saisonabschluss
+
+- **Status:** Freigabekandidat vollständig vorbereitet; noch nicht ausgeführt.
+- **DEV-Quelle:** `docs/E05_PAKET_07_SAISONABSCHLUSS_2026-11-08.sql` (SHA `2626c07c212a84481fe532f4b83083bc2aac90f5`) und `docs/E05_PAKET_07_FIX_AUDIT_RLS_SUPERADMIN_2026-11-08.sql` (SHA `0b94492f3c30133107f2b328ef8328e0317f51f0`).
+- **PROD-Migration:** `supabase/migrations/20261114220000_e05_prod_paket_07_controlled_season_closure.sql`.
+- **Rollback:** `supabase/rollback/20261114220000_e05_prod_paket_07_controlled_season_closure_rollback.sql`; guarded, bricht ab sobald ein Saisonabschluss-Audit existiert.
+- **CI:** PostgreSQL 17.6, [Run 43642771857](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43642771857), vollständig erfolgreich inkl. Funktions-/Negativtests und Rollback.
+- **PROD-Baseline:** Pakete 1–6 registriert; Basistabellen und Kontextfunktionen vorhanden; Paket-7-Objekte fehlen erwartungsgemäß. Read-only Bestand: 1 aktive Saison, 0 offene Sperren.
+- **PROD-Freigabe:** separate ausdrückliche Freigabe erforderlich.
+- **GitHub main/Frontend:** unverändert.
+- **Dossier:** `docs/prod-release/E05_PROD_PAKET_07_KONTROLLIERTER_SAISONABSCHLUSS_2026-11-14.md`.
