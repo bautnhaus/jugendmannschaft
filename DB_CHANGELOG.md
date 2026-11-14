@@ -836,3 +836,14 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Vollständiges Freigabedossier: `docs/prod-release/E05_PROD_PAKET_08_VORZEITIGER_SPERRAUSGLEICH_2026-11-14.md`.
 
 **Hinweis:** `DB_MIGRATION_LOG.md` wird gemäß seiner verbindlichen Regel erst nach einer tatsächlich begonnenen schreibenden SQL-Ausführung ergänzt; die Vorbereitung allein ist dort kein Ausführungsdatensatz.
+
+### E05 PROD Paket 8 – Freigabe erteilt, Live-Preflight blockiert (14.11.2026)
+
+- Benutzerfreigabe zur PROD-Ausführung liegt vor.
+- Live-Projekt verifiziert: `qdugtpzgefpswnnqbusd`, ACTIVE_HEALTHY, PostgreSQL 17.6; DEV-Projekt nicht verwendet.
+- PROD-Migrationshistorie enthält E05 Pakete 1–7; Paket-8-Objekte fehlen. Exakter Paket-2-Quelltextanker vorhanden. Read-only-Datenbefund: 1 aktive Saison, 0 offene Sperren.
+- Organisation läuft auf Free Plan. Ein wiederherstellbarer Backup-/PITR-Punkt konnte nicht bestätigt werden; Supabase dokumentiert Backup-Download-Beschränkungen im Free Plan und PITR als kostenpflichtiges Add-on.
+- Deshalb Migration vorerst nicht gestartet: verbindlicher Backup-/PITR-Gate aus dem Freigabedossier nicht erfüllt.
+- Keine schreibenden SQL-Aktionen; DEV, PROD und `main` unverändert.
+- Details und offizielle Referenzen: `docs/prod-release/E05_PROD_PAKET_08_VORZEITIGER_SPERRAUSGLEICH_2026-11-14.md`.
+
