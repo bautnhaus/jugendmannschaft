@@ -820,3 +820,19 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - CI PostgreSQL 17.6: [Run 43642771857](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43642771857) erfolgreich einschließlich guarded Rollback.
 - Rollback nicht ausgeführt; nach erstmaliger Saisonabschluss-Auditierung ist er absichtlich gesperrt.
 - Vollständiger Ausführungsnachweis: `docs/prod-release/E05_PROD_PAKET_07_KONTROLLIERTER_SAISONABSCHLUSS_2026-11-14.md` und `DB_MIGRATION_LOG.md`.
+
+### E05 PROD Paket 8 – Vorzeitiger Sperrausgleich vorbereitet (14.11.2026)
+
+- Status: technischer Freigabekandidat auf `develop`; noch nicht in Supabase ausgeführt.
+- PROD-Baseline: Pakete 1–7 in der PROD-Migrationshistorie bestätigt; Paket-8-Objekte fehlen.
+- DEV-Quelle und DEV-Abnahme vom 08.11.2026 geprüft; Positiv-, Negativ-, Berechtigungs- und Regressionstests dokumentiert.
+- PROD-spezifische Abgrenzung: Die bestehende PROD-Paket-2-`award_training_behavior_event`-RPC wird nur um den zusätzlichen `applied_at`-Zeitanker ergänzt. Spätere DEV-Paket-9/10- und DB-MIG-2026-010/011-Logik wird nicht vorgezogen.
+- Migration: `supabase/migrations/20261114230000_e05_prod_paket_08_early_suspension_reset.sql`; Blob-SHA `898ded0944f7dcf175765f0b700f89f8cfdbf4b2`.
+- Guarded Rollback: `supabase/rollback/20261114230000_e05_prod_paket_08_early_suspension_reset_rollback.sql`; Blob-SHA `3068e34095c3fd28d1ecf58842394baddb58bae6`.
+- Read-only Nachkontrolle: `docs/prod-release/E05_PROD_PAKET_08_VORZEITIGER_SPERRAUSGLEICH_TESTQUERIES_2026-11-14.sql`.
+- Isolierter PostgreSQL-17.6-CI-Lauf [43645493709](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43645493709), Commit `3a11540baede304fb69c484a47272a6c7da4560e`: success. Migration, Tabellen/RLS/ACL, Statusübergänge, automatische Stornierungen, Audit, Source-Rückführung und guarded Rollback erfolgreich.
+- Testgrenze: CI nutzt eine synthetische Minimal-Baseline und ersetzt keine authentifizierten Supabase-End-to-End-Tests oder den Live-PROD-Preflight.
+- Keine DEV-/PROD-Ausführung, keine Änderung an `main` oder Frontend.
+- Vollständiges Freigabedossier: `docs/prod-release/E05_PROD_PAKET_08_VORZEITIGER_SPERRAUSGLEICH_2026-11-14.md`.
+
+**Hinweis:** `DB_MIGRATION_LOG.md` wird gemäß seiner verbindlichen Regel erst nach einer tatsächlich begonnenen schreibenden SQL-Ausführung ergänzt; die Vorbereitung allein ist dort kein Ausführungsdatensatz.
