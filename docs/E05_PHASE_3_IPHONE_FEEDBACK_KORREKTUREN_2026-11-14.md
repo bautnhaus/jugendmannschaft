@@ -90,3 +90,8 @@ Angelegt und anschließend per unabhängiger Zählabfrage verifiziert:
 Verifikation: 5 Spieler, 4 Positionen, 2 Trainings, 1 Spieltag, 2 Events und 10 Anwesenheitsdatensätze gefunden. Testdaten sind eindeutig über die Marker auffindbar. Es wurden keine realen Spieler- oder Mannschaftsdaten geändert.
 
 **Bereinigung nach Abschluss der manuellen Tests:** Zuerst die Event-Auditzeilen zu den markierten Testevents löschen, dann die markierten Events, Anwesenheitseinträge der markierten Testtrainings, Spieler-Positions-Zuordnungen und Testspieler, danach Testtrainings, Testspieltag und Testpositionen löschen. Keine pauschalen Team-Löschungen verwenden. Vor dem Löschen IDs/Counts über dieselben Marker erneut prüfen. Es wurden noch keine Testdaten entfernt.
+
+
+## Ereigniskarten – Lightmode-Farbkonsistenz (14.11.2026)
+
+Die Karten mit offener Sperre (hellrot) und gelber Warnung (hellgelb) erhalten im manuellen Lightmode (`data-theme=light`) und im systembedingten Lightmode (kein Theme-Attribut bei `prefers-color-scheme: light`) dieselben Hintergrund-, Rahmen- und Textfarben. Damit bleiben Namen und Leistungsstufen auf den farbigen Flächen lesbar. Darkmode-Regeln wurden nicht verändert. Commit: `4a5c751ac9dc18b0f6617afd59243e6111aa7f25`. JavaScript-Syntaxprüfung: Script 0: PASS; Script 1: PASS. Visuelle iPhone-Prüfung beider Lightmode-Varianten steht noch aus.
