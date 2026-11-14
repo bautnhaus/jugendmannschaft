@@ -5825,4 +5825,32 @@ html:not([data-theme="light"]) .playerEventMarker{border-color:#ffffff14!importa
 html:not([data-theme="light"]) .playerListModeTabs{background:#202a3b;border-color:#364357}
 html:not([data-theme="light"]) .playerListModeTabs button{color:#cbd5e1!important}
 html:not([data-theme="light"]) .playerListModeTabs button.active{background:#3569e8!important;color:#fff!important}
+
+/* E05: identische Ereigniskarten-Farben in manuellem und systembedingtem Lightmode */
+html[data-theme="light"] .playerListRow.hasOpenSuspension,
+html[data-theme="light"] .playerListRow.hasYellowWarning {
+  color:#172033;
+}
+html[data-theme="light"] .playerListRow.hasOpenSuspension {
+  background:#fff1f0;
+  border-color:#f2b8b5;
+}
+html[data-theme="light"] .playerListRow.hasYellowWarning {
+  background:#fff8df;
+  border-color:#ead18a;
+}
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) .playerListRow.hasOpenSuspension,
+  html:not([data-theme]) .playerListRow.hasYellowWarning {
+    color:#172033;
+  }
+  html:not([data-theme]) .playerListRow.hasOpenSuspension {
+    background:#fff1f0;
+    border-color:#f2b8b5;
+  }
+  html:not([data-theme]) .playerListRow.hasYellowWarning {
+    background:#fff8df;
+    border-color:#ead18a;
+  }
+}
 </style>
