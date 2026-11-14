@@ -1,3 +1,33 @@
+# E05 – Konsolidierter aktueller Stand (14.11.2026)
+
+**Dieser Abschnitt hat Vorrang vor den darunter erhaltenen historischen Zwischenständen.** Ältere Aussagen wie „Browser-Praxistest ausstehend“, „Migration nicht ausgeführt“ oder „Ausnahme-Widerruf-UI offen“ beschreiben damalige Zwischenstände und sind anhand der nachfolgenden Abschlussnachweise überholt.
+
+## Abgeschlossene DEV-Arbeiten und bestätigte Praxistests
+
+- **Sperren-Grundlagen:** DB-MIG-2026-010 (alle Spieltage unabhängig von Spielart als Sperrziele) und DB-MIG-2026-011 (serverseitige Sperrenprüfung bei Kaderempfehlung und Nominierung) wurden nach ausdrücklicher Freigabe in Supabase DEV ausgeführt und technisch nachgeprüft. PROD und GitHub `main` unverändert.
+- **Sperren-/Kader-Frontend:** Nutzer hat am 13.11.2026 alle sechs Fälle des E05.3-Spieltagkader-/Sperren-Praxistests bestätigt: rote Darstellung regulär gesperrter Spieler, Ausnahme und Wiederherstellung der Nominierbarkeit, Widerruf und erneute Sperrung, Zuordnung zum nächsten relevanten Spieltag, Berücksichtigung in der Kaderempfehlung sowie vorgesehene Bedienmöglichkeiten für Trainer und Mannschaftsadmin. Nachweis: `docs/E05_AP05_3_SPIELTAGSKADER_SPERRREN_DEV_ABNAHME_2026-11-13.md`.
+- **Spielercard/AP05.4:** Ereignis- und Sperrenhistorie, gelbe/rote Karte stornieren und wiederherstellen, Auditansicht, manuelle Sperrenkorrektur und Ausnahmen wurden mit Mannschaftsadmin (A1–A6) und separatem Trainerkonto ohne Adminrolle (T1–T8) manuell in DEV abgenommen. Zusätzlich PASS: Schutz gültiger manueller Zielbindungen bei Neuberechnung und automatische Neuzuordnung, wenn das manuelle Ziel ungültig wird. Nachweis: `docs/E05_AP05_4_SPIELERCARD_READONLY_TEST_2026-11-13.md`.
+- **Phase 3 – zentrale Ereignisübersicht:** Filter/Darstellungen einschließlich Highlights, Handlungspriorität, alphabetische Sortierungen, Standardsortierungen und Superadmin-Fälle wurden manuell bestätigt. Der Mannschaftswechsel wurde bereits getestet. Ein Saisonwechsel ist kein Bestandteil der aktuellen App und kein offener Abnahmepunkt. Nachweis: `docs/E05_PHASE_3_ZENTRALE_EREIGNISUEBERSICHT_2026-11-14.md`.
+- **iPhone-/Theme-Feinschliff:** Ereigniskarten und Tabnavigation wurden für den systemabhängigen Lightmode korrigiert. Der letzte DEV-Nachtest der Tabnavigation auf dem iPhone wurde am 14.11.2026 vom Nutzer mit „Passt“ bestätigt. Nachweis: `docs/E05_PHASE_3_IPHONE_FEEDBACK_KORREKTUREN_2026-11-14.md`.
+- **Vormerkung nach Nominierung:** Der veraltete gelbe Chip verschwindet nach erfolgreicher Nominierung; vom Nutzer am 13.11.2026 bestätigt.
+
+## Bewusst zurückgestellt oder bekannte Grenzen
+
+- Eine Stornierungs-/Korrekturfunktion für positive Sterne wird vorerst nicht umgesetzt.
+- Ältere Ereignis-/Sperren-Auditzeilen besitzen teilweise keinen Actor-Snapshot. Für Trainer ist die Profil-Namensauflösung durch die bestehende profiles-RLS eingeschränkt. Eine dauerhafte SQL-Lösung wurde nicht freigegeben und nicht umgesetzt.
+- Die manuelle UI-/Rollenabnahme ist keine vollständige automatisierte Sicherheitsprüfung sämtlicher RLS-Policies und RPC-Grenzfälle.
+- Für den Mannschaftswechsel angelegte synthetische Testdaten in G-Junioren sind laut Testdokumentation noch nicht bereinigt. Eine gezielte, markerbasierte Bereinigung mit vorheriger ID-/Count-Prüfung steht aus; keine pauschale Löschung.
+
+## Aktuelle Restliste – keine bereits erledigten Tests wiederholen
+
+1. **Testdatenbereinigung G-Junioren:** kontrollierte, markerbasierte Entfernung der eigens für den Mannschaftswechsel angelegten Testspieler, Positionen, Trainings, Anwesenheiten, Spieltag- und Ereignisdaten samt Abhängigkeiten/Audits. Vorher IDs/Counts read-only prüfen; schreibende Bereinigung nur nach separater ausdrücklicher Freigabe.
+2. **Audit-Snapshot-Thema entscheiden:** entweder als bekannte Einschränkung dokumentiert belassen oder ein separates SQL-Konzept für Actor-Snapshots vorbereiten. Keine SQL-Ausführung ohne Freigabe.
+3. **Abschlussabgleich E05:** nach Testdatenbereinigung die Dokumentations-/Migrationsnachweise final prüfen und eine E05-Abschluss-/Release-Empfehlung erstellen. PROD und `main` bleiben bis zu einer separaten Freigabe unangetastet.
+
+**Nicht offen:** erneuter Mannschaftswechseltest, Saisonwechseltest, erneute Lightmode-/Tabnavigation-Korrektur sowie Wiederholung der bereits bestätigten A1–A6-, T1–T8- und sechs Sperren-Praxistests – außer bei einem konkreten Regressionhinweis.
+
+---
+
 **E05 Frontend-Anbindung 12.11.2026:** Commit `32afa447a7b6e9baf46d1c55412fd03023c39339` auf develop. Spieltagsansicht lädt Sperren/Ausnahmen; regulär gesperrte Spieler aus Rangliste gefiltert aber sichtbar rot markiert; Klick öffnet Begründungsdialog und ruft bestehende Grant-RPC auf; nach Ausnahme bleibt Kachel rot mit „Ausnahme erteilt“, Nominierung möglich. Empfehlung wird vor Übernahme erneut geprüft. JS-Syntaxprüfung bestanden. DB-Test: gesperrter Direkt-INSERT abgewiesen, ungesperrter Test-INSERT innerhalb Transaktion zurückgerollt. Browser-Praxistest, Rollenprüfung und Ausnahme-Widerruf-UI noch offen. Keine PROD-/main-Änderung.
 
 ---
