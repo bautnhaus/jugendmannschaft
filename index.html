@@ -5810,13 +5810,19 @@ html[data-theme="dark"] .e05EventSymbol.yellow_card .e05CardMark{background:#FAC
  white-space:normal!important;
 }
 
-/* E05 zentrale Ereignisansicht – Darkmode */
-html:not([data-theme="light"]) .playerListRow.hasOpenSuspension{background:#3b2022!important;border-color:#7f3538!important}
-html:not([data-theme="light"]) .playerListRow.hasYellowWarning{background:#3b321d!important;border-color:#786027!important}
-html:not([data-theme="light"]) .playerEventMarker{background:#263244!important;color:#cbd5e1!important}
-html:not([data-theme="light"]) .playerListRow.hasOpenSuspension .playerEventMarker.suspension{background:#5b2529!important;color:#fecaca!important}
-html:not([data-theme="light"]) .playerListRow.hasYellowWarning .playerEventMarker.warning{background:#59451d!important;color:#fde68a!important}
-html:not([data-theme="light"]) .playerEventMarker{border-color:#ffffff14!important}
+/* E05 zentrale Ereignisansicht – Darkmode: nur expliziter oder systembedingter Darkmode */
+html[data-theme="dark"] .playerListRow.hasOpenSuspension{background:#3b2022!important;border-color:#7f3538!important;color:#f1f5f9!important}
+html[data-theme="dark"] .playerListRow.hasYellowWarning{background:#3b321d!important;border-color:#786027!important;color:#f1f5f9!important}
+html[data-theme="dark"] .playerEventMarker{background:#263244!important;color:#cbd5e1!important;border-color:#ffffff14!important}
+html[data-theme="dark"] .playerListRow.hasOpenSuspension .playerEventMarker.suspension{background:#5b2529!important;color:#fecaca!important}
+html[data-theme="dark"] .playerListRow.hasYellowWarning .playerEventMarker.warning{background:#59451d!important;color:#fde68a!important}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) .playerListRow.hasOpenSuspension{background:#3b2022!important;border-color:#7f3538!important;color:#f1f5f9!important}
+  html:not([data-theme]) .playerListRow.hasYellowWarning{background:#3b321d!important;border-color:#786027!important;color:#f1f5f9!important}
+  html:not([data-theme]) .playerEventMarker{background:#263244!important;color:#cbd5e1!important;border-color:#ffffff14!important}
+  html:not([data-theme]) .playerListRow.hasOpenSuspension .playerEventMarker.suspension{background:#5b2529!important;color:#fecaca!important}
+  html:not([data-theme]) .playerListRow.hasYellowWarning .playerEventMarker.warning{background:#59451d!important;color:#fde68a!important}
+}
 
 /* E05: einheitliche Tabs und Kartenstruktur der Spielerliste */
 .playerListModeTabs{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:10px 0 10px;padding:3px;border:1px solid var(--line);border-radius:13px;background:var(--surface-2,var(--bg))}
