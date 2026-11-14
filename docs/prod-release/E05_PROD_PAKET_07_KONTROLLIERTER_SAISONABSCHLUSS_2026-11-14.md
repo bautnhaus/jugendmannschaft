@@ -111,3 +111,7 @@ Der CI-Test verwendet eine isolierte PostgreSQL-17.6-Datenbank mit synthetischer
 ## 9. Freigabestatus
 
 Paket 7 ist nach erfolgreichem isoliertem CI-Lauf zur ausdrücklichen PROD-Ausführungsfreigabe vorbereitet. **Es wurde weder in DEV noch PROD erneut ausgeführt.** Die zwei DEV-Migrationen vom 08.11.2026 sind bereits registriert und erfolgreich dokumentiert. GitHub `main`, Frontend-Index und PROD-Daten bleiben unverändert.
+
+### CI-Korrekturschleife
+
+Vor dem grünen Lauf schlugen drei frühe CI-Versuche aufgrund von Fehlern im Test-Harness fehl (Fixture-Lebensdauer über Transaktions-Rollbacks und Cleanup über den append-only-Audit-FK). Die Paketmigration selbst wurde in diesen Läufen jeweils erfolgreich angewendet. Die Testskripte wurden korrigiert; der abschließende Lauf `43642743485` bestand einschließlich Rollback vollständig. Die Fehlversuche waren keine PROD-/DEV-Datenbankausführungen und haben keine Supabase-Projekte verändert.
