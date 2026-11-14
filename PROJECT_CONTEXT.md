@@ -456,3 +456,11 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 - **Release-Gate:** Die Original-Migrationsdatei und das Rollback für `20261113035705` fehlen im aktuellen GitHub-Baum. Der Live-Funktionsstand ersetzt nicht den unveränderlichen SQL-Ausführungsnachweis. Vor PROD-Rollout Original-SQL/Backup wiederfinden oder die Nachweislücke ausdrücklich behandeln und freigeben.
 - Die Dokumentation wurde in `DB_MIGRATION_LOG.md` und `docs/E05_DB_MIG_2026_011_SPERRPRUEFUNG_KADERNOMINIERUNG.md` ergänzt. Details und Nachweisgrenzen stehen dort.
 - Keine SQL-Schreiboperation, keine Supabase-Änderung, kein `main`-/PROD-Eingriff im Rahmen dieses Abgleichs.
+
+
+## E05 – Original-SQL-Nachweis gefunden (14.11.2026)
+
+- Das vollständige SQL zur DEV-Migration `20261113035705` / `e05_atomic_exception_revocation_20261113` liegt in `docs/E05_SQL_ENTWURF_WIDERRUF_AUSNAHME_MIT_NOMINIERUNGSENTFERNUNG_2026-11-12.sql` (Git-Blob-SHA `5b5ac4fd8c14be5bc00ff8d4774ad1d1ac9800b0`). Datei-Header dokumentiert die erfolgreiche DEV-Ausführung am 13.11.2026.
+- Der zugehörige Rollback-Entwurf liegt in `docs/E05_SQL_ROLLBACK_ENTWURF_WIDERRUF_AUSNAHME_2026-11-12.sql` (Git-Blob-SHA `630c6949faa6e45daf9c758364cb11eb86b09a65`); ausdrücklich Review-only, nicht ausgeführt.
+- `docs/E05_UMSETZUNGSVORSCHLAG_SPERRMASSNAHMEN_OPTIONSMENUE_2026-11-12.md`, Abschnitte 10.7–10.10, dokumentiert Migrationseintrag, Live-Verifikation, Funktionstests und bestandenen Zwei-Session-Konkurrenztest.
+- Das frühere Release-Gate „Original-SQL fehlt“ ist geschlossen. Für PROD bleibt die Überführung in ein versioniertes Migrationspaket mit geprüftem Rollback-/Wiederherstellungsplan erforderlich.
