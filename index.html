@@ -5828,9 +5828,14 @@ html[data-theme="dark"] .playerListRow.hasYellowWarning .playerEventMarker.warni
 .playerListModeTabs{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:10px 0 10px;padding:3px;border:1px solid var(--line);border-radius:13px;background:var(--surface-2,var(--bg))}
 .playerListModeTabs button{border:0!important;border-radius:10px!important;background:transparent!important;color:var(--muted)!important;min-height:40px;padding:8px 10px!important;box-shadow:none!important}
 .playerListModeTabs button.active{background:var(--primary,#2563eb)!important;color:#fff!important;box-shadow:0 1px 2px #0002!important}
-html:not([data-theme="light"]) .playerListModeTabs{background:#202a3b;border-color:#364357}
-html:not([data-theme="light"]) .playerListModeTabs button{color:#cbd5e1!important}
-html:not([data-theme="light"]) .playerListModeTabs button.active{background:#3569e8!important;color:#fff!important}
+html[data-theme="dark"] .playerListModeTabs{background:#202a3b;border-color:#364357}
+html[data-theme="dark"] .playerListModeTabs button{color:#cbd5e1!important}
+html[data-theme="dark"] .playerListModeTabs button.active{background:#3569e8!important;color:#fff!important}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) .playerListModeTabs{background:#202a3b;border-color:#364357}
+  html:not([data-theme]) .playerListModeTabs button{color:#cbd5e1!important}
+  html:not([data-theme]) .playerListModeTabs button.active{background:#3569e8!important;color:#fff!important}
+}
 
 /* E05: identische Ereigniskarten-Farben in manuellem und systembedingtem Lightmode */
 html[data-theme="light"] .playerListRow.hasOpenSuspension,
