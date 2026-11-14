@@ -53,3 +53,18 @@ Die vorhandene Spielerkachel, Suche und Navigation in die bestehende Spielercard
 - `e6cd94a918d3fc4a0d0c1cde8ee50d36474e06b0` – Darkmode-Harmonisierung.
 
 **Abgrenzung:** Dies ist die erste Frontend-Umsetzung der zentralen Ereignisübersicht, keine fachliche Abnahme. Die dokumentierten Regeln zu Sortierung, Filtern und Statusdarstellung sind umgesetzt; das tatsächliche Verhalten wird im DEV-Browser geprüft, bevor weitere Anpassungen erfolgen.
+
+
+## 6. Manueller DEV-Praxistest – Nutzerbestätigung (14.11.2026)
+
+Der Nutzer hat die Funktionen der zentralen Ereignisübersicht anhand der vorhandenen DEV-Testdaten bestätigt:
+- Filter und Darstellungen einschließlich Highlights.
+- Sortierung nach Handlungspriorität sowie alphabetische Sortierungen.
+- Standardsortierung: Anwesenheit = Kaderempfehlung; Ereignisse = Handlungspriorität.
+- Superadmin-Fälle wurden anhand der aktuellen Testdaten ebenfalls bestätigt.
+
+**Noch offen:** Team- und Saisonwechsel. Dieser Kontextwechsel ist gesondert zu prüfen; bis dahin ist die Phase-3-Abnahme nicht vollständig abgeschlossen.
+
+**Bewusste Abgrenzung:** Eine Stornierungs-/Korrekturoption für positive Sterne wird vorerst nicht umgesetzt. Der Nutzer hält sie grundsätzlich für konsistent, stellt sie wegen der geringeren Auswirkungen gegenüber Karten aber zurück. Keine Erweiterung von RPCs, Datenbank oder UI in diesem Punkt.
+
+Keine SQL-/Datenbank-/RLS-/RPC-Änderung und keine Testdatenänderung im Rahmen dieser Bestätigung. PROD und GitHub main unverändert.
