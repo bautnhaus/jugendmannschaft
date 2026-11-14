@@ -3,7 +3,7 @@
 **Datum:** 13.11.2026  
 **Umgebung:** Supabase DEV `pzazqvvoruqnqhcorbwx`  
 **Branch:** `develop`  
-**Status:** AP05.4 manuell im DEV mit Trainer- und Mannschaftsadmin-Rolle abgenommen; Read-only Daten-/Codeprüfung abgeschlossen. Ein Filterfehler wurde behoben und im DEV-Spiegel verifiziert. Automatisierte Negativtests einzelner RPC-Grenzfälle sind nicht Teil der bestätigten Rollen-Praxistests.
+**Status:** AP05.4 manuell im DEV mit Trainer- und Mannschaftsadmin-Rolle abgenommen; Read-only Daten-/Codeprüfung sowie die dokumentierten isolierten Datenbank-Funktionstests abgeschlossen. Die manuelle Zielbindung wurde sowohl im gültigen als auch im ungültig gewordenen Ziel-Fall geprüft. Automatisierte Negativtests sämtlicher RPC-Grenzfälle sind weiterhin nicht Bestandteil dieser manuellen Abnahme.
 
 ## 1. Vorgehen und Datensicherheit
 
@@ -54,18 +54,19 @@ Der Kartenfilter berücksichtigt damit aktive und stornierte gelbe/rote Karten. 
 - Trainer können deshalb fremde Akteurprofile nicht zuverlässig nachladen. Die Oberfläche zeigt in diesem Fall „Benutzername nicht hinterlegt“.
 - Das ist die bereits dokumentierte Audit-Namensauflösungsgrenze. Eine dauerhafte Lösung über Namens-Snapshots würde ein separates SQL-Konzept und ausdrückliche Freigabe erfordern; wurde hier nicht verändert.
 
-## 5. Noch nicht automatisiert abgenommen
+## 5. Status der Praxistests und verbleibende Grenzen
 
-Ohne authentifizierte Browser-Sitzung eines Trainers/Mannschaftsadmins wurden keine Korrektur-RPCs auf bestehenden Datensätzen ausgeführt. Folgende Praxistests bleiben daher offen:
-1. Spielercard öffnen; Ereignis- und Sperrenhistorie vollständig und neueste zuerst prüfen.
-2. Storniertes Kartenereignis über den Filter „Karten“ finden und Detail-/Auditverlauf öffnen.
-3. Gelbe Karte mit Begründung stornieren und wiederherstellen; Kartenkonto und Sperrenzustand prüfen.
-4. Rote Karte mit Begründung stornieren und wiederherstellen; Kartenkonto und Sperrenzustand prüfen.
-5. Offene Sperre auf einen zulässigen zukünftigen Spieltag verschieben; Audit und Zielzuordnung prüfen.
-6. Fehlende Begründung, ungültiges Ziel und fehlende Berechtigung serverseitig abweisen lassen.
-7. Trainer-/Mannschaftsadmin-Kontext, Light/Dark Mode, iPhone-Breite und Regression prüfen.
+Die zuvor hier aufgeführten offenen Browser-Praxistests wurden inzwischen durch die nachfolgenden, datierten Nutzerbestätigungen und Prüfberichte erledigt:
+- Spielercard sowie Ereignis-/Sperrenhistorie: in den Rollenfällen sichtbar.
+- Gelbe Karte stornieren und wiederherstellen: bestanden; Auditkette `created → voided → reinstated` geprüft.
+- Rote Karte stornieren und wiederherstellen: bestanden; Ereignis- und Sperren-Audit geprüft.
+- Offene Sperre manuell verschieben: Speicherung, alter/neuer Zielwert, Audit und Erhalt des Status `open` bestätigt.
+- Gültige manuelle Zielbindung bleibt bei erneuter automatischer Zuordnungsroutine erhalten: isolierter DEV-Funktionstest PASS.
+- Ungültig gewordene manuelle Zielbindung wird freigegeben und auf den frühesten gültigen Spieltag neu zugeordnet: isolierter DEV-Regressionstest PASS.
+- Mannschaftsadmin-Fälle A1–A6: vom Nutzer bestätigt.
+- Trainer-Fälle T1–T8 mit separatem Trainerkonto ohne Adminrolle: vom Nutzer bestätigt.
 
-Für diese Schreibtests sollen ausschließlich klar gekennzeichnete Testdatensätze verwendet werden. Falls sie angelegt werden, müssen IDs protokolliert und sämtliche abhängigen Datensätze/Audits nach Abschluss kontrolliert entfernt werden. Keine Änderung an vorhandenen echten DEV-Ereignissen.
+**Weiterhin ausdrücklich nicht behauptet:** Eine vollständige automatisierte Negativprüfung sämtlicher RPC-Grenzfälle und eine vollständige automatisierte Prüfung aller RLS-/RPC-Berechtigungen wurden nicht durchgeführt. Die bekannte Audit-Namensauflösungsgrenze älterer Einträge (fehlende Actor-Snapshots in Verbindung mit profiles-RLS) bleibt bestehen und ist als technische Einschränkung dokumentiert. Für diese Einschränkung liegt keine SQL-Freigabe vor.
 
 
 
@@ -273,3 +274,8 @@ Keine SQL-/Schema-/RLS-Änderung; PROD und GitHub `main` unverändert.
 **Abgrenzung:** Die Nutzerbestätigung belegt die praktischen UI-Abläufe in DEV. Sie ist keine vollständige automatisierte RLS-/RPC-Sicherheitsprüfung. Die bereits dokumentierte Audit-Namensauflösungsgrenze (fehlender Actor-Snapshot bei älteren Einträgen und bestehende Profile-RLS) bleibt als bekannte Einschränkung bestehen und wird nicht durch diese Abnahme behoben.
 
 Keine SQL-/Schema-/RLS-Änderung, keine weiteren Testdaten. PROD und GitHub `main` unverändert.
+
+
+## Konsolidierungsnachtrag (14.11.2026)
+
+Die Abschnitte mit dem damaligen Zwischenstatus „Noch nicht automatisiert abgenommen“ sind historische Momentaufnahmen vom 13.11.2026 und werden durch die oben dokumentierten späteren Tests und die Abschlussabschnitte A1–A6/T1–T8 überholt. AP05.4 ist hinsichtlich der vorgesehenen manuellen DEV-Rollen-Praxistests abgeschlossen. Die oben benannten Grenzen (keine vollständige automatisierte RLS-/RPC-Sicherheitsprüfung; ältere Audit-Einträge ohne Actor-Snapshot) bleiben offen und dürfen nicht als bestanden dargestellt werden.
