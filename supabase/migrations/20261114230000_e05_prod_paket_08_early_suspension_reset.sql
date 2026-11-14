@@ -43,6 +43,8 @@ begin
      or to_regprocedure('public.schedule_early_suspension_reset(uuid,uuid,text)') is not null
      or to_regprocedure('public.cancel_early_suspension_reset(uuid,text)') is not null
      or to_regprocedure('public.e05_transition_early_reset(uuid,text,text,uuid)') is not null
+     or to_regprocedure('public.e05_cancel_early_reset_on_nomination()') is not null
+     or to_regprocedure('public.e05_reconcile_early_resets_on_matchday_status()') is not null
      or to_regprocedure('public.e05_reject_early_reset_audit_mutation()') is not null
      or exists (
        select 1 from pg_trigger
