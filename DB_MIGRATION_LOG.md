@@ -944,3 +944,21 @@ Vor einem PROD-Rollout sind mindestens erforderlich:
 4. Ausdrückliche separate Freigabe einholen.
 
 Keine SQL-Ausführung, keine Supabase-Schreiboperation und keine Änderung an `main` oder PROD im Rahmen dieses Nachtrags.
+
+
+### Korrektur zum Original-SQL-Nachweis – Migration 20261113035705 (14.11.2026)
+
+Der vorherige Nachtrag in Abschnitt 7 erklärte die Originaldatei irrtümlich für nicht auffindbar. Die vollständige SQL-Fassung war bereits im Repository vorhanden, allerdings unter `docs/` statt unter `supabase/migrations/`.
+
+- **Original-SQL:** `docs/E05_SQL_ENTWURF_WIDERRUF_AUSNAHME_MIT_NOMINIERUNGSENTFERNUNG_2026-11-12.sql`
+- **Datei-SHA (Git blob):** `5b5ac4fd8c14be5bc00ff8d4774ad1d1ac9800b0`
+- **Inhaltlicher Status im Datei-Header:** „AM 13.11.2026 als Supabase-DEV-Migration ausgeführt“; Migration `e05_atomic_exception_revocation_20261113`.
+- **Rollback-Entwurf:** `docs/E05_SQL_ROLLBACK_ENTWURF_WIDERRUF_AUSNAHME_2026-11-12.sql`
+- **Rollback-Datei-SHA (Git blob):** `630c6949faa6e45daf9c758364cb11eb86b09a65`
+- **Rollback-Status:** Review-Entwurf, ausdrücklich nicht ausgeführt. Er stellt die vorherigen Funktionsdefinitionen wieder her; er rekonstruiert gelöschte Nominierungen nicht automatisch.
+- **Ausführungs- und Testnachweis:** `docs/E05_UMSETZUNGSVORSCHLAG_SPERRMASSNAHMEN_OPTIONSMENUE_2026-11-12.md`, Abschnitte 10.7–10.10: Migration erfolgreich registriert unter Version `20261113035705`; read-only Funktions-/ACL-/Triggerprüfung; Positiv-/Negativtests; echter Zwei-Session-Konkurrenztest mit bestandenem Ergebnis.
+- **Live-Abgleich:** Die DEV-Definitionen von `revoke_suspension_exception(uuid,text)` und `prevent_suspended_matchday_nomination()` wurden erneut ausgelesen. Die im Original-SQL dokumentierten Änderungen sind im Live-Stand vorhanden.
+
+**Korrektur des Release-Gates:** Der Original-SQL-Text ist in GitHub vorhanden. Das frühere Gate „Original-SQL wiederfinden“ ist damit geschlossen. Die Datei liegt als ausgeführter SQL-Nachweis unter `docs/`, nicht im standardisierten Migrationsordner `supabase/migrations/`. Für das PROD-Paket muss daraus eine sauber versionierte, geprüfte Migration samt Wiederherstellungsplan abgeleitet werden; die vorhandene Rollback-Datei bleibt ein nicht ausgeführter Entwurf und ist vor PROD-Einsatz gesondert zu reviewen.
+
+Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrektur.
