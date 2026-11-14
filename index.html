@@ -1896,7 +1896,7 @@ html[data-theme="dark"] .matchdayStatusChip.earlyReset{background:#713f12!import
     <div class="card" id="dashboardStatsCard"><div class="statsGrid" style="margin-top:0"><div><div class="muted">Spieler</div><div id="dashboardPlayerCount" class="stat">0</div></div><div><div class="muted">Trainings</div><div id="dashboardTrainingCount" class="stat">0</div></div><div><div class="muted">Spieltage</div><div id="dashboardMatchdayCount" class="stat">0</div></div></div></div>
     <div id="dashboardEvents" class="dashboardEvents"></div>
   </section>
-  <section id="players" class="tab hidden"><div class="card trainingPageCard"><div class="toolbar trainingPageHeader"><h2 style="margin:0;flex:1">Spieler</h2><button class="primary iconAddButton" onclick="addPlayer()" aria-label="Spieler hinzufügen" title="Spieler hinzufügen">+</button></div></div><div class="card"><div id="playerTable"></div></div></section>
+  <section id="players" class="tab hidden"><div class="card trainingPageCard"><div class="toolbar trainingPageHeader"><h2 style="margin:0;flex:1">Spieler</h2><button class="primary iconAddButton" onclick="addPlayer()" aria-label="Spieler hinzufügen" title="Spieler hinzufügen">+</button></div><div id="playerTable"></div></div></section>
   <section id="trainings" class="tab hidden"><div class="card trainingPageCard"><div class="toolbar trainingPageHeader"><h2 style="margin:0;flex:1">Trainings</h2><button class="primary iconAddButton" onclick="addTraining()" aria-label="Training hinzufügen" title="Training hinzufügen">+</button></div><div id="trainingList"></div></div></section>
   <section id="matchday" class="tab hidden"><div class="card trainingPageCard"><div class="toolbar trainingPageHeader"><h2 style="margin:0;flex:1">Spieltage</h2><button class="primary iconAddButton" onclick="addMatchday()" aria-label="Spieltag anlegen" title="Spieltag anlegen">+</button></div><div id="matchdayList"></div></div></section>
   <section id="settings" class="tab hidden">
@@ -2540,7 +2540,7 @@ window.setPlayerListMode=async mode=>{
   if(playerListMode==='events')await loadPlayerEventStats();
   renderPlayers();
 };
-window.setPlayerEventOverviewFilter=filter=>{playerEventFilter=['all','suspensions','warnings','clear'].includes(filter)?filter:'all';renderPlayers();};
+window.setPlayerEventOverviewFilter=filter=>{playerEventFilter=['all','suspensions','warnings','highlights'].includes(filter)?filter:'all';renderPlayers();};
 function renderPlayers(){
   if(canManagePlayerLifecycle()&&playerRosterView==='inactive'){
     const rows=[...state.inactivePlayers].sort((a,b)=>String(a.last_name||'').localeCompare(String(b.last_name||''),'de',{sensitivity:'base'})||displayName(a).localeCompare(displayName(b),'de')).map(p=>{const stars=p.level&&LEVEL_STARS[p.level]?`${'★'.repeat(LEVEL_STARS[p.level])}${'☆'.repeat(4-LEVEL_STARS[p.level])}`:'–';const positions=orderedPositions(p.positions||[]).map(x=>`<span class="playerListPosition">${esc(x)}</span>`).join('');return `<button type="button" class="playerListRow inactivePlayerRow" data-player-card="${esc(p.id)}" aria-label="Spielerkarte ${esc(displayName(p))}"><span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}</span></span><span class="playerListIdentity"><span class="playerListName">${esc(displayName(p))}</span><span class="playerListPositions">${positions||'<span class="playerListNoPosition">Keine Position</span>'}</span><span class="playerListLevel"><span class="playerListStars">${stars}</span><span>${esc(p.level||'Kein Level')}</span></span></span><span class="material-symbols-outlined playerListChevron">chevron_right</span></button>`;}).join('');
@@ -2567,7 +2567,7 @@ function renderPlayers(){
     const matchesQuery=playerSearchMatches(p,query);
     if(playerListMode==='events'){
       const x=playerEventStats[p.id]||{yellow:0,suspensions:0};
-      const matchesEvent=playerEventFilter==='suspensions'?x.suspensions>0:playerEventFilter==='warnings'?x.yellow>=4:playerEventFilter==='clear'?x.suspensions===0&&x.yellow<4:true;
+      const matchesEvent=playerEventFilter==='suspensions'?x.suspensions>0:playerEventFilter==='warnings'?x.yellow>=4&&x.suspensions===0:playerEventFilter==='highlights'?x.stars>0:true;
       return matchesQuery&&matchesEvent;
     }
     return matchesQuery&&(playerPositionFilter==='Alle'||(p.positions||[]).includes(playerPositionFilter));
@@ -2577,7 +2577,7 @@ function renderPlayers(){
     const positions=orderedPositions(p.positions||[]).map(name=>{const pr=state.positionRows.find(x=>x.name===name);const bg=/^#[0-9a-f]{6}$/i.test(pr?.color||'')?pr.color:'#e2e8f0';return `<span class="playerListPosition" style="background:${esc(bg)}">${esc(name)}</span>`;}).join('');
     const stars=p.level&&LEVEL_STARS[p.level]?`${'★'.repeat(LEVEL_STARS[p.level])}${'☆'.repeat(4-LEVEL_STARS[p.level])}`:'–';
     const pct=Math.round(a.rate*100),x=playerEventStats[p.id]||{yellow:0,red:0,stars:0,suspensions:0};
-    const isSuspended=x.suspensions>0,isWarning=x.yellow>=4;
+    const isSuspended=x.suspensions>0,isWarning=x.yellow>=4&&!isSuspended;
     const eventMarkers=playerListMode==='events'?`<span class="playerEventMarkers">${isSuspended?'<span class="playerEventMarker suspension"><span class="material-symbols-outlined">block</span>Offene Sperre</span>':''}${isWarning?'<span class="playerEventMarker warning"><span class="material-symbols-outlined">warning</span>4 gelbe Karten</span>':''}${x.yellow>0?'<span class="playerEventMarker"><span class="material-symbols-outlined">style</span>'+x.yellow+'</span>':''}${x.red>0?'<span class="playerEventMarker"><span class="material-symbols-outlined">do_not_disturb_on</span>'+x.red+'</span>':''}${x.stars>0?'<span class="playerEventMarker"><span class="material-symbols-outlined">star</span>'+x.stars+'</span>':''}</span>`:'';
     return `<button type="button" class="playerListRow ${playerListMode==='attendance'&&top?'isRecommended':''} ${playerListMode==='events'&&isSuspended?'hasOpenSuspension':playerListMode==='events'&&isWarning?'hasYellowWarning':''}" data-player-card="${esc(p.id)}" aria-label="Spielerkarte ${esc(displayName(p))}">
       <span class="playerListAvatar"><span class="playerCardAvatarWrap">${playerAvatarHtml(p.photo_data||'')}</span></span>
@@ -2587,7 +2587,7 @@ function renderPlayers(){
     </button>`;
   }).join('');
   const positionOptions=['Alle',...state.positionRows.map(p=>p.name).filter(n=>n!=='Trainer')];
-  const chips=playerListMode==='events'?[['all','Alle'],['suspensions','Sperren'],['warnings','Warnungen'],['clear','Ohne Auffälligkeiten']].map(([key,label])=>`<button type="button" class="playerFilterChip ${playerEventFilter===key?'active':''}" aria-pressed="${playerEventFilter===key}" onclick="setPlayerEventOverviewFilter('${key}')">${label}</button>`).join(''):positionOptions.map(name=>`<button type="button" class="playerFilterChip ${playerPositionFilter===name?'active':''}" data-player-filter="${esc(name)}">${esc(name)}${name==='Alle'?` (${state.players.length})`:''}</button>`).join('');
+  const chips=playerListMode==='events'?[['all','Alle'],['suspensions','Sperren'],['warnings','Warnungen'],['highlights','Highlights']].map(([key,label])=>`<button type="button" class="playerFilterChip ${playerEventFilter===key?'active':''}" aria-pressed="${playerEventFilter===key}" onclick="setPlayerEventOverviewFilter('${key}')">${label}</button>`).join(''):positionOptions.map(name=>`<button type="button" class="playerFilterChip ${playerPositionFilter===name?'active':''}" data-player-filter="${esc(name)}">${esc(name)}${name==='Alle'?` (${state.players.length})`:''}</button>`).join('');
   const sortOptions=[['top16','Kaderempfehlung'],['lastName','Nachname A–Z'],['firstName','Vorname A–Z'],['training','Anwesenheit']].map(([v,label])=>`<option value="${v}" ${playerSort.key===v?'selected':''}>${label}</option>`).join('');
   const rosterTabs=canManagePlayerLifecycle()?`<div class="trainingSegmented rosterViewTabs"><button type="button" class="active" onclick="setPlayerRosterView('active')">Aktiver Kader (${state.players.length})</button><button type="button" onclick="setPlayerRosterView('inactive')">Inaktive Spieler (${state.inactivePlayers.length})</button></div>`:'';
   const modeTabs=`<div class="trainingSegmented playerListModeTabs"><button type="button" class="${playerListMode==='attendance'?'active':''}" onclick="setPlayerListMode('attendance')">Anwesenheit</button><button type="button" class="${playerListMode==='events'?'active':''}" onclick="setPlayerListMode('events')">Ereignisse</button></div>`;
@@ -5810,4 +5810,12 @@ html:not([data-theme="light"]) .playerListRow.hasYellowWarning{background:#3b321
 html:not([data-theme="light"]) .playerEventMarker{background:#263244!important;color:#cbd5e1!important}
 html:not([data-theme="light"]) .playerListRow.hasOpenSuspension .playerEventMarker.suspension{background:#5b2529!important;color:#fecaca!important}
 html:not([data-theme="light"]) .playerListRow.hasYellowWarning .playerEventMarker.warning{background:#59451d!important;color:#fde68a!important}
+
+/* E05: einheitliche Tabs und Kartenstruktur der Spielerliste */
+.playerListModeTabs{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:0 0 12px;padding:3px;border:1px solid var(--line);border-radius:13px;background:var(--surface-2,var(--bg))}
+.playerListModeTabs button{border:0!important;border-radius:10px!important;background:transparent!important;color:var(--muted)!important;min-height:40px;padding:8px 10px!important;box-shadow:none!important}
+.playerListModeTabs button.active{background:var(--primary,#2563eb)!important;color:#fff!important;box-shadow:0 1px 2px #0002!important}
+html:not([data-theme="light"]) .playerListModeTabs{background:#202a3b;border-color:#364357}
+html:not([data-theme="light"]) .playerListModeTabs button{color:#cbd5e1!important}
+html:not([data-theme="light"]) .playerListModeTabs button.active{background:#3569e8!important;color:#fff!important}
 </style>
