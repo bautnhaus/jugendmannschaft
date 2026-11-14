@@ -855,3 +855,16 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Datenbestand: 0 Reset-Zeilen, 0 Audit-Zeilen; 1 aktive Saison, 0 offene Sperren. Keine fachlichen Daten verändert.
 - Keine DEV-, `main)- oder Frontend-Änderung.
 - Vollständiger Nachweis: `DB_MIGRATION_LOG.md` (DB-MIG-2026-019) und Paket-8-Dossier Abschnitt 10.
+
+
+### E05 PROD Paket 9 – vorbereitet, PROD-Freigabe ausstehend (14.11.2026)
+
+- Zweck: manuelle Umordnung offener Sperren sowie Stornierung/Wiederherstellung fehlerhafter gelber und roter Kartenereignisse.
+- DEV-Quelle und Korrekturen: drei erfolgreich ausgeführte DEV-Migrationen 20261108212745, 20261108213035, 20261108213211; DEV-Abnahmedokumentation vorhanden.
+- PROD-Live-Preflight: Paket 1–8 vorhanden; Paket-9-Funktionen und manual_target_locked fehlen; Event-Audit-Snapshot-Spalte fehlt; Suspension-Audit-Snapshot-Spalte bereits vorhanden; 0 Events, 0 Event-Audits, 0 Sperren, 0 Sperren-Audits.
+- Paket-9-Migration supabase/migrations/20261114235000_e05_prod_paket_09_manual_suspension_card_correction.sql auf develop vorbereitet. DEV-Korrekturen 9.1 (PERFORM-Spielerlock) und 9.2 (authenticated EXECUTE grant) integriert.
+- Paket 10 / DB-MIG-2026-010 wird nicht vorgezogen: Spielartenfilterung bleibt in Paket 9 bestehen; Paket-10-Trainingstagchronologie bleibt getrennt.
+- Isolierte PostgreSQL-17.6-CI: Run 43648820383, success. Ein vorheriger Testlauf scheiterte nur an einer Groß-/Kleinschreibung in einer Assertion; Test korrigiert, finaler Lauf vollständig erfolgreich.
+- Kein automatischer Rollback vorbereitet, entsprechend der DEV-Abnahme; Rückbau nur nach gesonderter datenbewusster Prüfung.
+- PROD noch nicht ausgeführt; ausdrückliche Freigabe steht aus. DB_MIGRATION_LOG.md wird erst nach Ausführung ergänzt.
+- Vollständiges Dossier: docs/prod-release/E05_PROD_PAKET_09_MANUELLE_SPERREN_UND_KARTENKORREKTUR_2026-11-14.md.
