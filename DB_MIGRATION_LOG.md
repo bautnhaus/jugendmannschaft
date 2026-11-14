@@ -1112,3 +1112,14 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Offen:** authentifizierte End-to-End- und Konkurrenztests nicht in PROD ausgeführt; vor Frontend-Rollout in DEV/isolierter Umgebung erforderlich.
 - **Frontend/main:** keine Änderungen; Index-Deploy weiterhin zurückgestellt.
 - **Freigabedossier:** `docs/prod-release/E05_PROD_PAKET_06_ATOMARER_AUSNAHMEWIDERRUF_2026-11-14.md`.
+
+### DB-MIG-2026-018 – E05 PROD Paket 7: Kontrollierter Saisonabschluss
+
+- **Status:** Freigabekandidat vorbereitet; nicht ausgeführt.
+- **DEV-Ausführungen:** `20261108180535 e05_package_07_controlled_season_closure` und `20261108180944 e05_package_07_fix_season_audit_context_rls`; beide in DEV erfolgreich, siehe `docs/E05_PAKET_07_ABNAHME_UND_AUSFUEHRUNG_2026-11-08.md`.
+- **PROD-Bestand:** Audit-Tabelle und Paket-7-RPC/Triggerfunktion fehlen; erforderliche Basistabellen und Teamkontext-Helper sind vorhanden.
+- **PROD-Migration:** `supabase/migrations/20261114220000_e05_prod_paket_07_controlled_season_closure.sql`.
+- **Rollback:** `supabase/rollback/20261114220000_e05_prod_paket_07_controlled_season_closure_rollback.sql`; guarded, nur bei leerem Saisonabschluss-Audit. Stellt keine bereits geschlossene Saison oder abgelaufene Sperren wieder her.
+- **CI:** [Run 43642743485](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43642743485), PostgreSQL 17.6; Migration, Struktur/ACL/RLS, Positiv-/Negativtests und Rollback erfolgreich.
+- **Freigabedossier:** `docs/prod-release/E05_PROD_PAKET_07_KONTROLLIERTER_SAISONABSCHLUSS_2026-11-14.md`.
+- **Freigabe:** Separate ausdrückliche Freigabe zur PROD-Ausführung erforderlich.
