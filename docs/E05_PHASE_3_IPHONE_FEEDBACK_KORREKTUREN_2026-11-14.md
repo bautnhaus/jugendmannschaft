@@ -36,3 +36,8 @@
 ## Commit
 
 - `014bc1d86804cb894d18b12c5c5be1eec82342c5` – Layout, Tabs, Filter und Warnlogik.
+
+
+## Nachkorrektur Abstände (14.11.2026)
+
+Der obere und untere Außenabstand der Tabs „Anwesenheit / Ereignisse“ wurde auf `10px` gesetzt und entspricht damit dem vertikalen Abstand der `.trainingSegmented`-Bedienelemente im Trainingsbereich. Commit: `5c4949f746331d5f3d7ebbe8d54c5a112f383f7e`. DEV-Deploy/Praxistest noch ausstehend.
