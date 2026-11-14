@@ -41,7 +41,7 @@ Keine Folgesaison wird angelegt. Keine Kartenhistorie, Nominierungen, tatsächli
 - `close_team_season(uuid,text)` und die Paket-7-Append-only-Triggerfunktion existieren nicht.
 - Basistabellen `teams`, `seasons`, `team_member_roles`, `global_user_roles`, `training_suspensions`, `training_suspension_audit` und `profiles` sind vorhanden.
 - `has_selected_team_context(uuid)` und `is_team_member(uuid)` sind vorhanden.
-- PROD hat 2 Saisons, davon 2 aktiv; 0 offene Sperren. Die Migration selbst schließt keine Saison und verändert keine vorhandenen Saison-/Sperrendatensätze.
+- **Korrigierter Live-Preflight unmittelbar vor Ausführung:** PROD hat 1 Saison (`2026/2027`), davon 1 aktiv; 0 offene Sperren. Der zuvor dokumentierte ältere Snapshot mit 2 aktiven Saisons war nicht mehr aktuell. Die Migration selbst schließt keine Saison und verändert keine vorhandenen Saison-/Sperrendatensätze.
 - Vorhandene PROD-Saison-Spalten `id, team_id, name, start_date, end_date, is_active, created_at, updated_at` entsprechen den in der DEV-Funktion verwendeten Feldern.
 
 ## 4. PROD-Anpassung gegenüber DEV
