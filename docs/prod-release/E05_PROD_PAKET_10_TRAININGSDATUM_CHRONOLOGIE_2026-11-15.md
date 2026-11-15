@@ -93,6 +93,19 @@ Rollback nur nach gesonderter Freigabe und nur, wenn die fünf Funktionen seit P
 
 Workflow: .github/workflows/e05-prod-package-10-ci.yml
 
+**Finaler Lauf:** [GitHub Actions Run 43681502047](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43681502047) – **success** (PostgreSQL 17.6).
+
+Erfolgreich durchlaufen:
+- Isolierte Paket-8-PROD-Baseline.
+- Exakte Paket-8-Migration.
+- Exakte Paket-9-Migration.
+- Exakte Paket-10-Migration.
+- Chronologie-, Zielspieltag-, ACL-, RLS-, Trigger-/Policy- und Datenerhalt-Assertions.
+- Guarded function-only rollback.
+- Rollback-Assertions: Paket-9-Verhalten vollständig wiederhergestellt.
+
+Zwei vorherige CI-Anläufe scheiterten ausschließlich an der Testhülle: zunächst fehlte die Paket-8-/Paket-9-Migrationsbaseline; anschließend wurden persistente CI-Snapshots nicht mit ihrem Schema-Präfix referenziert. Beides wurde korrigiert. Der finale Lauf bestand vollständig; die Migration selbst wurde in der finalen CI erfolgreich angewendet.
+
 Testsequenz:
 1. Isolierte PostgreSQL-17.6-Testdatenbank.
 2. Paket-8-PROD-Baseline anwenden.
