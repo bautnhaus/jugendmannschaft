@@ -133,3 +133,12 @@ Der Nutzer hat nach dem DEV-Deployment beide Prüfpunkte bestätigt:
 **Ergebnis:** Beide Prüfungen bestanden. Damit ist der gemeldete Fehler im Superadmin-Mitgliederbereich behoben.
 
 **Weiterhin offen:** Profilbildanzeige, Speichern und erneutes Laden einer Profiländerung, Prüfung mit Vereinsadmin im eigenen Vereinskontext sowie Negativtests ohne bzw. mit fremdem Vereinskontext. Keine weitere SQL-Änderung vorgenommen.
+
+
+## PROD-Paket 12 – Vorbereiteter Cutover (15.11.2026)
+
+- Die aktuelle Live-Prüfung von DEV und PROD bestätigt identische Tabellen-/Spaltenstruktur (288 öffentliche Spalten), RLS-Aktivierung (38 Tabellen), 27 Trigger sowie die Konfiguration beider Storage-Buckets und aller sieben Storage-Policies.
+- Sechs AP04-Funktionen weichen in PROD von den aktuellen DEV-Definitionen ab: `admin_update_member_profile`, `admin_update_club_member_profile`, `admin_add_team_role`, `admin_remove_team_role`, `admin_add_club_member_by_email`, `admin_set_club_member_role`.
+- Für diese sechs Funktionen sind SECURITY DEFINER, Owner `postgres`, fester search_path und EXECUTE-Rechte bereits in beiden Umgebungen gleich. Das Paket ersetzt nur die Funktionsdefinitionen und ändert keine Grants.
+- PROD-Paket 12 und Guarded Rollback: `docs/prod-release/AP04_PROD_PAKET_12_PROFIL_UND_MITGLIEDERVERWALTUNG_2026-11-15.md`.
+- **Status:** vorbereitet auf `develop`; nicht in PROD ausgeführt. Die dokumentierten Rollen-/Mitglieder-Negativtests und der ausgewählte Kontext müssen vor der finalen PROD-Freigabe nachgewiesen sein.
