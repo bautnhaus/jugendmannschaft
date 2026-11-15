@@ -130,8 +130,7 @@ BEGIN
     SET display_name = excluded.display_name,
         avatar_url = excluded.avatar_url;
 END;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.admin_update_club_member_profile(p_club_id uuid, p_user_id uuid, p_display_name text, p_avatar_url text)
  RETURNS void
@@ -176,8 +175,7 @@ BEGIN
     display_name = EXCLUDED.display_name,
     avatar_url = EXCLUDED.avatar_url;
 END;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.admin_add_team_role(p_team_id uuid, p_user_id uuid, p_role text)
  RETURNS void
@@ -274,8 +272,7 @@ BEGIN
     ON CONFLICT (team_id, user_id)
     DO UPDATE SET role = EXCLUDED.role;
 END;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.admin_remove_team_role(p_team_id uuid, p_user_id uuid, p_role text)
  RETURNS void
@@ -374,8 +371,7 @@ BEGIN
       AND user_id = p_user_id;
   END IF;
 END;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.admin_add_club_member_by_email(p_club_id uuid, p_email text, p_role text DEFAULT 'member'::text)
  RETURNS void
@@ -416,8 +412,7 @@ BEGIN
 
   PERFORM public.admin_add_club_member(p_club_id, v_user_id, p_role);
 END;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.admin_set_club_member_role(p_club_id uuid, p_user_id uuid, p_role text)
  RETURNS void
@@ -494,8 +489,7 @@ BEGIN
       AND r.role = 'club_admin';
   END IF;
 END;
-$function$
-
+$function$;
 
 do $postflight$
 begin
