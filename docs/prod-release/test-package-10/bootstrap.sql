@@ -34,12 +34,13 @@ revoke all on function public.serve_matchday_suspensions(uuid)
 grant execute on function public.serve_matchday_suspensions(uuid) to authenticated;
 
 -- Snapshot baseline trigger/policy counts. Paket 10 must not change either.
-create temp table ci_package10_trigger_baseline as
+create schema if not exists ci;
+create table ci.package10_trigger_baseline as
 select n.nspname,c.relname,t.tgname,pg_get_triggerdef(t.oid) definition
 from pg_trigger t join pg_class c on c.oid=t.tgrelid
 join pg_namespace n on n.oid=c.relnamespace
 where n.nspname='public' and not t.tgisinternal;
 
-create temp table ci_package10_policy_baseline as
+create table ci.package10_policy_baseline as
 select schemaname,tablename,policyname,cmd,roles,qual,with_check
 from pg_policies where schemaname='public';
