@@ -85,3 +85,17 @@ Health Advisor: keine Findings. Diese Hinweise wurden in AP03 nicht pauschal ver
 3. E05-Audit-Anzeige für Suspension-Ausnahmen prüfen.
 
 Keine PROD-Änderung im Rahmen dieser Korrektur. Die zwei DEV-Migrationen sind im DEV-Ledger erfasst; PROD bleibt unverändert.
+
+
+## Aktualisierung 15.11.2026 – Abschlussstand für den PROD-Release
+
+Dieser Abschnitt aktualisiert die oben dokumentierte Momentaufnahme. Die zuvor genannten offenen Punkte zum Superadmin-Frontendtest und zur neutralen Vereinsauswahl sind erledigt:
+
+- Der Nutzer hat den manuellen DEV-Test bestätigt: Vereinskachel sichtbar, Verein öffnet sich, Vereinsdetails laden, Rückkehr zur Vereinsauswahl funktioniert.
+- AP03 PROD-Härtung wurde bereits erfolgreich ausgeführt (Ledger `20261115134422`): `set_updated_at()` abgesichert, Team-SELECT kontextgebunden; bestehende Kontext-Leserechte erhalten.
+- PROD besitzt bereits die kontextgebundene `clubs`-SELECT-Policy und eine kontextgebundene `is_club_admin()`-Funktion. Diese Regeln werden nicht erneut geändert.
+- Die einzige noch vorbereitete Datenbankergänzung ist DB-MIG-2026-026: neue `get_super_admin_clubs()`-RPC, ausschließlich für authentifizierte Superadmins und mit minimalen Rückgabefeldern. SQL, Rollback und Dossier liegen in `develop`; Ausführung wartet auf ausdrückliche Freigabe.
+- Die Funktionsdifferenzen `get_club_members()`, `get_club_suspension_game_types()` und `get_team_suspension_game_type_settings()` werden vom aktuellen Frontend nicht verwendet und werden nicht in dieses Release aufgenommen.
+- Die frühere Aussage „PROD bleibt unverändert“ bezieht sich auf den damaligen Stand vor AP03-Härtung und Paket 12 und ist durch die aktuellen PROD-Ledger-Nachweise überholt.
+
+**Release-Fokus:** Keine weitere allgemeine Inventur. Nach Ausführung und Postflight von DB-MIG-2026-026 folgt die Dokumentationsaktualisierung; danach erfolgt das Frontend-Deployment ausschließlich über den bestehenden Workflow „Deploy PROD“. `index.html` und `main` werden hier nicht manuell geändert.
