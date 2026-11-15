@@ -896,3 +896,14 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Keine fachlichen Daten oder Tabellenstrukturen verändert.
 - Authentifizierte Positiv-/Negativ-Praxistests stehen noch aus. PROD unverändert; separate Freigabe erforderlich.
 - Ausführungsnachweis: `DB_MIGRATION_LOG.md` (DB-MIG-2026-022); Dossier: `docs/AP03_SUPERADMIN_CONTEXT_RLS_HARDENING_DEV_2026-11-15.md`.
+
+
+## AP03 – PROD-Härtung set_updated_at und Team-Kontext (15.11.2026)
+
+- PROD-Migration `20261115134422 ap03_prod_set_updated_at_and_team_context_hardening` erfolgreich ausgeführt.
+- `set_updated_at()` besitzt nun `search_path=pg_catalog, public`; SECURITY INVOKER, Owner, ACL und alle sechs Trigger blieben erhalten.
+- `teams_select_context_admin` bindet Superadmin-Zugriff an `can_manage_club_context(teams.club_id)` statt an einen pauschalen Superadmin-Bypass.
+- Vereinsmitglieds- und Self-only-Kontext-Policies blieben unverändert.
+- Keine fachlichen Daten, Tabellenstrukturen, Grants oder Storage-Objekte geändert.
+- Health Advisor ohne Findings; 54 bestehende SECURITY-DEFINER-Hinweise und ein Auth-Passwortschutz-Hinweis verbleiben projektweit.
+- Ausführungsnachweis: `DB_MIGRATION_LOG.md` (DB-MIG-2026-023); Dossier: `docs/prod-release/AP03_PROD_SET_UPDATED_AT_TEAM_CONTEXT_HARDENING_2026-11-15.md`.
