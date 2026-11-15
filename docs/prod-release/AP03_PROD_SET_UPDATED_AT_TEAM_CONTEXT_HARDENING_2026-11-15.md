@@ -43,7 +43,41 @@ Beide Dateien besitzen strenge Preflight-/Postflight-Prüfungen. Die Migration b
 
 ## Ausführung und Verifikation
 
-Noch nicht ausgeführt. Keine PROD-Änderung vorgenommen. Die Ausführung benötigt die ausdrückliche Freigabe des Nutzers.
+**Status:** erfolgreich in PROD ausgeführt und strukturell read-only nachkontrolliert.
+
+- **Supabase-Migrationsversion:** `20261115134422`
+- **Migrationsname:** `ap03_prod_set_updated_at_and_team_context_hardening`
+- **Ausführungsweg:** verbundenes Supabase-Migrationswerkzeug (`apply_migration`)
+- **Supabase-Ergebnis:** `success: true`
+- **Migration in develop:** `supabase/migrations/20261115140000_ap03_prod_set_updated_at_and_team_context_hardening.sql`
+- **Migration Blob-SHA:** `e70c46db6f7c60f5bc16cc9a490e72e1a1e8b779`
+- **Rollback in develop:** `supabase/rollback/20261115140000_ap03_prod_set_updated_at_and_team_context_hardening_rollback.sql`
+- **Rollback Blob-SHA:** `04038691bf6ff4c96ca8f0c6d7d6415c2275fd83`
+
+### Read-only Postflight
+
+- `set_updated_at()` besitzt jetzt `search_path=pg_catalog, public`.
+- Die Funktion bleibt `SECURITY INVOKER`; Owner bleibt `postgres`.
+- Die bestehende EXECUTE-ACL blieb exakt erhalten.
+- Alle sechs vorhandenen Update-Trigger sind weiterhin vorhanden und unverändert.
+- `teams_select_context_admin` verwendet jetzt `can_manage_club_context(teams.club_id)`; der pauschale Superadmin-Zweig ist entfernt.
+- `club_members` und `club_member_roles` behalten ihre bereits vorhandenen kontextgebundenen Richtlinien.
+- Beide Self-only-Kontext-Policies bleiben erhalten.
+- `is_club_admin()` und `can_manage_club_context()` blieben unverändert und behalten ihren festen search_path.
+- Keine fachlichen Daten, Tabellen, Spalten, Trigger, Grants oder Storage-Objekte wurden geändert.
+
+### Advisor-Nachkontrolle
+
+- Health Advisor: keine Findings.
+- Security Advisor: 54 projektweite Hinweise zu SECURITY-DEFINER-Funktionen, die für `authenticated` ausführbar sind, sowie ein Hinweis auf deaktivierten Schutz vor kompromittierten Passwörtern. Diese bestehenden Befunde wurden nicht Teil dieser eng begrenzten Migration und nicht pauschal verändert.
+
+### Fachliche Abnahme
+
+DEV wurde zuvor durch den Nutzer in den Fällen Superadmin ohne ausgewählten Verein sowie Superadmin mit ausgewähltem Verein erfolgreich getestet. Die PROD-Migration entspricht diesem getesteten Kontextprinzip. Ein separater authentifizierter PROD-Praxistest ist nicht durch diese strukturelle Postflight-Prüfung ersetzt.
+
+## Rollback
+
+Guarded Rollback liegt unter `supabase/rollback/20261115140000_ap03_prod_set_updated_at_and_team_context_hardening_rollback.sql` (Blob-SHA `04038691bf6ff4c96ca8f0c6d7d6415c2275fd83`). Nicht ausgeführt. Er würde den zuvor bestehenden unbedingten Superadmin-Zweig der Team-Policy und den unfixierten search_path wiederherstellen und darf daher nur nach gesonderter Entscheidung ausgeführt werden.
 
 Nach Freigabe werden Migrationsledger, Funktionsdefinition, search_path, ACL, alle sechs Trigger, Team-SELECT-Policy, übrige Kontext-Policies und Security/Health Advisor read-only nachkontrolliert. Der tatsächliche Ausführungsnachweis wird anschließend in `DB_MIGRATION_LOG.md` und `DB_CHANGELOG.md` dokumentiert.
 
