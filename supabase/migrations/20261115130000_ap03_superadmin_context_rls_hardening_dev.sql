@@ -37,6 +37,20 @@ BEGIN
   IF v_policy_count <> 3 THEN
     RAISE EXCEPTION 'Preflight: erwartete Ausgangs-RLS-Policies fehlen oder sind mehrfach vorhanden';
   END IF;
+  IF (SELECT md5(qual) FROM pg_policies
+      WHERE schemaname='public' AND tablename='club_members'
+        AND policyname='club_members_select_member_or_admin')
+       IS DISTINCT FROM 'aa6c1a9bf90c07114a850459106a6752'
+     OR (SELECT md5(qual) FROM pg_policies
+      WHERE schemaname='public' AND tablename='club_member_roles'
+        AND policyname='club_member_roles_select_member_or_admin')
+       IS DISTINCT FROM 'ef3e2cef229a93116acf490641a0535c'
+     OR (SELECT md5(qual) FROM pg_policies
+      WHERE schemaname='public' AND tablename='teams'
+        AND policyname='teams_select_context_admin')
+       IS DISTINCT FROM '26656e900f10c80db415ed9cf321f812' THEN
+    RAISE EXCEPTION 'Preflight: RLS-Policydefinitionen weichen vom geprüften DEV-Ausgangsstand ab';
+  END IF;
 
   IF EXISTS (
     SELECT 1 FROM pg_policies
