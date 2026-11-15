@@ -1179,3 +1179,36 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **CI:** PostgreSQL 17.6, [GitHub Actions Run 43645581297](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43645581297), Commit `8b45a76aa23f77f452ec38c70ea1219d0468209a`, success.
 - **Änderungsgrenzen:** Keine DEV-Änderung; kein GitHub-`main)-Merge; kein Frontend-Index-Deploy; keine fachliche Nutzung des neuen Features im Rahmen der Migration.
 - **Dossier:** `docs/prod-release/E05_PROD_PAKET_08_VORZEITIGER_SPERRAUSGLEICH_2026-11-14.md`.
+
+
+### DB-MIG-2026-020 – E05 PROD Paket 9: Manuelle Sperren- und Kartenkorrektur
+
+- **Ausführungsdatensatz:** PROD
+- **Datum:** 15.11.2026
+- **Uhrzeit / Zeitzone:** Der Supabase-Migrationsdatensatz weist die Version 20261115051236 aus. Ein separater, verlässlicher Ausführungszeitstempel mit Zeitzone wurde vom Ausführungswerkzeug nicht zurückgegeben; die Versionszeit wird daher nicht als bestätigte lokale Uhrzeit interpretiert.
+- **Umgebung:** Supabase PROD – Projekt qdugtpzgefpswnnqbusd, PostgreSQL 17.6.1.166, eu-west-1.
+- **Ausführungsweg:** Supabase apply_migration über die verbundene Supabase-Integration; vollständiger SQL-Text aus der versionierten GitHub-Migration.
+- **Anlass/Zweck:** Paket 9 von E05 – kontrollierte manuelle Umordnung offener Sperren und Korrektur (Stornierung/Wiederherstellung) fehlerhafter gelber/roter Kartenereignisse.
+- **Betroffene Objekte:** training_behavior_event_audit.changed_by_snapshot; training_suspension_audit.changed_by_snapshot (bereits vorhanden, additiv abgesichert); training_suspensions.manual_target_locked; interne Funktionen e05_assert_suspension_correction_permission und e05_reconcile_suspensions_after_event_correction; Erweiterung e05_assign_player_suspensions; öffentliche RPCs correct_suspension und correct_training_behavior_event.
+- **Freigabe:** Ausdrückliche PROD-Freigabe des Projektverantwortlichen am 15.11.2026 im Chat.
+- **Ausführender:** ChatGPT über die verbundene Supabase-Integration auf ausdrückliche Freigabe.
+- **Status:** Erfolgreich; Post-Deployment-Verifikation erfolgreich.
+- **Tatsächlich ausgeführtes SQL bzw. unveränderlicher Verweis:** supabase/migrations/20261114235000_e05_prod_paket_09_manual_suspension_card_correction.sql, Branch develop, Blob SHA 4385af6b7789bdcf7fb29167d0339add327ea640; Datei ist im develop-Commit 4ab114a5a98b629109099cbd63290ef8ba248fff enthalten.
+- **Supabase-Migrationshistorie:** Version 20261115051236, Name e05_prod_paket_09_manual_suspension_card_correction.
+- **Ergebnis / Fehlermeldung:** apply_migration meldete success=true. Keine Fehlermeldung.
+- **Verifikation (read-only Abfrage und Ergebnis):**
+  - Beide öffentlichen Korrektur-RPCs vorhanden, SECURITY DEFINER, search_path pg_catalog/public/auth.
+  - EXECUTE für authenticated: ja; anon, service_role und PUBLIC: nein.
+  - Interne Berechtigungs- und Reconciliation-Helfer sowie der interne Allocator nicht direkt für authenticated/anon/service_role ausführbar.
+  - manual_target_locked: boolean NOT NULL DEFAULT false.
+  - changed_by_snapshot auf beiden Audit-Tabellen vorhanden.
+  - RLS auf allen vier Event-/Sperren-Tabellen weiterhin aktiviert.
+  - Alle vier bestehenden Append-only-Audit-Trigger unverändert vorhanden.
+  - authenticated besitzt weiterhin 0 direkte INSERT/UPDATE/DELETE/TRUNCATE-Rechte auf den vier Event-/Sperren-Tabellen.
+  - Allocator enthält manuelle Ziel-Sperre und behält den bestehenden Spielartenfilter; Paket-10-Trainingstaglogik ist nicht enthalten.
+  - Korrigierter PERFORM-Spielerzeilenlock vorhanden.
+  - Datenbestand nach Migration: 0 Trainingsereignisse, 0 Event-Auditzeilen, 0 Sperren, 0 Sperren-Auditzeilen, 0 offene Sperren, 0 manuelle Zielzuordnungen. Keine vorhandenen fachlichen Datensätze verändert.
+- **Rollback/Wiederherstellung:** Kein automatischer DROP-Rollback. Bei Problemen gezielter Forward-Fix; Rückbau nur nach gesonderter datenbewusster Prüfung und Freigabe.
+- **Gegenstück in der anderen Umgebung:** DEV-Paket-9-Migrationen 20261108212745, 20261108213035 und 20261108213211 waren bereits erfolgreich vorhanden; keine neue DEV-Ausführung im Rahmen dieses PROD-Releases.
+- **GitHub-Datei und Commit-SHA:** supabase/migrations/20261114235000_e05_prod_paket_09_manual_suspension_card_correction.sql; Blob SHA 4385af6b7789bdcf7fb29167d0339add327ea640; develop Commit 4ab114a5a98b629109099cbd63290ef8ba248fff.
+- **Zusätzliche Hinweise / Nachweisgrenzen:** Isolierte PostgreSQL-CI erfolgreich (GitHub Actions Run 43648820383). CI ersetzt keine authentifizierten Supabase-End-to-End-Verhaltenstests; DEV-Funktionstests bleiben fachliche Testgrundlage. Der Datenbestand war zum Ausführungszeitpunkt leer, daher konnten keine realen Spieler-/Sperrenkorrekturen in PROD ausgelöst werden.
