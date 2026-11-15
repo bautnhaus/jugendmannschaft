@@ -8,6 +8,18 @@ end $$;
 create schema if not exists auth;
 create or replace function auth.uid() returns uuid language sql stable as 'select null::uuid';
 
+-- Minimal dependency tables for SQL-language helper functions in the PROD baseline.
+create table public.global_user_roles(user_id uuid, role text);
+create table public.user_club_context(user_id uuid, club_id uuid);
+create table public.user_team_context(user_id uuid, team_id uuid);
+create table public.teams(id uuid, club_id uuid);
+create table public.club_members(user_id uuid, club_id uuid);
+create table public.club_member_roles(user_id uuid, role text);
+create table public.team_member_roles(team_id uuid, user_id uuid, role text);
+create table public.clubs(id uuid);
+create table auth.users(id uuid, email text);
+
+
 -- Read-only dependency baseline used by the Paket-12 preflight.
 CREATE OR REPLACE FUNCTION public.admin_add_club_member(p_club_id uuid, p_user_id uuid, p_role text DEFAULT 'member'::text)
  RETURNS void
