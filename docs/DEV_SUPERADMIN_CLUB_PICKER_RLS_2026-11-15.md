@@ -102,3 +102,19 @@ Der Nutzer hat nach dem Test auf der tatsächlichen DEV-Webseite bestätigt, das
 ## PROD-Abgrenzung
 
 Die DEV-Korrektur wird mit DB-MIG-2026-026 für PROD ergänzt. Die PROD-Ausführung ist separat dokumentiert und freigabepflichtig.
+
+
+## Nach PROD-Deploy: Rücknavigation zur Vereinsauswahl – Korrektur vorbereitet
+
+Beim Superadmin-Praxistest in PROD wurde festgestellt: Das Öffnen des Vereins und das Laden der Vereinsdetails funktionieren; beim Zurücknavigieren landet der Nutzer jedoch auf der Startseite „Mehr“ statt in der neutralen Vereinsauswahl.
+
+Ursache im Frontend: `backToSuperAdminClubs()` schaltete nur die inneren Vereinsansichten um, stellte aber nicht sicher, dass der Navigationsbereich `Mehr > Verein` aktiv ist. Dadurch konnte der zuvor aktive Mehr-Unterbereich sichtbar bleiben.
+
+Korrektur ausschließlich in `develop/index.html` am 15.11.2026:
+
+- Beim Rückweg eines neutralen Superadmins ( `isSuperAdmin && clubOnlyMode` ) wird der Navigationsmodus auf `context` gesetzt.
+- `superAdminNextSection` wird zurückgesetzt.
+- Anschließend wird explizit `openMehrPage('club')` aufgerufen, das die neutrale Vereinsauswahl anzeigt.
+- Andere Rollen-/Vereinsadmin-Navigationswege bleiben unverändert.
+
+**Status:** Änderung in develop committed; DEV-Praxistest dieser Rücknavigation steht noch aus. Nicht nach main übernommen und kein PROD-Deploy dieser Korrektur erfolgt.
