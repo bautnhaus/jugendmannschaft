@@ -3,7 +3,7 @@
 **Datum:** 15.11.2026  
 **Zielumgebung:** Supabase PROD  
 **Projekt-ID:** `qdugtpzgefpswnnqbusd`  
-**Status:** vorbereitet; ausdrückliche PROD-Freigabe und Ausführung stehen aus  
+**Status:** in PROD erfolgreich ausgeführt und read-only verifiziert (15.11.2026; Ledger `20261115134422`)  
 **Quelle:** DEV-Praxistest der Superadmin-Kontextkorrektur erfolgreich
 
 ## Ziel und fachlicher Hintergrund
@@ -79,7 +79,7 @@ DEV wurde zuvor durch den Nutzer in den Fällen Superadmin ohne ausgewählten Ve
 
 Guarded Rollback liegt unter `supabase/rollback/20261115140000_ap03_prod_set_updated_at_and_team_context_hardening_rollback.sql` (Blob-SHA `04038691bf6ff4c96ca8f0c6d7d6415c2275fd83`). Nicht ausgeführt. Er würde den zuvor bestehenden unbedingten Superadmin-Zweig der Team-Policy und den unfixierten search_path wiederherstellen und darf daher nur nach gesonderter Entscheidung ausgeführt werden.
 
-Nach Freigabe werden Migrationsledger, Funktionsdefinition, search_path, ACL, alle sechs Trigger, Team-SELECT-Policy, übrige Kontext-Policies und Security/Health Advisor read-only nachkontrolliert. Der tatsächliche Ausführungsnachweis wird anschließend in `DB_MIGRATION_LOG.md` und `DB_CHANGELOG.md` dokumentiert.
+Nach Freigabe werden Migrationsledger, Funktionsdefinition, search_path, ACL, alle sechs Trigger, Team-SELECT-Policy, übrige Kontext-Policies und Security/Health Advisor read-only nachkontrolliert. Die tatsächliche Ausführung ist in `DB_MIGRATION_LOG.md` (DB-MIG-2026-023) und `DB_CHANGELOG.md` dokumentiert.
 
 ## Rollback
 
