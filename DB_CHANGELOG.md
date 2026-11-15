@@ -907,3 +907,14 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Keine fachlichen Daten, Tabellenstrukturen, Grants oder Storage-Objekte geändert.
 - Health Advisor ohne Findings; 54 bestehende SECURITY-DEFINER-Hinweise und ein Auth-Passwortschutz-Hinweis verbleiben projektweit.
 - Ausführungsnachweis: `DB_MIGRATION_LOG.md` (DB-MIG-2026-023); Dossier: `docs/prod-release/AP03_PROD_SET_UPDATED_AT_TEAM_CONTEXT_HARDENING_2026-11-15.md`.
+
+
+## DEV – Sichere Superadmin-Vereinsauswahl (15.11.2026)
+
+- Neue RPC `get_super_admin_clubs()` gibt ausschließlich Vereins-ID, Name, Kurzname und Wappenpfad an authentifizierte Superadmins zurück.
+- Direkte SELECT-Policy auf `clubs` ist jetzt kontextgebunden: `is_club_member(id) OR is_club_admin(id)`; neutraler Superadmin erhält keine direkten Vereinszeilen.
+- Frontend `loadSuperAdminClubs()` in `develop` auf die neue RPC umgestellt.
+- DEV-Tests bestanden: neutraler Superadmin – direkter SELECT 0, Picker-RPC 1; nach Kontextauswahl direkter SELECT 1; normaler Nutzer – Picker-RPC 0; anonymer RPC-Aufruf verweigert.
+- Migrationen: DB-MIG-2026-024 (Ledger `20261115135639`) und DB-MIG-2026-025 (Ledger `20261115135825`).
+- Ausführungs- und Testdetails: `docs/DEV_SUPERADMIN_CLUB_PICKER_RLS_2026-11-15.md`.
+- PROD nicht verändert.
