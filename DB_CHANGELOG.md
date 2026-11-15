@@ -884,3 +884,15 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - **Frontend:** manuelle Korrekturauswahlliste muss später noch nach dem Auslöser-Trainingsdatum filtern. Frontend bleibt in diesem DB-Paket unverändert.
 - **PROD:** noch nicht ausgeführt; gesonderte ausdrückliche Freigabe erforderlich. DB_MIGRATION_LOG.md wird erst nach tatsächlicher PROD-Ausführung ergänzt.
 - **Dossier:** docs/prod-release/E05_PROD_PAKET_10_TRAININGSDATUM_CHRONOLOGIE_2026-11-15.md.
+
+
+## AP03 – Superadmin-Kontext und RLS-Härtung (DEV, 15.11.2026)
+
+- DEV-Migration `20261115114440 ap03_superadmin_context_rls_hardening_dev` erfolgreich ausgeführt.
+- `public.is_club_admin(uuid)` bindet Superadmin-Zugriff jetzt an den explizit ausgewählten Verein.
+- SELECT-Policies auf `club_members`, `club_member_roles` und `teams` entfernen den pauschalen Superadmin-Bypass.
+- `user_club_context` und `user_team_context` besitzen nun jeweils eine SELECT-Policy ausschließlich für den eigenen Benutzer.
+- RLS bleibt auf allen fünf Tabellen aktiviert; Funktionseigenschaften und EXECUTE-ACL blieben unverändert.
+- Keine fachlichen Daten oder Tabellenstrukturen verändert.
+- Authentifizierte Positiv-/Negativ-Praxistests stehen noch aus. PROD unverändert; separate Freigabe erforderlich.
+- Ausführungsnachweis: `DB_MIGRATION_LOG.md` (DB-MIG-2026-022); Dossier: `docs/AP03_SUPERADMIN_CONTEXT_RLS_HARDENING_DEV_2026-11-15.md`.
