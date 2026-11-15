@@ -1270,3 +1270,23 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - Live-Postflight: Kaderempfehlungsfunktion MD5 `4c038919d1c6470633b1229aa2adff06`, 3.586 Zeichen – identisch mit DEV. Triggerfunktion mit DEV-identischen EXECUTE-Rechten (nur service_role und postgres); vier bestehende Matchday-Player-Trigger unverändert vorhanden; RLS auf allen fünf relevanten Tabellen aktiviert.
 - Die fachlichen Schutzmechanismen in Nominierungstrigger und Ausnahme-Widerruf wurden zusätzlich gegen DEV geprüft. Abweichungen der Funktionsdefinitionen sind textuelle Formatierungs-/Kommentarunterschiede; die geprüften Sperr-, Lock-, Ausnahme-, Einsatzschutz- und Audit-Schritte sind vorhanden.
 - Ergebnis: Paket 11 bleibt erfolgreich in PROD registriert. Der abgebrochene Wiederholungsversuch ist ein sicherer Preflight-Abbruch und kein Rollback des bereits registrierten Pakets.
+
+
+### DB-MIG-2026-022 – AP03 Superadmin-Kontext und RLS-Härtung (DEV)
+
+- **Ausführungsdatensatz:** DEV
+- **Datum/Uhrzeit (mit Zeitzone):** 15.11.2026, 12:44:40 MEZ (Supabase-Ledger-Version `20261115114440`)
+- **Umgebung:** Supabase DEV – Projekt `pzazqvvoruqnqhcorbwx`
+- **Ausführungsweg:** verbundenes Supabase-Migrationswerkzeug (`apply_migration`)
+- **Anlass/Zweck:** Superadmin-Zugriffe auf Vereins- und Mannschaftsdaten konsequent an den ausdrücklich ausgewählten Vereinskontext binden; eigene Kontextdatensätze lesbar machen.
+- **Betroffene Objekte:** Funktion `public.is_club_admin(uuid)`; Policies `club_members_select_member_or_admin`, `club_member_roles_select_member_or_admin`, `teams_select_context_admin`; neue Policies `user_club_context_select_self` und `user_team_context_select_self`.
+- **Freigabe:** ausdrückliche Nutzerfreigabe am 15.11.2026 für die sechs Änderungen in DEV. Keine PROD-Freigabe erteilt.
+- **Ausführender:** ChatGPT über das verbundene Supabase-Migrationswerkzeug, auf ausdrückliche Nutzerfreigabe.
+- **Status:** Erfolgreich ausgeführt; strukturelle/read-only Postflight-Verifikation erfolgreich. Authentifizierte Praxistests noch offen.
+- **Tatsächlich ausgeführtes SQL bzw. unveränderlicher Verweis:** `supabase/migrations/20261115130000_ap03_superadmin_context_rls_hardening_dev.sql`, Blob-SHA `dccd8b43e3b009a75cf960a76566ae7d17176b76`, Git-Commit `c3fcb32509332623e3bac480d22c0606ffc83098`.
+- **Ergebnis / Fehlermeldung:** Supabase meldete `success: true`; Migrationsledger enthält `20261115114440 ap03_superadmin_context_rls_hardening_dev`. Keine Fehlermeldung.
+- **Verifikation (read-only Abfrage und Ergebnis):** Funktionsdefinition enthält die Superadmin-Kontextprüfung; SECURITY DEFINER, Owner postgres und fester search_path erhalten; EXECUTE-ACL unverändert (authenticated/service_role ja, anon/PUBLIC nein); alle fünf Policies wie vorgesehen vorhanden; RLS auf allen fünf Tabellen aktiv. Health Advisor ohne Findings. Security Advisor: 52 Hinweise zu SECURITY-DEFINER-Ausführbarkeit und 1 Hinweis zu deaktiviertem Schutz vor kompromittierten Passwörtern; gesonderte Bewertung erforderlich.
+- **Rollback/Wiederherstellung:** `supabase/rollback/20261115130000_ap03_superadmin_context_rls_hardening_dev_rollback.sql`, Blob-SHA `4df263a7ed9321f19d4ce442c5587dc3d5f784aa`. Nicht ausgeführt. Der Rollback stellt absichtlich den zuvor bestehenden pauschalen Superadmin-Bypass wieder her.
+- **Gegenstück in der anderen Umgebung:** PROD nicht ausgeführt; separate Freigabe erforderlich.
+- **Zusätzliche Hinweise / Nachweisgrenzen:** Keine fachlichen Daten geändert. Authentifizierte End-to-End-Positiv-/Negativtests mit echten Sitzungen stehen noch aus; bis dahin keine vollständige fachliche Sicherheitsabnahme behaupten.
+- **Dossier:** `docs/AP03_SUPERADMIN_CONTEXT_RLS_HARDENING_DEV_2026-11-15.md`.
