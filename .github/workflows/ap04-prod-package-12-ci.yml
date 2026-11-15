@@ -1,0 +1,49 @@
+name: AP04 PROD Paket 12 isolated PostgreSQL CI
+on:
+  push:
+    branches: [develop]
+    paths:
+      - 'supabase/migrations/20261115110000_ap04_prod_paket_12_member_profile_and_role_management.sql'
+      - 'supabase/rollback/20261115110000_ap04_prod_paket_12_member_profile_and_role_management_rollback.sql'
+      - 'docs/prod-release/test-package-12/**'
+      - '.github/workflows/ap04-prod-package-12-ci.yml'
+  workflow_dispatch:
+jobs:
+  postgres-17:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ap04_package_12_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ap04_package_12_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: ap04_package_12_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Prepare exact PROD function baseline
+        run: psql -v ON_ERROR_STOP=1 -f docs/prod-release/test-package-12/bootstrap.sql
+      - name: Apply Paket 12
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261115110000_ap04_prod_paket_12_member_profile_and_role_management.sql
+      - name: Assert DEV function hashes, security and ACL
+        run: psql -v ON_ERROR_STOP=1 -f docs/prod-release/test-package-12/assertions.sql
+      - name: Apply guarded rollback
+        run: psql -v ON_ERROR_STOP=1 -f supabase/rollback/20261115110000_ap04_prod_paket_12_member_profile_and_role_management_rollback.sql
+      - name: Assert original PROD state restored
+        run: psql -v ON_ERROR_STOP=1 -f docs/prod-release/test-package-12/rollback_assertions.sql
