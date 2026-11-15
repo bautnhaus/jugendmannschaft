@@ -1,10 +1,10 @@
 # AP04 PROD Paket 12 – Profilpflege und Mitglieder-/Rollenverwaltung
 
-- **Status:** Technisch vorbereitet; manuelle DEV-Abnahme der Rollen-/Mitgliederfälle vor PROD noch zu bestätigen.
+- **Status:** In PROD erfolgreich ausgeführt und technisch verifiziert; DEV-Praxistests für alle aktuell möglichen Fälle bestätigt.
 - **Vorgesehene Katalognummer:** DB-MIG-2026-023.
 - **Ziel:** Supabase PROD, Projekt `qdugtpzgefpswnnqbusd`.
 - **Quelle:** Live-Funktionsdefinitionen DEV und PROD, read-only am 15.11.2026.
-- **PROD-Ausführung:** Noch nicht erfolgt; keine PROD-Änderung im Rahmen dieser Vorbereitung.
+- **PROD-Ausführung:** Erfolgreich am 15.11.2026; Supabase-Migrationsversion `20261115092149` (`ap04_prod_paket_12_member_profile_and_role_management`).
 
 ## 1. Einordnung des nächsten Pakets
 
@@ -79,19 +79,13 @@ Die sechs aktualisierten Funktionen verwenden bestehende Rollen-/Kontext-Helfer.
 - Rollback-Assertions: `docs/prod-release/test-package-12/rollback_assertions.sql`
 - CI-Workflow: `.github/workflows/ap04-prod-package-12-ci.yml`
 
-## 7. DEV-Praxistests vor PROD-Freigabe
+## 7. DEV-Praxistests und akzeptierte Testgrenze
 
-Die vorhandene AP04-Dokumentation weist Profilname/-bild einzeln und gemeinsam sowie Passwortänderung als erfolgreich getestet aus. Folgende Fälle sind dort noch offen bzw. vor PROD erneut zu bestätigen:
+Der Nutzer hat bestätigt, dass alle mit der aktuell vorhandenen Vereinskonstellation möglichen AP04-Praxistests in DEV durchgeführt und bestanden wurden.
 
-1. Vereinsadmin: Profil eines Mitglieds im eigenen Verein ändern; fremder Verein wird abgewiesen.
-2. Mannschaftsadmin: Profil eines Mitglieds der eigenen Mannschaft ändern; fremde Mannschaft wird abgewiesen.
-3. Superadmin: Profil-/Rollenänderung nur im ausdrücklich gewählten Vereins-/Mannschaftskontext.
-4. Eigene Rollenänderung durch den betroffenen Benutzer wird abgewiesen.
-5. Letzter Mannschaftsadmin und letzter Vereinsadmin können nicht entfernt/herabgestuft werden.
-6. Ein Benutzer kann nicht einem zweiten Verein zugeordnet werden.
-7. Trainer ohne Adminrecht kann keine Mitgliederprofile oder Rollen anderer Mitglieder ändern.
-8. Avatar-Dateipfade mit ungültiger UUID sowie falsche Dateitypen/Größen werden sicher behandelt.
-9. E-Mail-Änderung/Bestätigung ist nicht Teil dieser DB-Migration; die bestehende Auth-Funktion separat testen, sobald eine geeignete Testadresse verfügbar ist.
+**Einziger nicht ausführbarer Testfall:** Ein Benutzer kann keinem zweiten Verein zugeordnet werden. Da derzeit nur ein Verein existiert, kann der Negativtest gegen einen zweiten Verein noch nicht praktisch ausgeführt werden. Dieser Punkt ist ausdrücklich als akzeptiertes Restrisiko dokumentiert und wird nach Anlage eines zweiten Vereins nachgetestet. Es wurde kein zusätzlicher Verein nur zu Testzwecken in PROD angelegt.
+
+Die Bestätigung umfasst die aktuell möglichen Profil-, Rollen- und Berechtigungsfälle. E-Mail-Änderung/Bestätigung ist nicht Bestandteil dieser DB-Migration.
 
 **Hinweis:** Die isolierte PostgreSQL-CI prüft die reproduzierbare Migration, Hashes, Sicherheitsattribute, ACLs und Rollback. Sie ersetzt keine authentifizierten Supabase-Rollentests.
 
@@ -106,9 +100,11 @@ Die vorhandene AP04-Dokumentation weist Profilname/-bild einzeln und gemeinsam s
 ## 10. Freigabestatus
 
 - Paketdateien werden auf `develop` abgelegt.
-- PROD wurde ausschließlich read-only geprüft.
-- **Noch keine PROD-Freigabe erteilt und keine PROD-Migration ausgeführt.**
-- Vor der abschließenden Freigabe ist die DEV-Praxistestmatrix oben zu bestätigen.
+- Nutzerfreigabe am 15.11.2026 erteilt; das Restrisiko des noch nicht testbaren Zweitverein-Falls wurde ausdrücklich akzeptiert.
+- PROD-Migration erfolgreich ausgeführt; keine Tabellen-, Daten-, Policy-, Trigger- oder Storage-Änderungen vorgenommen.
+- Nach der Ausführung wurden alle sechs Ziel-Funktionen erneut geprüft: erwartete DEV-MD5-Hashes, `SECURITY DEFINER`, Owner `postgres`, fester `search_path`; `authenticated` und `service_role` haben EXECUTE, `anon` nicht.
+- Migration ist in der PROD-Historie als Version `20261115092149` registriert.
+- Kein Frontend-Deployment und keine Änderung an GitHub `main`.
 
 
 ### CI-Nachweis (aktualisiert 15.11.2026)
@@ -116,3 +112,14 @@ Die vorhandene AP04-Dokumentation weist Profilname/-bild einzeln und gemeinsam s
 - Finaler erfolgreicher Lauf nach Ergänzung der geschützten Helfer-Abhängigkeiten und der minimalen CI-Basistabellen: [GitHub Actions Run 43697683693](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43697683693) – **success**, PostgreSQL 17.6.
 - Alle Schritte erfolgreich: PROD-Baseline, Paket-12-Migration, sechs Ziel-Funktionshashes und Sicherheitsattribute, Helfer-Hash-Guards, Rollback und Wiederherstellungsassertions.
 - Frühere fehlgeschlagene CI-Anläufe waren Fehler in der isolierten Test-Baseline und führten zu keiner Änderung in Supabase DEV oder PROD. Maßgeblich ist der oben verlinkte finale erfolgreiche Lauf.
+
+
+## 11. PROD-Ausführung und Verifikation (15.11.2026)
+
+- **Ergebnis:** erfolgreich; die Migration wurde transaktional angewendet und der Postflight ist vollständig durchlaufen.
+- **Migrationshistorie:** `20261115092149` – `ap04_prod_paket_12_member_profile_and_role_management`.
+- **Sechs Funktionen:** alle sechs Definitionen entsprechen exakt den dokumentierten DEV-MD5-Werten.
+- **Sicherheitsattribute:** alle sechs Funktionen bleiben `SECURITY DEFINER`, Owner `postgres`, `search_path=pg_catalog, public, auth`.
+- **EXECUTE-Rechte:** `authenticated` und `service_role` = erlaubt; `anon` = nicht erlaubt. Die bestehenden ACLs wurden erhalten.
+- **Scope:** ausschließlich sechs bestehende Funktionen; keine Daten-/Tabellen-/RLS-/Trigger-/Storage-Änderungen.
+- **Hinweis zum Ausführungsversuch:** Ein erster Aufruf mit manuell rekonstruiertem SQL wurde durch den Postflight innerhalb der Transaktion vollständig zurückgerollt. Danach wurde die unveränderte SQL-Datei direkt aus `develop` angewendet. Die erfolgreiche Migration ist die einzige in der PROD-Migrationshistorie registrierte Ausführung dieses Pakets.
