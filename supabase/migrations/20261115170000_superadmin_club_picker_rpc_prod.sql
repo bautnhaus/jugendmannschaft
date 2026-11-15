@@ -105,7 +105,13 @@ BEGIN
 
   IF NOT has_function_privilege('authenticated','public.get_super_admin_clubs()'::regprocedure,'EXECUTE')
      OR has_function_privilege('anon','public.get_super_admin_clubs()'::regprocedure,'EXECUTE')
-     OR has_function_privilege('PUBLIC','public.get_super_admin_clubs()'::regprocedure,'EXECUTE') THEN
+     OR EXISTS (
+       SELECT 1
+       FROM pg_proc p, LATERAL aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a
+       WHERE p.oid = 'public.get_super_admin_clubs()'::regprocedure
+         AND a.grantee = 0
+         AND a.privilege_type = 'EXECUTE'
+     ) THEN
     RAISE EXCEPTION 'Postflight: unexpected EXECUTE grants';
   END IF;
 
