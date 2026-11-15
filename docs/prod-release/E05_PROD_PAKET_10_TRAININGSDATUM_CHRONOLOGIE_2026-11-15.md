@@ -5,7 +5,7 @@
 - **Entwicklungs-/Dokumentationsbranch:** develop.
 - **Vorgesehene Katalognummer:** DB-MIG-2026-021.
 - **PROD-Migration:** 20261115090000_e05_prod_paket_10_training_date_suspension_chronology.
-- **PROD-Ausführung:** Noch nicht erfolgt.
+- **PROD-Ausführung:** Erfolgreich am 15.11.2026; Ledger-Version `20261115074117` (08:41:17 CET).
 - **Backup:** Kein Backup-/PITR-Schritt vorgesehen; der bisherige PROD-Release-Prozess ohne Backupoption wird fortgeführt.
 
 ## 1. Abgrenzung des Pakets
@@ -85,7 +85,7 @@ Der Preflight in der Migration bricht ab, wenn diese erwartete Paket-8-/Paket-9-
 - Die fünf Live-Funktionsdefinitionen in DEV wurden erneut read-only ausgelesen. Ihre Längen stimmen mit den fünf in der PROD-Migration enthaltenen DEV-Zieldefinitionen überein: 6.436 / 6.797 / 16.506 / 6.042 / 3.903 Zeichen.
 - Alle fünf DEV-Funktionen sind weiterhin `SECURITY DEFINER`, gehören `postgres` und verwenden den festen `search_path = pg_catalog, public, auth`.
 - Der PROD-Preflight wurde read-only gegen die fünf aktuellen PROD-Funktionen geprüft: Alle fünf erwarteten Paket-8-/Paket-9-Ausgangsmerkmale treffen zu.
-- Die PROD-Migrationshistorie enthält Paket 1 bis 9; Paket 10 ist dort noch nicht registriert.
+- Die PROD-Migrationshistorie enthält Paket 1 bis 10; Paket 10 ist unter Version `20261115074117` registriert.
 - PROD enthält derzeit 0 Trainingsereignisse, 0 Sperren und 0 offene Sperren. Die erforderlichen Ausnahme-/Früh-Reset-Tabellen und Paket-9-Spalten sind vorhanden.
 - Der Funktions-/Sicherheitsabgleich bestätigt: PROD-Funktionen sind `SECURITY DEFINER`, Eigentümer `postgres`, fester `search_path`; EXECUTE ist für `authenticated` nur auf den drei vorgesehenen öffentlichen RPCs vorhanden, nicht für `anon` und nicht auf den internen Hilfsfunktionen.
 
@@ -135,22 +135,31 @@ Testsequenz:
 - **DEV-Praxistests:** Der Projektverantwortliche hat am 15.11.2026 bestätigt, dass die vorgesehenen Paket-10-Tests in DEV durchgeführt wurden. Die frühere Kennzeichnung als offen in den älteren Paket-10-Unterlagen ist damit überholt. Die Testergebnisse sind als DEV-Abschluss zu behandeln; PROD bleibt davon getrennt.
 - DB-MIG-2026-011 bleibt als separates Paket zu prüfen; PROD hat bereits einen Nominierungs-Trigger, aber keine Sperrprüfung in save_matchday_recommendation.
 
-## 9. Ausführungsreihenfolge nach Freigabe
+## 9. PROD-Ausführung und Nachkontrolle (15.11.2026)
 
-1. Unmittelbar vor Ausführung den PROD-Preflight erneut vollständig read-only prüfen.
-2. Ausschließlich die Datei `supabase/migrations/20261115090000_e05_prod_paket_10_training_date_suspension_chronology.sql` einmalig in Supabase PROD ausführen.
-3. Bei einem Fehler die Transaktion vollständig abbrechen lassen; keine Teilmigration nacharbeiten, bevor Ursache und Live-Stand geprüft wurden.
-4. Postflight und die Read-only-Prüfungen aus `docs/prod-release/test-package-10/assertions.sql` sinngemäß gegen PROD ausführen; CI-Testdaten-Snapshot-Assertions werden nicht ungeprüft in PROD übernommen.
-5. Migrationshistorie, Funktionssignaturen, SECURITY DEFINER/search_path/Owner/ACLs, RLS, Trigger/Policies und Datenbestand kontrollieren.
-6. Ergebnis als DB-MIG-2026-021 in `DB_MIGRATION_LOG.md` protokollieren. Erst danach separat über Frontend-Anpassungen bzw. Release entscheiden.
+- **Freigabe:** Ausdrücklich durch den Projektverantwortlichen im Chat am 15.11.2026 erteilt („Freigabe für Umsetzung erteilt. Bitte Dokumentation aktualisieren“).
+- **Ausführung:** Supabase PROD, Projekt `qdugtpzgefpswnnqbusd`; Supabase `apply_migration`; Migration atomar angewendet; Ergebnis `success: true`.
+- **Migrationshistorie:** Version `20261115074117`, Name `e05_prod_paket_10_training_date_suspension_chronology`.
+- **Read-only Postflight:** Alle fünf Funktionen mit erwarteter Paket-10-Logik vorhanden; Definitionlängen entsprechen DEV (6.436 / 6.797 / 16.506 / 6.042 / 3.903 Zeichen); alle bleiben `SECURITY DEFINER`, Owner `postgres`, fester `search_path = pg_catalog, public, auth`.
+- **EXECUTE-Rechte:** `authenticated` darf die drei vorgesehenen öffentlichen RPCs ausführen; `anon` nicht. Die beiden internen Hilfsfunktionen bleiben für `authenticated` und `anon` nicht ausführbar.
+- **RLS:** RLS bleibt auf allen vier Event-/Sperren-Tabellen aktiviert.
+- **Datenbestand:** 0 Trainingsereignisse, 0 Sperren, 0 offene Sperren nach Ausführung; keine fachlichen Datensätze durch die Migration angelegt.
+- **Ergebnis:** Migration erfolgreich registriert und Postflight erfolgreich. Keine Fehler oder Teilmigration festgestellt.
+- **Rollback:** `supabase/rollback/20261115090000_e05_prod_paket_10_training_date_suspension_chronology_rollback.sql` (Blob-SHA `c61f2a46b8e148638ba71dca8b1fade25594472a`) liegt bereit, wurde nicht ausgeführt und erfordert eine separate Freigabe.
+
+## 10. Weitere Abgrenzung nach Umsetzung
+
+Die Frontend-Auswahlliste für manuelle Sperrenkorrektur soll weiterhin separat nach dem Auslöser-Trainingsdatum gefiltert werden. DB-MIG-2026-011 (Sperrprüfung bei Nominierung/Kaderempfehlung) bleibt ebenfalls ein separates Paket. Paket 10 hat weder Frontend-Dateien noch GitHub `main` oder DEV verändert.
 
 Rollback ist **kein automatischer Fehlerpfad**. Er benötigt eine neue ausdrückliche Freigabe und darf nur ausgeführt werden, wenn seit Paket 10 keine spätere Migration dieselben fünf Funktionen verändert hat.
 
-## 10. Freigabestatus
+Rollback ist **kein automatischer Fehlerpfad**. Er benötigt eine neue ausdrückliche Freigabe und darf nur ausgeführt werden, wenn seit Paket 10 keine spätere Migration dieselben fünf Funktionen verändert hat.
+
+## 11. Umsetzungsstatus
 
 - Migration, funktionsbezogener Rollback, Read-only-Testqueries, CI-Testfixture und dieses Dossier liegen auf develop.
 - DB-MIG-2026-021 ist die vorgesehene PROD-Katalognummer.
 - Supabase DEV wurde im Rahmen dieser Vorbereitung nicht verändert.
-- Supabase PROD wurde ausschließlich lesend geprüft; keine Migration ausgeführt.
+- Supabase PROD: Paket 10 erfolgreich ausgeführt und read-only nachkontrolliert.
 - GitHub main und Frontend-Index bleiben unverändert.
-- **Paket 10 ist fachlich und technisch zur PROD-Freigabe bereit.** Die ausdrückliche Freigabe zur Ausführung der PROD-Migration steht noch aus. Diese Freigabe umfasst ausschließlich die oben genannte Datenbankmigration und die unmittelbare Verifikation. Sie umfasst weder Rollback noch Frontend-/GitHub-main-/PROD-Deployments.
+- **Paket 10 ist in Supabase PROD erfolgreich umgesetzt.** Rollback, Frontend-Anpassungen und GitHub-main-/Frontend-Deployments sind nicht Bestandteil dieser Ausführung.
