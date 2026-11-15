@@ -1261,3 +1261,12 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Rollback/Wiederherstellung:** Guarded Rollback `supabase/rollback/20261115100000_e05_prod_paket_11_suspension_aware_recommendation_nomination_rollback.sql`, Blob-SHA `dad4b9c9b3c0fc9664dc719c11be36aa4af299d9`. Nicht in PROD ausgeführt; CI hat ihn ausschließlich in der isolierten Testdatenbank geprüft. Eine PROD-Ausführung erfordert gesonderte Freigabe.
 - **Änderungsgrenzen:** Kein DEV-Projekt, GitHub `main`, Frontend-Index oder Frontend-Deployment verändert. Keine fachlichen Daten durch die Migration angelegt oder geändert.
 - **Dossier:** `docs/prod-release/E05_PROD_PAKET_11_SPERRPRUEFUNG_KADEREMPFEHLUNG_NOMINIERUNG_2026-11-15.md`.
+
+
+#### Ergänzende Nachkontrolle Paket 11 – 15.11.2026
+
+- Ein erneuter Ausführungsversuch der Paket-11-Migration wurde vom Preflight vor jeder Änderung abgebrochen, da die Sperrenprüfung in `save_matchday_recommendation` bereits vorhanden war. Der erneute Versuch hat keine Datenbankänderung ausgelöst.
+- Die anschließende aktuelle Supabase-Migrationsliste bestätigt weiterhin den vorhandenen Ledger-Eintrag `20261115082224 e05_prod_paket_11_suspension_aware_recommendation_nomination`.
+- Live-Postflight: Kaderempfehlungsfunktion MD5 `4c038919d1c6470633b1229aa2adff06`, 3.586 Zeichen – identisch mit DEV. Triggerfunktion mit DEV-identischen EXECUTE-Rechten (nur service_role und postgres); vier bestehende Matchday-Player-Trigger unverändert vorhanden; RLS auf allen fünf relevanten Tabellen aktiviert.
+- Die fachlichen Schutzmechanismen in Nominierungstrigger und Ausnahme-Widerruf wurden zusätzlich gegen DEV geprüft. Abweichungen der Funktionsdefinitionen sind textuelle Formatierungs-/Kommentarunterschiede; die geprüften Sperr-, Lock-, Ausnahme-, Einsatzschutz- und Audit-Schritte sind vorhanden.
+- Ergebnis: Paket 11 bleibt erfolgreich in PROD registriert. Der abgebrochene Wiederholungsversuch ist ein sicherer Preflight-Abbruch und kein Rollback des bereits registrierten Pakets.
