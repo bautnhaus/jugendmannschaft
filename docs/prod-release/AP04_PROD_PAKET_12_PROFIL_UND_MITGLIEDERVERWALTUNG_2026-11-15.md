@@ -99,7 +99,7 @@ Die vorhandene AP04-Dokumentation weist Profilname/-bild einzeln und gemeinsam s
 ## 9. Isolierte PostgreSQL-CI – erfolgreich
 
 - **Workflow:** `.github/workflows/ap04-prod-package-12-ci.yml`
-- **Ergebnis:** [GitHub Actions Run 43697270748](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43697270748) – **success**, PostgreSQL 17.6.
+- **Ergebnis:** [GitHub Actions Run 43697683693](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43697683693) – **success**, PostgreSQL 17.6.
 - Erfolgreich: exakte PROD-Ausgangsdefinitionen bereitgestellt, Paket-12-Migration angewendet, alle sechs DEV-Funktionshashes sowie SECURITY DEFINER/Owner/search_path/ACL geprüft, guarded Rollback ausgeführt und ursprüngliche PROD-Funktionsdefinitionen samt ACL erneut bestätigt.
 - **Testgrenze:** Isolierter PostgreSQL-Test; keine authentifizierten Supabase-Rollensitzungen, keine echten Vereins-/Mitgliederdaten und keine Änderung an DEV oder PROD.
 
@@ -109,3 +109,10 @@ Die vorhandene AP04-Dokumentation weist Profilname/-bild einzeln und gemeinsam s
 - PROD wurde ausschließlich read-only geprüft.
 - **Noch keine PROD-Freigabe erteilt und keine PROD-Migration ausgeführt.**
 - Vor der abschließenden Freigabe ist die DEV-Praxistestmatrix oben zu bestätigen.
+
+
+### CI-Nachweis (aktualisiert 15.11.2026)
+
+- Finaler erfolgreicher Lauf nach Ergänzung der geschützten Helfer-Abhängigkeiten und der minimalen CI-Basistabellen: [GitHub Actions Run 43697683693](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43697683693) – **success**, PostgreSQL 17.6.
+- Alle Schritte erfolgreich: PROD-Baseline, Paket-12-Migration, sechs Ziel-Funktionshashes und Sicherheitsattribute, Helfer-Hash-Guards, Rollback und Wiederherstellungsassertions.
+- Frühere fehlgeschlagene CI-Anläufe waren Fehler in der isolierten Test-Baseline und führten zu keiner Änderung in Supabase DEV oder PROD. Maßgeblich ist der oben verlinkte finale erfolgreiche Lauf.
