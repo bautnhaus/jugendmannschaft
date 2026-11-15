@@ -1290,3 +1290,20 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Gegenstück in der anderen Umgebung:** PROD nicht ausgeführt; separate Freigabe erforderlich.
 - **Zusätzliche Hinweise / Nachweisgrenzen:** Keine fachlichen Daten geändert. Authentifizierte End-to-End-Positiv-/Negativtests mit echten Sitzungen stehen noch aus; bis dahin keine vollständige fachliche Sicherheitsabnahme behaupten.
 - **Dossier:** `docs/AP03_SUPERADMIN_CONTEXT_RLS_HARDENING_DEV_2026-11-15.md`.
+
+
+### DB-MIG-2026-023 – AP03 PROD-Härtung set_updated_at und Team-Kontext
+
+- **Umgebung:** Supabase PROD – Projekt `qdugtpzgefpswnnqbusd`.
+- **Supabase-Ledger-Version:** `20261115134422`.
+- **Migrationsname:** `ap03_prod_set_updated_at_and_team_context_hardening`.
+- **Ausführungsweg:** verbundenes Supabase-Migrationswerkzeug (`apply_migration`).
+- **Freigabe:** ausdrückliche PROD-Freigabe des Nutzers unmittelbar vor Ausführung am 15.11.2026.
+- **Zweck:** festen search_path für `set_updated_at()` setzen und Team-SELECT-Policy an ausgewählten Vereinskontext binden.
+- **Änderungen:** `set_updated_at()` bleibt SECURITY INVOKER, Owner postgres und bestehende ACL unverändert; `search_path=pg_catalog, public` gesetzt. `teams_select_context_admin` verwendet `can_manage_club_context(teams.club_id)`.
+- **Ergebnis:** Supabase meldete `success: true`; Migration im Ledger nachgewiesen.
+- **Postflight:** Funktion/search_path/ACL geprüft; sechs Trigger weiterhin vorhanden; Team-Policy kontextgebunden; übrige Vereins- und Kontext-Policies unverändert; beide Kontext-Helper unverändert. Keine fachlichen Daten oder Tabellenstruktur geändert.
+- **Advisor:** Health ohne Findings. Security Advisor weiterhin 54 projektweite SECURITY-DEFINER-Ausführbarkeitshinweise und 1 Hinweis auf deaktivierten Passwort-Leak-Schutz; nicht Bestandteil dieses Pakets.
+- **Rollback:** `supabase/rollback/20261115140000_ap03_prod_set_updated_at_and_team_context_hardening_rollback.sql`, Blob-SHA `04038691bf6ff4c96ca8f0c6d7d6415c2275fd83`. Nicht ausgeführt.
+- **Migration:** `supabase/migrations/20261115140000_ap03_prod_set_updated_at_and_team_context_hardening.sql`, Blob-SHA `e70c46db6f7c60f5bc16cc9a490e72e1a1e8b779`.
+- **Dossier:** `docs/prod-release/AP03_PROD_SET_UPDATED_AT_TEAM_CONTEXT_HARDENING_2026-11-15.md`.
