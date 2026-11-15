@@ -1212,3 +1212,27 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Gegenstück in der anderen Umgebung:** DEV-Paket-9-Migrationen 20261108212745, 20261108213035 und 20261108213211 waren bereits erfolgreich vorhanden; keine neue DEV-Ausführung im Rahmen dieses PROD-Releases.
 - **GitHub-Datei und Commit-SHA:** supabase/migrations/20261114235000_e05_prod_paket_09_manual_suspension_card_correction.sql; Blob SHA 4385af6b7789bdcf7fb29167d0339add327ea640; develop Commit 4ab114a5a98b629109099cbd63290ef8ba248fff.
 - **Zusätzliche Hinweise / Nachweisgrenzen:** Isolierte PostgreSQL-CI erfolgreich (GitHub Actions Run 43648820383). CI ersetzt keine authentifizierten Supabase-End-to-End-Verhaltenstests; DEV-Funktionstests bleiben fachliche Testgrundlage. Der Datenbestand war zum Ausführungszeitpunkt leer, daher konnten keine realen Spieler-/Sperrenkorrekturen in PROD ausgelöst werden.
+
+
+### DB-MIG-2026-021 – E05 PROD Paket 10: Trainingsdatumsbasierte Kartenchronologie und alle geplanten Sperrziele – PROD-Ausführung
+
+- **Ausführungsdatensatz:** PROD
+- **Datum/Uhrzeit (mit Zeitzone):** 15.11.2026, 08:41:17 CET (07:41:17 UTC; Supabase-Ledger-Version `20261115074117`).
+- **Umgebung:** Supabase PROD, Projekt `qdugtpzgefpswnnqbusd`.
+- **Ausführungsweg:** Supabase `apply_migration` über die verbundene Supabase-Integration; atomare Migration.
+- **Anlass/Zweck:** Umsetzung von E05 Paket 10: Trainingsdatumsbasierte Gelbkartenchronologie und Sperrzuordnung auf jeden geplanten Spieltag, unabhängig von `game_type`.
+- **Freigabe:** Ausdrücklich erteilt durch den Projektverantwortlichen am 15.11.2026: „Freigabe für Umsetzung erteilt. Bitte Dokumentation aktualisieren.“
+- **Ausführender:** ChatGPT über die verbundene Supabase-Projektintegration im Auftrag des Projektverantwortlichen.
+- **Status:** Erfolgreich; unmittelbare read-only Postflight-Verifikation erfolgreich.
+- **Tatsächlich ausgeführtes SQL / unveränderlicher Verweis:** `supabase/migrations/20261115090000_e05_prod_paket_10_training_date_suspension_chronology.sql`; Branch `develop`; Blob-SHA `bc61c1a380001e2952babd99117b17114a6d5459`. Der vollständige versionierte SQL-Text wurde unverändert an `apply_migration` übergeben.
+- **Supabase-Migrationshistorie:** Version `20261115074117`, Name `e05_prod_paket_10_training_date_suspension_chronology`; Paket 10 ist in PROD registriert.
+- **Betroffene Objekte:** Ausschließlich die fünf vorhandenen Funktionsdefinitionen `award_training_behavior_event(uuid,uuid,text,text)`, `e05_assign_player_suspensions(uuid,uuid,uuid)`, `e05_reconcile_suspensions_after_event_correction(uuid,uuid,text)`, `correct_suspension(uuid,uuid,text)` und `serve_matchday_suspensions(uuid)`. Keine Tabellen, Spalten, fachlichen Daten, Trigger, Policies, RLS-Einstellungen oder Grants wurden als Paketumfang geändert.
+- **Read-only Verifikation der Funktionen:** Alle fünf Funktionsdefinitionen zeigen die erwartete Paket-10-Logik. Definitionlängen: 6.436 / 6.797 / 16.506 / 6.042 / 3.903 Zeichen; identisch mit den zuvor geprüften DEV-Definitionen.
+- **Sicherheit und Berechtigungen:** Alle fünf Funktionen bleiben `SECURITY DEFINER`, Owner `postgres`, fester `search_path = pg_catalog, public, auth`. `authenticated` besitzt EXECUTE nur auf den drei vorgesehenen öffentlichen RPCs; `anon` besitzt dort keine EXECUTE-Rechte. Interne Allocator-/Reconciliation-Helfer bleiben für API-Rollen nicht ausführbar.
+- **RLS:** RLS ist weiterhin auf allen vier Event-/Sperren-Tabellen aktiviert.
+- **Datenbestand nach Migration:** 0 Trainingsereignisse, 0 Sperren, 0 offene Sperren. Keine fachlichen Datensätze durch Paket 10 angelegt oder verändert.
+- **Ergebnis / Fehlermeldung:** Supabase `apply_migration` meldete `success: true`. Kein Fehler und kein Teilstatus.
+- **Rollback/Wiederherstellung:** `supabase/rollback/20261115090000_e05_prod_paket_10_training_date_suspension_chronology_rollback.sql`, Blob-SHA `c61f2a46b8e148638ba71dca8b1fade25594472a`. Nicht ausgeführt; nur nach gesonderter ausdrücklicher Freigabe und erneuter Prüfung späterer Funktionsänderungen.
+- **Gegenstück in der anderen Umgebung:** DEV-Funktionsstand DB-MIG-2026-008 plus DB-MIG-2026-010 war bereits vorhanden und wurde in diesem PROD-Schritt nicht verändert.
+- **Änderungsgrenzen:** Kein Frontend-Index, GitHub `main`, PROD-Frontend-Deployment oder DEV-Projekt verändert. Frontend-Filterung der manuellen Sperrenauswahlliste und DB-MIG-2026-011 bleiben separate Arbeitspakete.
+- **Dossier:** `docs/prod-release/E05_PROD_PAKET_10_TRAININGSDATUM_CHRONOLOGIE_2026-11-15.md`.
