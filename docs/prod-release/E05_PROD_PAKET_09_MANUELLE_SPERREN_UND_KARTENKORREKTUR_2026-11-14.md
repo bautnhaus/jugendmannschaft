@@ -1,11 +1,11 @@
 # E05 PROD Paket 9 – Manuelle Sperren- und Kartenkorrektur
 
-- **Status:** Technisch vorbereitet; PROD-Freigabe steht noch aus.
+- **Status:** Erfolgreich in PROD ausgeführt und nachkontrolliert am 15.11.2026.
 - **Zielumgebung:** Supabase PROD, Projekt qdugtpzgefpswnnqbusd (Jugendmannschaft, eu-west-1, PostgreSQL 17.6.1.166).
 - **Quellbranch:** develop.
 - **Vorgesehene Katalognummer:** DB-MIG-2026-020.
 - **Vorgesehene Migration:** 20261114235000_e05_prod_paket_09_manual_suspension_card_correction.
-- **PROD:** Noch nicht ausgeführt.
+- **PROD:** Erfolgreich ausgeführt; Supabase-Migrationsversion 20261115051236.
 - **DEV:** Unverändert; die drei Paket-9-Migrationen sind seit 08.11.2026 erfolgreich vorhanden.
 
 ## 1. Fachlicher Umfang
@@ -128,12 +128,37 @@ Die DEV-Abnahme dokumentiert ausdrücklich, dass kein Schema-Rollback vorbereite
 
 Für PROD wird daher kein automatischer DROP-Rollback vorgelegt. Nach Nutzung der Korrekturfunktionen können Auditdaten und manuelle Zuordnungen entstanden sein. Ein späterer Rückbau wäre nur nach einer eigenen, datenbewussten Prüfung und gesonderter Freigabe vertretbar. Im Fehlerfall ist ein gezielter Forward-Fix der bevorzugte Weg.
 
-## 9. Freigabestatus
+## 9. PROD-Ausführung und Nachkontrolle (15.11.2026)
 
-- Migration, Testqueries, isoliertes CI und dieses Dossier liegen auf develop.
-- DB-MIG-2026-020 ist die vorgesehene Katalognummer.
-- PROD-Ausführung wurde noch nicht gestartet.
-- DEV, PROD und GitHub main blieben während der Vorbereitung unverändert.
-- DB_MIGRATION_LOG.md wird erst nach tatsächlicher PROD-Ausführung ergänzt.
+Die ausdrückliche PROD-Freigabe wurde erteilt. Die Migration wurde anschließend über Supabase apply_migration ausgeführt; das Werkzeug meldete success=true.
 
-**Benötigt wird jetzt die ausdrückliche Freigabe für E05 PROD Paket 9.**
+Supabase-Migrationshistorie:
+- Version: 20261115051236
+- Name: e05_prod_paket_09_manual_suspension_card_correction
+
+Read-only Nachkontrolle:
+- Beide öffentlichen Korrektur-RPCs vorhanden und SECURITY DEFINER.
+- Fester search_path pg_catalog, public, auth bei allen Paket-9-Funktionen.
+- EXECUTE ausschließlich für authenticated bei den beiden öffentlichen RPCs; keine Ausführung für PUBLIC, anon oder service_role.
+- Interne Helfer und interner Allocator nicht direkt für authenticated, anon oder service_role ausführbar.
+- manual_target_locked ist boolean NOT NULL DEFAULT false.
+- changed_by_snapshot auf beiden Audit-Tabellen vorhanden.
+- RLS auf allen vier Event-/Sperren-Tabellen weiterhin aktiviert.
+- Alle vier bestehenden Append-only-Audit-Trigger vorhanden.
+- Keine direkten INSERT/UPDATE/DELETE/TRUNCATE-Rechte für authenticated auf den vier Event-/Sperren-Tabellen (0 Grants).
+- Allocator bewahrt manuelle Zielzuordnungen und den bisherigen Spielartenfilter; Paket-10-Trainingstaglogik ist nicht enthalten.
+- Korrigierter PERFORM-Spielerzeilenlock ist vorhanden.
+- Datenbestand nach Ausführung: 0 Trainingsereignisse, 0 Event-Auditzeilen, 0 Sperren, 0 Sperren-Auditzeilen, 0 offene Sperren und 0 manuelle Zielzuordnungen. Es wurden keine vorhandenen fachlichen Datensätze verändert.
+
+Die Ausführung ist damit strukturell und berechtigungsseitig erfolgreich verifiziert. Reale fachliche Korrekturfälle konnten in PROD mangels vorhandener Ereignis-/Sperrendaten nicht ausgeführt werden; die Verhaltensabnahme stützt sich weiterhin auf die DEV-Tests und die isolierte PostgreSQL-CI.
+
+Vollständiger Ausführungsnachweis: DB_MIGRATION_LOG.md, DB-MIG-2026-020.
+
+## 10. Freigabestatus
+
+- Migration, Testqueries, isoliertes CI und aktualisiertes Dossier liegen auf develop.
+- DB-MIG-2026-020 ist in DB_MIGRATION_LOG.md als erfolgreich ausgeführte PROD-Migration dokumentiert.
+- PROD-Ausführung und Nachkontrolle sind abgeschlossen.
+- DEV und GitHub main wurden im Rahmen dieses PROD-Releases nicht verändert.
+
+**Paket 9 ist in PROD technisch ausgerollt und strukturell/berechtigungsseitig verifiziert.**
