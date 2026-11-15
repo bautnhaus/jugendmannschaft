@@ -37,8 +37,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-client
-      - name: Prepare isolated Paket-8/Paket-9 PROD baseline
+      - name: Prepare isolated base schema and Paket-9 dependencies
         run: psql -v ON_ERROR_STOP=1 -f docs/prod-release/test-package-10/bootstrap.sql
+      - name: Apply exact Paket-8 PROD migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261114230000_e05_prod_paket_08_early_suspension_reset.sql
+      - name: Apply exact Paket-9 PROD migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261114235000_e05_prod_paket_09_manual_suspension_card_correction.sql
+      - name: Snapshot Paket-9 trigger and policy baseline
+        run: psql -v ON_ERROR_STOP=1 -f docs/prod-release/test-package-10/snapshot-baseline.sql
       - name: Apply exact Paket-10 PROD migration
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261115090000_e05_prod_paket_10_training_date_suspension_chronology.sql
       - name: Assert chronology, all-matchday eligibility, ACL, RLS, triggers and data preservation
