@@ -1,7 +1,7 @@
 # Sichere Superadmin-Vereinsauswahl – DEV-Korrektur
 
 **Datum:** 15.11.2026  
-**Status:** Datenbankkorrektur und Frontend-Anpassung umgesetzt; SQL-Praxistests bestanden. Manueller Browser-/iPhone-Test steht noch aus.  
+**Status:** Datenbankkorrektur, Frontend-Anpassung, SQL-Praxistests und manueller Browser-/iPhone-Test erfolgreich abgeschlossen.  
 **Umgebung:** ausschließlich Supabase DEV / GitHub `develop`. PROD wurde nicht verändert.
 
 ## Ziel und Sicherheitsregel
@@ -95,14 +95,10 @@ Alle SQL-Tests liefen mit simuliertem JWT-Kontext unter der Rolle `authenticated
 - Security Advisor: 53 Hinweise zu SECURITY-DEFINER-Funktionen, darunter die neue Picker-RPC. Diese neue RPC ist bewusst als eng begrenzte Ausnahme vorgesehen: explizite Superadmin-Prüfung, minimale Rückgabefelder, kein EXECUTE für `anon`/PUBLIC. Die übrigen bestehenden Befunde wurden nicht verändert.
 - Ein weiterer Auth-Hinweis betrifft deaktivierten Schutz vor kompromittierten Passwörtern; nicht Teil dieser Korrektur.
 
-## Noch erforderlich
+## Manueller DEV-Praxistest – erfolgreich bestätigt
 
-1. Manueller Test in der tatsächlichen DEV-Webseite mit Superadmin-Login: Vereinsauswahl wird angezeigt.
-2. Vereinskachel öffnen: Kontext wird gesetzt und Vereinsdetails werden geladen.
-3. Zurück zur Vereinsauswahl und erneute Auswahl testen.
-
-Ein manueller Browser-/iPhone-Test wurde durch diese technische SQL- und Quellcodeprüfung nicht ersetzt. Erst nach diesem Test ist die Frontend-Funktion fachlich vollständig abgenommen.
+Der Nutzer hat nach dem Test auf der tatsächlichen DEV-Webseite bestätigt, dass die Vereinsauswahl und das Öffnen des Vereins erwartungsgemäß funktionieren. Damit ist die Frontend-Funktion fachlich abgenommen.
 
 ## PROD-Abgrenzung
 
-Keine Migration, Policy-, Funktions- oder Frontend-Änderung in PROD. Eine spätere Übernahme benötigt einen separaten Release-Abgleich und eine ausdrückliche PROD-Freigabe.
+Die DEV-Korrektur wird mit DB-MIG-2026-026 für PROD ergänzt. Die PROD-Ausführung ist separat dokumentiert und freigabepflichtig.
