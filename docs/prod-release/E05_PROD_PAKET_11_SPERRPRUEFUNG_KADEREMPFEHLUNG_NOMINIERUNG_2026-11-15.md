@@ -1,11 +1,11 @@
 # E05 PROD Paket 11 – Sperrprüfung bei Kaderempfehlung und Nominierung
 
-- **Status:** Technisch vorbereitet; PROD-Freigabe steht aus.
+- **Status:** Erfolgreich in PROD umgesetzt und read-only verifiziert am 15.11.2026.
 - **Ziel:** Supabase PROD, Projekt `qdugtpzgefpswnnqbusd`.
 - **Entwicklungs-/Dokumentationsbranch:** `develop`.
 - **Vorgesehene Katalognummer:** DB-MIG-2026-022.
 - **PROD-Migration:** `20261115100000_e05_prod_paket_11_suspension_aware_recommendation_nomination`.
-- **PROD-Ausführung:** Noch nicht erfolgt.
+- **PROD-Ausführung:** Erfolgreich; Supabase-Ledger-Version `20261115082224`.
 
 ## 1. Abgleich DEV zu PROD
 
@@ -91,6 +91,19 @@ Der Rollback ist nur nach gesonderter Freigabe auszuführen. Er entfernt nicht d
 - DB-MIG-2026-010 ist durch PROD Paket 10 abgedeckt.
 - Die DEV-Änderung 20261113035705 ist bereits funktional durch PROD Paket 6 abgedeckt.
 - Paket-11-Migration und Rollback liegen auf `develop`.
-- Supabase PROD wurde für diese Vorbereitung ausschließlich lesend geprüft; Paket 11 wurde nicht ausgeführt.
+- Supabase PROD: Migration erfolgreich angewendet; Funktionsdefinition, ACLs, Triggerbestand und RLS read-only verifiziert.
 - GitHub `main` und Frontend bleiben unverändert.
-- **Benötigt wird die ausdrückliche PROD-Freigabe für Paket 11.**
+- Die ausdrückliche PROD-Freigabe wurde am 15.11.2026 erteilt und umgesetzt.
+
+## 10. PROD-Ausführung und Postflight
+
+- Supabase `apply_migration`: `success: true`.
+- Ledger: `20261115082224 e05_prod_paket_11_suspension_aware_recommendation_nomination`.
+- `save_matchday_recommendation(uuid,uuid[])` stimmt per MD5 und Länge exakt mit der aktuellen DEV-Definition überein (MD5 `4c038919d1c6470633b1229aa2adff06`, 3.586 Zeichen).
+- Triggerfunktions-ACL entspricht DEV: `authenticated` nein, `anon` nein, `service_role` ja, `PUBLIC` nein.
+- Alle vier bestehenden Trigger auf `matchday_players` sind vorhanden; der Sperrtrigger ist unverändert verbunden.
+- `revoke_suspension_exception` wurde nicht verändert.
+- RLS bleibt auf allen fünf relevanten Tabellen aktiviert.
+- Isolierte PostgreSQL-CI: [Run 43692553123](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43692553123), success.
+- Rollback wurde nicht in PROD ausgeführt; nur in CI isoliert getestet. Eine PROD-Rücknahme benötigt eine gesonderte Freigabe.
+- Projektweite Advisor-Hinweise wurden erfasst; keine Advisor-Bereinigung Bestandteil von Paket 11.
