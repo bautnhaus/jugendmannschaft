@@ -21,6 +21,79 @@ create table auth.users(id uuid, email text);
 
 
 -- Read-only dependency baseline used by the Paket-12 preflight.
+CREATE OR REPLACE FUNCTION public.is_super_admin()
+ RETURNS boolean
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+  SELECT auth.uid() IS NOT NULL
+     AND EXISTS (
+       SELECT 1
+       FROM public.global_user_roles r
+       WHERE r.user_id = auth.uid()
+         AND r.role = 'super_admin'
+     );
+$function$;
+
+CREATE OR REPLACE FUNCTION public.has_selected_team_context(p_team_id uuid)
+ RETURNS boolean
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.user_team_context ctx
+    JOIN public.teams t ON t.id = ctx.team_id
+    WHERE ctx.user_id = auth.uid()
+      AND ctx.team_id = p_team_id
+      AND (
+        EXISTS (
+          SELECT 1
+          FROM public.global_user_roles gur
+          WHERE gur.user_id = auth.uid()
+            AND gur.role = 'super_admin'
+        )
+        OR EXISTS (
+          SELECT 1
+          FROM public.club_members cm
+          JOIN public.club_member_roles cmr
+            ON cmr.user_id = cm.user_id
+          WHERE cm.user_id = auth.uid()
+            AND cm.club_id = t.club_id
+            AND cmr.role = 'club_admin'
+        )
+      )
+  );
+$function$;
+
+CREATE OR REPLACE FUNCTION public.is_club_admin(p_club_id uuid)
+ RETURNS boolean
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+  SELECT auth.uid() IS NOT NULL
+     AND CASE
+       WHEN public.is_super_admin() THEN EXISTS (
+         SELECT 1
+         FROM public.user_club_context ctx
+         WHERE ctx.user_id = auth.uid()
+           AND ctx.club_id = p_club_id
+       )
+       ELSE EXISTS (
+         SELECT 1
+         FROM public.club_members m
+         JOIN public.club_member_roles r
+           ON r.user_id = m.user_id
+         WHERE m.user_id = auth.uid()
+           AND m.club_id = p_club_id
+           AND r.role = 'club_admin'
+       )
+     END;
+$function$;
+
 CREATE OR REPLACE FUNCTION public.admin_add_club_member(p_club_id uuid, p_user_id uuid, p_role text DEFAULT 'member'::text)
  RETURNS void
  LANGUAGE plpgsql
@@ -149,79 +222,6 @@ AS $function$
 
 $function$;
 
-CREATE OR REPLACE FUNCTION public.has_selected_team_context(p_team_id uuid)
- RETURNS boolean
- LANGUAGE sql
- STABLE SECURITY DEFINER
- SET search_path TO 'pg_catalog', 'public'
-AS $function$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.user_team_context ctx
-    JOIN public.teams t ON t.id = ctx.team_id
-    WHERE ctx.user_id = auth.uid()
-      AND ctx.team_id = p_team_id
-      AND (
-        EXISTS (
-          SELECT 1
-          FROM public.global_user_roles gur
-          WHERE gur.user_id = auth.uid()
-            AND gur.role = 'super_admin'
-        )
-        OR EXISTS (
-          SELECT 1
-          FROM public.club_members cm
-          JOIN public.club_member_roles cmr
-            ON cmr.user_id = cm.user_id
-          WHERE cm.user_id = auth.uid()
-            AND cm.club_id = t.club_id
-            AND cmr.role = 'club_admin'
-        )
-      )
-  );
-$function$;
-
-CREATE OR REPLACE FUNCTION public.is_club_admin(p_club_id uuid)
- RETURNS boolean
- LANGUAGE sql
- STABLE SECURITY DEFINER
- SET search_path TO 'pg_catalog', 'public'
-AS $function$
-  SELECT auth.uid() IS NOT NULL
-     AND CASE
-       WHEN public.is_super_admin() THEN EXISTS (
-         SELECT 1
-         FROM public.user_club_context ctx
-         WHERE ctx.user_id = auth.uid()
-           AND ctx.club_id = p_club_id
-       )
-       ELSE EXISTS (
-         SELECT 1
-         FROM public.club_members m
-         JOIN public.club_member_roles r
-           ON r.user_id = m.user_id
-         WHERE m.user_id = auth.uid()
-           AND m.club_id = p_club_id
-           AND r.role = 'club_admin'
-       )
-     END;
-$function$;
-
-CREATE OR REPLACE FUNCTION public.is_super_admin()
- RETURNS boolean
- LANGUAGE sql
- STABLE SECURITY DEFINER
- SET search_path TO 'pg_catalog', 'public'
-AS $function$
-  SELECT auth.uid() IS NOT NULL
-     AND EXISTS (
-       SELECT 1
-       FROM public.global_user_roles r
-       WHERE r.user_id = auth.uid()
-         AND r.role = 'super_admin'
-     );
-$function$;
-
 CREATE OR REPLACE FUNCTION public.is_team_admin(p_user_id uuid, p_team_id uuid)
  RETURNS boolean
  LANGUAGE sql
@@ -237,6 +237,17 @@ AS $function$
          AND r.role = 'admin'
      );
 $function$;
+
+
+
+
+
+
+
+
+
+
+
 CREATE OR REPLACE FUNCTION public.admin_update_member_profile(p_team_id uuid, p_user_id uuid, p_display_name text, p_avatar_url text)
  RETURNS void
  LANGUAGE plpgsql
