@@ -1337,3 +1337,17 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Frontend:** `index.html` in `develop` verwendet für `loadSuperAdminClubs()` jetzt `rpc('get_super_admin_clubs')` statt eines direkten `clubs`-SELECT. Commit `d4b08a39229967177f7cb5c2eabf25783bb1ab9d`; Blob-SHA `799cb91c77af5e390d8ac10326d22f9a150ae963`.
 - **Security Advisor:** 53 Hinweise zu SECURITY-DEFINER-Funktionen für `authenticated`, darunter die neue bewusst eng begrenzte Picker-RPC; ein Hinweis auf deaktivierten Schutz vor kompromittierten Passwörtern. Health Advisor ohne Findings. Die neue RPC ist eine absichtliche, geprüfte Ausnahme: explizite Superadmin-Prüfung, minimale Rückgabefelder, kein EXECUTE für `anon`/PUBLIC.
 - **PROD:** Unverändert. Keine PROD-Migration ausgeführt.
+
+
+### DB-MIG-2026-026 – Sichere Superadmin-Vereinsauswahl-RPC (PROD) – vorbereitet
+
+- **Umgebung:** Supabase PROD – Projekt `qdugtpzgefpswnnqbusd`.
+- **Geplante Ledger-Version:** `20261115170000`; **Migrationsname:** `superadmin_club_picker_rpc_prod`.
+- **Status:** SQL und Rollback auf `develop` versioniert; noch nicht ausgeführt. Ausdrückliche PROD-Freigabe steht aus.
+- **Zweck:** Die aktuelle develop-Frontendversion lädt die neutrale Superadmin-Vereinsauswahl über `get_super_admin_clubs()`, ohne direkten pauschalen SELECT auf `clubs`.
+- **Live-Preflight-Basis:** PROD `is_super_admin()` MD5 `cffa76d7f45b67cb7c7add371df764bd`; kontextgebundene Policy `clubs_select_member_or_superadmin` mit `is_club_member(id) OR is_club_admin(id)`; genau eine clubs-SELECT-Policy. `is_club_admin()` ist bereits kontextgebunden.
+- **Änderungsumfang:** ausschließlich neue RPC mit Rückgabe `id, name, short_name, crest_path`; SECURITY DEFINER, STABLE, fester search_path; EXECUTE nur für authenticated. Keine Änderung bestehender Tabellen, Daten, Funktionen, Policies, Trigger oder Storage-Objekte.
+- **Migration:** `supabase/migrations/20261115170000_superadmin_club_picker_rpc_prod.sql`.
+- **Rollback:** `supabase/rollback/20261115170000_superadmin_club_picker_rpc_prod_rollback.sql`; entfernt ausschließlich die neue RPC.
+- **Dossier:** `docs/prod-release/DB_MIG_2026_026_SUPERADMIN_CLUB_PICKER_PROD_2026-11-15.md`.
+- **Ausführung/Postflight:** nach ausdrücklicher Freigabe zu ergänzen. PROD bleibt bis dahin unverändert.
