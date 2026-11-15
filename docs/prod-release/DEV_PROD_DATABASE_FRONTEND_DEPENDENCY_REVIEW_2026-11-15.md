@@ -99,3 +99,7 @@ Dieser Abschnitt aktualisiert die oben dokumentierte Momentaufnahme. Die zuvor g
 - Die frühere Aussage „PROD bleibt unverändert“ bezieht sich auf den damaligen Stand vor AP03-Härtung und Paket 12 und ist durch die aktuellen PROD-Ledger-Nachweise überholt.
 
 **Release-Fokus:** Keine weitere allgemeine Inventur. Nach Ausführung und Postflight von DB-MIG-2026-026 folgt die Dokumentationsaktualisierung; danach erfolgt das Frontend-Deployment ausschließlich über den bestehenden Workflow „Deploy PROD“. `index.html` und `main` werden hier nicht manuell geändert.
+
+### Abschlussnachtrag – DB-MIG-2026-026 PROD (15.11.2026)
+
+Die letzte DB-Ergänzung wurde nach ausdrücklicher Freigabe erfolgreich ausgeführt. Supabase meldete `success: true`; die Live-Migrationshistorie bestätigt Version `20261115151239`, Name `superadmin_club_picker_rpc_prod`. Die neue RPC ist vorhanden, SECURITY DEFINER, Owner postgres, fester search_path. EXECUTE ist ausschließlich für `authenticated` erlaubt; `anon` und `PUBLIC` sind ausgeschlossen. Die kontextgebundene clubs-SELECT-Policy blieb unverändert. Damit sind die für den aktuellen develop-Frontendstand identifizierten DB-Voraussetzungen in PROD ergänzt. Offen bleibt nur der praktische Superadmin-UI-Test nach dem GitHub-Workflow **Deploy PROD**.
