@@ -6,7 +6,7 @@ do $$ begin
  if not exists(select 1 from pg_roles where rolname='service_role') then create role service_role nologin; end if;
 end $$;
 create schema if not exists auth;
-create or replace function auth.uid() returns uuid language sql stable as $ select null::uuid $;
+create or replace function auth.uid() returns uuid language sql stable as 'select null::uuid';
 
 -- Read-only dependency baseline used by the Paket-12 preflight.
 CREATE OR REPLACE FUNCTION public.admin_add_club_member(p_club_id uuid, p_user_id uuid, p_role text DEFAULT 'member'::text)
