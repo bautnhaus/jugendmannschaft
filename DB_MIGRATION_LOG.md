@@ -1236,3 +1236,28 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Gegenstück in der anderen Umgebung:** DEV-Funktionsstand DB-MIG-2026-008 plus DB-MIG-2026-010 war bereits vorhanden und wurde in diesem PROD-Schritt nicht verändert.
 - **Änderungsgrenzen:** Kein Frontend-Index, GitHub `main`, PROD-Frontend-Deployment oder DEV-Projekt verändert. Frontend-Filterung der manuellen Sperrenauswahlliste und DB-MIG-2026-011 bleiben separate Arbeitspakete.
 - **Dossier:** `docs/prod-release/E05_PROD_PAKET_10_TRAININGSDATUM_CHRONOLOGIE_2026-11-15.md`.
+
+
+### DB-MIG-2026-022 – E05 PROD Paket 11: Sperrprüfung bei Kaderempfehlung und Nominierung – PROD-Ausführung
+
+- **Ausführungsdatensatz:** PROD
+- **Datum:** 15.11.2026
+- **Zeit / Zeitzone:** Supabase-Ledger-Version `20261115082224`. Das Ausführungswerkzeug lieferte keinen separaten lokalen Zeitstempel; die Ledger-Version wird nicht als bestätigte lokale Uhrzeit interpretiert.
+- **Umgebung:** Supabase PROD, Projekt `qdugtpzgefpswnnqbusd`, PostgreSQL 17.
+- **Ausführungsweg:** Supabase `apply_migration` über die verbundene Supabase-Integration; vollständiger SQL-Text aus dem versionierten `develop`-Branch.
+- **Freigabe:** Ausdrücklich erteilt am 15.11.2026 im aktuellen Chat: „Freigabe erteilt und Dokumentation ergänzen“.
+- **Ausführender:** ChatGPT über die verbundene Supabase-Integration im Auftrag des Projektverantwortlichen.
+- **Status:** Erfolgreich; unmittelbare read-only Post-Deployment-Verifikation erfolgreich.
+- **Tatsächlich ausgeführtes SQL / unveränderlicher Verweis:** `supabase/migrations/20261115100000_e05_prod_paket_11_suspension_aware_recommendation_nomination.sql`; Branch `develop`; Blob-SHA `f5d9cba62275a090d5138b12505c6bec62f638cc`. Der vollständige, unveränderte Dateiinhalt wurde an `apply_migration` übergeben.
+- **Supabase-Migrationshistorie:** Version `20261115082224`, Name `e05_prod_paket_11_suspension_aware_recommendation_nomination`. Der Eintrag ist in der aktuellen PROD-Migrationsliste vorhanden.
+- **Betroffene Objekte:** `public.save_matchday_recommendation(uuid,uuid[])` wurde durch die aktuelle live aus DEV ausgelesene Definition ersetzt. Auf `public.prevent_suspended_matchday_nomination()` wurden die direkten EXECUTE-Rechte für PUBLIC, anon und authenticated entzogen; service_role behält EXECUTE. Keine Tabellen, Spalten, fachlichen Datensätze, Trigger, Policies oder RLS-Einstellungen wurden durch Paket 11 verändert.
+- **Fachliches Ergebnis:** Eine offene Sperre für genau den Zielspieltag blockiert jetzt auch das Speichern einer Kaderempfehlung. Eine aktive, nicht widerrufene Ausnahme für denselben Spieler und Spieltag erlaubt die Empfehlung. Die direkte Nominierung wird weiterhin durch den vorhandenen Trigger geprüft. Sperren für andere Spieltage blockieren nicht.
+- **Read-only Funktionsverifikation:** `save_matchday_recommendation` in PROD: MD5 `4c038919d1c6470633b1229aa2adff06`, Länge 3.586 Zeichen – identisch zur aktuellen DEV-Definition. Die vorhandene Triggerfunktion bleibt SECURITY INVOKER mit festem search_path; EXECUTE: authenticated nein, anon nein, service_role ja, PUBLIC nein. `revoke_suspension_exception` blieb unverändert.
+- **Triggerverifikation:** Alle vier bestehenden Trigger auf `matchday_players` sind vorhanden. Insbesondere `matchday_players_prevent_suspended_nomination` ist weiterhin mit `prevent_suspended_matchday_nomination()` verbunden. Kein Trigger wurde neu angelegt oder entfernt.
+- **RLS:** RLS weiterhin aktiviert auf `training_suspensions`, `training_suspension_exceptions`, `matchday_players`, `matchday_recommendation_runs` und `matchday_recommendation_players`.
+- **Ergebnis / Fehlermeldung:** Supabase `apply_migration` meldete `success: true`. Keine Fehlermeldung.
+- **CI:** Isolierte PostgreSQL-17.6-CI erfolgreich: [GitHub Actions Run 43692553123](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43692553123). Migration, Sperr-/Ausnahme-Verhalten, ACLs, Triggererhalt und guarded Rollback wurden erfolgreich geprüft. Die CI ersetzt keinen authentifizierten Supabase-End-to-End-Test.
+- **Advisor-Nachkontrolle:** Security Advisor meldet weiterhin projektweite Hinweise, darunter SECURITY-DEFINER-Funktionen und multiple permissive RLS-Policies sowie die mutable-search_path-Warnung für `public.set_updated_at`. Diese projektweiten Hinweise wurden nicht durch Paket 11 eingeführt oder im Rahmen dieses Pakets verändert; keine globale Advisor-Bereinigung Bestandteil der Freigabe.
+- **Rollback/Wiederherstellung:** Guarded Rollback `supabase/rollback/20261115100000_e05_prod_paket_11_suspension_aware_recommendation_nomination_rollback.sql`, Blob-SHA `dad4b9c9b3c0fc9664dc719c11be36aa4af299d9`. Nicht in PROD ausgeführt; CI hat ihn ausschließlich in der isolierten Testdatenbank geprüft. Eine PROD-Ausführung erfordert gesonderte Freigabe.
+- **Änderungsgrenzen:** Kein DEV-Projekt, GitHub `main`, Frontend-Index oder Frontend-Deployment verändert. Keine fachlichen Daten durch die Migration angelegt oder geändert.
+- **Dossier:** `docs/prod-release/E05_PROD_PAKET_11_SPERRPRUEFUNG_KADEREMPFEHLUNG_NOMINIERUNG_2026-11-15.md`.
