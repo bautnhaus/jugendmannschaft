@@ -55,6 +55,10 @@ Die sechs Funktionen sind in beiden Umgebungen vorhanden, unterscheiden sich abe
 - Keine allgemeinen AP02/AP03-Rollen-/Policy-Abweichungen.
 - Keine Frontend-Datei, GitHub `main` oder PROD-Frontend-Deployment.
 
+### Geschützte Funktionsabhängigkeiten
+
+Die sechs aktualisierten Funktionen verwenden bestehende Rollen-/Kontext-Helfer. Diese werden durch Paket 12 **nicht** verändert. Der Preflight und Postflight prüfen ihre PROD-Definitionen zusätzlich gegen den vorab ausgelesenen Stand: `admin_add_club_member`, `can_manage_club_context`, `has_selected_team_context`, `is_club_admin`, `is_super_admin` und `is_team_admin`. Bei einer Abweichung bricht die Migration fail-closed ab. Die Helferdefinitionen in DEV und PROD unterscheiden sich teilweise nur in Formatierung; ihre fachliche Logik wurde separat verglichen.
+
 ## 5. Sicherheits- und Ausführungsdesign
 
 - Alle sechs Funktionen sind in DEV und PROD `SECURITY DEFINER`, Owner `postgres`, mit festem `search_path = pg_catalog, public, auth`.
