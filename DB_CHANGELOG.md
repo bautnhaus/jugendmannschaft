@@ -857,7 +857,7 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Vollständiger Nachweis: `DB_MIGRATION_LOG.md` (DB-MIG-2026-019) und Paket-8-Dossier Abschnitt 10.
 
 
-### E05 PROD Paket 9 – vorbereitet, PROD-Freigabe ausstehend (14.11.2026)
+### E05 PROD Paket 9 – erfolgreich in PROD ausgeführt (15.11.2026)
 
 - Zweck: manuelle Umordnung offener Sperren sowie Stornierung/Wiederherstellung fehlerhafter gelber und roter Kartenereignisse.
 - DEV-Quelle und Korrekturen: drei erfolgreich ausgeführte DEV-Migrationen 20261108212745, 20261108213035, 20261108213211; DEV-Abnahmedokumentation vorhanden.
@@ -866,5 +866,5 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Paket 10 / DB-MIG-2026-010 wird nicht vorgezogen: Spielartenfilterung bleibt in Paket 9 bestehen; Paket-10-Trainingstagchronologie bleibt getrennt.
 - Isolierte PostgreSQL-17.6-CI: Run 43648820383, success. Ein vorheriger Testlauf scheiterte nur an einer Groß-/Kleinschreibung in einer Assertion; Test korrigiert, finaler Lauf vollständig erfolgreich.
 - Kein automatischer Rollback vorbereitet, entsprechend der DEV-Abnahme; Rückbau nur nach gesonderter datenbewusster Prüfung.
-- PROD noch nicht ausgeführt; ausdrückliche Freigabe steht aus. DB_MIGRATION_LOG.md wird erst nach Ausführung ergänzt.
+- PROD-Ausführung erfolgreich: Supabase-Migrationsversion 20261115051236, Name e05_prod_paket_09_manual_suspension_card_correction. Read-only Nachkontrolle vollständig erfolgreich; Details und Ausführungsnachweis stehen in DB_MIGRATION_LOG.md (DB-MIG-2026-020) sowie im Paket-9-Dossier Abschnitt 10.
 - Vollständiges Dossier: docs/prod-release/E05_PROD_PAKET_09_MANUELLE_SPERREN_UND_KARTENKORREKTUR_2026-11-14.md.
