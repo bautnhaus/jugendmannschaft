@@ -868,3 +868,19 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Kein automatischer Rollback vorbereitet, entsprechend der DEV-Abnahme; Rückbau nur nach gesonderter datenbewusster Prüfung.
 - PROD-Ausführung erfolgreich: Supabase-Migrationsversion 20261115051236, Name e05_prod_paket_09_manual_suspension_card_correction. Read-only Nachkontrolle vollständig erfolgreich; Details und Ausführungsnachweis stehen in DB_MIGRATION_LOG.md (DB-MIG-2026-020) sowie im Paket-9-Dossier Abschnitt 10.
 - Vollständiges Dossier: docs/prod-release/E05_PROD_PAKET_09_MANUELLE_SPERREN_UND_KARTENKORREKTUR_2026-11-14.md.
+
+
+### E05 PROD Paket 10 – vorbereitet, PROD-Freigabe ausstehend (15.11.2026)
+
+- **Vorgesehene Katalognummer:** DB-MIG-2026-021.
+- **Scope:** finale DEV-Funktionsstände aus DB-MIG-2026-008 (Trainingsdatum-Chronologie) und DB-MIG-2026-010 (alle geplanten Spieltage, unabhängig von game_type) werden als eine atomare PROD-Migration zusammengeführt.
+- **Nicht enthalten:** DB-MIG-2026-009 read-only Spielarten-RPCs (im aktuellen Frontend nicht verwendet und für die finale All-Matchday-Regel nicht erforderlich); DB-MIG-2026-011 Nominierungsprüfung bleibt separates Paket.
+- **Migration:** supabase/migrations/20261115090000_e05_prod_paket_10_training_date_suspension_chronology.sql; Blob-SHA bc61c1a380001e2952babd99117b17114a6d5459.
+- **Rollback:** supabase/rollback/20261115090000_e05_prod_paket_10_training_date_suspension_chronology_rollback.sql; Blob-SHA c61f2a46b8e148638ba71dca8b1fade25594472a. Stellt die vor Paket 10 live aus PROD ausgelesenen fünf Funktionsdefinitionen wieder her; keine Daten-/Schemaänderung.
+- **PROD-Preflight:** Pakete 1–9 vorhanden; die fünf Funktionen stehen noch auf Paket-8-/Paket-9-Verhalten; 0 Events, 0 Sperren und 0 offene Sperren. Keine PROD-Änderung während der Vorbereitung.
+- **DEV-Diagnose:** 23 Ereignisse, 7 offene Sperren, 3 manuell geschützte Zuordnungen; 0 offene Sperren ohne Ziel; 0 Ziel-/Chronologieabweichungen.
+- **CI:** GitHub Actions Run 43681502047, PostgreSQL 17.6, success. Exakte Paket-8-, Paket-9- und Paket-10-Migrationen angewendet; Assertions erfolgreich; guarded Rollback und Rollback-Assertions ebenfalls erfolgreich. Frühere CI-Fehler waren Testhüllenfehler und wurden korrigiert.
+- **Änderungsumfang:** fünf vorhandene Funktionsdefinitionen; keine Tabellen, Spalten, Daten, Trigger, RLS-Policies oder Grants werden geändert.
+- **Frontend:** manuelle Korrekturauswahlliste muss später noch nach dem Auslöser-Trainingsdatum filtern. Frontend bleibt in diesem DB-Paket unverändert.
+- **PROD:** noch nicht ausgeführt; gesonderte ausdrückliche Freigabe erforderlich. DB_MIGRATION_LOG.md wird erst nach tatsächlicher PROD-Ausführung ergänzt.
+- **Dossier:** docs/prod-release/E05_PROD_PAKET_10_TRAININGSDATUM_CHRONOLOGIE_2026-11-15.md.
