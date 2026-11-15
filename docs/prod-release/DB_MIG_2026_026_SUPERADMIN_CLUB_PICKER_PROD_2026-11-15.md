@@ -2,7 +2,7 @@
 
 **Datum:** 15.11.2026  
 **Umgebung:** Supabase PROD – Projekt `qdugtpzgefpswnnqbusd`  
-**Status:** SQL vorbereitet und in `develop` versioniert; PROD-Ausführung wartet auf ausdrückliche Freigabe.  
+**Status:** in PROD erfolgreich ausgeführt und read-only verifiziert (15.11.2026).  
 **Frontend:** unverändert; kein Commit auf `main`, kein Deploy.
 
 ## Ziel
@@ -41,12 +41,15 @@ Der Rollback entfernt ausschließlich die neu hinzugefügte RPC und verweigert d
 
 ## Ausführung und Abnahme
 
-Noch nicht ausgeführt. Nach separater ausdrücklicher Freigabe:
+**Erfolgreich ausgeführt und verifiziert:**
 
-1. Migration in Supabase PROD ausführen.
-2. Ledger-Version und Postflight-Ergebnis kontrollieren.
-3. Read-only prüfen: Funktion vorhanden, korrekte Rückgabespalten, SECURITY DEFINER, Owner, search_path, EXECUTE nur für authenticated.
-4. Anschließend nach dem PROD-Deploy mit Superadmin anmelden, Vereinskachel laden, Verein öffnen und zurück zur Auswahl navigieren.
+1. Supabase meldete `success: true`.
+2. Die PROD-Migrationshistorie enthält `20261115151239 – superadmin_club_picker_rpc_prod`.
+3. Die Funktion ist vorhanden und liefert `TABLE(id uuid, name text, short_name text, crest_path text)`.
+4. SECURITY DEFINER = true; Owner = `postgres`; `search_path=pg_catalog, public`.
+5. EXECUTE: `authenticated` = ja; `anon` = nein; `PUBLIC` = nein.
+6. Die bestehende `clubs_select_member_or_superadmin`-Policy blieb unverändert kontextgebunden: `is_club_member(id) OR is_club_admin(id)`; genau eine SELECT-Policy.
+7. Ein Verein ist in PROD vorhanden. Der Funktionsaufruf mit echten Benutzerrechten wird nach dem Frontend-Deploy im Superadmin-UI praktisch geprüft.
 
 Die fachliche UI-Abnahme erfolgt erst nach dem späteren GitHub-Workflow **Deploy PROD**.
 
