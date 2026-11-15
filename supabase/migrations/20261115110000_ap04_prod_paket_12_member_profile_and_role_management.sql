@@ -79,6 +79,24 @@ begin
      or has_function_privilege('public','public.admin_set_club_member_role(uuid,uuid,text)'::regprocedure,'EXECUTE') then
     raise exception 'Paket 12 Preflight: EXECUTE-ACL von admin_set_club_member_role unerwartet';
   end if;
+  if md5(pg_get_functiondef('public.admin_add_club_member(uuid,uuid,text)'::regprocedure)) <> 'd8c14498d23737d416ed7be83259dd02' then
+    raise exception 'Paket 12: geschützte Abhängigkeit admin_add_club_member hat sich verändert; Abgleich erforderlich';
+  end if;
+  if md5(pg_get_functiondef('public.can_manage_club_context(uuid)'::regprocedure)) <> '2b114e55a680a0337225bbfbef8f9f7c' then
+    raise exception 'Paket 12: geschützte Abhängigkeit can_manage_club_context hat sich verändert; Abgleich erforderlich';
+  end if;
+  if md5(pg_get_functiondef('public.has_selected_team_context(uuid)'::regprocedure)) <> 'e57fcd33cd13149849188c8159220dd6' then
+    raise exception 'Paket 12: geschützte Abhängigkeit has_selected_team_context hat sich verändert; Abgleich erforderlich';
+  end if;
+  if md5(pg_get_functiondef('public.is_club_admin(uuid)'::regprocedure)) <> '420f91d5828a8ed393edc0899f3dc7d5' then
+    raise exception 'Paket 12: geschützte Abhängigkeit is_club_admin hat sich verändert; Abgleich erforderlich';
+  end if;
+  if md5(pg_get_functiondef('public.is_super_admin()'::regprocedure)) <> 'cffa76d7f45b67cb7c7add371df764bd' then
+    raise exception 'Paket 12: geschützte Abhängigkeit is_super_admin hat sich verändert; Abgleich erforderlich';
+  end if;
+  if md5(pg_get_functiondef('public.is_team_admin(uuid,uuid)'::regprocedure)) <> '2e1c048da04925d7d85f33bae208376b' then
+    raise exception 'Paket 12: geschützte Abhängigkeit is_team_admin hat sich verändert; Abgleich erforderlich';
+  end if;
 end;
 $preflight$;
 
@@ -404,6 +422,24 @@ begin
      or has_function_privilege('anon','public.admin_set_club_member_role(uuid,uuid,text)'::regprocedure,'EXECUTE')
      or has_function_privilege('public','public.admin_set_club_member_role(uuid,uuid,text)'::regprocedure,'EXECUTE') then
     raise exception 'Paket 12 Postflight: EXECUTE-ACL von admin_set_club_member_role unerwartet';
+  end if;
+  if md5(pg_get_functiondef('public.admin_add_club_member(uuid,uuid,text)'::regprocedure)) <> 'd8c14498d23737d416ed7be83259dd02' then
+    raise exception 'Paket 12: geschützte Abhängigkeit admin_add_club_member hat sich verändert; Abgleich erforderlich';
+  end if;
+  if md5(pg_get_functiondef('public.can_manage_club_context(uuid)'::regprocedure)) <> '2b114e55a680a0337225bbfbef8f9f7c' then
+    raise exception 'Paket 12: geschützte Abhängigkeit can_manage_club_context hat sich verändert; Abgleich erforderlich';
+  end if;
+  if md5(pg_get_functiondef('public.has_selected_team_context(uuid)'::regprocedure)) <> 'e57fcd33cd13149849188c8159220dd6' then
+    raise exception 'Paket 12: geschützte Abhängigkeit has_selected_team_context hat sich verändert; Abgleich erforderlich';
+  end if;
+  if md5(pg_get_functiondef('public.is_club_admin(uuid)'::regprocedure)) <> '420f91d5828a8ed393edc0899f3dc7d5' then
+    raise exception 'Paket 12: geschützte Abhängigkeit is_club_admin hat sich verändert; Abgleich erforderlich';
+  end if;
+  if md5(pg_get_functiondef('public.is_super_admin()'::regprocedure)) <> 'cffa76d7f45b67cb7c7add371df764bd' then
+    raise exception 'Paket 12: geschützte Abhängigkeit is_super_admin hat sich verändert; Abgleich erforderlich';
+  end if;
+  if md5(pg_get_functiondef('public.is_team_admin(uuid,uuid)'::regprocedure)) <> '2e1c048da04925d7d85f33bae208376b' then
+    raise exception 'Paket 12: geschützte Abhängigkeit is_team_admin hat sich verändert; Abgleich erforderlich';
   end if;
 end;
 $postflight$;
