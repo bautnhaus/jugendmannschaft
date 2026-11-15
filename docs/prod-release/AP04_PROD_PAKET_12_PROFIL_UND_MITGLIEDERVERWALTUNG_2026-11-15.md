@@ -57,7 +57,9 @@ Die sechs Funktionen sind in beiden Umgebungen vorhanden, unterscheiden sich abe
 
 ### Geschützte Funktionsabhängigkeiten
 
-Die sechs aktualisierten Funktionen verwenden bestehende Rollen-/Kontext-Helfer. Diese werden durch Paket 12 **nicht** verändert. Der Preflight und Postflight prüfen ihre PROD-Definitionen zusätzlich gegen den vorab ausgelesenen Stand: `admin_add_club_member`, `can_manage_club_context`, `has_selected_team_context`, `is_club_admin`, `is_super_admin` und `is_team_admin`. Bei einer Abweichung bricht die Migration fail-closed ab. Die Helferdefinitionen in DEV und PROD unterscheiden sich teilweise nur in Formatierung; ihre fachliche Logik wurde separat verglichen.
+Die sechs aktualisierten Funktionen verwenden bestehende Rollen-/Kontext-Helfer. Diese werden durch Paket 12 **nicht** verändert. Der Preflight und Postflight prüfen ihre PROD-Definitionen zusätzlich gegen den vorab ausgelesenen Stand: `admin_add_club_member`, `can_manage_club_context`, `has_selected_team_context`, `is_club_admin`, `is_super_admin` und `is_team_admin`. Bei einer Abweichung bricht die Migration fail-closed ab.
+
+**Wichtige Sicherheitsabweichung, bewusst nicht übernommen:** `is_club_admin(uuid)` unterscheidet sich fachlich. Die aktuelle PROD-Version begrenzt Superadmins auf den ausdrücklich ausgewählten Vereinskontext. Die aktuelle DEV-Version liefert für Superadmins bereits ohne diesen Kontext `true`. Das widerspricht der verbindlichen Projektregel „Superadmin neutral; Zugriff nur im ausdrücklich ausgewählten Vereins-/Teamkontext“. Paket 12 bewahrt daher die restriktivere PROD-Version und aktualisiert diese Hilfsfunktion nicht. Auch `admin_add_club_member(uuid,uuid,text)` wird nicht ersetzt. Der in Paket 12 aktualisierte Pfad `admin_add_club_member_by_email` prüft vor dem Aufruf zusätzlich `can_manage_club_context(p_club_id)`. Die direkte DEV-RPC `admin_add_club_member` ist als separates DEV-Sicherheitsthema zu korrigieren bzw. zu testen, nicht stillschweigend nach PROD zu übertragen.
 
 ## 5. Sicherheits- und Ausführungsdesign
 
