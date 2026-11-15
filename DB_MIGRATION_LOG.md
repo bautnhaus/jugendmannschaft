@@ -1342,12 +1342,14 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 ### DB-MIG-2026-026 – Sichere Superadmin-Vereinsauswahl-RPC (PROD) – vorbereitet
 
 - **Umgebung:** Supabase PROD – Projekt `qdugtpzgefpswnnqbusd`.
-- **Geplante Ledger-Version:** `20261115170000`; **Migrationsname:** `superadmin_club_picker_rpc_prod`.
-- **Status:** SQL und Rollback auf `develop` versioniert; noch nicht ausgeführt. Ausdrückliche PROD-Freigabe steht aus.
+- **Tatsächliche Ledger-Version:** `20261115151239`; **Migrationsname:** `superadmin_club_picker_rpc_prod` (vom Supabase-Migrationsdienst vergeben).
+- **Status:** erfolgreich in PROD ausgeführt und read-only verifiziert am 15.11.2026.
 - **Zweck:** Die aktuelle develop-Frontendversion lädt die neutrale Superadmin-Vereinsauswahl über `get_super_admin_clubs()`, ohne direkten pauschalen SELECT auf `clubs`.
 - **Live-Preflight-Basis:** PROD `is_super_admin()` MD5 `cffa76d7f45b67cb7c7add371df764bd`; kontextgebundene Policy `clubs_select_member_or_superadmin` mit `is_club_member(id) OR is_club_admin(id)`; genau eine clubs-SELECT-Policy. `is_club_admin()` ist bereits kontextgebunden.
 - **Änderungsumfang:** ausschließlich neue RPC mit Rückgabe `id, name, short_name, crest_path`; SECURITY DEFINER, STABLE, fester search_path; EXECUTE nur für authenticated. Keine Änderung bestehender Tabellen, Daten, Funktionen, Policies, Trigger oder Storage-Objekte.
 - **Migration:** `supabase/migrations/20261115170000_superadmin_club_picker_rpc_prod.sql`.
 - **Rollback:** `supabase/rollback/20261115170000_superadmin_club_picker_rpc_prod_rollback.sql`; entfernt ausschließlich die neue RPC.
 - **Dossier:** `docs/prod-release/DB_MIG_2026_026_SUPERADMIN_CLUB_PICKER_PROD_2026-11-15.md`.
-- **Ausführung/Postflight:** nach ausdrücklicher Freigabe zu ergänzen. PROD bleibt bis dahin unverändert.
+- **Ausführung:** Supabase meldete `success: true`. Live-Ledger listet `20261115151239 superadmin_club_picker_rpc_prod`.
+- **Postflight:** Funktion vorhanden; Ergebnis `TABLE(id uuid, name text, short_name text, crest_path text)`; SECURITY DEFINER true; Owner `postgres`; `search_path=pg_catalog, public`; EXECUTE authenticated ja, anon nein, PUBLIC nein. Bestehende clubs-SELECT-Policy unverändert kontextgebunden (`is_club_member(id) OR is_club_admin(id)`), genau eine SELECT-Policy.
+- **Scope:** ausschließlich neue RPC; keine Tabellen-, Daten-, bestehenden Funktions-, RLS-, Trigger- oder Storage-Änderungen. Der UI-End-to-End-Test folgt nach Deploy PROD.
