@@ -153,8 +153,6 @@ Die Frontend-Auswahlliste für manuelle Sperrenkorrektur soll weiterhin separat 
 
 Rollback ist **kein automatischer Fehlerpfad**. Er benötigt eine neue ausdrückliche Freigabe und darf nur ausgeführt werden, wenn seit Paket 10 keine spätere Migration dieselben fünf Funktionen verändert hat.
 
-Rollback ist **kein automatischer Fehlerpfad**. Er benötigt eine neue ausdrückliche Freigabe und darf nur ausgeführt werden, wenn seit Paket 10 keine spätere Migration dieselben fünf Funktionen verändert hat.
-
 ## 11. Umsetzungsstatus
 
 - Migration, funktionsbezogener Rollback, Read-only-Testqueries, CI-Testfixture und dieses Dossier liegen auf develop.
