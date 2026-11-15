@@ -1339,7 +1339,7 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **PROD:** Unverändert. Keine PROD-Migration ausgeführt.
 
 
-### DB-MIG-2026-026 – Sichere Superadmin-Vereinsauswahl-RPC (PROD) – vorbereitet
+### DB-MIG-2026-026 – Sichere Superadmin-Vereinsauswahl-RPC (PROD) – ausgeführt
 
 - **Umgebung:** Supabase PROD – Projekt `qdugtpzgefpswnnqbusd`.
 - **Tatsächliche Ledger-Version:** `20261115151239`; **Migrationsname:** `superadmin_club_picker_rpc_prod` (vom Supabase-Migrationsdienst vergeben).
