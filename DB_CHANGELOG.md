@@ -920,7 +920,7 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - PROD nicht verändert.
 
 
-## 15.11.2026 – Vorbereitung DB-MIG-2026-026 (PROD)
+## 15.11.2026 – DB-MIG-2026-026 (PROD) – ausgeführt
 
 Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorbereitet: `public.get_super_admin_clubs()`. Der Live-PROD-Abgleich bestätigte, dass die `clubs`-SELECT-Policy und `is_club_admin()` bereits kontextgebunden sind; AP03 PROD-Härtung ist abgeschlossen. Es wird daher keine bestehende RLS-Regel erneut geändert.
 
