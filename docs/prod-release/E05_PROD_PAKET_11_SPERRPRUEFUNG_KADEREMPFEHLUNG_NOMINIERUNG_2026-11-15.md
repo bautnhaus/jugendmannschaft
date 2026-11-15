@@ -76,7 +76,15 @@ Die isolierte PostgreSQL-17-CI prüft:
 
 Der Rollback ist nur nach gesonderter Freigabe auszuführen. Er entfernt nicht den vorhandenen Trigger, sondern stellt den Zustand vor Paket 11 wieder her; damit entfällt die Sperrenprüfung in der Empfehlungs-RPC und die alte direkte Triggerfunktions-EXECUTE-Freigabe wird wiederhergestellt.
 
-## 7. Freigabestatus
+
+## 8. Isolierte PostgreSQL-CI
+
+- **Workflow:** `.github/workflows/e05-prod-package-11-ci.yml`
+- **Ergebnis:** [GitHub Actions Run 43692553123](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43692553123) – **success**, PostgreSQL 17.6.
+- Erfolgreich durchlaufen: isolierte Paket-6-PROD-Baseline, exakte Paket-11-Migration, ACL-/Trigger-/Logik-Assertions, Negativtests für gesperrte Empfehlung und direkte Nominierung, Positivtests mit aktiver Ausnahme, erneute Sperre nach Widerruf, anderer Spieltag bleibt unberührt, guarded Rollback und Rollback-Assertions.
+- **Testgrenze:** Isolierter PostgreSQL-Test; keine authentifizierten Supabase-Nutzersessions und keine Änderungen an DEV oder PROD.
+
+## 9. Freigabestatus
 
 - DEV-Live-Stand read-only geprüft; DB-MIG-2026-011 ist in DEV registriert und die Tests sind laut Projektstand durchgeführt.
 - DB-MIG-2026-009 wird aufgrund der späteren Fachentscheidung nicht übertragen.
