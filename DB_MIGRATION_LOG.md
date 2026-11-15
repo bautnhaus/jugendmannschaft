@@ -1307,3 +1307,33 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Rollback:** `supabase/rollback/20261115140000_ap03_prod_set_updated_at_and_team_context_hardening_rollback.sql`, Blob-SHA `04038691bf6ff4c96ca8f0c6d7d6415c2275fd83`. Nicht ausgeführt.
 - **Migration:** `supabase/migrations/20261115140000_ap03_prod_set_updated_at_and_team_context_hardening.sql`, Blob-SHA `e70c46db6f7c60f5bc16cc9a490e72e1a1e8b779`.
 - **Dossier:** `docs/prod-release/AP03_PROD_SET_UPDATED_AT_TEAM_CONTEXT_HARDENING_2026-11-15.md`.
+
+
+### DB-MIG-2026-024 – Sichere Superadmin-Vereinsauswahl-RPC (DEV)
+
+- **Umgebung:** Supabase DEV – Projekt `pzazqvvoruqnqhcorbwx`.
+- **Supabase-Ledger-Version:** `20261115135639`.
+- **Migrationsname:** `superadmin_club_picker_rpc_dev`.
+- **Zweck:** Neutralen Superadmins die Vereinsauswahl ermöglichen, ohne direkten pauschalen Tabellenzugriff zu benötigen.
+- **Änderung:** Neue Funktion `public.get_super_admin_clubs()`, Rückgabe ausschließlich `id, name, short_name, crest_path`. SECURITY DEFINER mit festem `search_path=pg_catalog, public`; explizite Prüfung `auth.uid() IS NOT NULL AND public.is_super_admin()`. EXECUTE nur für `authenticated`; PUBLIC und `anon` entzogen.
+- **Ergebnis:** Supabase meldete `success: true`; Migration im DEV-Ledger nachgewiesen.
+- **Tests:** Authentifizierter Superadmin ohne Vereinsmitgliedschaft und ohne ausgewählten Kontext: RPC liefert 1 Verein. Normales authentifiziertes Konto: RPC liefert 0 Vereine. Anonymer Aufruf: durch fehlendes EXECUTE abgewiesen. Tests liefen in Transaktionen; temporäre Testdaten wurden zurückgerollt.
+- **Migration:** `supabase/migrations/20261115160000_superadmin_club_picker_rpc_dev.sql`, Blob-SHA `e0ef73939c66bef6d5c0b03118193a541797963e`.
+- **Rollback:** `supabase/rollback/20261115160000_superadmin_club_picker_rpc_dev_rollback.sql`, Blob-SHA `7f706a6356614d30926b6c1d8f5989430d042bea`. Nicht ausgeführt.
+
+### DB-MIG-2026-025 – Direkten Vereins-SELECT an Mitgliedschaft/Kontext binden (DEV)
+
+- **Umgebung:** Supabase DEV – Projekt `pzazqvvoruqnqhcorbwx`.
+- **Supabase-Ledger-Version:** `20261115135825`.
+- **Migrationsname:** `superadmin_club_picker_rls_context_dev`.
+- **Zweck:** Pauschalen Superadmin-Bypass aus der direkten SELECT-Policy auf `public.clubs` entfernen. Die neutrale Vereinsauswahl erfolgt ausschließlich über DB-MIG-2026-024.
+- **Änderung:** Policy `clubs_select_member_or_superadmin` ersetzt durch `is_club_member(id) OR is_club_admin(id)`. Damit bleibt direkter Zugriff für Vereinsmitglieder und für den ausdrücklich ausgewählten Vereinskontext bestehen.
+- **Abhängigkeiten:** Vorherige Definitionen von `is_club_member(uuid)` und `is_club_admin(uuid)` per Hash geprüft; beide Funktionen bleiben SECURITY DEFINER mit festem search_path.
+- **Ergebnis:** Supabase meldete `success: true`; Policy in DEV entspricht dem kontextgebundenen PROD-Prinzip.
+- **Tests:** Neutral simulierter Superadmin ohne Mitgliedschaft/Kontext: direkter SELECT auf `clubs` liefert 0 Zeilen, Picker-RPC liefert 1 Verein. Nach `select_club_context`: direkter SELECT liefert 1 Zeile. Alle temporären Mitgliedschafts-/Kontextänderungen erfolgten innerhalb einer zurückgerollten Transaktion; keine Testdaten blieben bestehen.
+- **Migration:** `supabase/migrations/20261115161000_superadmin_club_picker_rls_context_dev.sql`, Blob-SHA `17d2bc428c8f71d1dc983e1edeaa0827dd4ff1e4`.
+- **Rollback:** `supabase/rollback/20261115161000_superadmin_club_picker_rls_context_dev_rollback.sql`, Blob-SHA `c16183bd9421d3cb38779a2382d4931b2a08d210`. Nicht ausgeführt; der Rollback stellt den pauschalen Bypass wieder her und ist nur als DEV-Notfallwiederherstellung gedacht.
+
+- **Frontend:** `index.html` in `develop` verwendet für `loadSuperAdminClubs()` jetzt `rpc('get_super_admin_clubs')` statt eines direkten `clubs`-SELECT. Commit `d4b08a39229967177f7cb5c2eabf25783bb1ab9d`; Blob-SHA `799cb91c77af5e390d8ac10326d22f9a150ae963`.
+- **Security Advisor:** 53 Hinweise zu SECURITY-DEFINER-Funktionen für `authenticated`, darunter die neue bewusst eng begrenzte Picker-RPC; ein Hinweis auf deaktivierten Schutz vor kompromittierten Passwörtern. Health Advisor ohne Findings. Die neue RPC ist eine absichtliche, geprüfte Ausnahme: explizite Superadmin-Prüfung, minimale Rückgabefelder, kein EXECUTE für `anon`/PUBLIC.
+- **PROD:** Unverändert. Keine PROD-Migration ausgeführt.
