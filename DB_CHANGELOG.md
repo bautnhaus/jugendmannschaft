@@ -927,5 +927,14 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 - Migration: `supabase/migrations/20261115170000_superadmin_club_picker_rpc_prod.sql`
 - Rollback: `supabase/rollback/20261115170000_superadmin_club_picker_rpc_prod_rollback.sql`
 - Dossier: `docs/prod-release/DB_MIG_2026_026_SUPERADMIN_CLUB_PICKER_PROD_2026-11-15.md`
-- Status: vorbereitet auf develop, PROD-Ausführung noch nicht freigegeben/ausgeführt.
+- Status: erfolgreich in PROD ausgeführt am 15.11.2026; Ledger-Version `20261115151239`.
 - Frontend/`index.html` und `main` unverändert.
+
+### DB-MIG-2026-026 – PROD-Ausführung abgeschlossen (15.11.2026)
+
+- Supabase meldete `success: true`; Live-Migrationshistorie bestätigt `20261115151239 – superadmin_club_picker_rpc_prod`.
+- Read-only Postflight: RPC vorhanden; Rückgabe `id, name, short_name, crest_path`; SECURITY DEFINER, Owner postgres, fester search_path.
+- EXECUTE-Rechte: authenticated ja, anon nein, PUBLIC nein.
+- Die vorhandene kontextgebundene clubs-SELECT-Policy ist unverändert geblieben.
+- Ausschließlich die neue RPC wurde ergänzt; keine Tabellen-/Daten-/RLS-/Trigger-/Storage-Änderung.
+- Die Frontend-UI-Prüfung ist nach Deploy PROD noch durchzuführen. `main` und `index.html` wurden nicht manuell geändert.
