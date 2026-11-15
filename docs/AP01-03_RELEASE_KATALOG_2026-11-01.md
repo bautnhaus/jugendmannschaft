@@ -200,3 +200,16 @@ Abgeschlossen und nicht erneut von vorn zu bearbeiten: grundlegende Architektur-
 - DEV-Datenbankänderungsprotokoll: `DB_CHANGELOG.md`
 
 Diese Dokumente ergänzen einander; keines allein ersetzt die finalen, versionierten SQL-Quellen oder den abschließenden Release-Review.
+
+
+## Aktualisierung 15.11.2026 – maßgeblicher späterer Release-Stand
+
+Dieses Dokument ist ein historischer Arbeitskatalog vom 01.11.2026. Für den aktuellen PROD-Release sind die späteren Live-Nachweise maßgeblich:
+
+- AP03 PROD-Härtung `set_updated_at()` und Team-Kontext: erfolgreich ausgeführt, Ledger `20261115134422` (DB-MIG-2026-023).
+- AP04 PROD Paket 12: erfolgreich ausgeführt, Ledger `20261115092149`.
+- E05 PROD-Pakete 01–11: bereits im PROD-Ledger registriert.
+- DEV-Superadmin-Picker: Datenbankkorrekturen und Frontend-Praxistest abgeschlossen; PROD-RPC als DB-MIG-2026-026 vorbereitet, noch nicht ausgeführt.
+- Die einzige aktuell geplante letzte DB-Ergänzung ist `get_super_admin_clubs()`; keine Wiederholung bereits ausgeführter Migrationen und keine pauschale Übernahme aller DEV-Policy-/Funktionsdifferenzen.
+
+Aktueller Ausführungsstatus und verbindliche Reihenfolge: `docs/prod-release/DB_MIG_2026_026_SUPERADMIN_CLUB_PICKER_PROD_2026-11-15.md` sowie `DB_MIGRATION_LOG.md` und `DB_CHANGELOG.md`.
