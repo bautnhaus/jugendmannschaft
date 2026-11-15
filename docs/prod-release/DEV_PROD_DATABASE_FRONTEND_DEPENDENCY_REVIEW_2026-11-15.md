@@ -68,14 +68,20 @@ PROD Security Advisor meldet weiterhin:
 
 Health Advisor: keine Findings. Diese Hinweise wurden in AP03 nicht pauschal verändert und benötigen eine separate Funktions-/ACL-Prüfung sowie eine gesonderte Entscheidung zur Auth-Einstellung.
 
-## 6. Empfehlung / Freigabestatus
+## 6. Umsetzungsstand und verbleibende Freigabepunkte
 
-**Noch kein unkritischer Merge develop → main.**
+**Superadmin-Vereinsauswahl: in DEV umgesetzt und datenbankseitig verifiziert.**
 
-Vor dem Merge sollten mindestens diese Punkte geklärt werden:
+- Neue, eng begrenzte RPC `get_super_admin_clubs()`; keine direkten Vereinszeilen für einen neutralen Superadmin.
+- DEV-Policy `clubs_select_member_or_superadmin` entspricht jetzt dem kontextgebundenen PROD-Prinzip.
+- Frontend `loadSuperAdminClubs()` in `develop` verwendet die neue RPC.
+- SQL-Tests bestanden: neutraler Superadmin (ohne Mitgliedschaft/Kontext) erhält über direkten SELECT 0 Zeilen und über die Picker-RPC 1 Verein; nach Kontextauswahl ist direkter SELECT auf den ausgewählten Verein möglich; normaler Benutzer erhält über die Picker-RPC 0 Zeilen; anonymer Aufruf wird verweigert.
+- Vollständiger Nachweis: `docs/DEV_SUPERADMIN_CLUB_PICKER_RLS_2026-11-15.md`.
 
-1. Superadmin-Vereinsauswahl minimal und kontextkonform ermöglichen; Frontend in DEV umstellen und testen.
+**Weiterhin offen vor einem Merge develop → main:**
+
+1. Manueller DEV-Frontendtest mit dem Superadmin-Login auf der tatsächlichen DEV-Webseite (Vereinskachel wird angezeigt, Öffnen setzt Kontext und lädt Vereinsdetails).
 2. Sichtbarkeit der globalen Rollenliste fachlich festlegen.
 3. E05-Audit-Anzeige für Suspension-Ausnahmen prüfen.
 
-Keine Änderungen an PROD im Rahmen dieses Abgleichs. Keine SQL-Schreiboperation ausgeführt. Die AP03-DEV- und AP03-PROD-Migrationen sind separat dokumentiert; dieser Bericht ist eine read-only Bestandsaufnahme.
+Keine PROD-Änderung im Rahmen dieser Korrektur. Die zwei DEV-Migrationen sind im DEV-Ledger erfasst; PROD bleibt unverändert.
