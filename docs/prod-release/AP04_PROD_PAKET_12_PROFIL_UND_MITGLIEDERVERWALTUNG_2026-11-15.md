@@ -89,7 +89,15 @@ Die vorhandene AP04-Dokumentation weist Profilname/-bild einzeln und gemeinsam s
 
 **Hinweis:** Die isolierte PostgreSQL-CI prüft die reproduzierbare Migration, Hashes, Sicherheitsattribute, ACLs und Rollback. Sie ersetzt keine authentifizierten Supabase-Rollentests.
 
-## 8. Freigabestatus
+
+## 9. Isolierte PostgreSQL-CI – erfolgreich
+
+- **Workflow:** `.github/workflows/ap04-prod-package-12-ci.yml`
+- **Ergebnis:** [GitHub Actions Run 43697270748](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43697270748) – **success**, PostgreSQL 17.6.
+- Erfolgreich: exakte PROD-Ausgangsdefinitionen bereitgestellt, Paket-12-Migration angewendet, alle sechs DEV-Funktionshashes sowie SECURITY DEFINER/Owner/search_path/ACL geprüft, guarded Rollback ausgeführt und ursprüngliche PROD-Funktionsdefinitionen samt ACL erneut bestätigt.
+- **Testgrenze:** Isolierter PostgreSQL-Test; keine authentifizierten Supabase-Rollensitzungen, keine echten Vereins-/Mitgliederdaten und keine Änderung an DEV oder PROD.
+
+## 10. Freigabestatus
 
 - Paketdateien werden auf `develop` abgelegt.
 - PROD wurde ausschließlich read-only geprüft.
