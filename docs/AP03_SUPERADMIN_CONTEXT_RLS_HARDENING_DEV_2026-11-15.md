@@ -34,7 +34,32 @@ Read-only geprüft am 15.11.2026:
 
 ## Ausführung und Verifikation
 
-Dieser Abschnitt wird nach dem tatsächlichen Supabase-Ausführungsversuch ergänzt. Eine GitHub-Datei allein ist kein Ausführungsnachweis.
+**Status:** erfolgreich in DEV ausgeführt und strukturell read-only nachkontrolliert.
+
+- **Supabase-Migrationsversion:** `20261115114440`
+- **Migrationsname:** `ap03_superadmin_context_rls_hardening_dev`
+- **Ausführungszeitpunkt:** 15.11.2026, 12:44:40 Uhr MEZ (aus Supabase-Ledger-Zeitstempel)
+- **Ausführungsweg:** verbundenes Supabase-Migrationswerkzeug (`apply_migration`)
+- **Ergebnis:** `success: true`
+- **Migrationsdatei:** `supabase/migrations/20261115130000_ap03_superadmin_context_rls_hardening_dev.sql`
+- **Migrationsdatei Blob-SHA:** `dccd8b43e3b009a75cf960a76566ae7d17176b76`
+- **Migrationsänderungs-Commit:** `c3fcb32509332623e3bac480d22c0606ffc83098`
+- **Rollback-Datei:** `supabase/rollback/20261115130000_ap03_superadmin_context_rls_hardening_dev_rollback.sql`
+- **Rollback Blob-SHA:** `4df263a7ed9321f19d4ce442c5587dc3d5f784aa`
+
+**Read-only Postflight:**
+- `is_club_admin(uuid)` enthält jetzt die explizite Prüfung auf `user_club_context.club_id = p_club_id`, wenn der Aufrufer Superadmin ist.
+- Funktion weiterhin `SECURITY DEFINER`, Owner `postgres`, `search_path=pg_catalog, public`.
+- EXECUTE-ACL unverändert: `authenticated` und `service_role` dürfen ausführen; `anon` und `PUBLIC` nicht.
+- Die drei Vereins-/Mannschafts-Policies sind kontextgebunden; die direkten pauschalen Superadmin-Bypässe sind entfernt.
+- Beide Kontext-SELECT-Policies sind vorhanden und auf `user_id = auth.uid()` beschränkt.
+- RLS ist auf allen fünf betroffenen Tabellen weiterhin aktiviert.
+- Keine Tabellen, Spalten, Daten, Trigger, Storage-Buckets oder Storage-Policies wurden geändert.
+
+**Advisor-Nachkontrolle:** Health Advisor ohne Findings. Security Advisor meldet 52 projektweite Hinweise zu ausführbaren SECURITY-DEFINER-Funktionen und einen Hinweis auf deaktivierten Schutz vor kompromittierten Passwörtern. Diese Hinweise sind nicht automatisch Schwachstellen dieser Migration; die EXECUTE-ACL von `is_club_admin` blieb unverändert. Eine gesonderte Funktions-/ACL-Prüfung bleibt Bestandteil des weiteren Sicherheitsabgleichs.
+
+**Nicht durchgeführte Tests:** Authentifizierte Positiv-/Negativtests mit echten Benutzer-Sitzungen wurden nicht simuliert. Insbesondere müssen Superadmin ohne Kontext, Superadmin mit passendem/falschem Vereinskontext, Vereinsadmin eigener/fremder Verein sowie Trainer/Teamadmin in der DEV-App geprüft werden. Bis dahin ist die strukturelle Migration erfolgreich, die vollständige fachliche Sicherheitsabnahme aber noch offen.
+
 
 ## Testgrenzen
 
