@@ -918,3 +918,14 @@ Der technische Review des vorbereiteten E05-Schemafundaments ist in `docs/E05_TE
 - Migrationen: DB-MIG-2026-024 (Ledger `20261115135639`) und DB-MIG-2026-025 (Ledger `20261115135825`).
 - Ausführungs- und Testdetails: `docs/DEV_SUPERADMIN_CLUB_PICKER_RLS_2026-11-15.md`.
 - PROD nicht verändert.
+
+
+## 15.11.2026 – Vorbereitung DB-MIG-2026-026 (PROD)
+
+Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorbereitet: `public.get_super_admin_clubs()`. Der Live-PROD-Abgleich bestätigte, dass die `clubs`-SELECT-Policy und `is_club_admin()` bereits kontextgebunden sind; AP03 PROD-Härtung ist abgeschlossen. Es wird daher keine bestehende RLS-Regel erneut geändert.
+
+- Migration: `supabase/migrations/20261115170000_superadmin_club_picker_rpc_prod.sql`
+- Rollback: `supabase/rollback/20261115170000_superadmin_club_picker_rpc_prod_rollback.sql`
+- Dossier: `docs/prod-release/DB_MIG_2026_026_SUPERADMIN_CLUB_PICKER_PROD_2026-11-15.md`
+- Status: vorbereitet auf develop, PROD-Ausführung noch nicht freigegeben/ausgeführt.
+- Frontend/`index.html` und `main` unverändert.
