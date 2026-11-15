@@ -82,7 +82,7 @@ begin
  end if;
 
  if exists(
-  (select nspname,relname,tgname,definition from ci_package10_trigger_baseline
+  (select nspname,relname,tgname,definition from ci.package10_trigger_baseline
    except
    select n.nspname,c.relname,t.tgname,pg_get_triggerdef(t.oid)
    from pg_trigger t join pg_class c on c.oid=t.tgrelid
@@ -94,17 +94,17 @@ begin
    join pg_namespace n on n.oid=c.relnamespace
    where n.nspname='public' and not t.tgisinternal
    except
-   select nspname,relname,tgname,definition from ci_package10_trigger_baseline)
+   select nspname,relname,tgname,definition from ci.package10_trigger_baseline)
  ) then raise exception 'Paket 10 modified trigger definitions'; end if;
 
  if exists(
-  (select schemaname,tablename,policyname,cmd,roles,qual,with_check from ci_package10_policy_baseline
+  (select schemaname,tablename,policyname,cmd,roles,qual,with_check from ci.package10_policy_baseline
    except
    select schemaname,tablename,policyname,cmd,roles,qual,with_check from pg_policies where schemaname='public')
   union all
   (select schemaname,tablename,policyname,cmd,roles,qual,with_check from pg_policies where schemaname='public'
    except
-   select schemaname,tablename,policyname,cmd,roles,qual,with_check from ci_package10_policy_baseline)
+   select schemaname,tablename,policyname,cmd,roles,qual,with_check from ci.package10_policy_baseline)
  ) then raise exception 'Paket 10 modified RLS policies'; end if;
 end;
 $assert$;
