@@ -132,7 +132,7 @@ Testsequenz:
 ## 8. Noch offene Punkte
 
 - Frontend-Auswahlliste für manuelle Sperrenkorrektur: aktuell lädt sie geplante Spieltage ab current_date, nicht erst strikt nach dem Trainingsdatum des auslösenden Ereignisses. Die Datenbank weist unzulässige Ziele korrekt zurück; die UI sollte die Liste nach dem Auslöserdatum filtern. Diese Frontendänderung erfolgt separat auf develop, nachdem die Datenbankmigrationen abgeschlossen sind.
-- Die realen DEV-Funktions-/Browsertests der trainingsdatumsbasierten Neuanlage, Nachdatierung, Stornierung/Wiederherstellung und manuellen Korrektur sind in den alten Paket-10-Unterlagen als offen dokumentiert. Die aktuelle Live-Daten-Diagnose ist konsistent, ersetzt diese Fälle aber nicht.
+- **DEV-Praxistests:** Der Projektverantwortliche hat am 15.11.2026 bestätigt, dass die vorgesehenen Paket-10-Tests in DEV durchgeführt wurden. Die frühere Kennzeichnung als offen in den älteren Paket-10-Unterlagen ist damit überholt. Die Testergebnisse sind als DEV-Abschluss zu behandeln; PROD bleibt davon getrennt.
 - DB-MIG-2026-011 bleibt als separates Paket zu prüfen; PROD hat bereits einen Nominierungs-Trigger, aber keine Sperrprüfung in save_matchday_recommendation.
 
 ## 9. Ausführungsreihenfolge nach Freigabe
@@ -153,4 +153,4 @@ Rollback ist **kein automatischer Fehlerpfad**. Er benötigt eine neue ausdrück
 - Supabase DEV wurde im Rahmen dieser Vorbereitung nicht verändert.
 - Supabase PROD wurde ausschließlich lesend geprüft; keine Migration ausgeführt.
 - GitHub main und Frontend-Index bleiben unverändert.
-- **Benötigt wird jetzt die ausdrückliche PROD-Freigabe für E05 Paket 10.** Diese Freigabe umfasst ausschließlich die oben genannte Datenbankmigration und die unmittelbare Verifikation. Sie umfasst weder Rollback noch Frontend-/GitHub-main-/PROD-Deployments.
+- **Paket 10 ist fachlich und technisch zur PROD-Freigabe bereit.** Die ausdrückliche Freigabe zur Ausführung der PROD-Migration steht noch aus. Diese Freigabe umfasst ausschließlich die oben genannte Datenbankmigration und die unmittelbare Verifikation. Sie umfasst weder Rollback noch Frontend-/GitHub-main-/PROD-Deployments.
