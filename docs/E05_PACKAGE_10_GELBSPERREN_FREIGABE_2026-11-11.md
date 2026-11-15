@@ -1,3 +1,11 @@
+> **ÜBERHOLT – NICHT ALS FREIGABEGRUNDLAGE VERWENDEN (Stand 15.11.2026).**
+> Dieser Entwurf vom 11.11.2026 bildet noch die damalige Regel „nur konfigurierte Spielarten“ ab. Diese Regel wurde durch DB-MIG-2026-010 am 12.11.2026 in DEV ersetzt und vom Projektverantwortlichen im Nachgang ausdrücklich bestätigt: **Jeder geplante Spieltag ist sperrenrelevant – unabhängig von der Spielart, auch bei `game_type = NULL`.**
+> Maßgeblich für eine mögliche PROD-Umsetzung ist ausschließlich das aktuelle Freigabedossier:
+> `docs/prod-release/E05_PROD_PAKET_10_TRAININGSDATUM_CHRONOLOGIE_2026-11-15.md`
+> PROD bleibt bis zur gesonderten ausdrücklichen Freigabe unverändert.
+
+---
+
 # E05 Package 10 – Trainingsdatumsbasierte Gelbsperren
 
 **Status:** Entwurf zur fachlichen und technischen Freigabe – NICHT AUSFÜHRBAR
