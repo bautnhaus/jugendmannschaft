@@ -107,3 +107,14 @@ Der Rollback ist nur nach gesonderter Freigabe auszuführen. Er entfernt nicht d
 - Isolierte PostgreSQL-CI: [Run 43692553123](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43692553123), success.
 - Rollback wurde nicht in PROD ausgeführt; nur in CI isoliert getestet. Eine PROD-Rücknahme benötigt eine gesonderte Freigabe.
 - Projektweite Advisor-Hinweise wurden erfasst; keine Advisor-Bereinigung Bestandteil von Paket 11.
+
+### Ergänzende Kontrollprüfung nach der Freigabe
+
+- Am 15.11.2026 wurde ein erneuter Aufruf derselben Paket-11-Migration versucht. Der eingebaute Preflight hat ihn vor jeder DDL-/Funktionsänderung abgebrochen, weil `save_matchday_recommendation(uuid,uuid[])` die Sperrenprüfung bereits enthält. Es wurde bei diesem erneuten Versuch keine Änderung vorgenommen.
+- Die anschließende Live-Prüfung bestätigt: PROD-Ledger enthält bereits Version `20261115082224` / `e05_prod_paket_11_suspension_aware_recommendation_nomination`.
+- `save_matchday_recommendation`: MD5 `4c038919d1c6470633b1229aa2adff06`, 3.586 Zeichen – identisch zu DEV.
+- `prevent_suspended_matchday_nomination`: gleiche fachliche Prüfung, gleicher Advisory-Lock-Schutz und gleiche EXECUTE-Rechte wie DEV (authenticated/anon/PUBLIC: nein; service_role: ja). Die Formatierung der Funktionsdefinition unterscheidet sich, nicht das geprüfte Verhalten.
+- `revoke_suspension_exception`: PROD enthält die gleiche fachliche Sperren-Neuzuordnung, den Schutz bei bereits dokumentiertem Einsatz, die bedingte Nominierungsentfernung und den Audit-Snapshot. Die Funktionsdefinition unterscheidet sich textuell durch Formatierung/Kommentare.
+- Alle vier bestehenden Trigger auf `matchday_players` sind vorhanden und unverändert verbunden.
+- RLS ist auf allen fünf relevanten Tabellen aktiviert: `training_suspensions`, `training_suspension_exceptions`, `matchday_players`, `matchday_recommendation_runs`, `matchday_recommendation_players`.
+- Die Migration bleibt mit Ledger-Version `20261115082224` registriert. Kein erneuter Ledger-Eintrag und keine zweite Funktionsänderung durch den abgebrochenen Versuch.
