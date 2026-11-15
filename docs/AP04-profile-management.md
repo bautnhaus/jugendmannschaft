@@ -142,3 +142,6 @@ Der Nutzer hat nach dem DEV-Deployment beide Prüfpunkte bestätigt:
 - Für diese sechs Funktionen sind SECURITY DEFINER, Owner `postgres`, fester search_path und EXECUTE-Rechte bereits in beiden Umgebungen gleich. Das Paket ersetzt nur die Funktionsdefinitionen und ändert keine Grants.
 - PROD-Paket 12 und Guarded Rollback: `docs/prod-release/AP04_PROD_PAKET_12_PROFIL_UND_MITGLIEDERVERWALTUNG_2026-11-15.md`.
 - **Status:** vorbereitet auf `develop`; nicht in PROD ausgeführt. Die dokumentierten Rollen-/Mitglieder-Negativtests und der ausgewählte Kontext müssen vor der finalen PROD-Freigabe nachgewiesen sein.
+
+- **CI-Nachweis Paket 12:** Finaler isolierter PostgreSQL-17-Lauf erfolgreich: [Run 43697683693](https://github.com/bautnhaus/jugendmannschaft/actions/runs/43697683693). Die Migration, Sicherheits-/ACL-Prüfungen und der guarded Rollback wurden im isolierten Test bestanden.
+- **Sicherheitsfund DEV:** `is_club_admin(uuid)` gibt für Superadmins in DEV auch ohne ausgewählten Vereinskontext `true` zurück; PROD beschränkt dies auf den ausgewählten Vereinskontext. Diese DEV-Abweichung wurde nicht in Paket 12 übernommen. Die direkte DEV-RPC `admin_add_club_member` ist separat zu prüfen/korrigieren.
