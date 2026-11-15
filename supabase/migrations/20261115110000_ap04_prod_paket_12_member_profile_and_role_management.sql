@@ -113,8 +113,7 @@ begin
     set display_name = excluded.display_name,
         avatar_url = excluded.avatar_url;
 end;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.admin_update_club_member_profile(p_club_id uuid, p_user_id uuid, p_display_name text, p_avatar_url text)
  RETURNS void
@@ -135,8 +134,7 @@ begin
   insert into public.profiles(id,display_name,avatar_url) values(p_user_id,v_name,p_avatar_url)
   on conflict(id) do update set display_name=excluded.display_name,avatar_url=excluded.avatar_url;
 end;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.admin_add_team_role(p_team_id uuid, p_user_id uuid, p_role text)
  RETURNS void
@@ -252,8 +250,7 @@ BEGIN
     VALUES (p_team_id, p_user_id, p_role)
     ON CONFLICT (team_id, user_id, role) DO NOTHING;
 END;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.admin_remove_team_role(p_team_id uuid, p_user_id uuid, p_role text)
  RETURNS void
@@ -283,8 +280,7 @@ begin
     delete from public.team_members where team_id=p_team_id and user_id=p_user_id;
   end if;
 end;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.admin_add_club_member_by_email(p_club_id uuid, p_email text, p_role text DEFAULT 'member'::text)
  RETURNS void
@@ -303,8 +299,7 @@ begin
   if v_user_id is null then raise exception 'Kein bestehendes Konto mit dieser E-Mail-Adresse gefunden. Bitte zuerst eine Einladung auslösen.' using errcode='P0002'; end if;
   perform public.admin_add_club_member(p_club_id,v_user_id,p_role);
 end;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.admin_set_club_member_role(p_club_id uuid, p_user_id uuid, p_role text)
  RETURNS void
@@ -334,8 +329,7 @@ begin
     delete from public.club_member_roles r where r.user_id=p_user_id and r.role='club_admin';
   end if;
 end;
-$function$
-
+$function$;
 
 do $postflight$
 begin
