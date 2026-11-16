@@ -2,7 +2,7 @@
 
 **Version:** 1.1  
 **Stand:** 15.11.2026  
-**Status:** Fachliche Leitplanken abgestimmt; technische Detailprüfung/DEV-Validierung ausstehend  
+**Status:** Fachliche Leitplanken umgesetzt in `develop`; regulärer DEV-Praxistest am 16.11.2026 durchgeführt. Numerische Score-Auditspur und authentifizierter E05-Fünfte-Karte-End-to-End-Test bleiben eingeschränkt/offen  
 **Geltungsbereich:** DEV zuerst. Keine Code- oder Datenbankänderung durch dieses Dokument.
 
 ## 1. Ziel und Grundsatz
@@ -172,3 +172,26 @@ Dieser Abgleich war ausschließlich lesend. Es wurden keine Code-, Datenbank- od
 - Erst nach erfolgreichen DEV-Praxistests eine PROD-Freigabe vorbereiten.
 
 **Diese Spezifikation ist eine fachliche Grundlage und keine Freigabe für Code-, SQL- oder PROD-Änderungen.**
+
+
+## 12. Umsetzungs- und DEV-Abnahme-Nachtrag (16.11.2026)
+
+Die Fachlogik aus dieser Spezifikation wurde in `develop/index.html` umgesetzt. Die konkrete Implementierung und ihre Grenzen sind in `docs/testing/KADEREMPFEHLUNG_IMPLEMENTIERUNG_DEV_2026-11-16.md` dokumentiert.
+
+Regulärer DEV-Praxistest:
+- Neuberechnung und automatische Sortierung nach gespeicherter Kaderempfehlung an den Spieltagen 21.11. und 29.11. geprüft.
+- Aktive Sperre ohne Ausnahme wird aus der regulären Empfehlung ausgeschlossen und separat rot angezeigt.
+- Gültige spieltagbezogene Ausnahme lässt den betroffenen Spieler wieder regulär erscheinen.
+- Einsatz-Fairness anhand der vorhandenen Einsatzdaten und der angezeigten Rangfolge geprüft; keine Abweichung festgestellt.
+- Keine Datenänderung und keine PROD-Änderung.
+
+Offene Nachweisgrenzen:
+- Ein vollständiger authentifizierter End-to-End-Test des fünften gelben Ereignisses über den bestehenden E05-Prozess wurde nicht ausgeführt.
+- Die gespeicherten Empfehlungs-Scores werden nicht als eigenständige Werte persistiert. Die zusätzliche SQL-Rekonstruktion bildet nicht alle clientseitigen Zeit-/Eligibility-Bedingungen exakt ab und gilt deshalb nicht als numerischer Auditnachweis.
+
+Datenbank-/PROD-Abgrenzung:
+- Für die Kaderempfehlungsimplementierung wurden keine Tabellen, Spalten, Funktionen, RPCs, Trigger oder Policies geändert.
+- Die verwendeten Tabellen und Spalten wurden in DEV und PROD für `players`, `trainings`, `attendance`, `training_behavior_events`, `training_suspensions`, `training_suspension_exceptions`, `matchdays` und `matchday_players` read-only verglichen; die abgefragten Spalten stimmen überein.
+- Die `players`-Spalten einschließlich `birth_year` und `preferred_foot` stimmen in DEV und PROD überein.
+- Der isolierte [TEST]-Datensatz liegt ausschließlich in DEV und ist kein Bestandteil eines Frontend-Deployments.
+- Separat im selben Frontend-Diff enthalten ist E05 „Neuzuordnung offener Sperren nach Spieltagsspeicherung“. Der zugehörige Praxistest ist noch offen und muss vor Einbeziehung dieses Verhaltens in einen PROD-Release ausdrücklich abgeschlossen oder die Änderung aus dem Releaseumfang herausgenommen werden.
