@@ -25,11 +25,7 @@
 ### Separat enthaltene E05-Frontendänderung
 Der aktuelle gemeinsame `index.html`-Stand enthält außerdem die bereits dokumentierte Funktion, offene Sperren nach dem Anlegen oder Speichern eines Spieltags erneut zuzuordnen (`reassignOpenTeamSuspensions()`; Commit `55ae095849a03bbfb4f430bed0cc174da55b5eec`).
 
-**Freigabegate:** Der dokumentierte Praxistest dieser E05-Neuzuordnung ist noch offen. Da beide Funktionspakete in derselben `index.html` liegen, muss vor dem PROD-Release ausdrücklich entschieden werden:
-1. E05-Neuzuordnung in DEV vollständig testen und dann gemeinsam freigeben; oder
-2. E05-Neuzuordnung aus dem Release herausnehmen und nur die Kaderempfehlungsänderungen ausliefern.
-
-Keinesfalls stillschweigend einen ungetesteten E05-Codepfad mit PROD ausrollen.
+**DEV-Teststatus: bestanden (16.11.2026).** In der regulären DEV-Mannschaft wurde für Spieler Vier eine rote Karte im Training vom 03.12.2026 erfasst, als noch kein nachfolgender Spieltag existierte. Nach Anlage und Speicherung des Spieltags am 06.12.2026 wurde die offene Sperre automatisch diesem Spieltag zugeordnet. Der Datenbankzustand bestätigte `intended_matchday_id`, Snapshot-Datum und Gegner sowie `manual_target_locked = false`. Nach erneutem Öffnen und Neuberechnen blieb Spieler Vier rot gesperrt und aus der Kaderempfehlung ausgeschlossen. Details siehe Implementierungs-/Testdokumentation. Damit ist der zuvor offene E05-Neuzuordnungstest abgeschlossen.
 
 ## 2. Branchvergleich
 
@@ -76,17 +72,16 @@ Die abgefragten Spaltennamen und Datentypen stimmen zwischen DEV und PROD übere
 - Einsatz-Fairness: vorhandene Einsatzdaten und sichtbare Rangfolge abgeglichen; keine Abweichung festgestellt.
 - Numerische vollständige Score-Auditspur: nicht vorhanden, da Scores nicht eigenständig persistiert werden und die SQL-Rekonstruktion nicht alle clientseitigen Eligibility-/Zeitbedingungen exakt abbildet.
 - Authentifizierter E05-End-to-End-Test der fünften gelben Karte: offen.
-- E05-Neuzuordnung offener Sperren nach Spieltagsspeicherung: Praxistest offen.
+- E05-Neuzuordnung offener Sperren nach Spieltagsspeicherung: in regulärer DEV-Mannschaft praktisch und per Read-only-Datenbankprüfung bestanden.
 
 Details: `docs/testing/KADEREMPFEHLUNG_IMPLEMENTIERUNG_DEV_2026-11-16.md`.
 
 ## 5. Vor PROD noch erforderlich
 
-1. Entscheidung zum E05-Neuzuordnungs-Codepfad (testen und mitliefern oder aus dem Release herausnehmen).
-2. Finale Prüfung des vollständigen aktuellen `develop/index.html`-Diffs gegenüber `main`, damit keine sachfremden Frontendänderungen versehentlich enthalten sind.
-3. Sicherstellen, dass `develop`-Dokumentation vollständig und konsistent ist.
-4. Explizite Nutzerfreigabe für den Merge/Deploy nach `main` und den bestehenden Workflow `Deploy PROD`.
-5. Nach Deploy: PROD-Funktionstest mit realem Konto und ohne Änderungen an bestehenden Spieler-/Trainingsdaten.
+1. Finale Prüfung des vollständigen aktuellen `develop/index.html`-Diffs gegenüber `main`, damit keine sachfremden Frontendänderungen versehentlich enthalten sind.
+2. Sicherstellen, dass `develop`-Dokumentation vollständig und konsistent ist.
+3. Explizite Nutzerfreigabe für den Merge/Deploy nach `main` und den bestehenden Workflow `Deploy PROD`.
+4. Nach Deploy: PROD-Funktionstest mit realem Konto und ohne Änderungen an bestehenden Spieler-/Trainingsdaten.
 
 ## 6. Ausdrückliche Nicht-Ziele
 
@@ -99,4 +94,4 @@ Details: `docs/testing/KADEREMPFEHLUNG_IMPLEMENTIERUNG_DEV_2026-11-16.md`.
 
 **Vorbereitet, aber nicht PROD-freigegeben.**
 
-Die Kaderempfehlung selbst benötigt nach dem gezielten Schemaabgleich keine DB-Migration. Der offene E05-Praxistest und die abschließende Freigabe des gesamten Frontend-Diffs bleiben Release-Gates.
+Die Kaderempfehlung selbst benötigt nach dem gezielten Schemaabgleich keine DB-Migration. Der E05-Praxistest ist abgeschlossen. Die abschließende Prüfung des gesamten Frontend-Diffs und die ausdrückliche Freigabe für Merge/PROD-Deploy bleiben Release-Gates.
