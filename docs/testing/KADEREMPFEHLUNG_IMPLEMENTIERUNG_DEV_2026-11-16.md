@@ -48,7 +48,13 @@ Die bisherige E05-Sperrprüfung bleibt als harte Filterbedingung der speicherbar
 
 Die dunkelgrüne Nominierungskachel erhält für Positions- und Leveltexte einschließlich der untergeordneten Textspans eine explizite helle Textfarbe. Die goldene Sternfarbe bleibt erhalten. Dies ist eine reine CSS-Korrektur.
 
-## 6. Abgleich mit den dokumentierten Testdaten
+## 6. UI-Sortierung nach Neuberechnung
+
+Nach erfolgreichem Speichern einer neu berechneten Kaderempfehlung wird die Sortierung der Spieltags-Kaderliste automatisch auf „Kaderempfehlung“ gesetzt. Die gespeicherte Empfehlungsreihenfolge steht damit unmittelbar sichtbar oben. Nicht empfohlene Spieler folgen darunter anhand der bestehenden Rangfolge.
+
+Die Änderung betrifft ausschließlich den Sortierzustand der Ansicht. Nominierungen und sonstige Spieltagsdaten bleiben unverändert. Eine manuelle Sortierauswahl bleibt weiterhin möglich.
+
+## 7. Abgleich mit den dokumentierten Testdaten
 
 Die implementierte Formel reproduziert die zuvor bestätigten Simulationswerte:
 
@@ -70,7 +76,7 @@ J/K liegen genau 2,00 Punkte auseinander und gehören damit in dieselbe Gruppe. 
 
 Die Werte sind ein rechnerischer Abgleich der implementierten Formel mit den dokumentierten SQL-Simulationen; sie sind kein Ersatz für den anschließenden Praxistest in der DEV-Oberfläche.
 
-## 7. Noch ausstehend
+## 8. Noch ausstehend
 
 1. DEV-Frontend laden und die gespeicherte Empfehlung mit „Neu berechnen“ neu erzeugen.
 2. Ergebnis mit den dokumentierten Testspielern vergleichen.
