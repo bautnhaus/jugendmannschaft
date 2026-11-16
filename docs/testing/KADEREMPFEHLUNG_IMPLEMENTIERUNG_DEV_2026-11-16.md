@@ -76,12 +76,34 @@ J/K liegen genau 2,00 Punkte auseinander und gehören damit in dieselbe Gruppe. 
 
 Die Werte sind ein rechnerischer Abgleich der implementierten Formel mit den dokumentierten SQL-Simulationen; sie sind kein Ersatz für den anschließenden Praxistest in der DEV-Oberfläche.
 
-## 8. Noch ausstehend
 
-1. DEV-Frontend laden und die gespeicherte Empfehlung mit „Neu berechnen“ neu erzeugen.
-2. Ergebnis mit den dokumentierten Testspielern vergleichen.
-3. Grenzfälle 1,99 / 2,00 / 2,01 in der tatsächlichen Frontend-Rangfolge prüfen.
-4. 4 → 5 → 6 gelbe Karten anhand echter aktiver Ereignisdaten nachvollziehen; den E05-End-to-End-Test der fünften Karte weiterhin mit berechtigtem Trainerkonto ausführen.
-5. Sicherstellen, dass ein aktiver E05-Sperrstatus ohne Ausnahme ausgeschlossen und mit Ausnahme wieder berücksichtigt wird.
+## 9. Ergänzender Praxistest mit regulärer DEV-Mannschaft (16.11.2026)
 
-**Freigabestatus:** Implementierung in `develop`; DEV-Praxistest ausstehend. Keine PROD-Freigabe.
+**Testumgebung:** reguläre DEV-Mannschaft, Spieltage 21.11. und 29.11.2026. Die isolierte [TEST]-Mannschaft wurde für diesen Praxistest nicht verwendet.
+
+### Durchführung und Ergebnis
+
+- Beide Spieltage wurden in der DEV-Oberfläche geöffnet und die Kaderempfehlung jeweils neu berechnet.
+- Die Screenshots zeigen die Spielerliste bereits in der Sortierung „Kaderempfehlung“.
+- Nach der Neuberechnung standen die empfohlenen Spieler in der gespeicherten Empfehlungsreihenfolge; gesperrte Spieler wurden separat unterhalb der regulären Liste dargestellt.
+- Am 21.11. wurde „Spieler Vorsicht“ als „Gesperrt · Ausnahme möglich“ angezeigt und nicht in die reguläre Empfehlung aufgenommen.
+- Am 29.11. wurde „Spieler Elfenbeine“ als „Gesperrt · Ausnahme möglich“ angezeigt und nicht in die reguläre Empfehlung aufgenommen.
+- Die für den 21.11. vorhandene Ausnahme bei „Spieler Dreißig“ führte dazu, dass dieser Spieler regulär angezeigt und in der Empfehlung berücksichtigt wurde.
+- Die sichtbaren Sperrzuordnungen entsprachen den zuvor lesend ausgelesenen DEV-Sperrdaten.
+
+### Einsatz-Fairness – Datenabgleich
+
+Die gespeicherte Rangfolge des Spieltags 21.11. wurde mit den tatsächlichen Einsätzen im rollierenden Zeitraum verglichen. Als tatsächlicher Einsatz zählt ausschließlich `played = true`; `false` und `null` zählen nicht.
+
+Die Rangfolge und Einsatzanzahlen waren mit der implementierten Regel vereinbar: Die Einsatz-Fairness wirkt nur innerhalb einer am höchsten Score verankerten Gleichwertigkeitsgruppe (maximal 2,00 Punkte Abstand). Ein Spieler mit mehr Einsätzen darf deshalb vor einem Spieler mit weniger Einsätzen stehen, wenn er außerhalb dessen Gleichwertigkeitsgruppe liegt.
+
+**Nachweisgrenze:** Die gespeicherten Scores sind nicht als eigene Werte in der Datenbank abgelegt. Die zusätzlich ausgeführte SQL-Rekonstruktion der Scores war eine lesende Näherung und reproduzierte nicht in allen Fällen die vollständigen clientseitigen Eligibility-/Zeitbedingungen. Sie wird daher nicht als exakter Score-Nachweis gewertet. Der erfolgreiche Fairnessbefund stützt sich auf die geprüfte App-Reihenfolge, die Einsatzdaten und die dokumentierte Implementierungslogik; eine vollständige numerische Score-Auditspur liegt nicht vor.
+
+### Status
+
+- Regulärer DEV-Praxistest der Neuberechnung und Sortierung: bestanden.
+- Sperrenausschluss und spieltagbezogene Ausnahme: für die beiden geprüften Fälle bestanden.
+- Einsatz-Fairness: anhand vorhandener Daten und App-Reihenfolge plausibilisiert; keine Abweichung festgestellt.
+- Authentifizierter E05-End-to-End-Test des Übergangs bei der fünften gelben Karte: weiterhin offen.
+- Es wurden keine Spieler-, Trainings-, Ereignis-, Spieltags- oder Sperrdaten verändert.
+- Keine SQL- oder Schemaänderung; PROD nicht verändert.
