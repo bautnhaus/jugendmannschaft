@@ -107,3 +107,23 @@ Die Rangfolge und Einsatzanzahlen waren mit der implementierten Regel vereinbar:
 - Authentifizierter E05-End-to-End-Test des Übergangs bei der fünften gelben Karte: weiterhin offen.
 - Es wurden keine Spieler-, Trainings-, Ereignis-, Spieltags- oder Sperrdaten verändert.
 - Keine SQL- oder Schemaänderung; PROD nicht verändert.
+
+
+## 10. E05-Neuzuordnung nach nachträglicher Spieltagserstellung – Praxistest (16.11.2026)
+
+**Testumgebung:** reguläre DEV-Mannschaft; keine isolierte Testmannschaft.
+
+### Ausgangslage
+- Für „Spieler Vier“ wurde am Training vom 03.12.2026 eine aktive rote Karte erfasst.
+- Daraus entstand eine offene rote Sperre ohne `intended_matchday_id` und ohne manuelle Zielbindung (`manual_target_locked = false`).
+
+### Durchführung
+- Anschließend wurde in der regulären DEV-Mannschaft ein Spieltag für den 06.12.2026 (Gegner „Testgegner“) angelegt und gespeichert.
+- Der Spieler wurde in der Spieltagsansicht unmittelbar rot als „Gesperrt · Ausnahme möglich“ dargestellt.
+- Read-only-Datenbankprüfung bestätigte, dass die bestehende offene Sperre nun auf genau diesen Spieltag zeigt: `intended_matchday_id` gesetzt, Snapshot-Datum 06.12.2026, Gegner-Snapshot „Testgegner“, `manual_target_locked = false`.
+- Der Spieltag wurde anschließend erneut geöffnet und die Kaderempfehlung neu berechnet. Der Nutzer bestätigte, dass Spieler Vier weiterhin rot angezeigt und aus der Kaderempfehlung ausgeschlossen wurde.
+
+### Ergebnis
+**Bestanden.** Die automatische Neuzuordnung einer zuvor nicht zugeordneten offenen roten Sperre nach dem Anlegen und Speichern eines passenden Spieltags ist in der regulären DEV-Mannschaft praktisch und anhand des Datenbankzustands bestätigt. Der anschließende Neuberechnungstest bestätigt den fortbestehenden Sperrenausschluss.
+
+Es wurden keine bestehenden Karten oder Sperren manuell verändert und keine SQL-Schreiboperationen ausgeführt. Die rote Karte wurde regulär über die App erfasst. PROD blieb unverändert.
