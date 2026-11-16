@@ -5,7 +5,7 @@
 **Zielbranch:** `main`  
 **Supabase DEV:** `pzazqvvoruqnqhcorbwx`  
 **Supabase PROD:** `qdugtpzgefpswnnqbusd`  
-**PROD-Deploy:** noch nicht freigegeben / nicht ausgeführt  
+**PROD-Deploy:** erfolgreich ausgeführt; PROD-Smoke-Test vom Nutzer bestätigt  
 **DB-Migration:** für die Kaderempfehlungsänderung nicht erforderlich
 
 ## 1. Vorgesehener Releaseumfang
@@ -31,7 +31,7 @@ Der aktuelle gemeinsame `index.html`-Stand enthält außerdem die bereits dokume
 
 Read-only GitHub-Vergleich `main...develop`, Stand nach den Dokumentationsnachträgen am 16.11.2026:
 
-- `develop` ist 16 Commits vor `main`.
+- Zum Zeitpunkt der Releasevorbereitung war `develop` gegenüber `main` voraus; der Release wurde anschließend erfolgreich nach PROD ausgerollt.
 - `main` ist 0 Commits vor `develop`; kein Branch-Drift in die Gegenrichtung.
 - Geänderte Dateien im Vergleich:
   - `index.html` – 53 Ergänzungen, 9 Löschungen.
@@ -76,12 +76,14 @@ Die abgefragten Spaltennamen und Datentypen stimmen zwischen DEV und PROD übere
 
 Details: `docs/testing/KADEREMPFEHLUNG_IMPLEMENTIERUNG_DEV_2026-11-16.md`.
 
-## 5. Vor PROD noch erforderlich
+## 5. Durchgeführter PROD-Release und Smoke-Test
 
-1. Finale Prüfung des vollständigen aktuellen `develop/index.html`-Diffs gegenüber `main`, damit keine sachfremden Frontendänderungen versehentlich enthalten sind.
-2. Sicherstellen, dass `develop`-Dokumentation vollständig und konsistent ist.
-3. Explizite Nutzerfreigabe für den Merge/Deploy nach `main` und den bestehenden Workflow `Deploy PROD`.
-4. Nach Deploy: PROD-Funktionstest mit realem Konto und ohne Änderungen an bestehenden Spieler-/Trainingsdaten.
+1. Der vollständige Frontend-Diff wurde vor dem Release geprüft; enthalten waren die dokumentierten Kaderempfehlungsänderungen, die E05-Neuzuordnung offener Sperren und die UI-Kontrastkorrektur.
+2. Der Nutzer hat den bestehenden GitHub-Actions-Workflow `Deploy PROD` selbst gestartet.
+3. Der Workflow wurde erfolgreich abgeschlossen.
+4. Der anschließende PROD-Smoke-Test wurde vom Nutzer durchgeführt und mit „Sieht gut aus“ bestätigt.
+
+**Release-Status: erfolgreich ausgerollt und Smoke-Test bestanden.**
 
 ## 6. Ausdrückliche Nicht-Ziele
 
@@ -92,6 +94,6 @@ Details: `docs/testing/KADEREMPFEHLUNG_IMPLEMENTIERUNG_DEV_2026-11-16.md`.
 
 ## 7. Freigabestatus
 
-**Vorbereitet, aber nicht PROD-freigegeben.**
+**Erfolgreich in PROD ausgerollt; Smoke-Test bestätigt.**
 
-Die Kaderempfehlung selbst benötigt nach dem gezielten Schemaabgleich keine DB-Migration. Der E05-Praxistest ist abgeschlossen. Die abschließende Prüfung des gesamten Frontend-Diffs und die ausdrückliche Freigabe für Merge/PROD-Deploy bleiben Release-Gates.
+Die Kaderempfehlung benötigt nach dem gezielten Schemaabgleich keine DB-Migration. Der E05-Praxistest ist abgeschlossen. Frontend-Diff-Prüfung, explizite Freigabe, PROD-Deploy über den bestehenden Workflow und anschließender Smoke-Test wurden durchgeführt.
