@@ -2,7 +2,7 @@
 
 **Version:** 1.1  
 **Stand:** 15.11.2026  
-**Status:** Fachliche Leitplanken umgesetzt in `develop`; regulärer DEV-Praxistest am 16.11.2026 durchgeführt. Numerische Score-Auditspur und authentifizierter E05-Fünfte-Karte-End-to-End-Test bleiben eingeschränkt/offen  
+**Status:** Fachlogik umgesetzt und in PROD ausgerollt; regulärer DEV-Praxistest und PROD-Smoke-Test erfolgreich. Numerische Score-Auditspur und authentifizierter E05-Fünfte-Karte-End-to-End-Test bleiben als Nachweisgrenzen dokumentiert  
 **Geltungsbereich:** DEV zuerst. Keine Code- oder Datenbankänderung durch dieses Dokument.
 
 ## 1. Ziel und Grundsatz
@@ -196,3 +196,18 @@ Datenbank-/PROD-Abgrenzung:
 - Die `players`-Spalten einschließlich `birth_year` und `preferred_foot` stimmen in DEV und PROD überein.
 - Der isolierte [TEST]-Datensatz liegt ausschließlich in DEV und ist kein Bestandteil eines Frontend-Deployments.
 - Separat im selben Frontend-Diff enthalten ist E05 „Neuzuordnung offener Sperren nach Spieltagsspeicherung“. Der zugehörige Praxistest wurde am 16.11.2026 in der regulären DEV-Mannschaft erfolgreich abgeschlossen; siehe Implementierungs-/Testdokumentation.
+
+
+## 13. PROD-Abschlussnachtrag (16.11.2026)
+
+Die in dieser Spezifikation beschriebene Kaderempfehlungslogik wurde nach erfolgreicher DEV-Prüfung über den bestehenden GitHub-Actions-Workflow `Deploy PROD` ausgerollt. Der Nutzer hat den erfolgreichen Workflow-Lauf und den anschließenden PROD-Smoke-Test bestätigt („Sieht gut aus“).
+
+Der Release umfasste außerdem die E05-Neuzuordnung offener Sperren nach dem Anlegen oder Speichern eines Spieltags sowie die dokumentierte UI-Kontrastkorrektur und die automatische Sortierung nach der gespeicherten Kaderempfehlung.
+
+Für die Kaderempfehlungsänderungen war keine Datenbankmigration erforderlich. Es wurden keine Tabellen, Spalten, RPCs, Trigger oder Policies geändert.
+
+**Verbleibende Nachweisgrenzen (keine aktuell bekannte Release-Blockade):**
+- Ein authentifizierter End-to-End-Test des Übergangs bei der fünften gelben Karte über den vollständigen E05-App-Prozess wurde nicht separat ausgeführt.
+- Die gespeicherten Empfehlungsscores werden nicht als eigenständige Werte persistiert; eine vollständige numerische Score-Auditspur liegt daher nicht vor.
+
+Die fachliche Spezifikation beschreibt die Soll-Logik; der Implementierungs- und Testnachweis ist ergänzend in `docs/testing/KADEREMPFEHLUNG_IMPLEMENTIERUNG_DEV_2026-11-16.md` und `docs/prod-release/RELEASE_PREP_KADEREMPFEHLUNG_2026-11-16.md` dokumentiert.
