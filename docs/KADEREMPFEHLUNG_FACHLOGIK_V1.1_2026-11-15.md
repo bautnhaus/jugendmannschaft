@@ -188,10 +188,11 @@ Regulärer DEV-Praxistest:
 Offene Nachweisgrenzen:
 - Ein vollständiger authentifizierter End-to-End-Test des fünften gelben Ereignisses über den bestehenden E05-Prozess wurde nicht ausgeführt.
 - Die gespeicherten Empfehlungs-Scores werden nicht als eigenständige Werte persistiert. Die zusätzliche SQL-Rekonstruktion bildet nicht alle clientseitigen Zeit-/Eligibility-Bedingungen exakt ab und gilt deshalb nicht als numerischer Auditnachweis.
+- Die E05-Neuzuordnung einer offenen roten Sperre nach nachträglicher Spieltagserstellung wurde am 16.11.2026 in der regulären DEV-Mannschaft erfolgreich praktisch und per Read-only-Datenbankprüfung bestätigt. Spieler Vier wurde dem Spieltag 06.12.2026 zugeordnet und blieb nach erneuter Kaderberechnung ausgeschlossen.
 
 Datenbank-/PROD-Abgrenzung:
 - Für die Kaderempfehlungsimplementierung wurden keine Tabellen, Spalten, Funktionen, RPCs, Trigger oder Policies geändert.
 - Die verwendeten Tabellen und Spalten wurden in DEV und PROD für `players`, `trainings`, `attendance`, `training_behavior_events`, `training_suspensions`, `training_suspension_exceptions`, `matchdays` und `matchday_players` read-only verglichen; die abgefragten Spalten stimmen überein.
 - Die `players`-Spalten einschließlich `birth_year` und `preferred_foot` stimmen in DEV und PROD überein.
 - Der isolierte [TEST]-Datensatz liegt ausschließlich in DEV und ist kein Bestandteil eines Frontend-Deployments.
-- Separat im selben Frontend-Diff enthalten ist E05 „Neuzuordnung offener Sperren nach Spieltagsspeicherung“. Der zugehörige Praxistest ist noch offen und muss vor Einbeziehung dieses Verhaltens in einen PROD-Release ausdrücklich abgeschlossen oder die Änderung aus dem Releaseumfang herausgenommen werden.
+- Separat im selben Frontend-Diff enthalten ist E05 „Neuzuordnung offener Sperren nach Spieltagsspeicherung“. Der zugehörige Praxistest wurde am 16.11.2026 in der regulären DEV-Mannschaft erfolgreich abgeschlossen; siehe Implementierungs-/Testdokumentation.
