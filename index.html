@@ -1848,6 +1848,17 @@ html[data-theme="dark"] .matchdayStatusChip.earlyReset{background:#713f12!import
  html:not([data-theme="light"]):not([data-theme="dark"]) .matchdayStatusChip.earlyReset{background:#713f12!important;border-color:#eab308!important;color:#fef08a!important;}
 }
 </style>
+<style id="matchday-nomination-dark-text-contrast">
+/* Korrektur: alle Textanteile der dunkelgrünen Nominierungskachel bleiben kontrastreich. */
+html:not([data-theme="light"]) .playerListRow.matchdaySquadTile.isNominated .playerListLevel,
+html:not([data-theme="light"]) .playerListRow.matchdaySquadTile.isNominated .playerListLevel span:not(.playerListStars),
+html:not([data-theme="light"]) .playerListRow.matchdaySquadTile.isNominated .playerListPositions,
+html:not([data-theme="light"]) .playerListRow.matchdaySquadTile.isNominated .playerListPositions *,
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isNominated .playerListLevel,
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isNominated .playerListLevel span:not(.playerListStars),
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isNominated .playerListPositions,
+html[data-theme="dark"] .playerListRow.matchdaySquadTile.isNominated .playerListPositions * { color:#e2e8f0!important; }
+</style>
 </head>
 <body>
 <div id="loginView">
@@ -2365,6 +2376,7 @@ async function loadApp(){
     const rec=(recommendationPlayers.filter(x=>x.recommendation_id===run?.id).sort((a,b)=>a.rank-b.rank).map(x=>x.player_id));
     return {id:m.id,date:m.match_date,name:m.name||'',opponent:m.opponent||'',location:m.location||'',notes:m.notes||'',kickoffTime:m.kickoff_time||'',durationMinutes:m.duration_minutes??null,gameType:m.game_type||'',status:m.status??null,selected:rows.map(x=>x.player_id),playerRows:rows,attendance:at,played,trainerAttendance:trainerAt,recommendation:rec,recommendationAt:run?.created_at||null,teams:rows.filter(x=>x.team_number).reduce((acc,x)=>{const n=Number(x.team_number);(acc[n]||(acc[n]=[])).push(x.player_id);return acc;},{}),goalkeepers:rows.filter(x=>x.team_number&&x.goalkeeper).reduce((acc,x)=>{acc[Number(x.team_number)]=x.player_id;return acc;},{})};
   });
+  await loadPlayerEventStats(true);
   currentMatchdayId=null;matchdaySelection=new Set();
   if($('recommendedSquadSizeInput'))$('recommendedSquadSizeInput').value=String(recommendedSquadSize);
   $('headerSub').textContent=(teamRow?.name||'Jugendmannschaft')+(season?' · Saison '+season.name:'')+(contextReadOnly?' · Nur Ansicht ('+(isSuperAdmin?'Superadmin':'Vereinsadmin')+')':' · '+(role==='admin'?'Admin':'Trainer'));
@@ -2495,12 +2507,29 @@ function playerEligibleForMatchday(p,m){return playerJoinedBeforeEvent(p,m.date,
 function trainingCountsForStats(t,p){return !trainingIsCancelled(t)&&trainingIsPast(t)&&(!p||playerEligibleForTraining(p,t));}
 function attendanceStats(p){const eligible=state.trainings.filter(t=>trainingCountsForStats(t,p));let attended=0;for(const t of eligible)if(t.attendance?.[p.id])attended++;const total=eligible.length;return {attended,total,rate:total?attended/total:0};}
 let top16RandomTie=new Map();
+function recommendationWindowStart(){const d=new Date(String(todayISO())+'T00:00:00');d.setDate(d.getDate()-56);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function recommendationAttendanceStats(p){const start=recommendationWindowStart(),end=todayISO();const eligible=state.trainings.filter(t=>t.date>=start&&t.date<=end&&trainingCountsForStats(t,p));let attended=0;for(const t of eligible)if(t.attendance?.[p.id])attended++;return {attended,total:eligible.length,rate:eligible.length?attended/eligible.length:0};}
+function recommendationEventStats(p){const row=playerEventStats[p.id]||{},start=recommendationWindowStart(),end=todayISO();const stars=(row.starEvents||[]).filter(e=>e.date>=start&&e.date<=end).length;const cards=(row.yellowEvents||[]).filter(e=>e.date&&e.date<=end).sort((a,b)=>String(a.date).localeCompare(String(b.date)));let cycle=0,windowCards=0;for(const e of cards){cycle++;if(e.date>=start)windowCards++;if(cycle===5){cycle=0;windowCards=0;}}return {stars,yellowCards:windowCards};}
+function recommendationScore(p){const attendance=recommendationAttendanceStats(p),events=recommendationEventStats(p);const factor=attendance.attended===0?0:attendance.attended===1?0.3:attendance.attended===2?0.6:1;const starRate=attendance.attended?events.stars/attendance.attended:0;const deduction=[0,1,3,6,10][Math.min(events.yellowCards,4)];return {score:70*attendance.rate+30*starRate*factor-deduction,attendance,events,factor};}
 function recentTrainings(p){return state.trainings.filter(t=>trainingCountsForStats(t,p)).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.id||'').localeCompare(String(a.id||'')));}
 function trainingRecencyCompare(a,b){const common=recentTrainings(a).filter(t=>playerEligibleForTraining(b,t));for(const t of common){const ap=!!t.attendance?.[a.id],bp=!!t.attendance?.[b.id];if(ap!==bp)return ap?-1:1;}return 0;}
-function recentMatchdays(p){return state.matchdays.filter(m=>!p||playerEligibleForMatchday(p,m)).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.id||'').localeCompare(String(a.id||'')));}
+function recentMatchdays(p){const start=recommendationWindowStart(),end=todayISO();return state.matchdays.filter(m=>m.date>=start&&m.date<=end&&(!p||playerEligibleForMatchday(p,m))).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.id||'').localeCompare(String(a.id||'')));}
+function actualAppearances(p){return recentMatchdays(p).filter(m=>m.played?.[p.id]===true).length;}
 function matchdayFairnessCompare(a,b){const common=recentMatchdays(a).filter(m=>playerEligibleForMatchday(b,m));for(const md of common){const ap=(md.selected||[]).includes(a.id),bp=(md.selected||[]).includes(b.id);if(ap!==bp)return ap?1:-1;}return 0;}
 function randomTieValue(id){if(!top16RandomTie.has(id))top16RandomTie.set(id,Math.random());return top16RandomTie.get(id);}
-function top16Ranking(includeSuspended=false){const md=state.matchdays.find(x=>x.id===currentMatchdayId);const arr=[...state.players].filter(p=>includeSuspended||!md||!matchdaySuspensionFor(p.id,md.id).blocked);arr.sort((a,b)=>{const A=attendanceStats(a),B=attendanceStats(b);let v=B.rate-A.rate;if(v!==0)return v;v=trainingRecencyCompare(a,b);if(v!==0)return v;v=matchdayFairnessCompare(a,b);if(v!==0)return v;return randomTieValue(a.id)-randomTieValue(b.id);});return arr;}
+function top16Ranking(includeSuspended=false){
+  const md=state.matchdays.find(x=>x.id===currentMatchdayId);
+  const arr=[...state.players].filter(p=>includeSuspended||!md||!matchdaySuspensionFor(p.id,md.id).blocked);
+  const scored=arr.map(p=>({player:p,...recommendationScore(p)})).sort((a,b)=>b.score-a.score);
+  const groups=[];
+  for(let i=0;i<scored.length;){
+    const anchor=scored[i].score,group=[];
+    while(i<scored.length&&anchor-scored[i].score<=2.0000001)group.push(scored[i++]);
+    group.sort((a,b)=>actualAppearances(a.player)-actualAppearances(b.player)||matchdayFairnessCompare(a.player,b.player)||trainingRecencyCompare(a.player,b.player)||randomTieValue(a.player.id)-randomTieValue(b.player.id));
+    groups.push(...group.map(x=>x.player));
+  }
+  return groups;
+}
 function top16RankMap(){return new Map(top16Ranking().map((p,i)=>[p.id,i]));}
 function sortedPlayers(){const arr=[...state.players];const cmpText=(a,b)=>String(a||'').localeCompare(String(b||''),'de',{sensitivity:'base'});const rankMap=top16RankMap();arr.sort((a,b)=>{const A=attendanceStats(a),B=attendanceStats(b);let v=0;if(playerSort.key==='firstName')v=cmpText(a.first_name,b.first_name);else if(playerSort.key==='lastName')v=cmpText(a.last_name,b.last_name);else if(playerSort.key==='training')v=(B.rate-A.rate)||trainingRecencyCompare(a,b)||matchdayFairnessCompare(a,b);else if(playerSort.key==='top16')v=rankMap.get(a.id)-rankMap.get(b.id);else v=cmpText(displayName(a),displayName(b));if(v===0)v=cmpText(displayName(a),displayName(b));return playerSort.key==='top16'?v:(playerSort.dir==='asc'?v:-v);});return arr;}
 function isSquad(p){const rank=top16Ranking();return rank.slice(0,Math.max(1,Number(recommendedSquadSize)||16)).some(x=>x.id===p.id);}
@@ -2515,18 +2544,19 @@ async function loadPlayerEventStats(force=false){
   try{
     const c=getClient();
     const [events,suspensions]=await Promise.all([
-      c.from('training_behavior_events').select('player_id,event_type,status').eq('team_id',team).eq('season_id',season.id).eq('status','active'),
+      c.from('training_behavior_events').select('player_id,event_type,status,training_date_snapshot').eq('team_id',team).eq('season_id',season.id).eq('status','active'),
       c.from('training_suspensions').select('player_id,status').eq('team_id',team).eq('season_id',season.id).eq('status','open')
     ]);
     if(events.error)throw events.error;
     if(suspensions.error)throw suspensions.error;
     const next={};
-    state.players.forEach(p=>next[p.id]={yellow:0,red:0,stars:0,suspensions:0});
+    state.players.forEach(p=>next[p.id]={yellow:0,red:0,stars:0,suspensions:0,yellowEvents:[],starEvents:[]});
     (events.data||[]).forEach(e=>{
       const row=next[e.player_id];if(!row)return;
-      if(e.event_type==='yellow_card')row.yellow++;
+      const event={date:e.training_date_snapshot||''};
+      if(e.event_type==='yellow_card'){row.yellow++;row.yellowEvents.push(event);}
       else if(e.event_type==='red_card')row.red++;
-      else if(e.event_type==='positive_star')row.stars++;
+      else if(e.event_type==='positive_star'){row.stars++;row.starEvents.push(event);}
     });
     (suspensions.data||[]).forEach(x=>{if(next[x.player_id])next[x.player_id].suspensions++;});
     playerEventStats=next;playerEventStatsTeam=team;playerEventStatsSeason=season.id;
