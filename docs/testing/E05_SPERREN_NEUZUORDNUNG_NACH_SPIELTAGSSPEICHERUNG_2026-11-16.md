@@ -3,7 +3,7 @@
 **Datum:** 16.11.2026  
 **Branch:** develop  
 **Änderung:** Frontend-only  
-**PROD:** Nicht berührt  
+**PROD:** Funktion nach erfolgreichem Release in PROD enthalten  
 **Datenbank / Migrationen:** Unverändert
 
 ## Ausgangslage
@@ -41,14 +41,13 @@ Die Neuzuordnung wird sowohl nach dem Anlegen eines Spieltags als auch nach dem 
 
 ## Teststatus
 
-**Codeänderung committed; Praxistest nach Deploy in DEV ausstehend.**
+**Bestanden (16.11.2026).** Der Test wurde in der regulären DEV-Mannschaft durchgeführt:
 
-Zu testen:
-1. TEST C hat eine offene rote-Karte-Sperre ohne Spieltagszuordnung.
-2. Den bestehenden Spieltag 4 (29.11.2026, geplant) bearbeiten und speichern.
-3. Prüfen, dass die Sperre TEST C diesem Spieltag zugeordnet wird.
-4. Spieltag neu öffnen und prüfen, dass TEST C als gesperrt erscheint.
-5. Kaderempfehlung neu berechnen und prüfen, dass TEST C ausgeschlossen wird.
-6. Optional: Ausnahme erteilen und zurücknehmen; prüfen, dass Sperrstatus und Zuordnung erwartungsgemäß wechseln.
+1. Für Spieler Vier wurde am Training vom 03.12.2026 regulär über die App eine rote Karte erfasst, als noch kein späterer Spieltag existierte.
+2. Danach wurde der Spieltag am 06.12.2026 (Gegner „Testgegner“) angelegt und gespeichert.
+3. Die zuvor offene Sperre wurde automatisch diesem Spieltag zugeordnet. Read-only wurde `intended_matchday_id`, Snapshot-Datum 06.12.2026, Gegner-Snapshot „Testgegner“ und `manual_target_locked = false` bestätigt.
+4. Nach erneutem Öffnen und Neuberechnen blieb Spieler Vier rot gesperrt und aus der Kaderempfehlung ausgeschlossen.
 
-Ein erfolgreicher Code-Commit ist noch kein Nachweis eines erfolgreichen DEV-Laufzeittests.
+**Ergebnis:** Die automatische Neuzuordnung und der anschließende Sperrenausschluss sind praktisch und anhand des Datenbankzustands bestätigt. Keine SQL-Schreiboperation und keine manuelle Änderung an Karte oder Sperre. PROD blieb während der DEV-Prüfung unverändert.
+
+**PROD-Nachweis:** Die Änderung wurde später gemeinsam mit dem Kaderempfehlungs-Frontend über den bestehenden Workflow `Deploy PROD` erfolgreich ausgerollt. Der anschließende PROD-Smoke-Test wurde vom Nutzer mit „Sieht gut aus“ bestätigt.
