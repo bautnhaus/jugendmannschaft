@@ -31,11 +31,11 @@ Der aktuelle gemeinsame `index.html`-Stand enthält außerdem die bereits dokume
 
 Read-only GitHub-Vergleich `main...develop`, Stand nach den Dokumentationsnachträgen am 16.11.2026:
 
-- `develop` ist 13 Commits vor `main`.
+- `develop` ist 16 Commits vor `main`.
 - `main` ist 0 Commits vor `develop`; kein Branch-Drift in die Gegenrichtung.
 - Geänderte Dateien im Vergleich:
   - `index.html` – 53 Ergänzungen, 9 Löschungen.
-  - sechs neue Fach-/Testdokumente unter `docs/`.
+  - sieben neue Fach-/Testdokumente unter `docs/`.
 - Es wurden keine SQL-Migrationsdateien, Rollback-Skripte oder DB-Changelog-/Migration-Log-Dateien durch diesen Releasevergleich geändert.
 
 ## 3. Datenbankprüfung
