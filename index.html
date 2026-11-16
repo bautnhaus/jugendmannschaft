@@ -3372,6 +3372,8 @@ window.selectSquad=async()=>{await saveMatchdayRecommendation();};
 window.clearMatchday=()=>{matchdaySelection=new Set();saveMatchdaySelection();};
 window.saveMatchdayRecommendation=async()=>{
   const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md)return;
+  await loadPlayerEventStats(true);
+  if(playerEventStatsTeam!==team||playerEventStatsSeason!==season?.id){showStatus('Ereignisdaten konnten nicht geladen werden. Die Kaderempfehlung wurde nicht gespeichert. Bitte erneut versuchen.','error');return;}
   await loadMatchdaySuspensions(md.id);const ids=top16Ranking().slice(0,Math.max(1,Number(recommendedSquadSize)||16)).map(p=>p.id);
   try{const {data,error}=await getClient().rpc('save_matchday_recommendation',{p_matchday_id:md.id,p_player_ids:ids});if(error)throw error;md.recommendation=ids;md.recommendationAt=new Date().toISOString();renderMatchday();showStatus('Kaderempfehlung gespeichert. Die Spieler wurden nicht automatisch nominiert.','ok');}
   catch(e){showStatus('Kaderempfehlung konnte nicht gespeichert werden: '+(e.message||e),'error');}
