@@ -81,3 +81,20 @@ Der Rollback ist absichtlich guarded und bricht ab, sobald Reminder- oder Auditd
 ## Testergebnis
 
 Die isolierten DEV-Funktionstests und RLS-Tests vom 17.11.2026 sind nach Hotfix 1 mit 14/14 Assertions erfolgreich. Die Testdaten wurden in jeder Testtransaktion zurückgerollt. Nicht getestet wurden echte parallele Sessions, gezielte RPC-Rollback-Fehler sowie alle Superadmin-/Nichtberechtigten-Rollenvarianten. Details: `docs/E23_PAKET_01_DEV_TESTPLAN_2026-11-17.md`.
+
+
+## Ergänzende technische Tests – 17.11.2026, Runde 2
+
+- **Parallele Create-Aufrufe:** zwei getrennte Supabase-SQL-Aufrufe für denselben Spieler wurden zeitlich überlappend gestartet. Genau ein Create wurde erfolgreich; der zweite wurde wegen bereits offener Vormerkung abgelehnt. PASS.
+- **Create parallel zu späterer Nominierung:** erster Versuch mit vertauschter Reihenfolge der Testspieltage war nicht aussagekräftig und wurde als Testaufbaufehler verworfen. Nach Korrektur (Ausgangsspieltag 18.11.2026, späterer Spieltag 25.11.2026) wurde die Vormerkung bei parallelem Create/INSERT korrekt auf fulfilled gesetzt. Dafür war Hotfix 2 nötig: der Fulfillment-Trigger nimmt jetzt denselben spielerbezogenen Advisory-Lock wie die Create-RPC. PASS nach Hotfix 2.
+- **Hotfix 2:** `supabase/migrations/20261117150000_epic23_nomination_reminder_concurrency_hotfix_dev.sql`, erfolgreich in DEV ausgeführt.
+- **Audit DELETE:** blockiert durch append-only-Trigger. PASS.
+- **Audit TRUNCATE:** blockiert durch append-only-Trigger. PASS.
+- **Unberechtigter Cross-Team-RPC-Aufruf:** mit einem Benutzer aus einer anderen Mannschaft getestet; Create wurde mit „Keine Berechtigung für diese Mannschaft“ abgelehnt. PASS.
+- **Wichtige Testkorrektur:** ein zunächst verwendeter Testaccount war bereits Mitglied der temporären Testmannschaft und war daher nicht unberechtigt. Der negative Berechtigungstest wurde mit einem anderen Account wiederholt.
+- **RPC-Fehler-/Rollback mitten in der Transaktion:** nicht gezielt provoziert. Das erfordert einen kontrollierten Fehler zwischen Reminder-INSERT, optionalem Nominierungs-DELETE und Audit-INSERT; ohne temporäre Test-Trigger-/DDL-Manipulation lässt sich dieser Zwischenzustand über die öffentliche RPC nicht deterministisch auslösen. Keine temporäre DDL-Manipulation vorgenommen.
+- **Superadmin mit explizitem Teamkontext:** nicht separat getestet; erfordert einen Testaccount mit Superadmin-Rolle und kontrolliertem ausgewähltem Teamkontext. Kein Frontend-Test wurde durchgeführt.
+
+### Testdaten
+
+Die Testmannschaften/Spieler/Spieltag-Datensätze wurden in DEV angelegt. Ein Teil der Reminder hat append-only Audit-Historie und kann deshalb nicht durch einfaches Löschen entfernt werden. Die Datensätze sind eindeutig als `E23 ... TEMP` markiert und wurden nicht für reale App-Abläufe verwendet. Sie bleiben isoliert in DEV, bis ein kontrollierter Testdaten-Bereinigungsweg unter Wahrung der Audit-Unveränderlichkeit festgelegt ist.
