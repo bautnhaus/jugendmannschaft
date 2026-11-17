@@ -1,7 +1,7 @@
 -- Epic 23 – Paket 1: Nominierungsvormerkung (DEV)
 -- Prepared: 2026-11-17
 -- Target: Supabase DEV only (pzazqvvoruqnqhcorbwx)
--- STATUS: PREPARED ONLY – NOT EXECUTED
+-- STATUS: EXECUTED SUCCESSFULLY IN SUPABASE DEV (2026-11-17; ledger 20261117123114)
 -- Creates reminder/audit tables, controlled RPCs and fulfillment trigger.
 -- No frontend changes. No PROD changes.
 
