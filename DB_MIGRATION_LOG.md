@@ -1386,3 +1386,13 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Ergebnis:** Migration strukturell erfolgreich. Funktionale Positiv-/Negativtests und End-to-End-Verifikation stehen noch aus.
 - **Rollback/Wiederherstellung:** guarded Rollback vorbereitet, nicht ausgeführt.
 - **PROD:** nicht ausgeführt; unverändert.
+
+
+### Ergänzung DB-MIG-2026-027 – Hotfix und Testresultat
+
+- **Hotfix-Migration:** `20261117140000_epic23_nomination_reminder_fulfillment_hotfix_dev`, erfolgreich in DEV ausgeführt.
+- **Datei:** `supabase/migrations/20261117140000_epic23_nomination_reminder_fulfillment_hotfix_dev.sql`.
+- **Korrektur:** Fulfillment verwendet `clock_timestamp()` und inklusive Zeitgrenze `created_at <= v_now`, damit eine spätere Nominierung innerhalb derselben Transaktion die Vormerkung korrekt erfüllt.
+- **Tests:** 14/14 ausgeführte Funktions-/RLS-Assertions bestanden nach Hotfix. Testtransaktionen wurden zurückgerollt.
+- **Offen:** echte parallele Sessions, künstlich erzwungener Zwischenfehler/RPC-Rollback und separate Superadmin-/Nichtberechtigten-RPC-Rollenfälle.
+- **Datenbestand:** keine Testdaten persistiert.
