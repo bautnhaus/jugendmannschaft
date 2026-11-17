@@ -1370,3 +1370,19 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Ergebnis/Verifikation:** Nicht ausgeführt; Postflight und DEV-Tests offen.
 - **Rollback/Wiederherstellung:** Guarded Rollback liegt bereit; Ausführung nicht erfolgt.
 - **PROD:** Nicht ausgeführt und nicht freigegeben.
+
+
+### DB-MIG-2026-027 – Epic 23 Paket 1: Nominierungsvormerkung (DEV) – Ausführungsnachweis
+
+- **Umgebung:** Supabase DEV – Projekt pzazqvvoruqnqhcorbwx.
+- **Tatsächliche Ledger-Version:** `20261117123114`; **Migrationsname:** `epic23_nomination_reminder_foundation_dev`.
+- **Status:** erfolgreich ausgeführt am 17.11.2026. Supabase meldete `success: true`.
+- **Ausführungsweg:** Supabase-Migrationsdienst / apply migration.
+- **Freigabe:** ausdrückliche Freigabe des Projektverantwortlichen im Chat vom 17.11.2026.
+- **Ausgeführte Datei:** `supabase/migrations/20261117120000_epic23_nomination_reminder_foundation_dev.sql`.
+- **Änderungsumfang:** zwei Tabellen, Indizes, RLS/Policies/Grants, zwei Nutzer-RPCs, zwei Triggerfunktionen und zwei Trigger.
+- **Postflight:** RLS auf beiden Tabellen aktiv; SELECT-Policies vorhanden; Trigger aktiv; Create-/Cancel-RPCs SECURITY DEFINER, Owner postgres, fester search_path; EXECUTE nur authenticated, nicht anon/PUBLIC; Triggerfunktionen nicht direkt ausführbar; authenticated besitzt nur SELECT auf beiden Tabellen.
+- **Datenbestand:** 0 Vormerkungen, 0 Audit-Zeilen direkt nach Installation.
+- **Ergebnis:** Migration strukturell erfolgreich. Funktionale Positiv-/Negativtests und End-to-End-Verifikation stehen noch aus.
+- **Rollback/Wiederherstellung:** guarded Rollback vorbereitet, nicht ausgeführt.
+- **PROD:** nicht ausgeführt; unverändert.
