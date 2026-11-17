@@ -328,13 +328,14 @@ Damit sind keine zusätzlichen Namens-/Datums-Snapshots nötig. Die FK-Schutzreg
 ### 17.7 Backup-/Restore-Auswirkung
 
 Der Restore löscht vorhandene Matchdays und Players, bevor er sie neu einfügt. Deshalb muss die Reihenfolge angepasst werden:
-1. Reminder-Datensätze der betroffenen Mannschaft kontrolliert exportieren/temporär im Backup halten;
+1. Reminder-Datensätze der betroffenen Mannschaft in die Backup-Nutzlast aufnehmen;
 2. beim Restore Reminder der betroffenen Mannschaft vor den Elternobjekten entfernen;
-3. Spieler und Spieltage wiederherstellen;
-4. Reminder mit den Original-IDs wieder einfügen;
-5. Referenzen und Statuswerte validieren.
+3. Spieler und Spieltage mit den Original-IDs wiederherstellen;
+4. Nominierungen und Empfehlungsläufe wiederherstellen;
+5. Reminder mit den Original-IDs und ihren historischen Statuswerten wieder einfügen;
+6. Referenzen und Statuswerte validieren.
 
-Die Snapshot-/SET-NULL-Variante benötigt zusätzliche Backupfelder und eine klare Entscheidung, ob ein Restore gelöschte Spieler-/Spieltagreferenzen wieder verbinden darf. Backup-Version 13 bleibt vorgesehen.
+Backup-Version 13 bleibt vorgesehen. Der Restore muss außerdem verhindern, dass das Wiedereinfügen historischer Nominierungszeilen den Erfüllungstrigger wie eine neue Nominierung behandelt. Eine pauschale Trigger-Deaktivierung ist ausgeschlossen; vorzusehen ist ein eng begrenzter, nur für den kontrollierten Restore verfügbarer Mechanismus oder eine Restore-Reihenfolge, bei der die Triggersemantik korrekt bleibt.
 
 ## 18. Noch offene technische Festlegungen vor finalem SQL-Entwurf
 
@@ -403,4 +404,4 @@ Das Backup exportiert IDs, Status, Erstellungs-/Erfüllungs-/Rücknahmedaten und
 6. **Backup/Restore und Regression:** separat testen und dokumentieren.
 7. **PROD:** nicht Bestandteil dieser Vorbereitung; erfordert eigenes Releasepaket und eigene ausdrückliche Freigabe.
 
-**Aktueller Status nach dieser Prüfung:** Die RLS-/Rollenmuster, FK-Kaskaden, Nominierungs-Schreibpfade und Restore-Reihenfolge sind nun konkret erfasst. Der SQL-Entwurf bleibt blockiert, bis die Historien-/Löschentscheidung getroffen ist und die Erstellung der versionierten Migration ausdrücklich beauftragt wurde.
+**Aktueller Status nach dieser Prüfung:** Die RLS-/Rollenmuster, FK-Kaskaden, Nominierungs-Schreibpfade und Restore-Reihenfolge sind konkret erfasst. Die Historien-/Löschstrategie ist aufgrund der bestehenden Soft-Deaktivierung fachlich und technisch eingegrenzt. Vor dem SQL-Entwurf bleiben der Create-Randfall (bereits vorhandene spätere Nominierung) und die gewünschte Sichtbarkeit der Historie zu bestätigen. Eine versionierte Migration wird erst nach separater ausdrücklicher Beauftragung erstellt; SQL-Ausführung bleibt gesondert freigabepflichtig.
