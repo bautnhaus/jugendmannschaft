@@ -715,3 +715,18 @@ Die zuvor offenen Punkte wurden durch den Nutzer entschieden:
 | 40 | Spieler hat parallel eine offene Sperrausgleich-Vormerkung | Beide Vormerkungstypen werden getrennt angezeigt und können unabhängig zurückgenommen werden |
 
 **Aktualisierte Architekturgrenze:** Das frühere vorgeschlagene Ablehnen bei einer bereits bestehenden zukünftigen Nominierung ist verworfen. Keine SQL-Migration wurde erstellt oder ausgeführt; keine Frontenddatei wurde geändert.
+
+
+## 25. SQL-Paket 1 vorbereitet (17.11.2026)
+
+Die erste konkrete Datenbankmigration ist für Supabase DEV vorbereitet, aber noch nicht ausgeführt.
+
+- Migration: `supabase/migrations/20261117120000_epic23_nomination_reminder_foundation_dev.sql`
+- Guarded Rollback: `supabase/rollback/20261117120000_epic23_nomination_reminder_foundation_rollback.sql`
+- Read-only Postflight: `docs/E23_PAKET_01_VERIFICATION_2026-11-17.sql`
+- DEV-Testplan: `docs/E23_PAKET_01_DEV_TESTPLAN_2026-11-17.md`
+- Paket-Dossier: `docs/E23_PAKET_01_DB_GRUNDLAGE_2026-11-17.md`
+
+Das Paket enthält Reminder- und Audit-Tabelle, RLS/Grants, Create-/Cancel-RPC und den Fulfillment-Trigger. Es ändert keine bestehenden E05-Objekte. Die Ausführung bleibt auf DEV beschränkt und ist noch offen. Die Frontend-/Empfehlungsintegration und Backup-Version 13 folgen als getrennte Pakete nach erfolgreicher Datenbankabnahme.
+
+Der DB-Changelog führt das Paket als vorbereitet, nicht ausgeführt. Das DB-Migrationslog enthält den geplanten Eintrag DB-MIG-2026-027 ausdrücklich mit Status „Geplant / nicht ausgeführt“.
