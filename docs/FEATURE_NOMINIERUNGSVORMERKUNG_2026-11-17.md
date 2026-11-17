@@ -644,8 +644,8 @@ Geplante Änderung:
 
 ### 22.8 UI-Integrationspunkte
 
-- `matchdayPlayerOptionsHtml(player, md)`: bei aktiven Spielern die Aktion „Nominierung vormerken“ anbieten, auch wenn der Spieler aktuell nominiert ist.
-- Bei offener Vormerkung stattdessen „Vormerkung zurücknehmen“ anbieten.
+- `matchdayPlayerOptionsHtml(player, md)`: bei aktiven Spielern die Aktion „Nominierung vormerken“ anbieten, auch wenn der Spieler aktuell nominiert ist. Die bestehende Sperrausgleich-Aktion bleibt unabhängig; Bedingungen dürfen nicht über ein gegenseitiges `else` ausgeschlossen werden.
+- Bei offener Nominierungsvormerkung stattdessen eindeutig „Nominierungsvormerkung zurücknehmen“ anbieten. Die bestehende Sperrausgleich-Aktion „Vormerkung zurücknehmen“ bleibt davon getrennt; beide Vormerkungstypen können unabhängig voneinander bestehen.
 - Der Create-Dialog verlangt Verfügbarkeitsbestätigung und Pflichtbegründung.
 - Bei nominiertem Spieler erklärt der Dialog, dass die aktuelle Nominierung beim Speichern entfernt wird.
 - Nach erfolgreicher RPC: `loadApp()` bzw. gezieltes Nachladen der Reminder und Spieltagsdaten; anschließend Spieltagsansicht neu rendern.
@@ -666,3 +666,23 @@ Geplante Änderung:
 - Backup-Version-13-Testmatrix einschließlich Restore und automatischem Sicherheits-Restore.
 
 **Grenze:** Dieser Abschnitt ist ein technisches Architekturkonzept. Es wurde keine SQL-Migration angelegt oder ausgeführt und keine Frontenddatei verändert.
+
+
+## 23. Zusätzliche transaktions- und UI-Regressionstests
+
+| Nr. | Ausgangslage / Aktion | Erwartetes Ergebnis |
+|---:|---|---|
+| 21 | Spieler A ist im Ausgangsspieltag nominiert; Vormerkung mit Pflichtfeldern speichern | Vormerkung wird angelegt und A wird im selben RPC-Aufruf aus genau diesem Ausgangsspieltag entfernt |
+| 22 | Fehler beim Anlegen nach Beginn der Transaktion | Vollständiger Rollback; A bleibt nominiert und es entsteht keine Vormerkung |
+| 23 | A hat `played=true` am Ausgangsspieltag | Vorgang wird abgelehnt; tatsächlicher Einsatz wird niemals entfernt |
+| 24 | A ist nicht nominiert und aktiv | Vormerkung wird ohne unnötige DELETE-Operation angelegt |
+| 25 | A ist inaktiv oder Ausgangsspieltag vergangen/abgesagt | Vormerkungserstellung wird abgelehnt |
+| 26 | A hat bereits eine offene Vormerkung | Zweite offene Vormerkung wird durch RPC-Prüfung und Unique Index verhindert |
+| 27 | A hat eine offene Sperre für den Ausgangsspieltag | Bestehende Sperrenregeln bleiben wirksam; Vormerkungsaktion darf sie nicht umgehen |
+| 28 | Spieler hat zugleich eine offene Sperrausgleich-Vormerkung und eine offene Nominierungsvormerkung | Beide Aktionen bleiben im Optionen-Menü eindeutig getrennt |
+| 29 | Spieler wird in anderem zukünftigen Spieltag nominiert | Nur die passende offene Vormerkung derselben Mannschaft wird erfüllt; Quelle/Datum wird korrekt geprüft |
+| 30 | Änderung nur an Teamnummer, Torwart oder Einsatzstatus | Keine Erfüllung einer offenen Nominierungsvormerkung |
+| 31 | Zwei Trainer legen gleichzeitig eine Vormerkung für denselben Spieler an | Maximal eine offene Vormerkung; keine Teilabwahl |
+| 32 | Trainer legt Vormerkung an, während parallele Nominierung erfolgt | Advisory Lock serialisiert; Ergebnis ist konsistent und vollständig |
+| 33 | Trainer nimmt offene Nominierungsvormerkung zurück | Status cancelled, Priorisierung entfällt, Historie bleibt; Ausgangsnominierung wird nicht automatisch wiederhergestellt |
+| 34 | Backup-Version 13 mit offenen/erfüllten/zurückgenommenen Vormerkungen wiederherstellen | Alle Reminder werden mit IDs und Historie wiederhergestellt; kein falsches Erfüllen durch Restore |
