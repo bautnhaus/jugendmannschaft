@@ -1760,9 +1760,13 @@ html[data-theme="dark"] .playerListRow.matchdaySquadTile .matchdayStatusChip.nom
 <style id="e23-nomination-reminder-dialog-layout">
 /* E23: Gleiche Feld- und Buttonabstände wie in den Sperrdialogen; beide Aktionen bleiben einzeilig nebeneinander. */
 .modalbox .e23NominationReminderDialog .toolbar{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:stretch;gap:8px;margin-top:14px}
-.modalbox .e23NominationReminderDialog .toolbar button{flex:1 1 0;width:auto;min-width:0;min-height:44px;padding-left:8px;padding-right:8px;font-size:16px;line-height:1.2;white-space:nowrap}
+.modalbox .e23NominationReminderDialog .toolbar button{width:auto!important;min-width:0;min-height:44px;padding-left:8px;padding-right:8px;font-size:16px;line-height:1.2;white-space:nowrap;box-sizing:border-box}
+.modalbox .e23NominationReminderDialog .toolbar button:first-child{flex:0 0 40%!important}
+.modalbox .e23NominationReminderDialog .toolbar button:last-child{flex:1 1 60%!important}
 .modalbox .e23NominationReminderDialog label.matchdayCreateField{display:block;margin-top:10px}
-.modalbox .e23NominationReminderDialog label.matchdayCreateField>textarea{display:block;width:100%!important;max-width:100%!important;min-width:0;min-height:42px;box-sizing:border-box;margin-top:8px;padding:10px!important;font-size:16px!important;line-height:20px;border-radius:9px}
+.modalbox .e23NominationReminderDialog label.matchdayCreateField>textarea{display:block;width:100%!important;max-width:100%!important;min-width:0;min-height:42px;box-sizing:border-box;margin-top:8px!important;padding:10px!important;font-size:16px!important;line-height:20px;border-radius:9px}
+.modalbox .e05DialogReason textarea{display:block;width:100%;max-width:100%;box-sizing:border-box;margin-top:8px!important}
+.modalbox .e05DialogReason+.toolbar{margin-top:14px!important}
 </style>
 
 <style id="e05-exception-tile-outline">
