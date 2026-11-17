@@ -1447,8 +1447,9 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 ### DB-MIG-2026-030 – Epic 23 Hotfix: Audit-Aktion reopened zulassen (DEV)
 
 - **Zielumgebung:** Supabase DEV – Projekt `pzazqvvoruqnqhcorbwx`.
-- **Status:** SQL vorbereitet und dokumentiert; noch nicht ausgeführt.
-- **Freigabe:** Nutzerfreigabe zur Vorbereitung und anschließenden DEV-Korrektur am 17.11.2026; Ausführung steht noch aus.
+- **Status:** erfolgreich in Supabase DEV ausgeführt am 17.11.2026; Supabase meldete `success: true`.
+- **Tatsächliche Ledger-Version:** `20261117210545`; **Migrationsname:** `epic23_reopened_audit_action_hotfix_dev`.
+- **Freigabe:** ausdrückliche Ausführungsfreigabe des Projektverantwortlichen im Chat am 17.11.2026.
 - **Ursache:** Die bestehende CHECK-Constraint `matchday_nomination_reminder_audit_action_check` erlaubt nur `created`, `fulfilled`, `cancelled`. Paket 3 protokolliert zusätzlich `reopened`; der Audit-INSERT scheitert dadurch.
 - **Read-only-Preflight:** Constraintdefinition live geprüft. Audit-Bestand vor Hotfix: `created=8`, `fulfilled=5`, `cancelled=2`; keine `reopened`-Zeilen und keine unbekannten Aktionswerte.
 - **Änderungsumfang:** ausschließlich CHECK-Constraint auf vier Werte erweitern: `created`, `fulfilled`, `cancelled`, `reopened`. Keine Daten-, Trigger-, Funktions-, RLS- oder Frontendänderung.
@@ -1456,4 +1457,6 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Guarded Rollback:** `supabase/rollback/20261117193000_epic23_reopened_audit_action_hotfix_rollback.sql`; verweigert Rollback, sobald eine `reopened`-Historienzeile existiert.
 - **Postflight:** `docs/E23_HOTFIX_REOPENED_AUDIT_VERIFICATION_2026-11-17.sql`.
 - **Dossier:** `docs/E23_HOTFIX_REOPENED_AUDIT_2026-11-17.md`.
+- **Postflight:** PASS. Constraint erlaubt exakt `created`, `fulfilled`, `cancelled`, `reopened`. Audit-Bestand unverändert: `created=8`, `fulfilled=5`, `cancelled=2`; noch keine `reopened`-Zeile.
+- **Ergebnis:** Constraint korrigiert; keine bestehenden Audit-Zeilen oder sonstigen Daten geändert. iPhone-End-to-End-Wiederholung steht noch aus.
 - **PROD / main:** unverändert; keine PROD-Ausführung oder Übernahme.
