@@ -938,3 +938,14 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 - Die vorhandene kontextgebundene clubs-SELECT-Policy ist unverändert geblieben.
 - Ausschließlich die neue RPC wurde ergänzt; keine Tabellen-/Daten-/RLS-/Trigger-/Storage-Änderung.
 - Die Frontend-UI-Prüfung ist nach Deploy PROD noch durchzuführen. `main` und `index.html` wurden nicht manuell geändert.
+
+
+## 17.11.2026 – Epic 23 / Paket 1 – SQL vorbereitet, nicht ausgeführt
+
+- **Umgebung:** ausschließlich Supabase DEV vorgesehen (Projekt pzazqvvoruqnqhcorbwx); PROD unverändert.
+- **Objekte (geplant):** `matchday_nomination_reminders`, `matchday_nomination_reminder_audit`, Create-/Cancel-RPCs, Erfüllungstrigger und Audit-Schutztrigger.
+- **Migration:** `supabase/migrations/20261117120000_epic23_nomination_reminder_foundation_dev.sql`.
+- **Rollback:** `supabase/rollback/20261117120000_epic23_nomination_reminder_foundation_rollback.sql`.
+- **Postflight:** `docs/E23_PAKET_01_VERIFICATION_2026-11-17.sql`.
+- **Testplan/Dossier:** `docs/E23_PAKET_01_DEV_TESTPLAN_2026-11-17.md`, `docs/E23_PAKET_01_DB_GRUNDLAGE_2026-11-17.md`.
+- **Status:** ausschließlich vorbereitet und auf develop dokumentiert. Nicht in DEV oder PROD ausgeführt; keine DB-Objekte geändert. Die Ausführung und Verifikation sind offen.
