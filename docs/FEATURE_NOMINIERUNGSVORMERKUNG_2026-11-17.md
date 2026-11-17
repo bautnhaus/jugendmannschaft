@@ -184,22 +184,22 @@ Keine Ausführung in PROD und keine Änderung an GitHub `main` ohne separate kon
 3. Bereits nominierter Spieler am Ausgangsspieltag mit `played=false` oder `played IS NULL`: Vormerkung wird angelegt, die Nominierung atomar entfernt und ihr Snapshot gespeichert.
 4. Bereits eingesetzter Spieler (`played=true`): gesamte Vormerkungserstellung wird abgelehnt; Nominierung bleibt erhalten.
 5. Inaktive Spieler können nicht vorgemerkt werden.
-5. Offene Vormerkung erscheint auf der Kachel nur als Statushinweis.
-6. Vormerkung priorisiert den Spieler bei der nächsten neu berechneten Empfehlung.
-7. Kadergröße bleibt unverändert.
-8. Mehr Vormerkungen als Plätze werden innerhalb der Vormerkungsgruppe nach bestehender Rangfolge behandelt.
-9. Empfehlung allein erfüllt die Vormerkung nicht.
-10. Tatsächliche Nominierung erfüllt die Vormerkung mit Spieltagsreferenz.
-11. Nicht nominierte Spieler behalten offene Vormerkung für spätere Spieltage.
-12. Rücknahme ohne Begründung wird verhindert.
-13. Rücknahme mit Begründung setzt Status `cancelled`; Spieler verliert Vormerkungspriorität.
-14. Erfüllte oder zurückgenommene Vormerkung kann nicht erneut zurückgenommen werden.
-15. Nach Erfüllung oder Rücknahme kann eine neue offene Vormerkung erstellt werden.
-16. Doppelte parallele offene Vormerkungen werden verhindert.
-17. Fremde Mannschaften/Spieler sind durch RLS und Integritätsregeln geschützt.
-18. Sperrenprüfung und bestehende Nominierungslogik funktionieren unverändert.
-19. JSON-Version 13 exportiert und importiert alle Status.
-20. Backups Version 5–12 bleiben importierbar.
+6. Offene Vormerkung erscheint auf der Kachel nur als Statushinweis.
+7. Vormerkung priorisiert den Spieler bei der nächsten neu berechneten Empfehlung.
+8. Kadergröße bleibt unverändert.
+9. Mehr Vormerkungen als Plätze werden innerhalb der Vormerkungsgruppe nach bestehender Rangfolge behandelt.
+10. Empfehlung allein erfüllt die Vormerkung nicht.
+11. Tatsächliche Nominierung erfüllt die Vormerkung mit Spieltagsreferenz.
+12. Nicht nominierte Spieler behalten offene Vormerkung für spätere Spieltage.
+13. Rücknahme ohne Begründung wird verhindert.
+14. Rücknahme mit Begründung setzt Status `cancelled`; Spieler verliert Vormerkungspriorität.
+15. Erfüllte oder zurückgenommene Vormerkung kann nicht erneut zurückgenommen werden.
+16. Nach Erfüllung oder Rücknahme kann eine neue offene Vormerkung erstellt werden.
+17. Doppelte parallele offene Vormerkungen werden verhindert.
+18. Fremde Mannschaften/Spieler sind durch RLS und Integritätsregeln geschützt.
+19. Sperrenprüfung und bestehende Nominierungslogik funktionieren unverändert.
+20. JSON-Version 13 exportiert und importiert alle Status.
+21. Backups Version 5–12 bleiben importierbar.
 
 ## 13. Freigabegrenzen und aktueller Status
 
