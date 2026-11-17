@@ -209,3 +209,27 @@ Keine Ausführung in PROD und keine Änderung an GitHub `main` ohne separate kon
 - Supabase DEV/PROD: unverändert durch dieses Vorhaben.
 - GitHub `main`: unverändert.
 - Dokumentation: ausschließlich auf `develop`.
+
+
+## 14. Ergänzende technische Prüfung der DEV-Trigger (17.11.2026)
+
+Read-only ermittelte Trigger auf den relevanten Tabellen:
+
+| Tabelle | Trigger | Zeitpunkt / Ereignis | Bestehende Funktion |
+|---|---|---|---|
+| `matchday_players` | `matchday_players_cancel_early_reset` | AFTER INSERT oder UPDATE von `matchday_id, player_id` | `e05_cancel_early_reset_on_nomination()` |
+| `matchday_players` | `matchday_players_prevent_suspended_nomination` | BEFORE INSERT oder UPDATE von `matchday_id, player_id` | `prevent_suspended_matchday_nomination()` |
+| `matchday_players` | `require_active_player_change_matchday` | BEFORE UPDATE von `player_id` | `require_active_player_for_new_assignment()` |
+| `matchday_players` | `require_active_player_insert_matchday` | BEFORE INSERT | `require_active_player_for_new_assignment()` |
+| `matchdays` | `matchdays_reconcile_early_resets` | AFTER UPDATE von `status` | `e05_reconcile_early_resets_on_matchday_status()` |
+| `matchdays` | `matchdays_updated_at` | BEFORE UPDATE | `set_updated_at()` |
+
+Zusätzlich read-only geprüfte Funktionen:
+
+- `save_matchday_recommendation(uuid, uuid[])` ist SECURITY INVOKER, prüft Mannschaftsmitgliedschaft, doppelte/ungültige/inaktive/fremde Spieler und die bestehende Sperrenlogik und speichert anschließend den Empfehlungslauf samt Rangfolge.
+- `prevent_suspended_matchday_nomination()` ist SECURITY INVOKER und blockiert eine Nominierung bei einer aktiven Sperre ohne passende Ausnahme.
+- `e05_cancel_early_reset_on_nomination()` wird bereits nach einer tatsächlichen Nominierung ausgeführt und gehört zum vorhandenen Sperrausgleichsprozess.
+
+**Konsequenz für die Vorbereitung:** Der neue Erfüllungsmechanismus darf diese bestehenden Trigger nicht ersetzen, deaktivieren oder in ihrer Reihenfolge/Schutzwirkung umgehen. Ein eigener AFTER-Trigger ist technisch denkbar, muss aber in einer isolierten Test-Fixture gegen INSERT, relevante UPDATE-Fälle, bestehende Sperren-Guards, Sperrausgleich und Fehler-Rollback getestet werden. Vor einem Migrationsentwurf sind zusätzlich alle direkten Frontend-Schreibpfade und RPC-Aufrufer für `matchday_players` zu inventarisieren.
+
+**Noch nicht abschließend geklärt:** Verhalten, falls ein Spieler bereits für einen zukünftigen Spieltag nominiert wurde, bevor eine Vormerkung erstellt wird. Der fachliche Kern sagt, dass eine tatsächliche spätere Nominierung erfüllt; die Umsetzung muss diesen zeitlichen Randfall eindeutig behandeln, ohne eine bereits bestehende Nominierung rückwirkend falsch zuzuordnen. Dies ist eine technische Spezifikationsfrage und kein Freibrief für eine Datenänderung.
