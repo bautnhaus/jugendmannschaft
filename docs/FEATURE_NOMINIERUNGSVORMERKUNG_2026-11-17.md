@@ -342,3 +342,66 @@ Die Snapshot-/SET-NULL-Variante benötigt zusätzliche Backupfelder und eine kla
 3. **UI-Historie:** fachlich ist Historienerhalt beschlossen; für v1 ist noch zu entscheiden, ob erfüllte/zurückgenommene Vormerkungen nur im Dialog oder in einer eigenen Historienansicht sichtbar werden. Für die erste Umsetzung empfehle ich die Anzeige im Spieler-Optionen-/Detaildialog, ohne neue globale Übersicht.
 
 Diese Punkte betreffen die technische Konkretisierung und UI-Platzierung. Bis zu ihrer Klärung bleibt die SQL-Erstellung ein Entwurf und jede Ausführung gesperrt.
+
+
+## 19. Prüfung der tatsächlichen Lösch- und Restore-Abläufe (17.11.2026)
+
+### 19.1 Spieler- und Spieltagslöschung
+
+Der aktuelle Backup-Restore löscht vor dem Wiederaufbau:
+- vorhandene Spieltagsanwesenheit,
+- Empfehlungsläufe (deren Empfehlungsspieler über bestehende FK-Beziehungen mit entfernt werden),
+- `matchday_players`,
+- Matchday-Trainer,
+- anschließend die Spieltage,
+- anschließend die Spieler.
+
+Die vorhandenen Fremdschlüssel von `matchday_players` zu `matchdays` und `players` verwenden `ON DELETE CASCADE`. Auch `players.team_id` und `matchdays.team_id` kaskadieren bei Mannschaftslöschung.
+
+Ein allgemeines Spieler-/Spieltags-Löschmenü konnte in der aktuellen Datei mit den gezielten Suchbegriffen nicht als eigener Frontend-DELETE-Pfad nachgewiesen werden; die sichtbaren direkten Löschungen im geprüften Ausschnitt betreffen insbesondere den Backup-Restore. Die Datenbank-FK-Kaskaden sind dagegen eindeutig bestätigt.
+
+### 19.2 Konsequenz für Reminder-Historie
+
+Wenn die Reminder-Tabelle bei Spieler- oder Spieltagslöschung ebenfalls kaskadierend gelöscht würde, wäre die fachlich zugesagte Historie bei solchen Löschungen nicht erhalten. Für den Backup-Restore wäre eine Snapshot-Strategie außerdem erforderlich, da der Restore dieselben IDs löscht und anschließend neu einfügt.
+
+**Technische Empfehlung für v1:**
+- `player_id` und `source_matchday_id` bleiben nullable Fremdschlüssel mit `ON DELETE SET NULL`;
+- `fulfilled_matchday_id` ebenfalls `ON DELETE SET NULL`;
+- die Tabelle speichert einen begrenzten Snapshot des Spielernamens sowie Ausgangsspieltag-Datum und Gegner, damit die Historienzeile auch nach Löschung/Ersetzung der Stammdaten verständlich bleibt;
+- die Snapshotfelder werden beim Anlegen serverseitig aus den aktuellen Stammdaten gesetzt und sind anschließend unveränderlich;
+- bei Teamlöschung darf die Teamhistorie wie andere Teamdaten mit gelöscht werden.
+
+Diese Empfehlung erfüllt den Historienerhalt, speichert aber personenbezogene Namensdaten über eine Spieler-Stammdatenlöschung hinaus. Deshalb ist sie nicht automatisch umgesetzt oder freigegeben. Vor dem SQL-Entwurf muss der Nutzer entscheiden, ob diese begrenzten Snapshots erwünscht sind oder ob eine Spieler-/Spieltagslöschung Reminder-Datensätze bewusst mit entfernen darf.
+
+### 19.3 Backup-/Restore
+
+Der Restore muss vor dem Löschen bestehender Spieler/Spieltage die Reminder-Daten der betroffenen Mannschaft sichern und gezielt entfernen. Nach dem Wiederaufbau von Spielern und Spieltagen können Reminder mit den ursprünglichen IDs wieder eingespielt werden. Für historische Datensätze mit bereits auf NULL gesetzten Fremdschlüsseln bleiben Snapshots erhalten und dürfen beim Restore nicht automatisch mit ähnlich benannten neuen Spielern verknüpft werden.
+
+Das Backup muss deshalb neben IDs auch Status, Erstellungs-/Erfüllungs-/Rücknahmedaten, Begründungen und Snapshotfelder exportieren. Der Restore darf keine Erfüllungstrigger auslösen, nur weil historische `matchday_players`-Zeilen wiederhergestellt werden. Für den Restore ist daher ein klarer, transaktionssicherer Weg nötig, der die Reminder-Wiederherstellung nach den Nominierungszeilen durchführt oder den Erfüllungstrigger für den kontrollierten Restore-Kontext gezielt ausnimmt. Eine pauschale Trigger-Deaktivierung ist ausgeschlossen.
+
+## 20. Technische Risiken und geplante Gegenmaßnahmen
+
+| Risiko | Gegenmaßnahme |
+|---|---|
+| Gleichzeitige Vormerkung und Nominierung | gemeinsamer spielerbezogener Advisory Lock, partielle Unique-Regel und Transaktion |
+| Spieler/Spieltag aus anderer Mannschaft | serverseitige Validierung und RLS |
+| Super-Admin ohne gewählten Teamkontext | Schreibprüfung über `is_team_member(team_id)` |
+| Club-Admin soll nicht nominieren/vormerken | getrennte Lese- und Schreibregeln |
+| Sperren-Trigger wird umgangen | bestehende Trigger unverändert; neuer Trigger nur ergänzend |
+| Änderung nur an Teamnummer/Torwart/Einsatzstatus | Erfüllung nur bei INSERT oder tatsächlicher Änderung von Matchday/Player |
+| Backup-Restore löst falsche Erfüllung aus | kontrollierter Restorepfad, Tests mit historischen Reminder-Status |
+| Spieler-/Spieltagslöschung verliert Historie | Snapshot-/SET-NULL-Strategie nach Nutzerentscheidung |
+| Frühere spätere Nominierung wird rückwirkend gezählt | Create-RPC prüft bereits existierende spätere Nominierungen und lehnt Anlage ab |
+| Erfüllungstrigger schlägt fehl | gesamte Nominierungstransaktion wird zurückgerollt; sichtbare Fehlermeldung |
+
+## 21. Vorläufige Paket- und Freigabeplanung
+
+1. **Technisches Konzept final:** Tabellen-/RLS-/RPC-/Trigger-Definitionen einschließlich ACL und FK-Verhalten festlegen.
+2. **SQL-Paket erstellen:** erst nach ausdrücklicher Freigabe zur Erstellung der versionierten Migration und des guarded Rollbacks. Die aktuelle Projektregel verlangt, dass vollständiges SQL und Zielumgebung vor einer Ausführung vorgelegt werden.
+3. **Isolierte Datenbanktests:** Migration und Rollback in einer lokalen/isolierten PostgreSQL-Fixture prüfen; keine Verbindung zu Supabase DEV/PROD.
+4. **DEV-Ausführung:** nur nach gesonderter Freigabe mit vollständigem SQL und konkreter Zielumgebung.
+5. **DEV-Frontend:** frische `develop/index.html` verwenden und getrennt umsetzen; keine PROD- oder `main`-Änderung.
+6. **Backup/Restore und Regression:** separat testen und dokumentieren.
+7. **PROD:** nicht Bestandteil dieser Vorbereitung; erfordert eigenes Releasepaket und eigene ausdrückliche Freigabe.
+
+**Aktueller Status nach dieser Prüfung:** Die RLS-/Rollenmuster, FK-Kaskaden, Nominierungs-Schreibpfade und Restore-Reihenfolge sind nun konkret erfasst. Der SQL-Entwurf bleibt blockiert, bis die Historien-/Löschentscheidung getroffen ist und die Erstellung der versionierten Migration ausdrücklich beauftragt wurde.
