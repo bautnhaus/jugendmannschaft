@@ -315,14 +315,15 @@ Die vorhandenen Trigger `matchday_players_prevent_suspended_nomination` und `mat
 
 ### 17.6 Löschverhalten und Historie
 
-Die bestehenden Tabellen löschen Spieltags- und Spielerzuordnungen bei Löschung von Spieler bzw. Spieltag kaskadierend. Für die neue Historientabelle ist eine bewusste Abweichung erforderlich, damit erfüllte/zurückgenommene Vormerkungen nicht unbemerkt verschwinden.
+Die aktuelle App löscht Spieler im Trainer-/Admin-Workflow nicht physisch, sondern setzt `players.active=false`. Die UI-Aktion heißt „Aus aktivem Kader entfernen“ und bestätigt ausdrücklich, dass Spieler und bisherige Trainings-/Spieltagsdaten erhalten bleiben. Die Wiederaufnahme erfolgt über `active=true`.
 
-Vorläufige Empfehlung:
-- Löschung eines Ausgangs- oder Erfüllungsspieltags darf die Reminder-Historie nicht kaskadierend löschen; Referenzen sollen auf NULL gesetzt werden, dazu werden Datum-/Gegner-Snapshots gespeichert.
-- Löschung eines Spielers soll ebenfalls nicht stillschweigend die Historie löschen; dafür wären `player_id ON DELETE SET NULL` und ein Name-Snapshot erforderlich.
-- Löschung einer Mannschaft kann die zugehörigen Reminder wie andere Mannschaftsdaten entfernen.
+Daraus folgt für v1:
+- `player_id` bleibt NOT NULL und erhält einen FK mit `ON DELETE RESTRICT`; eine spätere physische Löschung darf die Reminder-Historie nicht unbemerkt entfernen.
+- `source_matchday_id` und `fulfilled_matchday_id` erhalten ebenfalls `ON DELETE RESTRICT`, damit keine Historienreferenz stillschweigend verloren geht.
+- `team_id` kann wie bei den übrigen Teamdaten mit `ON DELETE CASCADE` entfernt werden, wenn eine Mannschaft bewusst gelöscht wird.
+- Beim kontrollierten Backup-Restore werden Reminder der Mannschaft explizit gesichert und entfernt, bevor die Elternobjekte gelöscht werden; nach Wiederherstellung der Original-IDs werden sie wieder eingespielt.
 
-Diese Variante erhält Historie, speichert aber zusätzliche personenbezogene Snapshot-Daten. Alternativ könnte eine Löschung des Spielers durch FK-RESTRICT blockiert werden. Die konkrete Variante muss vor dem finalen SQL-Entwurf anhand der bestehenden Admin-Löschabläufe und der gewünschten Datenlöschpraxis entschieden werden; aktuell ist sie **nicht final freigegeben**.
+Damit sind keine zusätzlichen Namens-/Datums-Snapshots nötig. Die FK-Schutzregeln bewahren die Historie, während die bestehende Soft-Deaktivierung den Spieler erhält. Physische Löschungen sind kein normaler UI-Ablauf.
 
 ### 17.7 Backup-/Restore-Auswirkung
 
@@ -342,7 +343,6 @@ Die Snapshot-/SET-NULL-Variante benötigt zusätzliche Backupfelder und eine kla
 
 Die Lösch-/Historienfrage ist durch die aktuelle Soft-Deaktivierung der Spieler geklärt: physische Löschungen werden durch FK-RESTRICT gegen unbeabsichtigten Historienverlust geschützt; Teamlöschung bleibt kaskadierend.
 
-
 ## 19. Prüfung der tatsächlichen Lösch- und Restore-Abläufe (17.11.2026)
 
 ### 19.1 Spieler- und Spieltagslöschung
@@ -361,16 +361,16 @@ Ein allgemeines Spieler-/Spieltags-Löschmenü konnte in der aktuellen Datei mit
 
 ### 19.2 Konsequenz für Reminder-Historie
 
-Wenn die Reminder-Tabelle bei Spieler- oder Spieltagslöschung ebenfalls kaskadierend gelöscht würde, wäre die fachlich zugesagte Historie bei solchen Löschungen nicht erhalten. Für den Backup-Restore wäre eine Snapshot-Strategie außerdem erforderlich, da der Restore dieselben IDs löscht und anschließend neu einfügt.
+Die tatsächliche Spieleraktion ist eine Soft-Deaktivierung über `dbUpdate('players', {id}, {active:false})`; es gibt in diesem Workflow keine physische Spieler-DELETE-Operation. Die UI bestätigt, dass historische Trainings- und Spieltagsdaten erhalten bleiben. Ein zusätzlicher Namens-Snapshot ist daher nicht erforderlich.
 
 **Technische Empfehlung für v1:**
-- `player_id` und `source_matchday_id` bleiben nullable Fremdschlüssel mit `ON DELETE SET NULL`;
-- `fulfilled_matchday_id` ebenfalls `ON DELETE SET NULL`;
-- die Tabelle speichert einen begrenzten Snapshot des Spielernamens sowie Ausgangsspieltag-Datum und Gegner, damit die Historienzeile auch nach Löschung/Ersetzung der Stammdaten verständlich bleibt;
-- die Snapshotfelder werden beim Anlegen serverseitig aus den aktuellen Stammdaten gesetzt und sind anschließend unveränderlich;
-- bei Teamlöschung darf die Teamhistorie wie andere Teamdaten mit gelöscht werden.
+- FK `player_id ON DELETE RESTRICT`;
+- FK `source_matchday_id ON DELETE RESTRICT`;
+- FK `fulfilled_matchday_id ON DELETE RESTRICT`;
+- FK `team_id ON DELETE CASCADE`, analog zur bewussten Löschung einer Mannschaft;
+- Reminder vor dem kontrollierten Backup-Restore explizit sichern und löschen, anschließend mit den wiederhergestellten Original-IDs zurückschreiben.
 
-Diese Empfehlung erfüllt den Historienerhalt, speichert aber personenbezogene Namensdaten über eine Spieler-Stammdatenlöschung hinaus. Deshalb ist sie nicht automatisch umgesetzt oder freigegeben. Vor dem SQL-Entwurf muss der Nutzer entscheiden, ob diese begrenzten Snapshots erwünscht sind oder ob eine Spieler-/Spieltagslöschung Reminder-Datensätze bewusst mit entfernen darf.
+Damit bleiben Historienreferenzen geschützt, ohne zusätzliche personenbezogene Snapshotfelder einzuführen.
 
 ### 19.3 Backup-/Restore
 
