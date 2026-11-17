@@ -11,7 +11,7 @@
 
 ## 1. Ziel
 
-Trainer können einen Spieler, der bei einem Spieltag verfügbar, aber nicht nominiert war, manuell für eine spätere Nominierung vormerken. Die Vormerkung beeinflusst die Kaderempfehlung der Mannschaft, ersetzt aber niemals die Entscheidung und Nominierung durch den Trainer.
+Trainer können einen Spieler, der bei einem Spieltag verfügbar war und aktuell nicht mehr für diesen Ausgangsspieltag nominiert ist, manuell für eine spätere Nominierung vormerken. Das gilt auch, wenn er zunächst nominiert und anschließend kurzfristig zugunsten eines anderen Spielers abgewählt wurde. Die Vormerkung beeinflusst die Kaderempfehlung der Mannschaft, ersetzt aber niemals die Entscheidung und Nominierung durch den Trainer.
 
 ## 2. Fachliche Entscheidungen
 
@@ -181,8 +181,9 @@ Keine Ausführung in PROD und keine Änderung an GitHub `main` ohne separate kon
 
 1. Erstellen mit leerer Begründung wird verhindert.
 2. Erstellen mit Begründung speichert Vormerkung und Ersteller.
-3. Bereits nominierte Spieler können nicht vorgemerkt werden.
-4. Inaktive Spieler können nicht vorgemerkt werden.
+3. Bereits nominierter Spieler am Ausgangsspieltag mit `played=false` oder `played IS NULL`: Vormerkung wird angelegt, die Nominierung atomar entfernt und ihr Snapshot gespeichert.
+4. Bereits eingesetzter Spieler (`played=true`): gesamte Vormerkungserstellung wird abgelehnt; Nominierung bleibt erhalten.
+5. Inaktive Spieler können nicht vorgemerkt werden.
 5. Offene Vormerkung erscheint auf der Kachel nur als Statushinweis.
 6. Vormerkung priorisiert den Spieler bei der nächsten neu berechneten Empfehlung.
 7. Kadergröße bleibt unverändert.
