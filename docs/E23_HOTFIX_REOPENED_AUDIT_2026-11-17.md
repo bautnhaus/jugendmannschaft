@@ -35,10 +35,17 @@ Read-only DEV-Prüfung am 17.11.2026:
 
 ## Ausführung und Abnahme
 
-Migration nur in Supabase DEV und nur nach ausdrücklicher Ausführungsfreigabe. Anschließend Postflight ausführen und den iPhone-Praxistest wiederholen: erfüllte Vormerkung durch Abwählen der späteren Nominierung wieder öffnen. Erwartung: Status `pending`, Audit-Aktion `reopened`, ursprüngliche Historie bleibt erhalten.
+Migration am 17.11.2026 nach ausdrücklicher Freigabe erfolgreich in Supabase DEV ausgeführt. Tatsächliche Ledger-Version: `20261117210545`; Migrationsname: `epic23_reopened_audit_action_hotfix_dev`. Supabase meldete `success: true`.
+
+Postflight PASS:
+- Constraintdefinition enthält genau `created`, `fulfilled`, `cancelled`, `reopened`.
+- Audit-Bestand unverändert: `created=8`, `fulfilled=5`, `cancelled=2`; bisher noch keine `reopened`-Zeile.
+- Keine Datenzeilen wurden durch die Migration verändert.
+
+**Nächster Praxistest:** erfüllte Vormerkung durch Abwählen der späteren Nominierung wieder öffnen. Erwartung: Status `pending`, Audit-Aktion `reopened`, ursprüngliche Historie bleibt erhalten.
 
 ## Rollback
 
 Der Rollback ist absichtlich guarded und verweigert die Rücknahme, sobald mindestens eine `reopened`-Audit-Zeile existiert. Damit wird keine Historie durch eine Rückkehr zur Drei-Werte-Constraint unzulässig gemacht.
 
-**Aktueller Stand:** SQL vorbereitet, nicht ausgeführt. Kein Frontend- oder PROD-Eingriff.
+**Aktueller Stand:** DEV-Migration erfolgreich ausgeführt und Postflight bestanden. Frontend unverändert; PROD unangetastet.
