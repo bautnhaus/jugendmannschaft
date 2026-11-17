@@ -95,3 +95,16 @@ Auf ausdrücklichen Wunsch wurde ausschließlich der Dialog **„Ausnahme zurüc
 - **Ergebnis:** bestanden.
 - Die Änderung bleibt ausschließlich auf diesen Dialog begrenzt; andere E05- und E23-Dialoge sind nicht betroffen.
 - **PROD:** unverändert.
+
+
+## Abgrenzung Backup/Restore – Entscheidung 17.11.2026
+
+**Verbindliche Entscheidung:** Die grundsätzliche Überarbeitung von Backup/Restore ist kein Blocker und kein Abnahmekriterium für Epic 23 (Nominierungsvormerkung).
+
+- Epic 23 wird unabhängig von einer allgemeinen Backup-/Restore-Überarbeitung abgenommen und weitergeführt.
+- Die Vormerkungs- und Audit-Historie bleibt regulärer Bestandteil der Datenbank und ihrer Datenbanksicherungen.
+- Vor einer späteren PROD-Übernahme sind die für Epic 23 erforderlichen Datenbankmigrationen und die reguläre PROD-Sicherung separat nach dem bestehenden Freigabeprozess zu behandeln.
+- Die Backup-/Restore-Funktion der Anwendung wird in einem separaten Vorhaben grundsätzlich analysiert und überarbeitet. Dabei ist insbesondere zu prüfen, ob sämtliche Stammdaten, Zustände, Ereignisse und Historien vollständig und referenziell konsistent exportiert und wiederhergestellt werden.
+- Zu prüfen sind unter anderem Trainings/Anwesenheiten, Spieltage/Nominierungen/Einsätze, Sperren/Ausnahmen sowie Vormerkungen/Audit-Historie. Die vollständige fachliche und technische Bestandsaufnahme erfolgt im separaten Vorhaben.
+
+**Status:** Abgrenzung beschlossen; separates Epic/Backlog-Thema zur Anlage und Ausarbeitung vorgesehen. Keine Backup-Code- oder Datenbankänderung im Rahmen von Epic 23.
