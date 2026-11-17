@@ -588,3 +588,14 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 # Backlog-Systematik – beschlossen am 17.11.2026
 
 Die verbindliche vierstufige Backlog-Struktur und die Zuordnung aller bestehenden Epics zu Themenbereichen sind in `docs/BACKLOG_STRUKTUR_UND_THEMENBEREICHE.md` dokumentiert. Maßgeblich sind: Themenbereich (dauerhaft) → Epic (eigenständig abschließbar) → Anforderung/Feature → Arbeitspaket. Ideen dürfen zunächst ohne Epic-ID einem Themenbereich zugeordnet werden. Abgeschlossene Epics bleiben geschlossen; spätere Erweiterungen werden als neue Epics geführt. Bestehende Epic-IDs und fachliche Entscheidungen bleiben erhalten. E23 „Nominierung für einen kommenden Spieltag vormerken“ ist dem Themenbereich Kaderplanung zugeordnet. Die aktuelle technische Spezifikation und deren Freigabegrenzen sind in `docs/FEATURE_NOMINIERUNGSVORMERKUNG_2026-11-17.md` maßgeblich; nicht aus älteren Chat-Entwürfen ableiten.
+
+
+---
+
+# KadAssist – Datenschutzdokumentation (17.11.2026)
+
+- Datenschutzentscheidungen T01 (einheitlich private Bildspeicherung) und T02 (einheitliche Standard-Löschfristen für alle Vereine) sind im Entscheidungsregister dokumentiert: `docs/legal/KADASSIST_DATENSCHUTZ_ENTSCHEIDUNGEN.md`.
+- D07 „Aufbewahrungs- und Löschfristenmatrix Version 1.0“ wurde am 17.11.2026 fachlich freigegeben: `docs/legal/D07_LOESCHFRISTENMATRIX_V1_0.md`.
+- Die Matrix ist eine fachliche Zielvorgabe. Juristische Abschlussprüfung, technische Implementierung und DEV-Abnahme stehen noch aus.
+- Keine SQL-Ausführung, Migration, Supabase-Änderung, Codeänderung oder PROD-Freigabe ist durch diese Dokumentation erfolgt.
+- ZIP-Rechtspaket wird bei jeder Aktualisierung zusätzlich als Download bereitgestellt; GitHub enthält die versionierte Markdown-Entscheidungs- und Matrixdokumentation.
