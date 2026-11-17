@@ -1999,8 +1999,32 @@ let currentMatchdayId=null;
 let matchdaySuspensionRows=[];
 let matchdayExceptionRows=[];
 let matchdayEarlyResetRows=[];
+let matchdayNominationReminders=[];
+let matchdayNominationRemindersLoadedFor=null;
+let matchdayNominationReminderLoading=null;
 let matchdaySuspensionLoadedFor=null;
 let matchdaySuspensionLoading=null;
+async function loadMatchdayNominationReminders(matchdayId,force=false){
+  if(!matchdayId)return;
+  if(!force&&matchdayNominationRemindersLoadedFor===matchdayId)return;
+  if(matchdayNominationReminderLoading)return matchdayNominationReminderLoading;
+  matchdayNominationReminderLoading=(async()=>{
+    try{
+      const {data,error}=await getClient().rpc('get_matchday_nomination_reminders',{p_matchday_id:matchdayId});
+      if(error)throw error;
+      matchdayNominationReminders=data||[];matchdayNominationRemindersLoadedFor=matchdayId;
+    }catch(err){
+      matchdayNominationReminders=[];matchdayNominationRemindersLoadedFor=null;
+      console.error('Nominierungsvormerkungen konnten nicht geladen werden:',err);
+      showStatus('Nominierungsvormerkungen konnten nicht geladen werden. Bitte erneut versuchen.','error');
+    }finally{matchdayNominationReminderLoading=null;}
+  })();
+  return matchdayNominationReminderLoading;
+}
+function matchdayNominationReminderFor(playerId,matchdayId=currentMatchdayId){
+  if(matchdayNominationRemindersLoadedFor!==matchdayId)return null;
+  return matchdayNominationReminders.find(x=>x.player_id===playerId)||null;
+}
 function matchdaySuspensionFor(playerId,matchdayId=currentMatchdayId){
   const suspension=matchdaySuspensionRows.find(x=>x.player_id===playerId&&x.intended_matchday_id===matchdayId&&x.status==='open');
   const exception=matchdayExceptionRows.find(x=>x.player_id===playerId&&x.matchday_id===matchdayId&&x.revoked_at==null);
@@ -2047,11 +2071,47 @@ window.grantMatchdaySuspensionException=async(suspensionId,playerId)=>{
   }catch(e){showStatus('Ausnahme konnte nicht erteilt werden: '+(e.message||e),'error');}
 };
 
+let nominationReminderActionBusy=false;
+window.openNominationReminderAction=(action,value)=>{
+  const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md)return;
+  const player=action==='create'?state.players.find(x=>x.id===value):null;
+  const reminder=action==='cancel'?matchdayNominationReminders.find(x=>x.reminder_id===value):null;
+  if(action==='create'&&!player)return;
+  if(action==='cancel'&&!reminder){showStatus('Die offene Nominierungsvormerkung wurde nicht gefunden.','error');return;}
+  const title=action==='create'?'Nominierung vormerken':'Nominierungsvormerkung zurücknehmen';
+  const intro=action==='create'?'Du hältst '+esc(displayName(player))+' für einen kommenden Spieltag vorrangig in der Kaderempfehlung. Die Vormerkung ist keine automatische Nominierung.':'Die Vormerkung für '+esc(reminder.player_name)+' wird zurückgenommen.';
+  const label=action==='create'?'Begründung':'Grund für die Rücknahme';
+  const button=action==='create'?'Vormerkung speichern':'Vormerkung zurücknehmen';
+  openModal('<div class="detailHeader"><h2>'+title+'</h2></div><p>'+intro+'</p><label class="fieldLabel" for="nominationReminderReason">'+label+' *</label><textarea id="nominationReminderReason" rows="3" maxlength="500" placeholder="Bitte Begründung eingeben"></textarea><div class="modalActions"><button type="button" class="secondary" onclick="closeModal()">Abbrechen</button><button type="button" id="nominationReminderSubmit" onclick="submitNominationReminderAction(\''+action+'\',\''+value+'\')">'+button+'</button></div>');
+};
+window.submitNominationReminderAction=async(action,value)=>{
+  if(nominationReminderActionBusy)return;
+  const md=state.matchdays.find(x=>x.id===currentMatchdayId),reason=$('nominationReminderReason')?.value?.trim();
+  if(!md||!reason){showStatus('Bitte eine Begründung eingeben.','error');return;}
+  const btn=$('nominationReminderSubmit');nominationReminderActionBusy=true;if(btn)btn.disabled=true;
+  try{
+    let rpc,args;
+    if(action==='create'){rpc='create_matchday_nomination_reminder';args={p_source_matchday_id:md.id,p_player_id:value,p_reason:reason,p_confirmed_available:true};}
+    else if(action==='cancel'){rpc='cancel_matchday_nomination_reminder';args={p_reminder_id:value,p_reason:reason};}
+    else throw new Error('Unbekannte Vormerkungsaktion.');
+    const {error}=await getClient().rpc(rpc,args);if(error)throw error;
+    closeModal();matchdayPlayerOptionsOpenId=null;
+    if(action==='create')await refreshMatchdayAfterSuspensionAction(md);
+    await loadMatchdayNominationReminders(md.id,true);
+    renderMatchday();
+    showStatus(action==='create'?'Nominierungsvormerkung gespeichert.':'Nominierungsvormerkung zurückgenommen.','ok');
+  }catch(e){showStatus('Nominierungsvormerkung konnte nicht gespeichert werden: '+(e.message||e),'error');if(btn)btn.disabled=false;}
+  finally{nominationReminderActionBusy=false;}
+};
 function matchdayPlayerOptionsHtml(player,md){
   const info=matchdaySuspensionFor(player.id,md.id);
   const reset=matchdayEarlyResetRows.find(x=>x.player_id===player.id&&x.status==='pending');
   const resetAlreadyApplied=matchdayEarlyResetRows.some(x=>x.player_id===player.id&&x.status==='applied');
+  const reminder=matchdayNominationReminderFor(player.id,md.id);
   const actions=[];
+  if(reminder)actions.push("<button type=\"button\" onclick=\"closeMatchdayPlayerOptions();openNominationReminderAction('cancel','"+reminder.reminder_id+"')\">"+materialIcon('undo')+" Nominierungsvormerkung zurücknehmen</button>");
+  else if(md.status==='planned'&&String(md.date||'')>=todayISO()&&player.active!==false)
+    actions.push("<button type=\"button\" onclick=\"closeMatchdayPlayerOptions();openNominationReminderAction('create','"+player.id+"')\">"+materialIcon('event_available')+" Nominierung vormerken</button>");
   if(info.blocked)actions.push("<button type=\"button\" onclick=\"closeMatchdayPlayerOptions();openE05MatchdayAction('grant','"+player.id+"')\">"+materialIcon('verified')+" Ausnahme erteilen</button>");
   if(info.exception)actions.push("<button type=\"button\" onclick=\"closeMatchdayPlayerOptions();openE05MatchdayAction('revoke','"+player.id+"','"+info.exception.id+"')\">"+materialIcon('undo')+" Ausnahme zurücknehmen</button>");
   if(reset)actions.push("<button type=\"button\" onclick=\"closeMatchdayPlayerOptions();openE05MatchdayAction('cancelReset','"+player.id+"','"+reset.id+"')\">"+materialIcon('event_busy')+" Vormerkung zurücknehmen</button>");
@@ -2528,6 +2588,9 @@ function top16Ranking(includeSuspended=false){
     group.sort((a,b)=>actualAppearances(a.player)-actualAppearances(b.player)||matchdayFairnessCompare(a.player,b.player)||trainingRecencyCompare(a.player,b.player)||randomTieValue(a.player.id)-randomTieValue(b.player.id));
     groups.push(...group.map(x=>x.player));
   }
+  const reminders=matchdayNominationRemindersLoadedFor===currentMatchdayId
+    ?new Set(matchdayNominationReminders.map(x=>x.player_id)):new Set();
+  if(reminders.size)groups.sort((a,b)=>Number(reminders.has(b.id))-Number(reminders.has(a.id)));
   return groups;
 }
 function top16RankMap(){return new Map(top16Ranking().map((p,i)=>[p.id,i]));}
@@ -3374,7 +3437,7 @@ window.saveMatchdayRecommendation=async()=>{
   const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md)return;
   await loadPlayerEventStats(true);
   if(playerEventStatsTeam!==team||playerEventStatsSeason!==season?.id){showStatus('Ereignisdaten konnten nicht geladen werden. Die Kaderempfehlung wurde nicht gespeichert. Bitte erneut versuchen.','error');return;}
-  await loadMatchdaySuspensions(md.id);const ids=top16Ranking().slice(0,Math.max(1,Number(recommendedSquadSize)||16)).map(p=>p.id);
+  await loadMatchdaySuspensions(md.id);await loadMatchdayNominationReminders(md.id,true);const ids=top16Ranking().slice(0,Math.max(1,Number(recommendedSquadSize)||16)).map(p=>p.id);
   try{const {data,error}=await getClient().rpc('save_matchday_recommendation',{p_matchday_id:md.id,p_player_ids:ids});if(error)throw error;md.recommendation=ids;md.recommendationAt=new Date().toISOString();matchdayListSort='top16';renderMatchday();showStatus('Kaderempfehlung gespeichert. Die Spielerliste ist nach Kaderempfehlung sortiert; Spieler wurden nicht automatisch nominiert.','ok');}
   catch(e){showStatus('Kaderempfehlung konnte nicht gespeichert werden: '+(e.message||e),'error');}
 };
@@ -3414,7 +3477,7 @@ async function reassignOpenTeamSuspensions(){
   return playerIds.length;
 }
 window.saveMatchday=async()=>{try{const values=readMatchdayForm('matchday');const md=await dbInsert('matchdays',{team_id:team,season_id:season?.id||null,...values});const local={id:md.id,date:md.match_date,name:md.name||'',opponent:md.opponent||'',gameType:md.game_type||'',kickoffTime:md.kickoff_time||'',durationMinutes:md.duration_minutes,location:md.location||'',notes:md.notes||'',status:md.status??'planned',selected:[],attendance:{},played:{},recommendation:[],trainerAttendance:{},teams:{},goalkeepers:{},playerRows:[]};state.matchdays=[local,...state.matchdays].sort((a,b)=>b.date.localeCompare(a.date));currentMatchdayId=local.id;matchdaySelection=new Set();closeModal();renderMatchday();try{const reassigned=await reassignOpenTeamSuspensions();if(reassigned){await loadMatchdaySuspensions(local.id,true);renderMatchday();}}catch(suspensionError){showStatus('Spieltag wurde angelegt, aber offene Sperren konnten nicht neu zugeordnet werden: '+(suspensionError.message||suspensionError),'error');return;}showStatus('Spieltag angelegt.','ok');}catch(e){showStatus('Spieltag konnte nicht angelegt werden: '+(e.message||e),'error');}};
-window.openMatchday=id=>{playerEventReturn=null;currentMatchdayId=id;matchdaySuspensionLoadedFor=null;matchdaySelection=new Set(state.matchdays.find(x=>x.id===id)?.selected||[]);if(document.querySelector('#matchday').classList.contains('hidden'))showTab('matchday');renderMatchday();loadMatchdaySuspensions(id,true).then(()=>{if(currentMatchdayId===id)renderMatchday();});};
+window.openMatchday=id=>{playerEventReturn=null;currentMatchdayId=id;matchdaySuspensionLoadedFor=null;matchdayNominationRemindersLoadedFor=null;matchdaySelection=new Set(state.matchdays.find(x=>x.id===id)?.selected||[]);if(document.querySelector('#matchday').classList.contains('hidden'))showTab('matchday');renderMatchday();Promise.all([loadMatchdaySuspensions(id,true),loadMatchdayNominationReminders(id,true)]).then(()=>{if(currentMatchdayId===id)renderMatchday();});};
 window.closeMatchday=()=>{currentMatchdayId=null;matchdayNoteOpen=false;renderMatchday();};
 let matchdayNoteOpen=false;
 window.openMatchdayNote=()=>{matchdayNoteOpen=true;renderMatchday();};
