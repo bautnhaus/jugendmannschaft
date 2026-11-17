@@ -1416,3 +1416,15 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - Superadmin ohne expliziten Teamkontext: Zugriff abgelehnt. PASS.
 - Temporärer Testtrigger und Testdaten wurden vollständig durch ROLLBACK entfernt.
 - **Paket 1 Datenbankprüfungen abgeschlossen.** Frontend und PROD unverändert.
+
+
+### DB-MIG-2026-028 – Epic 23 Paket 2: Read-API für offene Nominierungsvormerkungen
+
+- **Migration:** 20261117160000_epic23_nomination_reminder_read_api_dev; erfolgreich in Supabase DEV ausgeführt.
+- **RPC:** public.get_matchday_nomination_reminders(uuid).
+- **Zweck:** offene Vormerkungen für einen Zielspieltag derselben Mannschaft liefern; Begründung enthalten.
+- **Filter:** pending, Spieler noch verknüpft, Ausgangsspieltag liegt vor Zielspieltag, Spieler für Zielspieltag noch nicht nominiert.
+- **Sicherheit:** SECURITY DEFINER, fester search_path, Owner postgres, EXECUTE nur authenticated; anon/PUBLIC ausgeschlossen; Mannschaftsrolle bzw. expliziter Superadmin-Teamkontext geprüft.
+- **Tests:** spätere offene Vormerkung/Begründung, Ausgangsspieltag ausgeschlossen, bereits nominierter Zielspieler ausgeschlossen, Cross-Team-Aufruf abgelehnt – alle PASS.
+- **Frontend:** unverändert. **PROD:** unverändert.
+- **Dokumentation:** docs/E23_PAKET_02_DB_READ_API_2026-11-17.md und docs/E23_PAKET_02_DEV_TESTPLAN_2026-11-17.md.
