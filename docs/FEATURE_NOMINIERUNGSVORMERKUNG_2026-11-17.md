@@ -545,3 +545,124 @@ Nach erfolgreichem RPC-Aufruf soll die Anwendung die betroffene Spieltagsauswahl
 - Bei Rücknahme der Vormerkung wird A nicht automatisch wieder in den Ausgangskader aufgenommen; eine erneute Nominierung bleibt eine bewusste Trainerentscheidung.
 
 **Hinweis:** Der JSONB-Snapshot und die konkrete RPC-Signatur sind technische Vorschläge für den späteren SQL-Entwurf, keine ausgeführte oder freigegebene Datenbankänderung.
+
+
+## 22. Umsetzungsnahe technische Architektur – Epic 23 (read-only vorbereitet)
+
+### 22.1 Epic- und Backlog-Zuordnung verifiziert
+
+Epic 23 ist bereits an den zentralen Backlog-Stellen dokumentiert:
+- `docs/BACKLOG_STRUKTUR_UND_THEMENBEREICHE.md`: E23 ist dem Themenbereich „Kaderplanung und Kaderempfehlung“ zugeordnet.
+- `PROJECT_CONTEXT.md`: eigener Abschnitt „Epic 23 – Nominierung vormerken“.
+- `README.md`: Spezifikation als Epic 23 verlinkt.
+
+Damit ist keine neue Epic-ID oder Umnummerierung erforderlich. E05 bleibt unverändert.
+
+### 22.2 Wichtige Frontend-Abgrenzung der Empfehlung
+
+`top16Ranking()` wird nicht nur in der Spieltagsplanung verwendet, sondern auch für Sortierungen in Spieler- und Trainingsansichten. Eine globale Änderung dieser Funktion würde daher unbeabsichtigt andere Bereiche beeinflussen.
+
+**Technische Festlegung für die Umsetzung:**
+- `top16Ranking()` bleibt als allgemeine Basisrangfolge unverändert.
+- Eine neue, spieltagsspezifische Funktion, z. B. `matchdayRecommendationRanking(matchdayId)`, wendet ausschließlich für die konkrete Kaderempfehlung die offene Vormerkungspriorität an.
+- `saveMatchdayRecommendation()` und die Rangfolgeanzeige im Spieltags-Reiter verwenden dieselbe spieltagsspezifische Funktion.
+- Die Priorisierung erfolgt vor dem Abschneiden auf `recommended_squad_size`.
+- Andere Spieler-/Trainingssortierungen bleiben unverändert.
+
+### 22.3 Atomarer Erstellungsweg einschließlich Abwahl
+
+Der aktuelle Frontendpfad `saveMatchdaySelection()` führt DELETE und INSERT als getrennte Supabase-REST-Aufrufe aus. Er kann deshalb die neue fachliche Aktion nicht selbst atomar abbilden.
+
+**Vorgeschlagene zentrale RPC:** `create_matchday_nomination_reminder(p_source_matchday_id, p_player_id, p_reason, p_confirmed_available)`.
+
+Die RPC soll in einer einzigen Transaktion:
+1. authentifizierten Benutzer über `auth.uid()` bestimmen;
+2. spielerbezogenen Advisory Transaction Lock verwenden (gleicher Schlüssel wie der bestehende Nominierungs-/Sperren-Guard);
+3. Ausgangsspieltag und Spieler sperren bzw. konsistent lesen;
+4. prüfen, dass Spieltag und Spieler derselben Mannschaft angehören;
+5. prüfen, dass der Ausgangsspieltag noch geplant und nicht vergangen ist;
+6. prüfen, dass Spieler aktiv ist und `p_confirmed_available = true`;
+7. prüfen, dass eine vorhandene Nominierung nicht `played=true` hat;
+8. prüfen, dass noch keine offene Vormerkung für Spieler/Mannschaft besteht;
+9. Vormerkung samt Pflichtbegründung, Ersteller und Zeitstempel speichern;
+10. falls Spieler aktuell in `matchday_players` des Ausgangsspieltags steht, genau diese Nominierung entfernen und ihren Datensatz als `source_nomination_snapshot` auf der Vormerkung protokollieren;
+11. Ergebnis zurückgeben.
+
+Wenn irgendeine Prüfung oder Änderung fehlschlägt, rollt PostgreSQL die gesamte Transaktion zurück: Es darf weder eine Vormerkung ohne Abwahl noch eine Abwahl ohne Vormerkung geben.
+
+Die Bestätigung der Verfügbarkeit wird als verpflichtender RPC-Parameter verlangt; `created_by` und `created_at` werden serverseitig gesetzt. `source_nomination_snapshot` dient der Historie/Nachvollziehbarkeit und wird bei Rücknahme nicht automatisch als neue Nominierung eingespielt.
+
+### 22.4 Sicherheitsmodell der Schreibschnittstelle
+
+Die erste Architekturüberlegung mit SECURITY INVOKER-RPCs wird nach Prüfung der vorhandenen Tabellenrechte präzisiert:
+
+- Die neue Tabelle soll für `authenticated` direkt lesbar sein, geschützt durch RLS.
+- Direkte INSERT-/UPDATE-/DELETE-Rechte auf der neuen Tabelle sollen nicht an den Client vergeben werden.
+- Weil eine SECURITY INVOKER-Funktion dieselben Tabellenrechte wie der Aufrufer benötigt, würde sie die kontrollierte Schreibschnittstelle nicht ausreichend kapseln.
+- Daher werden die eng begrenzten Create-/Cancel-RPCs voraussichtlich als SECURITY DEFINER implementiert, mit festem `search_path`, expliziter `auth.uid()`-Prüfung und expliziter Rollen-/Teamkontextprüfung.
+- Die RPCs erhalten nur EXECUTE für `authenticated`; PUBLIC/anon erhalten kein EXECUTE.
+- SELECT bleibt über RLS abgesichert. Der automatische Erfüllungstrigger ist separat minimal zu halten und darf keine allgemein aufrufbare RPC-Oberfläche bieten.
+
+Die finale SECURITY DEFINER-Ausgestaltung muss vor SQL-Erstellung auf Owner, ACL, search_path, RLS-Bypass und alle verwendeten Tabellen geprüft werden.
+
+### 22.5 Rücknahme-RPC
+
+Vorgesehene RPC: `cancel_matchday_nomination_reminder(p_reminder_id, p_reason)`.
+
+- Nur Status `open` kann zurückgenommen werden.
+- Pflichtbegründung, Actor und Zeitstempel werden serverseitig gespeichert.
+- Status wird `cancelled`; die Vormerkung wirkt sofort nicht mehr auf Empfehlungen.
+- Eine erfüllte oder bereits zurückgenommene Vormerkung kann nicht erneut zurückgenommen werden.
+- Eine neue offene Vormerkung für denselben Spieler/dieselbe Mannschaft ist nach Rücknahme zulässig.
+- Die beim Erstellen gespeicherte `source_nomination_snapshot` wird nicht automatisch re-nominiert; die Rücknahme entfernt nur die Priorisierung und bewahrt die Historie.
+
+### 22.6 Automatische Erfüllung
+
+Ein separater Trigger auf `matchday_players` erfüllt eine offene Vormerkung nur dann, wenn eine neue tatsächliche Nominierung für einen Spieltag derselben Mannschaft vorliegt, dessen `match_date` nach dem `source_matchday` liegt.
+
+- Triggerereignisse: INSERT und tatsächliche Änderung von `matchday_id/player_id`.
+- Kein Erfüllen bei bloßer Empfehlung.
+- Kein Erfüllen bei Änderungen an `team_number`, `goalkeeper` oder `played`.
+- Erfüllung speichert `fulfilled_matchday_id` und `fulfilled_at`.
+- Der Trigger läuft transaktionsgebunden; Fehler rollen die auslösende Nominierung zurück.
+- Bestehende Sperren- und Sperrausgleich-Trigger bleiben unverändert.
+
+### 22.7 Backup-/Restore Version 13 – konkrete Codepunkte
+
+Aktueller Ist-Stand:
+- `buildBackupSnapshot()` gibt `version: 12` zurück.
+- `validateBackup()` akzeptiert die Versionen 5 bis 12.
+- `replaceTeamDataWithBackup()` löscht Matchdays und Spieler vor dem Neuaufbau und stellt Matchday-Nominierungen vor den Empfehlungsläufen wieder her.
+
+Geplante Änderung:
+- Backup-Version 13 exportiert alle Vormerkungen der Mannschaft – nicht nur offene – inklusive IDs, Team-/Spieler-/Matchday-Referenzen, Status, Begründungen, Actor-/Zeitstempeln und `source_nomination_snapshot`.
+- Versionen 5–12 bleiben importierbar; bei älteren Backups wird `matchdayNominationReminders=[]` gesetzt.
+- Restore sichert zunächst alle aktuellen Vormerkungen für das automatische Sicherheits-Backup.
+- Vor dem Löschen von Matchdays/Players werden aktuelle Vormerkungen der Mannschaft gelöscht, um FK-RESTRICT zu erfüllen.
+- Nach Wiederherstellung von Spielern, Spieltagen und `matchday_players` werden die historischen Vormerkungen mit Original-IDs eingespielt. Der Erfüllungstrigger reagiert auf Nominierungs-INSERTs, nicht auf Reminder-INSERTs; deshalb wird durch das Wiederherstellen der Reminder selbst kein Statuswechsel ausgelöst.
+- Ein Restore muss auch die aktuelle Reminder-Liste aus dem Backup ersetzen; sonst könnten Vormerkungen aus dem vorherigen Datenbestand zurückbleiben.
+
+### 22.8 UI-Integrationspunkte
+
+- `matchdayPlayerOptionsHtml(player, md)`: bei aktiven Spielern die Aktion „Nominierung vormerken“ anbieten, auch wenn der Spieler aktuell nominiert ist.
+- Bei offener Vormerkung stattdessen „Vormerkung zurücknehmen“ anbieten.
+- Der Create-Dialog verlangt Verfügbarkeitsbestätigung und Pflichtbegründung.
+- Bei nominiertem Spieler erklärt der Dialog, dass die aktuelle Nominierung beim Speichern entfernt wird.
+- Nach erfolgreicher RPC: `loadApp()` bzw. gezieltes Nachladen der Reminder und Spieltagsdaten; anschließend Spieltagsansicht neu rendern.
+- Kachelstatus: nur „Nominierung vorgemerkt“, keine Begründung.
+- Historische Begründungen bleiben im Detail-/Verlaufskontext; keine neue globale Übersichtsseite für v1.
+
+### 22.9 Noch nicht entschiedene Randfälle
+
+1. **Bereits bestehende Nominierung auf einem anderen zukünftigen Spieltag:** Empfehlung für die technische Umsetzung ist, die Vormerkungserstellung mit verständlicher Meldung abzulehnen, wenn der Spieler bereits auf einem anderen späteren Spieltag derselben Mannschaft nominiert ist. Damit wird keine frühere Nominierung rückwirkend als Erfüllung interpretiert und keine redundante offene Vormerkung angelegt. Diese Regel ist noch nicht fachlich bestätigt.
+2. **Vergangene Historie in der UI:** Historie bleibt in der Datenbank. Für v1 ist die Anzeige der historischen Einträge im Spieler-Detaildialog vorgesehen; eine eigene globale Historienseite ist nicht erforderlich. Die konkrete Detailplatzierung wird im UI-Flow vor Frontendänderung abgestimmt.
+
+### 22.10 Nächste technische Vorbereitungsartefakte
+
+- SQL-Objektliste und Abhängigkeits-/ACL-Matrix;
+- konkrete Migrations- und guarded-Rollback-Struktur;
+- isolierte PostgreSQL-Fixture für Create/Cancel/Fulfill, Sperreninteraktion, Konkurrenz und Rollback;
+- Frontend-Änderungsliste anhand der dann erneut frisch geholten `develop/index.html`;
+- Backup-Version-13-Testmatrix einschließlich Restore und automatischem Sicherheits-Restore.
+
+**Grenze:** Dieser Abschnitt ist ein technisches Architekturkonzept. Es wurde keine SQL-Migration angelegt oder ausgeführt und keine Frontenddatei verändert.
