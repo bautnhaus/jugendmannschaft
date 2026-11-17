@@ -12,7 +12,8 @@
 ## Testfälle
 1. Trainer legt Vormerkung für aktiven, nicht nominierten Spieler an; Verfügbarkeit bestätigt, Begründung gesetzt. Erwartung: pending + created-Audit; keine matchday_players-Zeile wird gelöscht.
 2. Trainer legt Vormerkung für nominierten, noch nicht eingesetzten Spieler an. Erwartung: pending + created-Audit; genau die Ausgangsnominierung wird entfernt und als JSON-Snapshot gespeichert.
-3. Ausgangsnominierung mit played=true. Erwartung: RPC-Fehler; keine Vormerkung, keine Abwahl.
+3. Ausgangsnominierung mit available=false. Erwartung: RPC-Fehler; keine Vormerkung, keine Abwahl.
+4. Ausgangsnominierung mit played=true. Erwartung: RPC-Fehler; keine Vormerkung, keine Abwahl.
 4. Bereits für einen anderen zukünftigen Spieltag nominierter Spieler. Erwartung: Vormerkung zulässig; diese bestehende Nominierung bleibt bestehen und erfüllt die neue Vormerkung nicht rückwirkend.
 5. Verfügbarkeitsparameter false oder NULL. Erwartung: Ablehnung; keine Datenänderung.
 6. Leere Begründung. Erwartung: Ablehnung; keine Datenänderung.
