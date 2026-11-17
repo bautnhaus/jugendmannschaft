@@ -980,3 +980,10 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 - Parallele Create-Aufrufe und paralleles Create/Nominierung erfolgreich getestet.
 - Audit DELETE/TRUNCATE sowie Cross-Team-RPC-Schutz erfolgreich getestet.
 - Gezielter Zwischenfehler-/Rollbacktest und Superadmin-Kontexttest bleiben offen.
+
+
+## 17.11.2026 – Abschluss Paket 1 Epic 23
+
+- Fehler-/Rollbacktest der Create-RPC bestanden: keine Teiländerungen nach absichtlich fehlschlagendem Audit-INSERT.
+- Superadmin-Zugriff mit explizitem Teamkontext erlaubt; ohne Teamkontext abgelehnt.
+- Paket 1 Datenbanktests vollständig abgeschlossen. Keine Frontend- oder PROD-Änderung.
