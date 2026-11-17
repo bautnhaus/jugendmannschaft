@@ -251,3 +251,94 @@ Die Kaderempfehlung wird in `saveMatchdayRecommendation()` vor dem Aufruf der be
 ## 16. Backlog-/Epic-Zuordnung
 
 Der aktuelle Projektkontext verwendet **E05 bereits für Sperren und Verhaltensereignisse**. Um doppelte Epic-IDs und widersprüchliche Dokumentation zu vermeiden, wurde dieses Vorhaben zunächst unter dem neutralen Dokumenttitel „Nominierungsvormerkung“ dokumentiert. Eine neue Epic-/Feature-ID wird erst vergeben, wenn der bestehende Backlog-Eintrag und die gewünschte eigenständige Einordnung abschließend abgeglichen wurden.
+
+
+## 17. Technisches Zielbild nach vertiefter DEV-Prüfung (17.11.2026)
+
+### 17.1 Tatsächliche Team-/Rollenprüfung
+
+Die aktuelle DEV-Definition von `is_team_member(uuid)` erlaubt:
+- reguläre Teammitglieder mit Eintrag in `team_member_roles` (Rollen `trainer` oder `admin`);
+- globale Super-Admins nur mit ausdrücklich ausgewähltem Mannschaftskontext.
+
+`has_selected_team_context(uuid)` kann außerdem einen Club-Admin mit passendem ausgewähltem Teamkontext erkennen. Bestehende Tabellen verwenden deshalb getrennte SELECT-Kontext-Policies und Schreib-Policies. Für die Vormerkung wird dieses Muster übernommen:
+- SELECT: reguläre Teammitglieder sowie berechtigter, ausgewählter Lese-Kontext;
+- CREATE/CANCEL: `is_team_member(team_id)`, damit Trainer/Mannschaftsadmin und Super-Admin im ausgewählten Teamkontext schreiben können;
+- Club-Admin ohne Teammitgliedschaft bleibt schreibgeschützt;
+- kein Zugriff auf andere Mannschaften.
+
+Die Rollenprüfung erfolgt serverseitig; UI-Ausblendung ist nur Bedienkomfort und keine Sicherheitsgrenze.
+
+### 17.2 Tabellenintegrität
+
+Vorgesehene Constraints/Indizes:
+- Primärschlüssel `id`;
+- `team_id` NOT NULL;
+- `player_id` und `source_matchday_id` NOT NULL im aktiven Datensatz;
+- Status-CHECK nur `open`, `fulfilled`, `cancelled`;
+- Statusabhängiger CHECK: `open` ohne Abschlussfelder; `fulfilled` mit `fulfilled_matchday_id` und `fulfilled_at`, ohne Rücknahmefelder; `cancelled` mit `cancelled_at`, `cancelled_by`, `cancellation_reason`, ohne Erfüllungsfelder;
+- partieller Unique Index auf `(team_id, player_id) WHERE status = 'open'`;
+- Index für offene Vormerkungen nach `(team_id, player_id)`;
+- FKs auf Team, Spieler, Ausgangsspieltag und erfüllenden Spieltag.
+
+**Integritätsprüfung:** Die bestehenden Tabellen haben jeweils nur einfache Primärschlüssel. Die Gleichheit von `team_id` in Reminder, Spieler, Ausgangsspieltag und Erfüllungsspieltag kann daher nicht allein durch einfache Fremdschlüssel garantiert werden. Ein serverseitiger Validierungstrigger muss diese Beziehungen bei Erstellung und Statuswechsel prüfen. Eine zusätzliche zusammengesetzte FK-Struktur wäre möglich, würde aber neue Unique Constraints auf Bestandstabellen voraussetzen und ist für v1 unnötig invasiv.
+
+### 17.3 Serverseitige Schreibpfade
+
+Vorgeschlagen sind zwei schmale SECURITY INVOKER-RPCs:
+- `create_matchday_nomination_reminder(p_source_matchday_id, p_player_id, p_reason)`;
+- `cancel_matchday_nomination_reminder(p_reminder_id, p_reason)`.
+
+Sie verwenden `auth.uid()`, prüfen `is_team_member(team_id)`, validieren Team-/Spieler-/Ausgangsspieltag-Zuordnung und schreiben Actor-/Zeitstempel serverseitig. Die Clients dürfen diese Auditfelder nicht selbst bestimmen.
+
+Die Tabelle erhält RLS. Direkte INSERT-/UPDATE-Rechte für `authenticated` sollen nicht zusätzlich breit vergeben werden; die RPCs bilden die kontrollierte Schreibschnittstelle. SELECT erfolgt direkt über die RLS-Policy. Der automatische Erfüllungstrigger ist ein separater, minimaler SECURITY DEFINER-Trigger mit festem `search_path`, ohne öffentlich ausführbare RPC-Oberfläche.
+
+### 17.4 Konkurrenzsicherheit und automatische Erfüllung
+
+Die vorhandene Sperrenprüfung verwendet einen spielerbezogenen Advisory Transaction Lock auf Basis von `hashtextextended(player_id::text, 0)`. Für Erstellen einer Vormerkung und Einfügen einer Nominierung soll derselbe Lock-Schlüssel verwendet werden. Dadurch werden die beiden konkurrierenden Abläufe serialisiert:
+
+- Vormerkung zuerst: spätere Nominierung sieht die offene Vormerkung und erfüllt sie.
+- Nominierung zuerst: Erstellung prüft den bereits vorhandenen späteren Spieltag und kann eine nicht mehr sinnvolle Vormerkung ablehnen.
+- Parallele doppelte Vormerkungen: zusätzlich schützt der partielle Unique Index.
+
+Der automatische Erfüllungstrigger soll auf `matchday_players` nach INSERT sowie nach tatsächlicher Änderung von `matchday_id/player_id` laufen. Er erfüllt nur eine offene Vormerkung desselben Spielers und Teams, wenn der nominierte Spieltag nach dem Ausgangsspieltag liegt. Reine Änderungen von `team_number`, `goalkeeper` oder `played` lösen keine Erfüllung aus.
+
+Die vorhandenen Trigger `matchday_players_prevent_suspended_nomination` und `matchday_players_cancel_early_reset` bleiben unverändert. Der neue Trigger muss innerhalb derselben Transaktion laufen: schlägt die Erfüllung fehl, wird auch die Nominierung zurückgerollt. Das ist absichtlich sicherer als eine erfolgreiche Nominierung mit inkonsistent offenem Reminder.
+
+### 17.5 Zeitliche Randfälle
+
+- Eine Vormerkung wird ausschließlich durch eine Nominierung erfüllt, die nach ihrer Erstellung als Datenbankereignis eintritt und zu einem späteren Matchdatum als dem Ausgangsspieltag gehört.
+- Eine bereits vorher gespeicherte Nominierung eines späteren Spieltags wird nicht rückwirkend als Erfüllung interpretiert.
+- Um eine dadurch sinnlose Vormerkung zu vermeiden, soll die Create-RPC vor dem INSERT prüfen, ob der Spieler bereits auf einem späteren Spieltag derselben Mannschaft nominiert ist. Falls ja, wird die Erstellung mit verständlicher Meldung abgelehnt.
+- Nach erfolgreicher Erfüllung bleibt der Status `fulfilled`, auch wenn die Nominierung später entfernt wird. Die Erfüllung ist ein historisches Ereignis und wird nicht automatisch zurückgenommen.
+- Ein späterer Spieltag wird über `match_date > source_match_date` bestimmt. Gleiches Kalenderdatum mit unterschiedlicher Anstoßzeit wird in v1 nicht als „später“ interpretiert, da die Datenbank nur Datum und optionale lokale Anstoßzeit führt und kein verlässlicher Zeitstempel der Nominierungsaktion gespeichert wird.
+
+### 17.6 Löschverhalten und Historie
+
+Die bestehenden Tabellen löschen Spieltags- und Spielerzuordnungen bei Löschung von Spieler bzw. Spieltag kaskadierend. Für die neue Historientabelle ist eine bewusste Abweichung erforderlich, damit erfüllte/zurückgenommene Vormerkungen nicht unbemerkt verschwinden.
+
+Vorläufige Empfehlung:
+- Löschung eines Ausgangs- oder Erfüllungsspieltags darf die Reminder-Historie nicht kaskadierend löschen; Referenzen sollen auf NULL gesetzt werden, dazu werden Datum-/Gegner-Snapshots gespeichert.
+- Löschung eines Spielers soll ebenfalls nicht stillschweigend die Historie löschen; dafür wären `player_id ON DELETE SET NULL` und ein Name-Snapshot erforderlich.
+- Löschung einer Mannschaft kann die zugehörigen Reminder wie andere Mannschaftsdaten entfernen.
+
+Diese Variante erhält Historie, speichert aber zusätzliche personenbezogene Snapshot-Daten. Alternativ könnte eine Löschung des Spielers durch FK-RESTRICT blockiert werden. Die konkrete Variante muss vor dem finalen SQL-Entwurf anhand der bestehenden Admin-Löschabläufe und der gewünschten Datenlöschpraxis entschieden werden; aktuell ist sie **nicht final freigegeben**.
+
+### 17.7 Backup-/Restore-Auswirkung
+
+Der Restore löscht vorhandene Matchdays und Players, bevor er sie neu einfügt. Deshalb muss die Reihenfolge angepasst werden:
+1. Reminder-Datensätze der betroffenen Mannschaft kontrolliert exportieren/temporär im Backup halten;
+2. beim Restore Reminder der betroffenen Mannschaft vor den Elternobjekten entfernen;
+3. Spieler und Spieltage wiederherstellen;
+4. Reminder mit den Original-IDs wieder einfügen;
+5. Referenzen und Statuswerte validieren.
+
+Die Snapshot-/SET-NULL-Variante benötigt zusätzliche Backupfelder und eine klare Entscheidung, ob ein Restore gelöschte Spieler-/Spieltagreferenzen wieder verbinden darf. Backup-Version 13 bleibt vorgesehen.
+
+## 18. Noch offene technische Festlegungen vor finalem SQL-Entwurf
+
+1. **Lösch-/Historienstrategie:** Snapshot + SET NULL oder FK-RESTRICT bei Spieler-/Spieltagslöschung. Empfehlung: Snapshot + SET NULL, wenn Historie auch nach Stammdatenlöschung sichtbar bleiben soll.
+2. **Create-Randfall:** vorgeschlagene Ablehnung, wenn bereits eine spätere Nominierung existiert. Damit wird keine frühere Nominierung rückwirkend als Erfüllung behandelt.
+3. **UI-Historie:** fachlich ist Historienerhalt beschlossen; für v1 ist noch zu entscheiden, ob erfüllte/zurückgenommene Vormerkungen nur im Dialog oder in einer eigenen Historienansicht sichtbar werden. Für die erste Umsetzung empfehle ich die Anzeige im Spieler-Optionen-/Detaildialog, ohne neue globale Übersicht.
+
+Diese Punkte betreffen die technische Konkretisierung und UI-Platzierung. Bis zu ihrer Klärung bleibt die SQL-Erstellung ein Entwurf und jede Ausführung gesperrt.
