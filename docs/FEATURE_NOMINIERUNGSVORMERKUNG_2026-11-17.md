@@ -233,3 +233,21 @@ Zusätzlich read-only geprüfte Funktionen:
 **Konsequenz für die Vorbereitung:** Der neue Erfüllungsmechanismus darf diese bestehenden Trigger nicht ersetzen, deaktivieren oder in ihrer Reihenfolge/Schutzwirkung umgehen. Ein eigener AFTER-Trigger ist technisch denkbar, muss aber in einer isolierten Test-Fixture gegen INSERT, relevante UPDATE-Fälle, bestehende Sperren-Guards, Sperrausgleich und Fehler-Rollback getestet werden. Vor einem Migrationsentwurf sind zusätzlich alle direkten Frontend-Schreibpfade und RPC-Aufrufer für `matchday_players` zu inventarisieren.
 
 **Noch nicht abschließend geklärt:** Verhalten, falls ein Spieler bereits für einen zukünftigen Spieltag nominiert wurde, bevor eine Vormerkung erstellt wird. Der fachliche Kern sagt, dass eine tatsächliche spätere Nominierung erfüllt; die Umsetzung muss diesen zeitlichen Randfall eindeutig behandeln, ohne eine bereits bestehende Nominierung rückwirkend falsch zuzuordnen. Dies ist eine technische Spezifikationsfrage und kein Freibrief für eine Datenänderung.
+
+
+## 15. Ergänzende Prüfung der Frontend-Schreibpfade (17.11.2026)
+
+In der aktuellen `develop/index.html` wurden folgende direkte Schreibwege auf `matchday_players` gefunden:
+
+- `saveMatchdaySelection()`: direkte DELETE- und INSERT-Operationen beim Ändern der Nominierung.
+- Speichern der Teamaufteilung: UPSERT auf `matchday_players` mit `onConflict: 'matchday_id,player_id'`.
+- Einsatzstatus: UPDATE auf `played` (Einzelspieler und Sammelaktion).
+- Backup-Restore: Löschen bestehender Spieltagsdaten und anschließendes INSERT der Spieltagszuordnungen.
+
+**Konsequenz:** Eine Erfüllungslogik darf nicht nur an einen einzelnen UI-Button gekoppelt werden. Sie muss die tatsächlichen INSERT-/UPSERT-Fälle konsistent abdecken und darf durch ein UPDATE, das nur Teamnummer/Torwart/Einsatzstatus ändert, keine Vormerkung fälschlich erfüllen. Beim Backup-Restore müssen die Reihenfolge und der Umgang mit historischen Reminder-Statuswerten ausdrücklich berücksichtigt werden.
+
+Die Kaderempfehlung wird in `saveMatchdayRecommendation()` vor dem Aufruf der bestehenden RPC mit `top16Ranking()` berechnet und auf die Kaderzielgröße gekürzt. Die Vorrangsortierung muss deshalb vor dieser Kürzung erfolgen. Die RPC `save_matchday_recommendation` bleibt für Berechtigungs-, Mannschafts-, Aktivitäts- und Sperrenvalidierung zuständig; sie soll nicht durch eine Frontendänderung umgangen werden.
+
+## 16. Backlog-/Epic-Zuordnung
+
+Der aktuelle Projektkontext verwendet **E05 bereits für Sperren und Verhaltensereignisse**. Um doppelte Epic-IDs und widersprüchliche Dokumentation zu vermeiden, wurde dieses Vorhaben zunächst unter dem neutralen Dokumenttitel „Nominierungsvormerkung“ dokumentiert. Eine neue Epic-/Feature-ID wird erst vergeben, wenn der bestehende Backlog-Eintrag und die gewünschte eigenständige Einordnung abschließend abgeglichen wurden.
