@@ -581,3 +581,10 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 - **UI:** Kachelhinweis „Nominierung vorgemerkt“, ohne Begründung; Optionen-Menü mit „Vormerkung zurücknehmen“.
 - **Technische Vorbereitung:** Datenmodell, RLS/RPC/Trigger, Empfehlungssortierung, Backup-Version 13 und Testfälle werden vorbereitet. Spezifikation: [Epic 23 – Nominierung vormerken](docs/FEATURE_NOMINIERUNGSVORMERKUNG_2026-11-17.md).
 - **Freigabegrenze:** keine SQL-Ausführung, keine DB-/Frontendänderung, keine PROD-/main-Änderung. Umsetzung erst nach separater Freigabe.
+
+
+---
+
+# Backlog-Systematik – beschlossen am 17.11.2026
+
+Die verbindliche vierstufige Backlog-Struktur und die Zuordnung aller bestehenden Epics zu Themenbereichen sind in `docs/BACKLOG_STRUKTUR_UND_THEMENBEREICHE.md` dokumentiert. Maßgeblich sind: Themenbereich (dauerhaft) → Epic (eigenständig abschließbar) → Anforderung/Feature → Arbeitspaket. Ideen dürfen zunächst ohne Epic-ID einem Themenbereich zugeordnet werden. Abgeschlossene Epics bleiben geschlossen; spätere Erweiterungen werden als neue Epics geführt. Bestehende Epic-IDs und fachliche Entscheidungen bleiben erhalten. E23 „Nominierung für einen kommenden Spieltag vormerken“ ist dem Themenbereich Kaderplanung zugeordnet. Die aktuelle technische Spezifikation und deren Freigabegrenzen sind in `docs/FEATURE_NOMINIERUNGSVORMERKUNG_2026-11-17.md` maßgeblich; nicht aus älteren Chat-Entwürfen ableiten.
