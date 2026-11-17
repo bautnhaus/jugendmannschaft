@@ -71,3 +71,19 @@ Die drei geprüften Varianten zeigen das blaue Label „Nominierung vorgemerkt�
 - **Rücknahme ohne Begründung:** bestanden; die Aktion wurde verhindert.
 - **Offen:** Dialoggestaltung auf dem iPhone (40/60-Buttonaufteilung und Abstand zwischen Begründungsfeld und Buttons).
 - **Weiterhin offen:** System-Hellmodus.
+
+
+## Separate UI-Anpassung E05 – Ausnahme zurücknehmen (17.11.2026)
+
+Auf ausdrücklichen Wunsch wurde ausschließlich der Dialog **„Ausnahme zurücknehmen“** auf eine 40/60-Aufteilung der Aktionsbuttons angepasst.
+
+- Die Änderung ist über die eigene Klasse `e05ExceptionRevokeDialog` und den CSS-Selektor `.e05ExceptionRevokeDialog` isoliert.
+- Andere E05-Dialoge (z. B. vorzeitigen Sperrausgleich vormerken / Vormerkung zurücknehmen) bleiben unverändert.
+- E23-Dialoge bleiben unverändert.
+- Keine Funktions- oder Datenbankänderung.
+
+**Commit:** `323d261f0617cf14c440b1dc8fb95b7ed8bdf8e4`  
+**index.html Blob-SHA:** `5dfbbaedcfb0d75a6761cf5428dc4ba22bc46f89`
+
+**DEV-Praxistest:** iPhone-Darstellung des Dialogs prüfen; übrige Dialoge auf unverändertes Layout kontrollieren.
+**PROD:** unverändert; keine Übernahme nach `main`.
