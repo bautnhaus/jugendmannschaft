@@ -294,13 +294,13 @@ Vorgesehene Constraints/Indizes:
 
 ### 17.3 Serverseitige Schreibpfade
 
-Vorgeschlagen sind zwei schmale SECURITY INVOKER-RPCs:
+Vorgeschlagen sind zwei schmale SECURITY DEFINER-RPCs mit festem `search_path`:
 - `create_matchday_nomination_reminder(p_source_matchday_id, p_player_id, p_reason)`;
 - `cancel_matchday_nomination_reminder(p_reminder_id, p_reason)`.
 
-Sie verwenden `auth.uid()`, prüfen `is_team_member(team_id)`, validieren Team-/Spieler-/Ausgangsspieltag-Zuordnung und schreiben Actor-/Zeitstempel serverseitig. Die Clients dürfen diese Auditfelder nicht selbst bestimmen.
+**Begründung:** Die RPCs müssen kontrolliert in die neue Tabelle schreiben und beim Erstellen gegebenenfalls eine Zeile aus `matchday_players` entfernen. Bei SECURITY INVOKER wären dafür passende Client-INSERT-/UPDATE-/DELETE-Rechte und RLS-Schreibpolicies erforderlich; das würde den kontrollierten Schreibweg unterlaufen. SECURITY DEFINER ist daher nur mit expliziten serverseitigen Prüfungen vertretbar: `auth.uid()`, Rolle/Teamkontext, `is_team_member(team_id)`, Team-/Spieler-/Spieltagszuordnung, Aktivstatus, geplanter/nicht vergangener Ausgangsspieltag, Einsatzstatus sowie Pflichtbegründung. Actor-/Zeitstempel werden ausschließlich aus `auth.uid()` und der Datenbankzeit gesetzt.
 
-Die Tabelle erhält RLS. Direkte INSERT-/UPDATE-Rechte für `authenticated` sollen nicht zusätzlich breit vergeben werden; die RPCs bilden die kontrollierte Schreibschnittstelle. SELECT erfolgt direkt über die RLS-Policy. Der automatische Erfüllungstrigger ist ein separater, minimaler SECURITY DEFINER-Trigger mit festem `search_path`, ohne öffentlich ausführbare RPC-Oberfläche.
+Die Tabelle erhält RLS. Für `authenticated` werden direkte INSERT-/UPDATE-/DELETE-Rechte auf der Reminder-Tabelle nicht erteilt; Lesen erfolgt über SELECT-RLS. Die RPCs erhalten eine enge EXECUTE-ACL für `authenticated`; `PUBLIC` und `anon` werden ausgeschlossen. Der automatische Erfüllungstrigger ist ein separater, minimaler SECURITY DEFINER-Trigger mit festem `search_path`, ohne öffentlich ausführbare RPC-Oberfläche. Die endgültige Owner-/RLS-Interaktion und ACL werden im SQL-Review anhand der Live-Definitionen geprüft.
 
 ### 17.4 Konkurrenzsicherheit und automatische Erfüllung
 
