@@ -63,3 +63,11 @@ Die drei geprüften Varianten zeigen das blaue Label „Nominierung vorgemerkt�
 - Vormerkung mit Begründung zurücknehmen.
 - Rücknahme ohne Begründung verhindern.
 - Dialoggestaltung prüfen (40/60-Buttonaufteilung und Abstand zwischen Begründungsfeld und Buttons).
+
+
+### Rücknahme-Praxistest – Nutzerergebnis 17.11.2026
+
+- **Rücknahme mit Begründung:** bestanden; Vormerkung konnte erfolgreich zurückgenommen werden.
+- **Rücknahme ohne Begründung:** bestanden; die Aktion wurde verhindert.
+- **Offen:** Dialoggestaltung auf dem iPhone (40/60-Buttonaufteilung und Abstand zwischen Begründungsfeld und Buttons).
+- **Weiterhin offen:** System-Hellmodus.
