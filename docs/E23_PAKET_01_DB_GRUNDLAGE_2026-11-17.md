@@ -98,3 +98,12 @@ Die isolierten DEV-Funktionstests und RLS-Tests vom 17.11.2026 sind nach Hotfix 
 ### Testdaten
 
 Die Testmannschaften/Spieler/Spieltag-Datensätze wurden in DEV angelegt. Ein Teil der Reminder hat append-only Audit-Historie und kann deshalb nicht durch einfaches Löschen entfernt werden. Die Datensätze sind eindeutig als `E23 ... TEMP` markiert und wurden nicht für reale App-Abläufe verwendet. Sie bleiben isoliert in DEV, bis ein kontrollierter Testdaten-Bereinigungsweg unter Wahrung der Audit-Unveränderlichkeit festgelegt ist.
+
+
+## Abschließende Prüfungen – 17.11.2026, Runde 3
+
+- **Gezielter RPC-Rollbacktest:** In einer vollständig zurückgerollten Testtransaktion wurde ein temporärer BEFORE INSERT Testtrigger auf der Audit-Tabelle eingerichtet, der den Audit-INSERT absichtlich fehlschlagen lässt. Die Create-RPC wurde mit einem bereits nominierten Testspieler aufgerufen. Erwartung bestätigt: Der Reminder-INSERT und das vorherige DELETE der Ausgangsnominierung wurden gemeinsam zurückgerollt; die Ausgangsnominierung blieb erhalten. PASS. Testtrigger und Testdaten wurden durch äußeres ROLLBACK entfernt.
+- **Superadmin mit explizitem Teamkontext:** Test mit vorhandenem global_user_roles-Eintrag super_admin und temporär gesetztem user_team_context für die Zielmannschaft. Create-RPC erfolgreich. PASS. Transaktion zurückgerollt.
+- **Superadmin ohne expliziten Teamkontext:** Kontext entfernt und derselbe Zugriff erneut versucht. RPC wurde mit „Keine Berechtigung für diese Mannschaft“ abgelehnt. PASS. Transaktion zurückgerollt.
+
+**Paket 1 – Datenbanktests abgeschlossen:** die zuvor offenen Punkte sind damit geprüft. Die getesteten Vorgänge waren isolierte DEV-Tests; keine Frontend-Interaktion und keine PROD-Änderung.
