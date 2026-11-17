@@ -36,3 +36,43 @@
 - Keine unerwarteten Trigger-/Policy-Änderungen an bestehenden Tabellen.
 - Nach jedem Test sind Testdaten und Auditfolgen nachvollziehbar; keine Produktionsdaten berührt.
 - Erst nach Paket-1-Abnahme wird Paket 2 (Empfehlungspriorisierung und Frontend) begonnen.
+
+
+## Testergebnisse Paket 1 – 17.11.2026
+
+**Testmodus:** isolierte SQL-Testtransaktionen mit temporären Testmannschaften, Testspielern und Testspieltagen. Jede Transaktion wurde mit ROLLBACK beendet. Es verblieben keine Testdaten in der DEV-Datenbank.
+
+| Test | Ergebnis |
+|---|---|
+| Erstellen für nicht nominierten Spieler | PASS |
+| Doppelte offene Vormerkung ablehnen | PASS |
+| Vormerkung mit Begründung zurücknehmen | PASS |
+| Verfügbarkeitsbestätigung FALSE ablehnen | PASS |
+| Leere Begründung ablehnen | PASS |
+| Bestehende Ausgangsnominierung atomar entfernen und Snapshot speichern | PASS |
+| Rücknahme stellt entfernte Nominierung nicht wieder her | PASS |
+| Vorhandene Nominierung mit available=false ablehnen | PASS |
+| Bereits eingesetzten Spieler nicht aus Nominierung entfernen | PASS |
+| Spätere tatsächliche Nominierung erfüllt Vormerkung | PASS nach Hotfix 1 |
+| Audit-Manipulation per UPDATE blockieren | PASS |
+| Bestehende Nominierung auf anderem zukünftigen Spieltag blockiert Vormerkung nicht und erfüllt sie nicht rückwirkend | PASS |
+| Teammitglied sieht eigene Vormerkung über RLS | PASS |
+| Nichtmitglied sieht fremde Vormerkung nicht über RLS | PASS |
+
+**Ergebnis:** 14/14 ausgeführte Funktions- und RLS-Assertions bestanden, wobei die Fulfillment-Prüfung erst nach Hotfix 1 bestand.
+
+### Gefundener Fehler und Korrektur
+
+Der erste Testlauf fand einen Fehler in der Erfüllungslogik: `now()` liefert in PostgreSQL den Transaktionszeitpunkt. Eine Vormerkung und eine spätere Nominierung innerhalb derselben Transaktion erhielten daher denselben Zeitstempel; der strikte Vergleich `created_at < v_now` verhinderte die Erfüllung.
+
+Korrektur in `supabase/migrations/20261117140000_epic23_nomination_reminder_fulfillment_hotfix_dev.sql`: Triggerfunktion verwendet `clock_timestamp()` und `created_at <= v_now`. Hotfix wurde erfolgreich in DEV angewendet. Der erneute Testlauf bestand.
+
+### Nicht ausgeführte Tests
+
+- echte parallele Sessions / Race-Condition-Tests für zwei gleichzeitige Create-Aufrufe;
+- Konkurrenz zwischen Create und einer gleichzeitig eingehenden Nominierung;
+- gezielter künstlicher Fehler zwischen den einzelnen Statements der RPC, um Rollback unter Fehlerbedingungen zu beobachten;
+- Superadmin mit explizitem Teamkontext und explizit unberechtigter RPC-Aufruf als separate Rollenfälle;
+- TRUNCATE- und DELETE-Audit-Blockade separat (UPDATE wurde geprüft; der gemeinsame Statement-Trigger umfasst alle drei Ereignisse).
+
+Diese Punkte bleiben offen; Paket 1 ist daher funktional weitgehend geprüft, aber noch nicht vollständig für alle Konkurrenz-/Rollenfälle abgenommen.
