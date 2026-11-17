@@ -949,3 +949,18 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 - **Postflight:** `docs/E23_PAKET_01_VERIFICATION_2026-11-17.sql`.
 - **Testplan/Dossier:** `docs/E23_PAKET_01_DEV_TESTPLAN_2026-11-17.md`, `docs/E23_PAKET_01_DB_GRUNDLAGE_2026-11-17.md`.
 - **Status:** ausschließlich vorbereitet und auf develop dokumentiert. Nicht in DEV oder PROD ausgeführt; keine DB-Objekte geändert. Die Ausführung und Verifikation sind offen.
+
+
+### DB-MIG-2026-027 – Epic 23 Paket 1: Nominierungsvormerkung (DEV) – ausgeführt
+
+- **Umgebung:** Supabase DEV – Projekt pzazqvvoruqnqhcorbwx.
+- **Tatsächliche Ledger-Version:** 20261117123114; **Migrationsname:** epic23_nomination_reminder_foundation_dev.
+- **Status:** erfolgreich ausgeführt am 17.11.2026; keine Fehler von Supabase gemeldet.
+- **Migration:** `supabase/migrations/20261117120000_epic23_nomination_reminder_foundation_dev.sql`.
+- **Ausgeführte Fassung:** Commit vor Ausführung mit Verfügbarkeitsprüfung bei vorhandener matchday_players-Zeile.
+- **Postflight:** Tabellen vorhanden, RLS aktiv; SELECT-Policies für Teammitglieder/ausgewählten Superadmin-Kontext vorhanden; beide Trigger aktiv; Create-/Cancel-RPCs SECURITY DEFINER, Owner postgres, fester search_path; EXECUTE authenticated ja, anon/PUBLIC nein; Triggerfunktionen nicht direkt ausführbar.
+- **Tabellenrechte:** authenticated SELECT; keine direkten Client-Schreibrechte. Service role administrative Rechte.
+- **Datenbestand direkt nach Migration:** 0 Reminder-Datensätze, 0 Audit-Datensätze.
+- **Funktionstests:** noch offen; Paket 1 ist strukturell installiert, aber noch nicht fachlich abgenommen.
+- **Rollback:** vorhanden, nicht ausgeführt.
+- **PROD:** nicht ausgeführt und unverändert.
