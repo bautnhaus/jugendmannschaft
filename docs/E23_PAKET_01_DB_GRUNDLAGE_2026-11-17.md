@@ -25,6 +25,8 @@
 
 - Spieler muss aktiv sein und derselben Mannschaft angehören wie der Ausgangsspieltag.
 - Trainer bestätigt die Verfügbarkeit im Dialog; der RPC-Parameter muss ausdrücklich TRUE sein.
+- Falls am Ausgangsspieltag bereits eine Nominierungszeile existiert, prüft der RPC zusätzlich deren `available`-Feld auf TRUE. Eine vorhandene Zeile mit `available=false` wird abgelehnt.
+- Falls keine Nominierungszeile existiert, ist die Verfügbarkeitsbestätigung eine ausdrückliche manuelle Bestätigung durch den Trainer; die aktuelle Datenbank hält für nicht nominierte Spieler an dieser Stelle keinen separaten Verfügbarkeitsdatensatz vor.
 - Spieler muss am Ausgangsspieltag nicht nominiert sein.
 - Ist er dort nominiert und noch nicht als gespielt markiert, wird genau diese Nominierungszeile innerhalb derselben Transaktion entfernt und vorher als JSON-Snapshot gesichert.
 - Ist er dort nicht nominiert, erfolgt keine Löschung.
