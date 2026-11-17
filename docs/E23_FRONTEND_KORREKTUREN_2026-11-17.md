@@ -45,3 +45,21 @@
 **DEV-Praxistest erforderlich:** Vormerkung am 21.11. erstellen; prüfen, dass die Empfehlung vom 21.11. unverändert bleibt; am 29.11. „Neu berechnen“ und prüfen, dass der Spieler priorisiert wird. Kaderzielgröße muss unverändert bleiben.
 
 **PROD:** unverändert; keine Übernahme nach `main`.
+
+
+## DEV-Praxistest-Status – Rückmeldung 17.11.2026
+
+### Theme-Prüfung
+
+- **System-Dunkelmodus:** bestanden.
+- **Manueller Hellmodus:** bestanden.
+- **Manueller Dunkelmodus:** bestanden.
+- **System-Hellmodus:** noch offen; Nutzer prüft zu einem späteren Zeitpunkt.
+
+Die drei geprüften Varianten zeigen das blaue Label „Nominierung vorgemerkt“ gut lesbar. Die Theme-Prüfung ist damit teilweise bestanden, aber noch nicht vollständig abgeschlossen.
+
+### Weitere offene iPhone-Tests
+
+- Vormerkung mit Begründung zurücknehmen.
+- Rücknahme ohne Begründung verhindern.
+- Dialoggestaltung prüfen (40/60-Buttonaufteilung und Abstand zwischen Begründungsfeld und Buttons).
