@@ -1353,3 +1353,20 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Ausführung:** Supabase meldete `success: true`. Live-Ledger listet `20261115151239 superadmin_club_picker_rpc_prod`.
 - **Postflight:** Funktion vorhanden; Ergebnis `TABLE(id uuid, name text, short_name text, crest_path text)`; SECURITY DEFINER true; Owner `postgres`; `search_path=pg_catalog, public`; EXECUTE authenticated ja, anon nein, PUBLIC nein. Bestehende clubs-SELECT-Policy unverändert kontextgebunden (`is_club_member(id) OR is_club_admin(id)`), genau eine SELECT-Policy.
 - **Scope:** ausschließlich neue RPC; keine Tabellen-, Daten-, bestehenden Funktions-, RLS-, Trigger- oder Storage-Änderungen. Der UI-End-to-End-Test folgt nach Deploy PROD.
+
+
+### DB-MIG-2026-027 – Epic 23 Paket 1: Nominierungsvormerkung (DEV) – geplant, nicht ausgeführt
+
+- **Zielumgebung:** Supabase DEV – Projekt pzazqvvoruqnqhcorbwx.
+- **Status:** Geplant / SQL vorbereitet. Keine Ausführung begonnen.
+- **Zweck:** Tabellen, append-only Audit, kontrollierte Create-/Cancel-RPCs und Erfüllungstrigger für Nominierungsvormerkungen.
+- **Migration:** `supabase/migrations/20261117120000_epic23_nomination_reminder_foundation_dev.sql`.
+- **Rollback:** `supabase/rollback/20261117120000_epic23_nomination_reminder_foundation_rollback.sql` (guarded; verweigert Rücknahme bei vorhandener Historie).
+- **Postflight:** `docs/E23_PAKET_01_VERIFICATION_2026-11-17.sql`.
+- **Testplan:** `docs/E23_PAKET_01_DEV_TESTPLAN_2026-11-17.md`.
+- **Dossier:** `docs/E23_PAKET_01_DB_GRUNDLAGE_2026-11-17.md`.
+- **Betroffene geplante Objekte:** `matchday_nomination_reminders`, `matchday_nomination_reminder_audit`, zwei Nutzer-RPCs, zwei Triggerfunktionen und zwei Trigger.
+- **Freigabe/Ausführung:** Noch keine Ausführungsfreigabe verwendet; keine schreibende SQL-Anweisung ausgeführt.
+- **Ergebnis/Verifikation:** Nicht ausgeführt; Postflight und DEV-Tests offen.
+- **Rollback/Wiederherstellung:** Guarded Rollback liegt bereit; Ausführung nicht erfolgt.
+- **PROD:** Nicht ausgeführt und nicht freigegeben.
