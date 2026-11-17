@@ -987,3 +987,11 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 - Fehler-/Rollbacktest der Create-RPC bestanden: keine Teiländerungen nach absichtlich fehlschlagendem Audit-INSERT.
 - Superadmin-Zugriff mit explizitem Teamkontext erlaubt; ohne Teamkontext abgelehnt.
 - Paket 1 Datenbanktests vollständig abgeschlossen. Keine Frontend- oder PROD-Änderung.
+
+
+## 17.11.2026 – Epic 23 Paket 2 (DEV)
+
+- Neue Read-API public.get_matchday_nomination_reminders(uuid) installiert.
+- Liefert offene Vormerkungen und Begründung für einen späteren Spieltag; blendet Spieler aus, die für den Zielspieltag bereits nominiert sind.
+- Berechtigungs- und API-Tests bestanden.
+- Keine Frontend- oder PROD-Änderung.
