@@ -995,3 +995,12 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 - Liefert offene Vormerkungen und Begründung für einen späteren Spieltag; blendet Spieler aus, die für den Zielspieltag bereits nominiert sind.
 - Berechtigungs- und API-Tests bestanden.
 - Keine Frontend- oder PROD-Änderung.
+
+
+## 17.11.2026 – Epic 23 Paket 3 (DEV)
+
+- Read-API zeigt offene Nominierungsvormerkungen bereits am Ausgangsspieltag an, sofern der Spieler dort nicht nominiert ist.
+- Wird die Nominierung, die eine Vormerkung erfüllt hat, wieder entfernt, wird die Vormerkung automatisch wieder geöffnet, sofern keine andere spätere Nominierung besteht.
+- Wiederöffnung wird revisionssicher im append-only Audit protokolliert.
+- DEV-Migration: `20261117180000_epic23_nomination_reminder_reopen_dev`; Dossier: `docs/E23_PAKET_03_DB_REOPEN_2026-11-17.md`.
+- Frontend-/Empfehlungsanpassungen sind separat; PROD unverändert.
