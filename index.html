@@ -2151,10 +2151,11 @@ window.submitNominationReminderAction=async(action,value)=>{
     closeModal();matchdayPlayerOptionsOpenId=null;
     if(action==='create')await refreshMatchdayAfterSuspensionAction(md);
     await loadMatchdayNominationReminders(md.id,true);
-    // Eine bereits gespeicherte Empfehlung wird direkt mit der neuen Priorität aktualisiert.
-    if(action==='create'&&md.recommendationAt)await saveMatchdayRecommendation();
+    // Die Vormerkung wird am Ausgangsspieltag nur angezeigt. Eine gespeicherte
+    // Empfehlung bleibt unverändert; die Priorisierung greift erst an späteren Spieltagen
+    // nach einer ausdrücklichen Neuberechnung durch den Trainer.
     renderMatchday();
-    showStatus(action==='create'?'Nominierungsvormerkung gespeichert und in die Kaderempfehlung übernommen.':'Nominierungsvormerkung zurückgenommen.','ok');
+    showStatus(action==='create'?'Nominierungsvormerkung gespeichert. Sie wird bei der Kaderempfehlung späterer Spieltage berücksichtigt.':'Nominierungsvormerkung zurückgenommen.','ok');
   }catch(e){showStatus('Nominierungsvormerkung konnte nicht gespeichert werden: '+(e.message||e),'error');if(btn)btn.disabled=false;}
   finally{nominationReminderActionBusy=false;}
 };
@@ -2643,8 +2644,14 @@ function top16Ranking(includeSuspended=false){
     group.sort((a,b)=>actualAppearances(a.player)-actualAppearances(b.player)||matchdayFairnessCompare(a.player,b.player)||trainingRecencyCompare(a.player,b.player)||randomTieValue(a.player.id)-randomTieValue(b.player.id));
     groups.push(...group.map(x=>x.player));
   }
+  // E23: Eine Vormerkung priorisiert ausschließlich Spieltage NACH ihrem Ausgangsspieltag.
+  // Am Ausgangsspieltag bleibt sie über matchdayNominationReminderFor() sichtbar,
+  // darf aber dessen Kaderempfehlung nicht beeinflussen.
+  const currentMatchdayDate=String(md?.date||'');
   const reminders=matchdayNominationRemindersLoadedFor===currentMatchdayId
-    ?new Set(matchdayNominationReminders.map(x=>x.player_id)):new Set();
+    ?new Set(matchdayNominationReminders
+      .filter(r=>currentMatchdayDate&&String(r.source_matchday_date||'')<currentMatchdayDate)
+      .map(r=>r.player_id)):new Set();
   if(reminders.size)groups.sort((a,b)=>Number(reminders.has(b.id))-Number(reminders.has(a.id)));
   return groups;
 }
