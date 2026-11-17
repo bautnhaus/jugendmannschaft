@@ -652,10 +652,14 @@ Geplante Änderung:
 - Kachelstatus: nur „Nominierung vorgemerkt“, keine Begründung.
 - Historische Begründungen bleiben im Detail-/Verlaufskontext; keine neue globale Übersichtsseite für v1.
 
-### 22.9 Noch nicht entschiedene Randfälle
+### 22.9 Fachliche Präzisierung der Randfälle (17.11.2026)
 
-1. **Bereits bestehende Nominierung auf einem anderen zukünftigen Spieltag:** Empfehlung für die technische Umsetzung ist, die Vormerkungserstellung mit verständlicher Meldung abzulehnen, wenn der Spieler bereits auf einem anderen späteren Spieltag derselben Mannschaft nominiert ist. Damit wird keine frühere Nominierung rückwirkend als Erfüllung interpretiert und keine redundante offene Vormerkung angelegt. Diese Regel ist noch nicht fachlich bestätigt.
-2. **Vergangene Historie in der UI:** Historie bleibt in der Datenbank. Für v1 ist die Anzeige der historischen Einträge im Spieler-Detaildialog vorgesehen; eine eigene globale Historienseite ist nicht erforderlich. Die konkrete Detailplatzierung wird im UI-Flow vor Frontendänderung abgestimmt.
+Die zuvor offenen Punkte wurden durch den Nutzer entschieden:
+
+1. **Bereits bestehende Nominierung auf einem anderen zukünftigen Spieltag:** Sie verhindert eine neue Vormerkung ausdrücklich nicht. Eine Vormerkung ist unabhängig davon möglich, ob der Spieler bereits für einen anderen Spieltag nominiert ist. Sie wird nicht rückwirkend durch eine solche bestehende Nominierung erfüllt. Erst eine tatsächliche Nominierung nach Erstellung der Vormerkung erfüllt sie.
+2. **Historie und Bedienung:** Die Umsetzung folgt dem Muster der bestehenden vorgemerkten Sperre / des vorzeitigen Sperrausgleichs. Dazu gehören ein sichtbarer Statushinweis an der Spielerkachel, eine Rücknahme über das Optionen-Menü, die Pflichtbegründung bei Rücknahme sowie die unveränderliche Historie mit Statusübergängen und Audit-Einträgen. Es wird keine neue globale Historienseite eingeführt.
+3. **Nominierung am Ausgangsspieltag ist keine Voraussetzung:** Ein aktiver Spieler kann unabhängig davon vorgemerkt werden, ob er am Ausgangsspieltag aktuell nominiert ist. Die Verfügbarkeit für diesen Ausgangsspieltag wird vom Trainer im Dialog bestätigt. Ist der Spieler dort nominiert, wird genau diese Nominierung beim Anlegen atomar entfernt. Ist er nicht nominiert, wird keine Nominierungszeile gelöscht; die Vormerkung wird dennoch angelegt.
+4. **Mehrere Vormerkungen / weitere Spieltage:** Offene Vormerkungen bleiben bis zur tatsächlichen späteren Nominierung oder manuellen Rücknahme bestehen. Eine bereits vorhandene Nominierung auf einem anderen Spieltag löst keinen Statuswechsel aus.
 
 ### 22.10 Nächste technische Vorbereitungsartefakte
 
@@ -686,3 +690,28 @@ Geplante Änderung:
 | 32 | Trainer legt Vormerkung an, während parallele Nominierung erfolgt | Advisory Lock serialisiert; Ergebnis ist konsistent und vollständig |
 | 33 | Trainer nimmt offene Nominierungsvormerkung zurück | Status cancelled, Priorisierung entfällt, Historie bleibt; Ausgangsnominierung wird nicht automatisch wiederhergestellt |
 | 34 | Backup-Version 13 mit offenen/erfüllten/zurückgenommenen Vormerkungen wiederherstellen | Alle Reminder werden mit IDs und Historie wiederhergestellt; kein falsches Erfüllen durch Restore |
+
+
+## 24. Verbindliche fachliche Ergänzungen vom 17.11.2026
+
+- Keine Voraussetzung ist, dass der Spieler am Ausgangsspieltag nominiert war.
+- Die Verfügbarkeit am Ausgangsspieltag wird durch den Trainer explizit bestätigt; die App führt dafür keine allgemeine Verfügbarkeitsverwaltung ein.
+- Bei bestehender Nominierung im Ausgangsspieltag: Vormerkung anlegen und diese konkrete Nominierung atomar entfernen.
+- Ohne bestehende Nominierung im Ausgangsspieltag: Vormerkung direkt anlegen, ohne DELETE.
+- Bestehende Nominierungen auf anderen zukünftigen Spieltagen blockieren die Vormerkung nicht und erfüllen sie nicht rückwirkend.
+- Eine tatsächliche Nominierung, die nach Erstellung der Vormerkung für einen späteren Spieltag derselben Mannschaft erfolgt, erfüllt die Vormerkung.
+- Status-/Historienmodell und Bedienung orientieren sich an `matchday_early_suspension_resets` und `matchday_early_suspension_reset_audit`: offene Vormerkung, erfüllte Vormerkung, zurückgenommene Vormerkung; Actor-/Zeitstempel und Begründungen; append-only Audit; Kachelstatus und Rücknahmeaktion im Optionen-Menü.
+- Die Historie bleibt im bestehenden Spieler-/Spieltag-Kontext zugänglich; keine globale Historienseite in v1.
+
+### Zusätzliche Abnahmetests
+
+| Nr. | Ausgangslage / Aktion | Erwartetes Ergebnis |
+|---:|---|---|
+| 35 | Spieler ist am Ausgangsspieltag nicht nominiert, aktiv und Verfügbarkeit wird bestätigt | Vormerkung wird angelegt; keine Nominierungszeile wird gelöscht |
+| 36 | Spieler ist am Ausgangsspieltag nominiert und Verfügbarkeit wird bestätigt | Vormerkung wird angelegt und die konkrete Ausgangsnominierung atomar entfernt |
+| 37 | Spieler ist bereits auf einem anderen zukünftigen Spieltag nominiert | Neue Vormerkung ist zulässig; bestehende andere Nominierung bleibt unverändert und erfüllt die Vormerkung nicht |
+| 38 | Spieler wird nach Erstellung der Vormerkung tatsächlich für einen späteren Spieltag nominiert | Offene Vormerkung wechselt zu erfüllt; Audit-Eintrag wird geschrieben |
+| 39 | Trainer nimmt eine offene Vormerkung zurück | Status zurückgenommen; Pflichtgrund und Actor/Zeitstempel im Audit; keine automatische Wiederherstellung einer entfernten Ausgangsnominierung |
+| 40 | Spieler hat parallel eine offene Sperrausgleich-Vormerkung | Beide Vormerkungstypen werden getrennt angezeigt und können unabhängig zurückgenommen werden |
+
+**Aktualisierte Architekturgrenze:** Das frühere vorgeschlagene Ablehnen bei einer bereits bestehenden zukünftigen Nominierung ist verworfen. Keine SQL-Migration wurde erstellt oder ausgeführt; keine Frontenddatei wurde geändert.
