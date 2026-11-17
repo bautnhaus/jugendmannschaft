@@ -1407,3 +1407,12 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - Cross-Team-RPC-Aufruf eines nicht berechtigten Benutzers abgelehnt.
 - Nicht durchgeführt: gezielter Fehler mitten in RPC-Transaktion und Superadmin-Kontext-Test.
 - DEV-Testdaten mit append-only Audit-Historie verbleiben als klar markierte E23-TEMP-Datensätze in DEV; keine PROD-Daten betroffen.
+
+
+### DB-MIG-2026-027 – Abschluss der offenen Paket-1-Prüfungen
+
+- Gezielter Fehler im Audit-INSERT provoziert: Create-RPC rollte Reminder-INSERT und vorheriges Nominierungs-DELETE vollständig zurück. PASS.
+- Superadmin-Zugriff mit explizitem user_team_context: Create-RPC erlaubt. PASS.
+- Superadmin ohne expliziten Teamkontext: Zugriff abgelehnt. PASS.
+- Temporärer Testtrigger und Testdaten wurden vollständig durch ROLLBACK entfernt.
+- **Paket 1 Datenbankprüfungen abgeschlossen.** Frontend und PROD unverändert.
