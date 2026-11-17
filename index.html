@@ -2082,12 +2082,14 @@ window.openNominationReminderAction=(action,value)=>{
   const intro=action==='create'?'Du hältst '+esc(displayName(player))+' für einen kommenden Spieltag vorrangig in der Kaderempfehlung. Die Vormerkung ist keine automatische Nominierung.':'Die Vormerkung für '+esc(reminder.player_name)+' wird zurückgenommen.';
   const label=action==='create'?'Begründung':'Grund für die Rücknahme';
   const button=action==='create'?'Vormerkung speichern':'Vormerkung zurücknehmen';
-  openModal('<div class="detailHeader"><h2>'+title+'</h2></div><p>'+intro+'</p><label class="fieldLabel" for="nominationReminderReason">'+label+' *</label><textarea id="nominationReminderReason" rows="3" maxlength="500" placeholder="Bitte Begründung eingeben"></textarea><div class="modalActions"><button type="button" class="secondary" onclick="closeModal()">Abbrechen</button><button type="button" id="nominationReminderSubmit" onclick="submitNominationReminderAction(\''+action+'\',\''+value+'\')">'+button+'</button></div>');
+  const availability=action==='create'?'<label class="checkRow"><input type="checkbox" id="nominationReminderAvailable"> Ich bestätige, dass der Spieler für den kommenden Spieltag verfügbar ist.</label>':'';
+  openModal('<div class="detailHeader"><h2>'+title+'</h2></div><p>'+intro+'</p>'+availability+'<label class="fieldLabel" for="nominationReminderReason">'+label+' *</label><textarea id="nominationReminderReason" rows="3" maxlength="500" placeholder="Bitte Begründung eingeben"></textarea><div class="modalActions"><button type="button" class="secondary" onclick="closeModal()">Abbrechen</button><button type="button" id="nominationReminderSubmit" onclick="submitNominationReminderAction(\''+action+'\',\''+value+'\')">'+button+'</button></div>');
 };
 window.submitNominationReminderAction=async(action,value)=>{
   if(nominationReminderActionBusy)return;
   const md=state.matchdays.find(x=>x.id===currentMatchdayId),reason=$('nominationReminderReason')?.value?.trim();
   if(!md||!reason){showStatus('Bitte eine Begründung eingeben.','error');return;}
+  if(action==='create'&&!$('nominationReminderAvailable')?.checked){showStatus('Bitte bestätige die Verfügbarkeit des Spielers.','error');return;}
   const btn=$('nominationReminderSubmit');nominationReminderActionBusy=true;if(btn)btn.disabled=true;
   try{
     let rpc,args;
