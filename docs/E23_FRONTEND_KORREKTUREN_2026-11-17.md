@@ -87,3 +87,11 @@ Auf ausdrücklichen Wunsch wurde ausschließlich der Dialog **„Ausnahme zurüc
 
 **DEV-Praxistest:** iPhone-Darstellung des Dialogs prüfen; übrige Dialoge auf unverändertes Layout kontrollieren.
 **PROD:** unverändert; keine Übernahme nach `main`.
+
+
+### Abschließender UI-Test – isolierter E05-Dialog (17.11.2026)
+
+- **Dialog „Ausnahme zurücknehmen“ mit 40/60-Buttonaufteilung:** vom Nutzer auf DEV/iPhone geprüft und bestätigt.
+- **Ergebnis:** bestanden.
+- Die Änderung bleibt ausschließlich auf diesen Dialog begrenzt; andere E05- und E23-Dialoge sind nicht betroffen.
+- **PROD:** unverändert.
