@@ -487,3 +487,60 @@ Wenn der Spieler zum Zeitpunkt der Vormerkung bereits auf einem anderen zukünft
 - Alle Befunde stammen aus read-only Abfragen und der aktuellen Datei `develop/index.html`.
 
 **Freigabegrenze:** Dieses Zielbild ist eine technische Vorbereitung. Es wurde keine Migration-Datei erstellt, kein SQL ausgeführt und keine Frontenddatei verändert.
+
+
+## 22. Ergänzende technische Vorbereitung – atomare Abwahl des Ausgangskaders (17.11.2026)
+
+### 22.1 Bestehender Frontend-Schreibweg
+
+Die aktuelle Funktion `saveMatchdaySelection()` führt Änderungen in zwei getrennten direkten Supabase-Aufrufen aus:
+1. DELETE nicht mehr ausgewählter Zeilen aus `matchday_players`;
+2. INSERT neu ausgewählter Zeilen.
+
+Die Funktion aktualisiert danach `md.selected` und `md.playerRows` lokal. Dieser bestehende Weg kann nicht für „Vormerkung erstellen und gleichzeitig Spieler A abwählen“ wiederverwendet werden, weil dadurch zwei getrennte Transaktionen entstünden.
+
+### 22.2 Vorgeschlagener atomarer RPC-Ablauf
+
+Die Aktion „Nominierung vormerken“ soll eine eigene serverseitige RPC verwenden, z. B. `create_matchday_nomination_reminder(p_source_matchday_id, p_player_id, p_reason)`. Innerhalb einer einzigen Datenbanktransaktion:
+
+1. Authentifizierung und Rolle/Teamkontext prüfen.
+2. Spieler- und Matchday-Kontext mit Row Locks laden; zusätzlich den bestehenden spielerbezogenen Advisory Lock verwenden.
+3. Sicherstellen, dass Spieler aktiv ist und zum Team des Ausgangsspieltags gehört.
+4. Sicherstellen, dass der Ausgangsspieltag noch `planned` ist und nicht in der Vergangenheit liegt.
+5. Prüfen, ob bereits eine offene Vormerkung für Spieler und Team existiert.
+6. Falls eine Nominierungszeile für genau den Ausgangsspieltag existiert:
+   - `played=true` führt zum Abbruch der gesamten Aktion;
+   - andernfalls wird die vollständige Zeile als JSONB-Snapshot gesichert und anschließend entfernt.
+7. Vormerkung mit Pflichtbegründung, Actor und Zeitstempel anlegen; Snapshot der entfernten Ausgangsnominierung mit der Vormerkung verknüpfen.
+8. Transaktion committen.
+
+Schlägt ein Schritt fehl, werden sowohl die Nominierungsentfernung als auch die Vormerkung zurückgerollt. Ein separater Frontend-DELETE vor dem RPC-Aufruf ist ausdrücklich ausgeschlossen.
+
+### 22.3 Schutz der tatsächlichen Einsätze und Historie
+
+Die bestehende E05-Ausnahme-Widerrufs-RPC ist ein technisches Muster für atomare Nominierungsentfernung: sie verwendet den spielerbezogenen Advisory Lock, prüft `played=true`, entfernt nur die noch nicht als Einsatz markierte Nominierung und hält einen vollständigen JSONB-Snapshot im Audit fest. Epic 23 soll dieses Muster wiederverwenden, ohne bestehende E05-Funktionen zu verändern oder deren fachliche Sperrenlogik zu übernehmen.
+
+Für Epic 23 wird empfohlen:
+- Ausgangsspieltag muss `status='planned'` und `match_date >= current_date` haben;
+- ein vorhandener Datensatz mit `played=true` darf nie automatisch entfernt werden;
+- ein vorhandener Datensatz mit `played=false` oder `played IS NULL` kann entfernt werden;
+- Snapshot der entfernten Nominierungszeile (mindestens `matchday_id, player_id, team_number, goalkeeper, played`) wird unveränderlich gespeichert;
+- bei fehlender Nominierungszeile wird trotzdem eine Vormerkung angelegt, sofern der Trainer die Verfügbarkeit bestätigt;
+- der Snapshot wird nicht als aktuelle Nominierung wiederhergestellt, wenn die Vormerkung später erfüllt oder zurückgenommen wird.
+
+### 22.4 Frontend-Nachladen nach erfolgreichem RPC-Aufruf
+
+Nach erfolgreichem RPC-Aufruf soll die Anwendung die betroffene Spieltagsauswahl und Reminder-Daten aus der Datenbank neu laden oder die lokalen Strukturen vollständig und konsistent aktualisieren. Ein reines Entfernen aus `md.selected` ohne Neuladen der tatsächlichen Daten ist nicht ausreichend. Bei RPC-Fehler bleibt der vorherige Frontendzustand unverändert und zeigt die Serverfehlermeldung an.
+
+### 22.5 Zusätzliche Testfälle
+
+- A ist auf dem Ausgangsspieltag nominiert, `played=false`: Vormerkung wird angelegt, A wird atomar abgewählt und Snapshot bleibt erhalten.
+- A ist auf dem Ausgangsspieltag nominiert, `played IS NULL`: gleiches erwartetes Ergebnis.
+- A ist auf dem Ausgangsspieltag mit `played=true` markiert: gesamter Vorgang wird abgelehnt; Nominierung bleibt bestehen; keine Vormerkung entsteht.
+- Ausgangsspieltag ist nicht mehr `planned` oder liegt in der Vergangenheit: Vorgang wird abgelehnt.
+- Fehler beim Insert der Vormerkung nach vorgesehener Abwahl: Transaktion rollt zurück; A bleibt nominiert.
+- Doppelklick/parallel ausgelöste Erstellung: höchstens eine offene Vormerkung; keine doppelte Nominierungsentfernung.
+- Nach erfolgreicher Aktion zeigt die UI A nicht mehr als nominiert, aber mit Status „Nominierung vorgemerkt“.
+- Bei Rücknahme der Vormerkung wird A nicht automatisch wieder in den Ausgangskader aufgenommen; eine erneute Nominierung bleibt eine bewusste Trainerentscheidung.
+
+**Hinweis:** Der JSONB-Snapshot und die konkrete RPC-Signatur sind technische Vorschläge für den späteren SQL-Entwurf, keine ausgeführte oder freigegebene Datenbankänderung.
