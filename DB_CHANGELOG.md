@@ -972,3 +972,11 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 - 14/14 ausgeführte Funktions- und RLS-Assertions nach Hotfix bestanden.
 - Testdaten ausschließlich transaktional angelegt und vollständig zurückgerollt.
 - Noch offene Konkurrenz-/Sonderrollen-Tests siehe `docs/E23_PAKET_01_DEV_TESTPLAN_2026-11-17.md`.
+
+
+## 17.11.2026 – Epic 23 Hotfix 2 und ergänzende DEV-Tests
+
+- Hotfix 2 serialisiert den Fulfillment-Trigger mit der Create-RPC über denselben spielerbezogenen Advisory-Lock.
+- Parallele Create-Aufrufe und paralleles Create/Nominierung erfolgreich getestet.
+- Audit DELETE/TRUNCATE sowie Cross-Team-RPC-Schutz erfolgreich getestet.
+- Gezielter Zwischenfehler-/Rollbacktest und Superadmin-Kontexttest bleiben offen.
