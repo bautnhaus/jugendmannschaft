@@ -415,3 +415,75 @@ Das Backup exportiert IDs, Status, Erstellungs-/Erfüllungs-/Rücknahmedaten und
 7. **PROD:** nicht Bestandteil dieser Vorbereitung; erfordert eigenes Releasepaket und eigene ausdrückliche Freigabe.
 
 **Aktueller Status nach dieser Prüfung:** Die RLS-/Rollenmuster, FK-Kaskaden und Restore-Reihenfolge sind konkret erfasst. Die Vormerkung eines zunächst nominierten Spielers mit atomarer Abwahl aus dem Ausgangsspieltag ist als verbindlicher Ablauf ergänzt. Offen bleibt der getrennte Randfall einer bereits bestehenden Nominierung auf einem anderen zukünftigen Spieltag sowie die gewünschte Sichtbarkeit der Historie. Eine versionierte Migration wird erst nach separater ausdrücklicher Beauftragung erstellt; SQL-Ausführung bleibt gesondert freigabepflichtig.
+
+
+## 22. Umsetzungsvorbereitung – konkrete Transaktions- und Frontendintegration (17.11.2026)
+
+### 22.1 Epic-Zuordnung und zentrale Projektübersicht
+
+- Die Zuordnung zu **Epic 23 „Nominierung vormerken“** ist in dieser Spezifikation verbindlich dokumentiert.
+- Epic 23 wurde zusätzlich in `PROJECT_CONTEXT.md` als aktuelles Vorhaben ergänzt und im Repository-`README.md` verlinkt.
+- Im aktuellen Repository-Baum wurde keine eigenständige zentrale Backlog-Datei gefunden. Bis eine solche Datei eingeführt wird, ist `PROJECT_CONTEXT.md` die zentrale Projektübersicht; diese Spezifikation enthält die fachlichen und technischen Details.
+- Das bestehende E05 wird nicht umbenannt, erweitert oder wieder geöffnet.
+
+### 22.2 Aktueller Frontend-Schreibpfad
+
+Die aktuelle Funktion `saveMatchdaySelection()` arbeitet in zwei getrennten Requests:
+1. Entfernen nicht mehr ausgewählter Spieler aus `matchday_players`;
+2. Einfügen neu ausgewählter Spieler in `matchday_players`.
+
+Die Funktion aktualisiert anschließend `md.selected` und `md.playerRows`. Beim Entfernen wird derzeit kein zusätzlicher Datensatz in `matchday_attendance` gelöscht. Es wurde außerdem read-only kein Fremdschlüssel gefunden, der eine andere Tabelle auf `matchday_players` referenziert.
+
+**Konsequenz:** Die neue Vormerkungsaktion darf nicht zuerst die bestehende Frontend-Funktion zum Abwählen aufrufen und danach separat eine Vormerkung speichern. Das wären zwei getrennte Requests und könnten bei einem Fehler einen inkonsistenten Zustand hinterlassen.
+
+### 22.3 Vorgesehene atomare Create-RPC
+
+Die Create-RPC wird als einzige Schreibschnittstelle für diesen Vorgang vorgesehen:
+
+`create_matchday_nomination_reminder(p_source_matchday_id, p_player_id, p_reason)`
+
+Vorgesehene Reihenfolge innerhalb einer Datenbanktransaktion:
+
+1. `auth.uid()` ermitteln und Team-/Rollenberechtigung prüfen.
+2. Spielerbezogenen Advisory Transaction Lock verwenden.
+3. Ausgangsspieltag und Spieler laden und prüfen, dass beide zur gleichen Mannschaft gehören und der Spieler aktiv ist.
+4. Prüfen, dass noch keine offene Vormerkung für Spieler und Mannschaft existiert.
+5. Prüfen, dass der Spieler am Ausgangsspieltag aktuell nominiert ist oder nicht; beide Fälle sind zulässig.
+6. Offene Vormerkung mit Pflichtbegründung, `created_by` und `created_at` anlegen.
+7. Falls der Spieler auf genau diesem Ausgangsspieltag aktuell in `matchday_players` steht, diese Nominierung innerhalb derselben Transaktion entfernen.
+8. Erfolgreich zurückkehren; bei jedem Fehler wird die gesamte Transaktion einschließlich möglicher Abwahl zurückgerollt.
+
+Damit ist der fachliche Ablauf „A war zunächst nominiert, wird kurzfristig durch B ersetzt und für den nächsten Spieltag vorgemerkt“ mit einem einzigen atomaren Vorgang abgedeckt. Die Vormerkung darf auch angelegt werden, wenn A bereits vor dem Dialog aus der aktuellen Nominierung entfernt wurde.
+
+Die Create-RPC darf keine Nominierung auf einem anderen Spieltag entfernen. Das betrifft ausschließlich den als Ausgangsspieltag übergebenen Spieltag.
+
+### 22.4 Empfehlungs- und UI-Aktualisierung
+
+Nach erfolgreichem RPC-Aufruf muss die Frontendansicht:
+- den Spieler aus `md.selected` und `md.playerRows` des Ausgangsspieltags entfernen, sofern er dort zuvor nominiert war;
+- die offene Vormerkung in den lokalen Zustand übernehmen oder die betroffenen Daten neu laden;
+- den Hinweis „Nominierung vorgemerkt“ anzeigen;
+- die gespeicherte Kaderempfehlung als möglicherweise veraltet behandeln und dem Trainer eine Neuberechnung ermöglichen.
+
+Die gespeicherte Empfehlung wird durch das Erstellen einer Vormerkung nicht stillschweigend verändert. Die Vorrangsortierung wird erst bei der nächsten Neuberechnung wirksam.
+
+### 22.5 Erfüllungstrigger – Abgrenzung
+
+- Die Abwahl aus dem Ausgangsspieltag ist ein DELETE und darf keine Erfüllung auslösen.
+- Das spätere Einfügen des Spielers in einen anderen Spieltag kann die offene Vormerkung erfüllen.
+- UPDATEs ausschließlich an `team_number`, `goalkeeper` oder `played` dürfen keine Erfüllung auslösen.
+- Ein UPSERT ist anhand des tatsächlichen INSERT-/UPDATE-Ergebnisses zu behandeln; eine Konfliktaktualisierung vorhandener Team-/Einsatzfelder ist kein neues Nominierungsereignis.
+- Bestehende Sperren- und Sperrausgleichstrigger bleiben unverändert.
+
+### 22.6 Noch nicht final festgelegter Randfall
+
+Wenn der Spieler zum Zeitpunkt der Vormerkung bereits auf einem anderen zukünftigen Spieltag nominiert ist, wird diese bestehende Nominierung weder entfernt noch rückwirkend als Erfüllung behandelt. Das Verhalten der neuen Vormerkung in diesem Sonderfall bleibt vor dem finalen SQL-Entwurf gesondert zu entscheiden. Der typische kurzfristige Austausch innerhalb des Ausgangsspieltags ist davon ausdrücklich nicht betroffen.
+
+### 22.7 Read-only Datenbankbefund
+
+- Die Prüfung der Fremdschlüssel, die auf `matchday_players` verweisen, ergab keine referenzierenden Tabellen.
+- `matchday_attendance` ist eine eigenständige Tabelle mit `matchday_id`, `player_id`, `present` und `updated_at`; es wurde keine FK-Abhängigkeit auf `matchday_players` gefunden.
+- Der vorhandene Auswahl-Speicherpfad löscht `matchday_players`-Zeilen, ohne `matchday_attendance` zu löschen. Die neue atomare Vormerkungsaktion soll dieses bestehende Verhalten nicht eigenmächtig ändern.
+- Alle Befunde stammen aus read-only Abfragen und der aktuellen Datei `develop/index.html`.
+
+**Freigabegrenze:** Dieses Zielbild ist eine technische Vorbereitung. Es wurde keine Migration-Datei erstellt, kein SQL ausgeführt und keine Frontenddatei verändert.
