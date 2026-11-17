@@ -24,3 +24,14 @@ Sobald ich das Thema nenne, ordne es dem bestehenden Backlog zu, lies nur die da
 4. Was der nächste konkrete Schritt ist.
 
 Beginne nicht mit einer vollständigen Projektprüfung und stelle keine Fragen zu bereits dokumentierten oder bestätigten Punkten.
+
+
+## Verbindliche Backlog-Struktur (beschlossen 17.11.2026)
+- Backlog-Ebenen: Themenbereich → Epic → Anforderung/Feature → Arbeitspaket.
+- Themenbereiche sind langfristige Produktgebiete und werden nicht abgeschlossen.
+- Epics sind eigenständige, fachlich abgegrenzte und abschließbare Vorhaben mit Ziel und Abnahmekriterien.
+- Neue Ideen dürfen zunächst ohne Epic-ID einem Themenbereich zugeordnet und dort gesammelt werden. Erst nach ausreichender Konkretisierung wird eine Epic-ID vergeben.
+- Abgeschlossene Epics werden wegen neuer Ideen/Erweiterungen nicht wieder geöffnet. Dafür wird grundsätzlich ein neues Epic im passenden Themenbereich angelegt.
+- Bestehende Epic-IDs und Entscheidungen bleiben erhalten. Abhängigkeiten werden separat dokumentiert.
+- Maßgebliche Zuordnung: `docs/BACKLOG_STRUKTUR_UND_THEMENBEREICHE.md`.
+- E23 „Nominierung für einen kommenden Spieltag vormerken“ gehört zum Themenbereich Kaderplanung. Für den aktuellen technischen Stand ist `docs/FEATURE_NOMINIERUNGSVORMERKUNG_2026-11-17.md` maßgeblich.
