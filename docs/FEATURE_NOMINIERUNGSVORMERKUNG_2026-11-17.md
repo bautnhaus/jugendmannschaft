@@ -308,8 +308,8 @@ Die vorhandenen Trigger `matchday_players_prevent_suspended_nomination` und `mat
 ### 17.5 Zeitliche Randfälle
 
 - Eine Vormerkung wird ausschließlich durch eine Nominierung erfüllt, die nach ihrer Erstellung als Datenbankereignis eintritt und zu einem späteren Matchdatum als dem Ausgangsspieltag gehört.
-- Eine bereits vorher gespeicherte Nominierung eines späteren Spieltags wird nicht rückwirkend als Erfüllung interpretiert.
-- Um eine dadurch sinnlose Vormerkung zu vermeiden, soll die Create-RPC vor dem INSERT prüfen, ob der Spieler bereits auf einem späteren Spieltag derselben Mannschaft nominiert ist. Falls ja, wird die Erstellung mit verständlicher Meldung abgelehnt.
+- Eine bereits vorher gespeicherte Nominierung desselben Ausgangsspieltags ist kein Hindernis: Der Spieler kann zunächst nominiert und anschließend zugunsten eines anderen Spielers abgewählt werden. Sobald er auf dem Ausgangsspieltag nicht mehr nominiert ist, darf der Trainer für ihn eine Vormerkung anlegen.
+- Eine bereits vorher gespeicherte Nominierung eines anderen, späteren Spieltags wird nicht rückwirkend als Erfüllungsereignis behandelt. Ob sie die Anlage einer zusätzlichen Vormerkung blockiert, ist ein davon getrennter, noch offener Randfall.
 - Nach erfolgreicher Erfüllung bleibt der Status `fulfilled`, auch wenn die Nominierung später entfernt wird. Die Erfüllung ist ein historisches Ereignis und wird nicht automatisch zurückgenommen.
 - Ein späterer Spieltag wird über `match_date > source_match_date` bestimmt. Gleiches Kalenderdatum mit unterschiedlicher Anstoßzeit wird in v1 nicht als „später“ interpretiert, da die Datenbank nur Datum und optionale lokale Anstoßzeit führt und kein verlässlicher Zeitstempel der Nominierungsaktion gespeichert wird.
 
@@ -339,8 +339,9 @@ Backup-Version 13 bleibt vorgesehen. Der Restore muss außerdem verhindern, dass
 
 ## 18. Noch offene technische Festlegungen vor finalem SQL-Entwurf
 
-1. **Create-Randfall:** vorgeschlagene Ablehnung, wenn bereits eine spätere Nominierung existiert. Damit wird keine frühere Nominierung rückwirkend als Erfüllung behandelt.
-2. **UI-Historie:** fachlich ist Historienerhalt beschlossen; für v1 empfehle ich, erfüllte/zurückgenommene Vormerkungen im Spieler-Optionen-/Detaildialog sichtbar zu machen, ohne eine neue globale Übersicht einzuführen.
+1. **Kurzfristiger Austausch innerhalb des Ausgangsspieltags:** Wird Spieler A zunächst nominiert und anschließend zugunsten von B abgewählt, muss A danach vormerkbar sein, sofern A aktuell nicht mehr auf diesem Spieltag nominiert ist.
+2. **Bereits bestehende Nominierung auf einem anderen zukünftigen Spieltag:** Sie wird nicht rückwirkend als Erfüllung gewertet. Ob sie eine neue Vormerkung blockiert, ist noch gesondert festzulegen.
+3. **UI-Historie:** fachlich ist Historienerhalt beschlossen; für v1 empfehle ich, erfüllte/zurückgenommene Vormerkungen im Spieler-Optionen-/Detaildialog sichtbar zu machen, ohne eine neue globale Übersicht einzuführen.
 
 Die Lösch-/Historienfrage ist durch die aktuelle Soft-Deaktivierung der Spieler geklärt: physische Löschungen werden durch FK-RESTRICT gegen unbeabsichtigten Historienverlust geschützt; Teamlöschung bleibt kaskadierend.
 
@@ -404,4 +405,4 @@ Das Backup exportiert IDs, Status, Erstellungs-/Erfüllungs-/Rücknahmedaten und
 6. **Backup/Restore und Regression:** separat testen und dokumentieren.
 7. **PROD:** nicht Bestandteil dieser Vorbereitung; erfordert eigenes Releasepaket und eigene ausdrückliche Freigabe.
 
-**Aktueller Status nach dieser Prüfung:** Die RLS-/Rollenmuster, FK-Kaskaden, Nominierungs-Schreibpfade und Restore-Reihenfolge sind konkret erfasst. Die Historien-/Löschstrategie ist aufgrund der bestehenden Soft-Deaktivierung fachlich und technisch eingegrenzt. Vor dem SQL-Entwurf bleiben der Create-Randfall (bereits vorhandene spätere Nominierung) und die gewünschte Sichtbarkeit der Historie zu bestätigen. Eine versionierte Migration wird erst nach separater ausdrücklicher Beauftragung erstellt; SQL-Ausführung bleibt gesondert freigabepflichtig.
+**Aktueller Status nach dieser Prüfung:** Die RLS-/Rollenmuster, FK-Kaskaden und Restore-Reihenfolge sind konkret erfasst. Der kurzfristige Austausch eines zunächst nominierten Spielers innerhalb des Ausgangsspieltags ist als zulässiger Vormerkungsfall ergänzt. Offen bleibt der getrennte Randfall einer bereits bestehenden Nominierung auf einem anderen zukünftigen Spieltag sowie die gewünschte Sichtbarkeit der Historie. Eine versionierte Migration wird erst nach separater ausdrücklicher Beauftragung erstellt; SQL-Ausführung bleibt gesondert freigabepflichtig.
