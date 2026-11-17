@@ -964,3 +964,11 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 - **Funktionstests:** noch offen; Paket 1 ist strukturell installiert, aber noch nicht fachlich abgenommen.
 - **Rollback:** vorhanden, nicht ausgeführt.
 - **PROD:** nicht ausgeführt und unverändert.
+
+
+## 17.11.2026 – Epic 23 Paket 1 Hotfix 1 und DEV-Tests
+
+- Hotfix zur Fulfillment-Zeitprüfung erfolgreich in DEV ausgeführt.
+- 14/14 ausgeführte Funktions- und RLS-Assertions nach Hotfix bestanden.
+- Testdaten ausschließlich transaktional angelegt und vollständig zurückgerollt.
+- Noch offene Konkurrenz-/Sonderrollen-Tests siehe `docs/E23_PAKET_01_DEV_TESTPLAN_2026-11-17.md`.
