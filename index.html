@@ -1752,6 +1752,11 @@ html[data-theme="dark"] .playerListRow.matchdaySquadTile .matchdayStatusChip.nom
 }
 </style>
 
+<style id="e05-dialog-reason-spacing">
+.modalbox .e05DialogReason{display:block;margin-top:10px}
+.modalbox .e05DialogReason textarea{display:block;width:100%;max-width:100%;box-sizing:border-box;margin-top:8px}
+</style>
+
 <style id="e23-nomination-reminder-dialog-layout">
 /* E23: Dialogbuttons wie bei den bestehenden Sperrdialogen nebeneinander. */
 .modalbox .e23NominationReminderDialog .toolbar{display:flex;flex-direction:row;flex-wrap:nowrap;gap:8px;margin-top:14px}
@@ -2077,7 +2082,7 @@ window.openSuspensionException=async(playerId)=>{
   const info=matchdaySuspensionFor(playerId,md.id);
   if(!info.blocked){showStatus('Für diesen Spieler liegt an diesem Spieltag keine offene Sperre ohne Ausnahme vor.','error');return;}
   const p=state.players.find(x=>x.id===playerId);if(!p)return;
-  openModal(`<div class="detailHeader"><h2>Ausnahme zur Sperre</h2></div><p><strong>${esc(displayName(p))}</strong> ist für diesen Spieltag gesperrt.</p><p class="muted small">Die Sperre bleibt bestehen und wird nach Erteilung der Ausnahme auf den nächsten relevanten Spieltag verschoben.</p><label class="field"><span>Begründung</span><textarea id="e05SuspensionExceptionReason" rows="3" maxlength="1000" placeholder="Begründung für die Ausnahme"></textarea></label><div class="toolbar"><button type="button" onclick="closeModal()">Abbrechen</button><button type="button" class="primary" onclick="grantMatchdaySuspensionException('${info.suspension.id}','${playerId}')">Ausnahme erteilen</button></div>`);
+  openModal(`<div class="detailHeader"><h2>Ausnahme zur Sperre</h2></div><p><strong>${esc(displayName(p))}</strong> ist für diesen Spieltag gesperrt.</p><p class="muted small">Die Sperre bleibt bestehen und wird nach Erteilung der Ausnahme auf den nächsten relevanten Spieltag verschoben.</p><label class="e05DialogReason">Begründung<textarea id="e05SuspensionExceptionReason" rows="3" maxlength="1000" placeholder="Begründung für die Ausnahme"></textarea></label><div class="toolbar"><button type="button" onclick="closeModal()">Abbrechen</button><button type="button" class="primary" onclick="grantMatchdaySuspensionException('${info.suspension.id}','${playerId}')">Ausnahme erteilen</button></div>`);
 };
 window.grantMatchdaySuspensionException=async(suspensionId,playerId)=>{
   const md=state.matchdays.find(x=>x.id===currentMatchdayId);const reason=$('e05SuspensionExceptionReason')?.value?.trim();
@@ -2153,7 +2158,7 @@ window.openE05MatchdayAction=(action,playerId,recordId=null)=>{
   if(action==='revoke'&&!info.exception){showStatus('Für diesen Spieltag ist keine aktive Ausnahme vorhanden.','error');return;}
   if(action==='cancelReset'&&!matchdayEarlyResetRows.some(x=>x.id===recordId&&x.status==='pending')){showStatus('Es gibt keine offene Vormerkung, die zurückgenommen werden kann.','error');return;}
   if(action==='scheduleReset'&&(md.status!=='planned'||String(md.date||'')<todayISO()||(md.selected||[]).includes(playerId)||p.active===false||matchdayEarlyResetRows.some(x=>x.player_id===playerId&&['pending','applied'].includes(x.status)))){showStatus('Eine Vormerkung ist für diesen Spieler und Spieltag aktuell nicht möglich.','error');return;}
-  const html='<div class="detailHeader"><h2>'+esc(cfg[0])+'</h2></div><p><strong>'+esc(displayName(p))+'</strong> · '+esc(fmtDate(md.date))+(md.opponent?' · '+esc(md.opponent):'')+'</p><p class="muted small">'+esc(cfg[1])+'</p><label class="field"><span>Begründung</span><textarea id="e05MatchdayActionReason" rows="3" maxlength="1000" placeholder="Begründung eingeben"></textarea></label><div class="toolbar"><button type="button" onclick="closeModal()">Abbrechen</button><button id="e05MatchdayActionSubmit" type="button" class="primary" onclick="submitE05MatchdayAction(\''+action+'\',\''+playerId+'\',\''+(recordId||'')+'\')">'+esc(cfg[2])+'</button></div>';
+  const html='<div class="detailHeader"><h2>'+esc(cfg[0])+'</h2></div><p><strong>'+esc(displayName(p))+'</strong> · '+esc(fmtDate(md.date))+(md.opponent?' · '+esc(md.opponent):'')+'</p><p class="muted small">'+esc(cfg[1])+'</p><label class="e05DialogReason">Begründung<textarea id="e05MatchdayActionReason" rows="3" maxlength="1000" placeholder="Begründung eingeben"></textarea></label><div class="toolbar"><button type="button" onclick="closeModal()">Abbrechen</button><button id="e05MatchdayActionSubmit" type="button" class="primary" onclick="submitE05MatchdayAction(\''+action+'\',\''+playerId+'\',\''+(recordId||'')+'\')">'+esc(cfg[2])+'</button></div>';
   openModal(html);
 };
 async function refreshMatchdayAfterSuspensionAction(md){
