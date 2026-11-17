@@ -1396,3 +1396,14 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Tests:** 14/14 ausgeführte Funktions-/RLS-Assertions bestanden nach Hotfix. Testtransaktionen wurden zurückgerollt.
 - **Offen:** echte parallele Sessions, künstlich erzwungener Zwischenfehler/RPC-Rollback und separate Superadmin-/Nichtberechtigten-RPC-Rollenfälle.
 - **Datenbestand:** keine Testdaten persistiert.
+
+
+### DB-MIG-2026-027 – Ergänzende Konkurrenz- und Berechtigungstests
+
+- Hotfix 2 `epic23_nomination_reminder_concurrency_hotfix_dev` erfolgreich ausgeführt.
+- Zwei parallele Create-Aufrufe: genau eine Vormerkung erstellt; zweiter Aufruf abgelehnt.
+- Paralleles Create und spätere Nominierung: nach Hotfix 2 Status korrekt fulfilled.
+- Audit DELETE und TRUNCATE blockiert.
+- Cross-Team-RPC-Aufruf eines nicht berechtigten Benutzers abgelehnt.
+- Nicht durchgeführt: gezielter Fehler mitten in RPC-Transaktion und Superadmin-Kontext-Test.
+- DEV-Testdaten mit append-only Audit-Historie verbleiben als klar markierte E23-TEMP-Datensätze in DEV; keine PROD-Daten betroffen.
