@@ -337,11 +337,10 @@ Die Snapshot-/SET-NULL-Variante benötigt zusätzliche Backupfelder und eine kla
 
 ## 18. Noch offene technische Festlegungen vor finalem SQL-Entwurf
 
-1. **Lösch-/Historienstrategie:** Snapshot + SET NULL oder FK-RESTRICT bei Spieler-/Spieltagslöschung. Empfehlung: Snapshot + SET NULL, wenn Historie auch nach Stammdatenlöschung sichtbar bleiben soll.
-2. **Create-Randfall:** vorgeschlagene Ablehnung, wenn bereits eine spätere Nominierung existiert. Damit wird keine frühere Nominierung rückwirkend als Erfüllung behandelt.
-3. **UI-Historie:** fachlich ist Historienerhalt beschlossen; für v1 ist noch zu entscheiden, ob erfüllte/zurückgenommene Vormerkungen nur im Dialog oder in einer eigenen Historienansicht sichtbar werden. Für die erste Umsetzung empfehle ich die Anzeige im Spieler-Optionen-/Detaildialog, ohne neue globale Übersicht.
+1. **Create-Randfall:** vorgeschlagene Ablehnung, wenn bereits eine spätere Nominierung existiert. Damit wird keine frühere Nominierung rückwirkend als Erfüllung behandelt.
+2. **UI-Historie:** fachlich ist Historienerhalt beschlossen; für v1 empfehle ich, erfüllte/zurückgenommene Vormerkungen im Spieler-Optionen-/Detaildialog sichtbar zu machen, ohne eine neue globale Übersicht einzuführen.
 
-Diese Punkte betreffen die technische Konkretisierung und UI-Platzierung. Bis zu ihrer Klärung bleibt die SQL-Erstellung ein Entwurf und jede Ausführung gesperrt.
+Die Lösch-/Historienfrage ist durch die aktuelle Soft-Deaktivierung der Spieler geklärt: physische Löschungen werden durch FK-RESTRICT gegen unbeabsichtigten Historienverlust geschützt; Teamlöschung bleibt kaskadierend.
 
 
 ## 19. Prüfung der tatsächlichen Lösch- und Restore-Abläufe (17.11.2026)
@@ -375,9 +374,9 @@ Diese Empfehlung erfüllt den Historienerhalt, speichert aber personenbezogene N
 
 ### 19.3 Backup-/Restore
 
-Der Restore muss vor dem Löschen bestehender Spieler/Spieltage die Reminder-Daten der betroffenen Mannschaft sichern und gezielt entfernen. Nach dem Wiederaufbau von Spielern und Spieltagen können Reminder mit den ursprünglichen IDs wieder eingespielt werden. Für historische Datensätze mit bereits auf NULL gesetzten Fremdschlüsseln bleiben Snapshots erhalten und dürfen beim Restore nicht automatisch mit ähnlich benannten neuen Spielern verknüpft werden.
+Der Restore muss die Reminder-Daten vor dem Löschen der bestehenden Matchdays/Players auslesen und in der Backup-Nutzlast halten. Danach werden die Reminder der betroffenen Mannschaft explizit gelöscht, bevor die FK-RESTRICT-geschützten Elternobjekte gelöscht werden. Nach dem Wiederaufbau der Spieler, Spieltage und Nominierungen werden Reminder mit den Original-IDs wiederhergestellt.
 
-Das Backup muss deshalb neben IDs auch Status, Erstellungs-/Erfüllungs-/Rücknahmedaten, Begründungen und Snapshotfelder exportieren. Der Restore darf keine Erfüllungstrigger auslösen, nur weil historische `matchday_players`-Zeilen wiederhergestellt werden. Für den Restore ist daher ein klarer, transaktionssicherer Weg nötig, der die Reminder-Wiederherstellung nach den Nominierungszeilen durchführt oder den Erfüllungstrigger für den kontrollierten Restore-Kontext gezielt ausnimmt. Eine pauschale Trigger-Deaktivierung ist ausgeschlossen.
+Das Backup exportiert IDs, Status, Erstellungs-/Erfüllungs-/Rücknahmedaten und Begründungen. Snapshotfelder sind nach der korrigierten Löschstrategie nicht erforderlich. Der Restore darf keine Erfüllungstrigger auslösen, nur weil historische `matchday_players`-Zeilen wiederhergestellt werden. Der Erfüllungstrigger muss deshalb einen kontrollierten Restore-Kontext erkennen oder die Wiederherstellung der Reminder muss so erfolgen, dass bereits gespeicherte historische Nominierungen nicht als neue Erfüllungsereignisse behandelt werden. Eine pauschale Trigger-Deaktivierung ist ausgeschlossen.
 
 ## 20. Technische Risiken und geplante Gegenmaßnahmen
 
@@ -390,7 +389,7 @@ Das Backup muss deshalb neben IDs auch Status, Erstellungs-/Erfüllungs-/Rückna
 | Sperren-Trigger wird umgangen | bestehende Trigger unverändert; neuer Trigger nur ergänzend |
 | Änderung nur an Teamnummer/Torwart/Einsatzstatus | Erfüllung nur bei INSERT oder tatsächlicher Änderung von Matchday/Player |
 | Backup-Restore löst falsche Erfüllung aus | kontrollierter Restorepfad, Tests mit historischen Reminder-Status |
-| Spieler-/Spieltagslöschung verliert Historie | Snapshot-/SET-NULL-Strategie nach Nutzerentscheidung |
+| Spieler-/Spieltagslöschung verliert Historie | FK-RESTRICT; Spieler werden regulär soft-deaktiviert; kontrollierter Backup-Restore löscht Reminder explizit vor Elternobjekten |
 | Frühere spätere Nominierung wird rückwirkend gezählt | Create-RPC prüft bereits existierende spätere Nominierungen und lehnt Anlage ab |
 | Erfüllungstrigger schlägt fehl | gesamte Nominierungstransaktion wird zurückgerollt; sichtbare Fehlermeldung |
 
