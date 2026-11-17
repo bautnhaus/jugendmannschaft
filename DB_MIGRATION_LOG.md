@@ -1428,3 +1428,17 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Tests:** spätere offene Vormerkung/Begründung, Ausgangsspieltag ausgeschlossen, bereits nominierter Zielspieler ausgeschlossen, Cross-Team-Aufruf abgelehnt – alle PASS.
 - **Frontend:** unverändert. **PROD:** unverändert.
 - **Dokumentation:** docs/E23_PAKET_02_DB_READ_API_2026-11-17.md und docs/E23_PAKET_02_DEV_TESTPLAN_2026-11-17.md.
+
+
+### DB-MIG-2026-029 – Epic 23 Paket 3: Sichtbarkeit und Wiederöffnung (DEV)
+
+- **Umgebung:** Supabase DEV – Projekt pzazqvvoruqnqhcorbwx.
+- **Migration:** `20261117180000_epic23_nomination_reminder_reopen_dev`; Supabase meldete `success: true`.
+- **Datei:** `supabase/migrations/20261117180000_epic23_nomination_reminder_reopen_dev.sql`.
+- **Read-API:** offene Vormerkungen werden jetzt auch auf dem Ausgangsspieltag geliefert; bereits nominierte Spieler bleiben ausgeblendet.
+- **Neue Triggerfunktion:** `epic23_reopen_nomination_reminder_on_delete()`; nach Löschen der erfüllenden Nominierung wird die Vormerkung wieder pending, sofern keine andere spätere Nominierung besteht.
+- **Audit:** Wiederöffnung wird als `reopened` append-only protokolliert.
+- **Sicherheit/Postflight:** Trigger aktiv; Funktionen SECURITY DEFINER, Owner postgres, fester search_path; Read-API EXECUTE nur authenticated; Triggerfunktion nicht direkt ausführbar für authenticated/anon.
+- **Dossier:** `docs/E23_PAKET_03_DB_REOPEN_2026-11-17.md`.
+- **Noch offen:** fachliche End-to-End-Tests für Sichtbarkeit, Erfüllung, Wiederöffnung und parallele spätere Nominierung.
+- **PROD:** unverändert.
