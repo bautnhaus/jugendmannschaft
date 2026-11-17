@@ -568,3 +568,16 @@ Der Feature-Branch `feature/dev-single-team-membership-guard-review` ist ein his
 - Security-/Performance-Advisor nach DDL geprüft; Health ohne Findings. Projektweite Advisor-Hinweise sind im Ausführungsdossier eingeordnet. Keine fremden Funktionen/Policies verändert.
 - Dokumentation: `docs/prod-release/E05_PROD_PAKET_04_SPIELTAGSZUORDNUNG_2026-11-14.md`, `DB_MIGRATION_LOG.md`, `DB_CHANGELOG.md`.
 - Keine Änderungen an GitHub `main`; keine Frontend-Änderung im Rahmen dieses Pakets.
+
+
+## Epic 23 – Nominierung vormerken (17.11.2026)
+
+- **Backlog-Zuordnung:** Themenbereich Kaderplanung → Epic 23 „Nominierung vormerken“.
+- **Fachlicher Stand:** abgestimmt; eigenständiges Epic. Das bestehende E05 (Sperren/Verhaltensereignisse) bleibt unverändert und wird nicht wieder geöffnet.
+- **Kernablauf:** Trainer kann einen Spieler, der am Ausgangsspieltag verfügbar war, für einen späteren Spieltag vormerken. Die Verfügbarkeit bestätigt der Trainer im Dialog; eine Begründung ist Pflicht.
+- **Kurzfristiger Kaderwechsel:** Wurde Spieler A zunächst nominiert und anschließend zugunsten von Spieler B abgewählt, kann der Trainer direkt bei A die Vormerkung auslösen. A wird beim Speichern atomar aus der aktuellen Nominierung des Ausgangsspieltags entfernt und die Vormerkung angelegt. Bei Fehlern darf keine Teiländerung bestehen bleiben.
+- **Empfehlung:** Offene Vormerkungen erhalten Vorrang in der bestehenden Kaderempfehlung; Kadergröße und bestehende Rangfolge innerhalb der Gruppen bleiben erhalten. Keine automatische Nominierung.
+- **Abschluss/Rücknahme:** tatsächliche spätere Nominierung erfüllt die Vormerkung. Trainer können offene Vormerkungen mit Pflichtbegründung zurücknehmen. Erfüllte und zurückgenommene Einträge bleiben historisch erhalten.
+- **UI:** Kachelhinweis „Nominierung vorgemerkt“, ohne Begründung; Optionen-Menü mit „Vormerkung zurücknehmen“.
+- **Technische Vorbereitung:** Datenmodell, RLS/RPC/Trigger, Empfehlungssortierung, Backup-Version 13 und Testfälle werden vorbereitet. Spezifikation: [Epic 23 – Nominierung vormerken](docs/FEATURE_NOMINIERUNGSVORMERKUNG_2026-11-17.md).
+- **Freigabegrenze:** keine SQL-Ausführung, keine DB-/Frontendänderung, keine PROD-/main-Änderung. Umsetzung erst nach separater Freigabe.
