@@ -207,6 +207,10 @@ begin
   for update;
   v_has_nomination:=found;
 
+  if v_has_nomination and v_nomination.available is not true then
+    raise exception using errcode='23514',message='Ein als nicht verfügbar markierter Spieler kann nicht vorgemerkt werden.';
+  end if;
+
   if v_has_nomination and v_nomination.played is true then
     raise exception using errcode='23514',message='Ein bereits als eingesetzt markierter Spieler kann nicht aus dem Spieltagskader entfernt werden.';
   end if;
