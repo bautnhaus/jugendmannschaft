@@ -2,7 +2,7 @@
 
 **Stand:** 17.11.2026  
 **Zielumgebung:** Supabase DEV (Projekt pzazqvvoruqnqhcorbwx)  
-**Status:** SQL vorbereitet, nicht ausgeführt.  
+**Status:** Migration erfolgreich in Supabase DEV ausgeführt und strukturell read-only verifiziert. Funktionstests stehen noch aus.  
 **PROD:** ausdrücklich nicht betroffen.
 
 ## Enthaltene Dateien
@@ -52,6 +52,15 @@
 - Das Triggerverhalten unter echter Konkurrenz ist erst nach Paket-1-Test nachgewiesen.
 - Die Frontendintegration, Empfehlungsvorrang und Backup-Version 13 sind nicht Teil dieses Pakets. Diese folgen nach erfolgreicher Datenbankabnahme in getrennten Paketen.
 - Es wurde keine bestehende E05-Funktion, Policy oder Tabelle geändert.
+
+## Ausführungsnachweis
+
+- Supabase DEV Migration: erfolgreich am 17.11.2026.
+- Ledger-Version: `20261117123114`; Name: `epic23_nomination_reminder_foundation_dev`.
+- Read-only Postflight: beide Tabellen vorhanden, RLS aktiv, zwei SELECT-Policies vorhanden, beide Trigger aktiv, Create-/Cancel-RPCs SECURITY DEFINER mit Owner `postgres` und festem `search_path`; EXECUTE nur für `authenticated` (nicht `anon`/PUBLIC).
+- Tabellenrechte: `authenticated` hat SELECT; keine direkten Client-Schreibrechte. Service role behält administrative Rechte.
+- Datenbestand nach Migration: 0 Vormerkungen und 0 Audit-Einträge.
+- Funktionale RPC-/Trigger- und RLS-Negativtests sind noch offen.
 
 ## Ausführungsreihenfolge
 
