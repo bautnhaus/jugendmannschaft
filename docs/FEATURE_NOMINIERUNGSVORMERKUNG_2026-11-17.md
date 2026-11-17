@@ -1,12 +1,13 @@
 # Feature-Spezifikation – Nominierung für einen kommenden Spieltag vormerken
 
 **Stand:** 17.11.2026  
+**Backlog-Zuordnung:** Themenbereich „Kaderplanung“ → Epic 23 „Nominierung vormerken“
 **Status:** Fachlich abgestimmt – technische Vorbereitung, keine Umsetzung  
 **Zielbranch:** `develop`  
 **Zielumgebung:** Supabase DEV  
 **PROD:** unverändert
 
-> **ID-Hinweis:** Die Bezeichnung E05 ist im aktuellen Projektkontext bereits für das Sperren-/Verhaltensereignis-Thema belegt. Diese neue Funktion wird deshalb bis zur Backlog-Zuordnung neutral als „Nominierungsvormerkung“ geführt. Keine bestehende Epic-ID wird überschrieben oder doppelt vergeben.
+> **Backlog-Regel:** Dieses Vorhaben wird als eigenständiges Epic 23 „Nominierung vormerken“ im Themenbereich „Kaderplanung“ geführt. Das bestehende E05 „Kaderempfehlung“ bleibt unverändert und wird nicht wieder geöffnet. Die Backlog-Struktur lautet: Themenbereich → Epic → Anforderung/Feature → Arbeitspaket. Abgeschlossene Epics werden nicht wieder geöffnet.
 
 ## 1. Ziel
 
@@ -16,7 +17,7 @@ Trainer können einen Spieler, der bei einem Spieltag verfügbar, aber nicht nom
 
 | Thema | Verbindliche Entscheidung |
 |---|---|
-| Auslöser | Trainer wählt bei einem nicht nominierten Spieler im Optionen-Menü „Nominierung vormerken“. |
+| Auslöser | Trainer wählt beim Spieler im Optionen-Menü „Nominierung vormerken“. Das ist auch möglich, wenn der Spieler zunächst für den Ausgangsspieltag nominiert war. |
 | Verfügbarkeit | Der Trainer bestätigt im Dialog selbst, dass der Spieler am Ausgangsspieltag verfügbar war. Es wird keine neue allgemeine Verfügbarkeitsverwaltung eingeführt. |
 | Begründung bei Erstellung | Pflichtfeld. |
 | Kaderempfehlung | Spieler mit offener Vormerkung erhalten Vorrang vor Spielern ohne Vormerkung. |
@@ -38,13 +39,13 @@ Trainer können einen Spieler, der bei einem Spieltag verfügbar, aber nicht nom
 
 ### 3.1 Vormerkung erstellen
 
-1. Trainer öffnet bei einem Spieler, der am Ausgangsspieltag nicht nominiert wurde, das Optionen-Menü.
+1. Trainer öffnet beim Spieler das Optionen-Menü.
 2. Aktion „Nominierung vormerken“ wird angeboten.
 3. Dialog fordert die Bestätigung der Verfügbarkeit am Ausgangsspieltag und eine verpflichtende Begründung.
-4. Nach Bestätigung wird die Vormerkung gespeichert.
+4. Nach Bestätigung werden Vormerkung und gegebenenfalls Abwahl aus der aktuellen Nominierung atomar gespeichert.
 5. Der Spieler erhält den Hinweis „Nominierung vorgemerkt“ und wird bei späteren Kaderempfehlungen priorisiert.
 
-Die Aktion darf nicht angeboten werden, wenn der Spieler bereits für den Ausgangsspieltag nominiert ist oder inaktiv ist. Die Verfügbarkeitsbestätigung des Trainers ist Bestandteil des Dialogs.
+Die Aktion darf nicht für inaktive Spieler angeboten werden. Ist der Spieler auf dem Ausgangsspieltag aktuell nominiert, wird er beim erfolgreichen Anlegen der Vormerkung automatisch aus dieser Nominierung entfernt. Die Vormerkungserstellung und Abwahl müssen in einer einzigen Datenbanktransaktion erfolgen. Bei einem Fehler darf weder die Nominierung entfernt noch eine Vormerkung angelegt werden. Die Verfügbarkeitsbestätigung des Trainers ist Bestandteil des Dialogs.
 
 ### 3.2 Vormerkung anzeigen und berücksichtigen
 
@@ -250,7 +251,15 @@ Die Kaderempfehlung wird in `saveMatchdayRecommendation()` vor dem Aufruf der be
 
 ## 16. Backlog-/Epic-Zuordnung
 
-Der aktuelle Projektkontext verwendet **E05 bereits für Sperren und Verhaltensereignisse**. Um doppelte Epic-IDs und widersprüchliche Dokumentation zu vermeiden, wurde dieses Vorhaben zunächst unter dem neutralen Dokumenttitel „Nominierungsvormerkung“ dokumentiert. Eine neue Epic-/Feature-ID wird erst vergeben, wenn der bestehende Backlog-Eintrag und die gewünschte eigenständige Einordnung abschließend abgeglichen wurden.
+Verbindliche Zuordnung:
+- Themenbereich: **Kaderplanung**
+- Epic: **E23 – Nominierung vormerken**
+- Das Vorhaben ist ein eigenständiges Epic und kein Unterpunkt des bestehenden E05.
+- Das bestehende E05 „Kaderempfehlung“ bleibt unverändert und wird nicht wieder geöffnet.
+- Backlog-Struktur: Themenbereich → Epic → Anforderung/Feature → Arbeitspaket.
+- Abgeschlossene Epics werden nicht wieder geöffnet.
+
+Die technische Spezifikation bleibt unter ihrem bestehenden Dateinamen erhalten; die Backlog-Zuordnung ist verbindlich ergänzt.
 
 
 ## 17. Technisches Zielbild nach vertiefter DEV-Prüfung (17.11.2026)
@@ -339,7 +348,7 @@ Backup-Version 13 bleibt vorgesehen. Der Restore muss außerdem verhindern, dass
 
 ## 18. Noch offene technische Festlegungen vor finalem SQL-Entwurf
 
-1. **Kurzfristiger Austausch innerhalb des Ausgangsspieltags:** Wird Spieler A zunächst nominiert und anschließend zugunsten von B abgewählt, muss A danach vormerkbar sein, sofern A aktuell nicht mehr auf diesem Spieltag nominiert ist.
+1. **Kurzfristiger Austausch innerhalb des Ausgangsspieltags:** Wird Spieler A zunächst nominiert und anschließend zugunsten von B ersetzt, kann der Trainer direkt bei A „Nominierung vormerken“ wählen. Beim Speichern wird A atomar aus der aktuellen Nominierung entfernt und die Vormerkung angelegt. Ein separater vorheriger Abwahlschritt ist nicht erforderlich.
 2. **Bereits bestehende Nominierung auf einem anderen zukünftigen Spieltag:** Sie wird nicht rückwirkend als Erfüllung gewertet. Ob sie eine neue Vormerkung blockiert, ist noch gesondert festzulegen.
 3. **UI-Historie:** fachlich ist Historienerhalt beschlossen; für v1 empfehle ich, erfüllte/zurückgenommene Vormerkungen im Spieler-Optionen-/Detaildialog sichtbar zu machen, ohne eine neue globale Übersicht einzuführen.
 
@@ -405,4 +414,4 @@ Das Backup exportiert IDs, Status, Erstellungs-/Erfüllungs-/Rücknahmedaten und
 6. **Backup/Restore und Regression:** separat testen und dokumentieren.
 7. **PROD:** nicht Bestandteil dieser Vorbereitung; erfordert eigenes Releasepaket und eigene ausdrückliche Freigabe.
 
-**Aktueller Status nach dieser Prüfung:** Die RLS-/Rollenmuster, FK-Kaskaden und Restore-Reihenfolge sind konkret erfasst. Der kurzfristige Austausch eines zunächst nominierten Spielers innerhalb des Ausgangsspieltags ist als zulässiger Vormerkungsfall ergänzt. Offen bleibt der getrennte Randfall einer bereits bestehenden Nominierung auf einem anderen zukünftigen Spieltag sowie die gewünschte Sichtbarkeit der Historie. Eine versionierte Migration wird erst nach separater ausdrücklicher Beauftragung erstellt; SQL-Ausführung bleibt gesondert freigabepflichtig.
+**Aktueller Status nach dieser Prüfung:** Die RLS-/Rollenmuster, FK-Kaskaden und Restore-Reihenfolge sind konkret erfasst. Die Vormerkung eines zunächst nominierten Spielers mit atomarer Abwahl aus dem Ausgangsspieltag ist als verbindlicher Ablauf ergänzt. Offen bleibt der getrennte Randfall einer bereits bestehenden Nominierung auf einem anderen zukünftigen Spieltag sowie die gewünschte Sichtbarkeit der Historie. Eine versionierte Migration wird erst nach separater ausdrücklicher Beauftragung erstellt; SQL-Ausführung bleibt gesondert freigabepflichtig.
