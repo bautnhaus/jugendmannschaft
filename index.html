@@ -1758,10 +1758,11 @@ html[data-theme="dark"] .playerListRow.matchdaySquadTile .matchdayStatusChip.nom
 </style>
 
 <style id="e23-nomination-reminder-dialog-layout">
-/* E23: Dialogbuttons wie bei den bestehenden Sperrdialogen nebeneinander. */
-.modalbox .e23NominationReminderDialog .toolbar{display:flex;flex-direction:row;flex-wrap:nowrap;gap:8px;margin-top:14px}
-.modalbox .e23NominationReminderDialog .toolbar button{flex:1 1 0;width:auto;min-width:0;min-height:44px;white-space:normal}
-.modalbox .e23NominationReminderDialog label.matchdayCreateField>textarea{display:block;width:100%!important;max-width:100%!important;min-width:0;box-sizing:border-box;margin-top:8px;padding:10px!important;font-size:16px!important;line-height:20px;border-radius:9px}
+/* E23: Gleiche Feld- und Buttonabstände wie in den Sperrdialogen; beide Aktionen bleiben einzeilig nebeneinander. */
+.modalbox .e23NominationReminderDialog .toolbar{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:stretch;gap:8px;margin-top:14px}
+.modalbox .e23NominationReminderDialog .toolbar button{flex:1 1 0;width:auto;min-width:0;min-height:44px;padding-left:8px;padding-right:8px;font-size:16px;line-height:1.2;white-space:nowrap}
+.modalbox .e23NominationReminderDialog label.matchdayCreateField{display:block;margin-top:10px}
+.modalbox .e23NominationReminderDialog label.matchdayCreateField>textarea{display:block;width:100%!important;max-width:100%!important;min-width:0;min-height:42px;box-sizing:border-box;margin-top:8px;padding:10px!important;font-size:16px!important;line-height:20px;border-radius:9px}
 </style>
 
 <style id="e05-exception-tile-outline">
@@ -2106,7 +2107,7 @@ window.openNominationReminderAction=(action,value)=>{
   const intro=action==='create'?'Du hältst '+esc(displayName(player))+' für einen kommenden Spieltag vorrangig in der Kaderempfehlung. Die Vormerkung ist keine automatische Nominierung.':'Die Vormerkung für '+esc(reminder.player_name)+' wird zurückgenommen.';
   const label=action==='create'?'Begründung':'Grund für die Rücknahme';
   const button=action==='create'?'Vormerkung speichern':'Vormerkung zurücknehmen';
-  openModal('<div class="adminCreationForm e23NominationReminderDialog"><div class="detailHeader"><h2>'+title+'</h2></div><p>'+intro+'</p><label class="matchdayCreateField">'+label+'<textarea id="nominationReminderReason" rows="3" maxlength="500" placeholder="Bitte Begründung eingeben"></textarea></label><div class="toolbar"><button type="button" onclick="closeModal()">Abbrechen</button><button type="button" class="primary" id="nominationReminderSubmit" onclick="submitNominationReminderAction(\''+action+'\',\''+value+'\')">'+button+'</button></div></div>');
+  openModal('<div class="e23NominationReminderDialog"><div class="detailHeader"><h2>'+title+'</h2></div><p>'+intro+'</p><label class="matchdayCreateField">'+label+'<textarea id="nominationReminderReason" rows="3" maxlength="500" placeholder="Bitte Begründung eingeben"></textarea></label><div class="toolbar"><button type="button" onclick="closeModal()">Abbrechen</button><button type="button" class="primary" id="nominationReminderSubmit" onclick="submitNominationReminderAction(\''+action+'\',\''+value+'\')">'+button+'</button></div></div>');
 };
 window.submitNominationReminderAction=async(action,value)=>{
   if(nominationReminderActionBusy)return;
