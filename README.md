@@ -7,6 +7,9 @@
 - [Datenbank-Changelog](DB_CHANGELOG.md) – technische Datenbankobjekte, Änderungen und Prüfungen
 - [SQL-Migrationsprotokoll](DB_MIGRATION_LOG.md) – tatsächliche Ausführungsnachweise für schreibende SQL-Anweisungen
 
+## Rechtliche und Datenschutz-Dokumentation
+- [KadAssist Datenschutz-Entscheidungsregister und Löschfristenmatrix](docs/legal/README.md) – T01/T02 und D07 Version 1.0 (fachlich freigegeben am 17.11.2026; Umsetzung offen)
+
 ## Releases und fachliche Dokumentation
 - [Epic 23 – Nominierung vormerken (17.11.2026)](docs/FEATURE_NOMINIERUNGSVORMERKUNG_2026-11-17.md) – fachlich abgestimmt, technische Vorbereitung; keine Umsetzung freigegeben
 - [E05 – Frontend-Vereinfachung der Sperrenlogik (12.11.2026)](docs/E05_FRONTEND_SPIELARTEN_ENTKOPPELN_2026-11-12.md)
