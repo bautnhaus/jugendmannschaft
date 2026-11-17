@@ -76,3 +76,8 @@
 Der Rollback ist absichtlich guarded und bricht ab, sobald Reminder- oder Auditdaten vorhanden sind. Historie wird nicht automatisch gelöscht. Bei Datenbestand ist zuerst ein gesonderter Export-/Wiederherstellungsplan erforderlich.
 
 **Keine Ausführung:** Die Dateien in diesem Dossier sind Vorbereitungsartefakte. Die DEV-Ausführung erfolgt erst nach gesonderter ausdrücklicher Freigabe.
+
+
+## Testergebnis
+
+Die isolierten DEV-Funktionstests und RLS-Tests vom 17.11.2026 sind nach Hotfix 1 mit 14/14 Assertions erfolgreich. Die Testdaten wurden in jeder Testtransaktion zurückgerollt. Nicht getestet wurden echte parallele Sessions, gezielte RPC-Rollback-Fehler sowie alle Superadmin-/Nichtberechtigten-Rollenvarianten. Details: `docs/E23_PAKET_01_DEV_TESTPLAN_2026-11-17.md`.
