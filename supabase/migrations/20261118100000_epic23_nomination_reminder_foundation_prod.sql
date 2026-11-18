@@ -1,6 +1,6 @@
 -- Epic 23 – Paket 1: Nominierungsvormerkung (PROD)
 -- Prepared: 2026-11-17
--- Target: Supabase PROD release (pzazqvvoruqnqhcorbwx)
+-- Target: Supabase PROD (qdugtpzgefpswnnqbusd)
 -- STATUS: PREPARED FOR PROD; NOT EXECUTED.
 -- Creates reminder/audit tables, controlled RPCs and fulfillment trigger.
 -- No frontend changes. PROD release file; not yet executed.
