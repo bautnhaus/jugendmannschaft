@@ -1,5 +1,5 @@
 -- Epic 23 – Paket 2: Read API for pending nomination reminders (PROD)
--- Database-only package. No frontend changes and no PROD changes.
+-- Database-only PROD release step. No frontend changes. NOT EXECUTED.
 -- Supplies the current matchday's eligible reminder records to the frontend.
 -- Ranking priority and visual presentation remain client-side.
 
