@@ -2280,6 +2280,44 @@ function config(){return {url:SUPABASE_URL,key:SUPABASE_PUBLISHABLE_KEY}}
 function initConfigFields(){}
 function clearConfig(){setLoginMsg('Die Supabase-Konfiguration ist fest in der App hinterlegt.','');}
 function getClient(){const c=config();if(!supabase){supabase=createClient(c.url,c.key);try{supabase.__configUrl=c.url}catch{}}return supabase;}
+
+// Private Bildressourcen: Signed URLs werden ausschließlich im Arbeitsspeicher gehalten.
+const PRIVATE_IMAGE_BUCKETS=new Set(['player-photos','profile-avatars','club-assets']);
+const PRIVATE_IMAGE_URL_TTL_SECONDS=300;
+const PRIVATE_IMAGE_REFRESH_MARGIN_SECONDS=30;
+const privateImageUrlCache=new Map();
+let privateImageContextFingerprint=null;
+function currentPrivateImageContext(){
+  return [currentUser?.id||'',team||'',currentClubId||'',isSuperAdmin?'superadmin':'',adminContextActive?'admin-context':''].join('|');
+}
+function clearPrivateImageCache(){
+  privateImageUrlCache.clear();
+  privateImageContextFingerprint=currentPrivateImageContext();
+}
+function resetImageContext(){
+  clearPrivateImageCache();
+}
+async function resolvePrivateImage(bucket,path){
+  if(!bucket||!PRIVATE_IMAGE_BUCKETS.has(bucket))throw new Error('Nicht unterstützter privater Bildspeicher.');
+  const storagePath=String(path||'').trim();
+  if(!storagePath)return null;
+  const fingerprint=currentPrivateImageContext();
+  if(privateImageContextFingerprint!==fingerprint){
+    privateImageUrlCache.clear();
+    privateImageContextFingerprint=fingerprint;
+  }
+  const cacheKey=bucket+'|'+storagePath;
+  const cached=privateImageUrlCache.get(cacheKey);
+  const now=Date.now();
+  if(cached&&cached.expiresAt>now+PRIVATE_IMAGE_REFRESH_MARGIN_SECONDS*1000)return cached.url;
+  privateImageUrlCache.delete(cacheKey);
+  const {data,error}=await getClient().storage.from(bucket).createSignedUrl(storagePath,PRIVATE_IMAGE_URL_TTL_SECONDS);
+  if(error)throw error;
+  if(!data?.signedUrl)throw new Error('Für das Bild konnte keine zeitlich begrenzte URL erstellt werden.');
+  privateImageUrlCache.set(cacheKey,{url:data.signedUrl,expiresAt:now+PRIVATE_IMAGE_URL_TTL_SECONDS*1000});
+  return data.signedUrl;
+}
+
 window.saveConfigAndLogin=async()=>{setLoginMsg('Die Verbindung ist bereits eingerichtet. Bitte E-Mail und Passwort eingeben.');};
 window.login=async()=>{try{const c=getClient();const email=$('loginEmail').value.trim();const password=$('loginPassword').value;if(!email||!password){setLoginMsg('Bitte E-Mail und Passwort eingeben.',true);return}setLoginMsg('Anmeldung …');const {data,error}=await c.auth.signInWithPassword({email,password});if(error)throw error;currentUser=data.user;await loadApp();}catch(e){console.error(e);setLoginMsg('Anmeldung fehlgeschlagen: '+(e.message||e),true);}};
 window.changeEmail=async()=>{try{const email=$('accountEmail').value.trim();if(!email||email===currentUser.email){showStatus('Bitte eine neue E-Mail-Adresse eingeben.','error');return}const {data,error}=await getClient().auth.updateUser({email});if(error)throw error;showStatus('E-Mail-Änderung gestartet. Bitte die Bestätigungs-E-Mail(s) beachten.','ok');}catch(e){showStatus('E-Mail konnte nicht geändert werden: '+(e.message||e),'error');}};
