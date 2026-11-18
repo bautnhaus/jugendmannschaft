@@ -1020,3 +1020,15 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 - **Status:** Paket 1 am 18.11.2026 erfolgreich in PROD ausgeführt (Ledger `20261118070757`) und nachkontrolliert; Pakete 2–6 vorbereitet, nicht ausgeführt.
 - **Frontend:** nach Abschluss und Postflight aller sechs DB-Schritte erfolgt der reguläre PROD-Deploy von `develop` nach `main`; keine separate Frontend-Isolation. Bis dahin bleiben `main` und PROD-Frontend unverändert.
 - Dossier: `docs/prod-release/E23_PROD_RELEASE_PREPARATION_2026-11-18.md`.
+
+
+## 18.11.2026 – IMG-SEC-01 Paket 1A: Fundament private Bildspeicherung (DEV)
+
+- Neue Spalte players.photo_path und privater Bucket player-photos angelegt.
+- Storage-RLS für Spielerfotos: Lesen, Hochladen, Ersetzen und Löschen durch alle Mitglieder der betreffenden Mannschaft; die Player-ID wird gegen players.team_id geprüft.
+- Profilbild-Lesezugriff als Storage-Policy ergänzt; profiles_select blieb unverändert.
+- Vereinsasset-SELECT auf Vereinsmitgliedschaft bzw. Vereinsadmin-Kontext erweitert; vorhandene Schreibrechte blieben unverändert.
+- Policy-Helper nach Ausführung in das nicht öffentlich exponierte private-Schema verschoben.
+- Postflight strukturell bestanden; player-photos ist leer. Keine bestehenden Bilddaten migriert.
+- profile-avatars und club-assets bleiben bis zum Frontend-Cutover öffentlich; Frontend und PROD unverändert.
+- Dossier: docs/IMG_SEC_01_PAKET_1A_PRIVATE_IMAGE_STORAGE_2026-11-18.md.
