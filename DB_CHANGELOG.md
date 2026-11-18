@@ -1004,3 +1004,19 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 - Wiederöffnung wird revisionssicher im append-only Audit protokolliert.
 - DEV-Migration: `20261117180000_epic23_nomination_reminder_reopen_dev`; Dossier: `docs/E23_PAKET_03_DB_REOPEN_2026-11-17.md`.
 - Frontend-/Empfehlungsanpassungen sind separat; PROD unverändert.
+
+## Epic 23 – PROD-Releasevorbereitung (18.11.2026)
+
+- E23 wurde in DEV fachlich und technisch abgenommen; die manuelle Theme-, Dialog-, Vormerkungs-, Erfüllungs-, Wiederöffnungs- und Spieltagwechselprüfung ist dokumentiert.
+- Die sechs in DEV ausgeführten Datenbankmigrationen wurden als sechs separate PROD-Migrationen vorbereitet. Es wird bewusst kein monolithisches SQL-Paket verwendet.
+- PROD-Basisabgleich (read-only): erforderliche Tabellen/Spalten und Kontext-Hilfsfunktionen vorhanden; E23-Zieltabellen und -RPCs fehlen.
+- PROD-Migrationen:
+  1. `20261118100000_epic23_nomination_reminder_foundation_prod`
+  2. `20261118101000_epic23_nomination_reminder_fulfillment_hotfix_prod`
+  3. `20261118102000_epic23_nomination_reminder_concurrency_hotfix_prod`
+  4. `20261118103000_epic23_nomination_reminder_read_api_prod`
+  5. `20261118104000_epic23_nomination_reminder_reopen_prod`
+  6. `20261118105000_epic23_reopened_audit_action_hotfix_prod`
+- **Status:** nur vorbereitet, keine PROD-Ausführung. Vor jedem Schritt sind Sicherung, Preflight, Einzel-Ausführung und Postflight erforderlich.
+- **Frontend:** kein pauschaler Merge von `develop` nach `main`; Branchvergleich zeigt 105 Commits Vorsprung. Die E23-Frontendänderungen müssen vor einem späteren Deploy gezielt vom übrigen Branchumfang getrennt werden.
+- Dossier: `docs/prod-release/E23_PROD_RELEASE_PREPARATION_2026-11-18.md`.
