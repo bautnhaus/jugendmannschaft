@@ -1564,3 +1564,25 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Gegenstück DEV:** `20261117210545 epic23_reopened_audit_action_hotfix_dev` erfolgreich.
 
 **Release-Dossier:** `docs/prod-release/E23_PROD_RELEASE_PREPARATION_2026-11-18.md`.
+
+
+### DB-MIG-2026-037 – IMG-SEC-01 Paket 1A: Private Bildspeicherung (DEV)
+
+- **Ausführungsdatensatz:** DEV – zwei aufeinanderfolgende Migrationen.
+- **Datum/Uhrzeit:** 18.11.2026; Supabase-Ledger-Versionen 20261118180946 und 20261118181010. Eine gesonderte lokale Uhrzeit wurde vom Migrationswerkzeug nicht als Feld geliefert; die Ledger-Versionen werden nicht als bestätigte lokale Uhrzeit interpretiert.
+- **Umgebung:** Supabase DEV, Projekt pzazqvvoruqnqhcorbwx.
+- **Ausführungsweg:** Supabase-Migrationswerkzeug (apply_migration).
+- **Freigabe:** ausdrückliche Nutzerfreigabe am 18.11.2026; vor Ausführung wurde die SQL-/Rollback-Fassung geprüft und die profiles_select-Policy bewusst unangetastet gelassen.
+- **Zweck:** Fundament für private Spielerfotos und vorbereitete, kontextbezogene Leserechte für Profilbilder und Vereinsassets; bestehende öffentliche Bildanzeige bleibt bis zum Frontend-Cutover erhalten.
+- **Betroffene Objekte:** players.photo_path; privater Storage-Bucket player-photos; Storage-Policies profile_avatars_select_authorized, club_assets_select_scoped, player_photos_select_team/insert/update/delete; Schema private; Helper private.can_manage_player_photo(uuid,uuid), private.can_view_club_asset(uuid), private.can_view_profile_avatar(uuid). Temporärer Helper public.can_view_player_photo(uuid) wurde im Härtungsschritt wieder entfernt.
+- **Migration 1:** Version 20261118180946, Name img_sec_01_private_player_photo_storage_v1_0_0; SQL-Archiv: supabase/migrations/20261118180946_img_sec_01_private_player_photo_storage_v1_0_0.sql.
+- **Migration 2:** Version 20261118181010, Name img_sec_01_harden_private_policy_helpers; SQL-Archiv: supabase/migrations/20261118181010_img_sec_01_harden_private_policy_helpers.sql.
+- **Ergebnis:** beide apply_migration-Aufrufe meldeten success=true; beide Ledger-Einträge wurden read-only bestätigt.
+- **Postflight:** player-photos.public=false; 0 Objekte; players.photo_path vorhanden; profiles_select vorhanden und unverändert; club_assets_select_scoped vorhanden; vier player_photos-Policies; drei Helper im private-Schema; keine entsprechenden Helper mehr im public-Schema.
+- **Sicherheitsgrenze:** Security Advisor meldete nach Härtung 56 projektweite Warnungen zu ausführbaren SECURITY DEFINER-Funktionen (vorher 60). Die verbliebenen Findings betreffen andere Funktionen und wurden nicht global bearbeitet.
+- **Bestehende Daten:** keine Dateien oder fachlichen Bilddaten verschoben, gelöscht oder migriert. profile-avatars und club-assets bleiben public=true. Bestehende Write-Policies dieser Buckets blieben unverändert. save_player_with_positions und photo_data blieben unverändert.
+- **Rollback:** supabase/rollback/20261118180946_img_sec_01_private_player_photo_storage_rollback.sql. Guarded: bricht ab, wenn photo_path befüllt oder player-photos nicht leer ist; stellt die ursprüngliche club_assets_select_scoped-Policy aus dem DEV-Livebestand wieder her. Nicht ausgeführt.
+- **PROD-Gegenstück:** Nicht ausgeführt; PROD unverändert.
+- **Frontend/main:** keine Frontendänderung, kein Deploy, GitHub main unverändert.
+- **Dokumentation:** docs/IMG_SEC_01_PAKET_1A_PRIVATE_IMAGE_STORAGE_2026-11-18.md; Postflight-SQL docs/IMG_SEC_01_PAKET_1A_POSTFLIGHT_2026-11-18.sql.
+- **Nachweisgrenze:** Die auf develop abgelegten SQL-Dateien sind die versionierte Dokumentations-/Wiederherstellungsfassung der ausgeführten Payloads. Vor einer erneuten Ausführung oder einem PROD-Rollout müssen die Dateien bytegenau mit den tatsächlichen Ausführungs-Payloads abgeglichen und gegen das Ziel-Live-Schema geprüft werden. Keine erneute Ausführung aus dem Archiv heraus.
