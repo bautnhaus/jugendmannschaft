@@ -1,6 +1,6 @@
 # E23 – PROD-Releasevorbereitung (18.11.2026)
 
-**Status:** vorbereitet, nicht ausgeführt  
+**Status:** Paket 1 ausgeführt und nachkontrolliert; Pakete 2–6 vorbereitet  
 **Ziel:** Supabase PROD `qdugtpzgefpswnnqbusd`  
 **DEV-Referenz:** `pzazqvvoruqnqhcorbwx`  
 **GitHub-Quelle:** `develop`  
@@ -34,14 +34,12 @@ Am 18.11.2026 wurden read-only in PROD geprüft:
 
 ## 3. Kritische Release-Voraussetzungen
 
-1. **Sicherung:** Vor Schritt 1 reguläre PROD-Sicherung/Snapshot gemäß bestehendem Verfahren erstellen und bestätigen.
-2. **Schema-Preflight:** Direkt vor Schritt 1 die Basisobjekte, Spalten, Fremdschlüssel und Hilfsfunktionen erneut prüfen. Das Release darf bei Abweichungen nicht starten.
-3. **Einzelschritte:** Immer nur eine Migration ausführen. Erst nach erfolgreichem Supabase-Ergebnis und bestandenem Postflight den nächsten Schritt freigeben.
-4. **Reihenfolge:** Die Reihenfolge 1–6 ist verbindlich. Schritt 2/3 ersetzen die Funktion aus Schritt 1; Schritt 5 ersetzt die Read-API aus Schritt 4; Schritt 6 erweitert die Audit-Constraint für den in Schritt 5 angelegten Reopen-Trigger.
-5. **Daten:** Es werden keine bestehenden Spieler-, Spieltags-, Nominierungs- oder Audit-Datensätze verändert. Neue E23-Tabellen starten leer.
-6. **Rollback:** Kein pauschales Rückwärts-Rollback. Nach Anlage von Vormerkungs-/Audit-Historie ist die Historie append-only und muss erhalten bleiben. Bei Fehlern stoppen und gezielt vorgehen.
-7. **Frontend:** Die passende Frontendversion darf erst nach Datenbank-Postflight in PROD deployed werden. Frontend-Merge/Deploy ist ein separater Freigabeschritt.
-8. **Kein Branch-Merge:** `develop` liegt 105 Commits vor `main`; kein pauschaler Merge. Frontend-Release muss separat auf die freigegebene E23-Änderung begrenzt werden.
+1. **Preflight:** Vor jedem weiteren Schritt die relevanten Zielobjekte und Abhängigkeiten read-only prüfen. Bei Abweichungen stoppen.
+2. **Einzelschritte:** Immer nur eine Migration ausführen. Erst nach erfolgreichem Supabase-Ergebnis und bestandenem Postflight den nächsten Schritt beginnen.
+3. **Reihenfolge:** Die Reihenfolge 1–6 ist verbindlich. Schritt 2/3 ersetzen die Funktion aus Schritt 1; Schritt 5 ersetzt die Read-API aus Schritt 4; Schritt 6 erweitert die Audit-Constraint für den in Schritt 5 angelegten Reopen-Trigger.
+4. **Daten:** Paket 1 hat keine bestehenden Spieler-, Spieltags- oder Nominierungsdaten verändert. Beide neuen E23-Tabellen starteten leer.
+5. **Rollback:** Kein pauschales Rückwärts-Rollback. Nach Anlage von Vormerkungs-/Audit-Historie ist die Historie append-only und muss erhalten bleiben. Bei Fehlern stoppen und gezielt vorgehen.
+6. **Frontend:** Erst nach vollständigem DB-Postflight aller sechs Schritte wird der reguläre PROD-Deploy von `develop` nach `main` durchgeführt. Es wird keine E23-Frontendänderung separat isoliert.
 
 ## 4. Postflight je Schritt
 
@@ -76,11 +74,13 @@ Am 18.11.2026 wurden read-only in PROD geprüft:
 ## 5. Nachgelagerte Release-Schritte
 
 Nach vollständiger DB-Ausführung und Verifikation:
-- freigegebene E23-Frontendänderungen gezielt nach `main` übertragen;
+- regulären PROD-Deploy des geprüften `develop`-Stands nach `main` durchführen;
 - iPhone-/PROD-Smoke-Test;
 - Release Notes/Change Notification veröffentlichen;
 - DB_MIGRATION_LOG.md für jede PROD-Ausführung mit tatsächlicher Ledger-Version, Zeit, Ergebnis und Postflight ergänzen.
 
-## 6. Freigabestatus
+## 6. Ausführungsstand
 
-**Diese Dokumentation und die SQL-Dateien sind Vorbereitung.** Keine der sechs PROD-Migrationen wurde ausgeführt. Es liegt noch keine Freigabe zur PROD-SQL-Ausführung oder zum Frontend-Deploy vor.
+- Paket 1 wurde am 18.11.2026 erfolgreich in PROD ausgeführt und nachkontrolliert. Ledger-Version `20261118070757`.
+- Pakete 2–6 sind vorbereitet, aber noch nicht ausgeführt.
+- `main` und das PROD-Frontend sind unverändert. Der reguläre Deploy `develop` → `main` erfolgt erst nach erfolgreichem DB-Release aller sechs Schritte.
