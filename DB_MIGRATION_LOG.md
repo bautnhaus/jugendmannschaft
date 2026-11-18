@@ -1515,19 +1515,22 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **PROD-Frontend / main:** unverändert.
 - **Gegenstück DEV:** `20261117144900 epic23_nomination_reminder_concurrency_hotfix_dev` erfolgreich.
 
-### DB-MIG-2026-034 – E23 Read-API (PROD geplant)
+### DB-MIG-2026-034 – E23 Read-API (PROD) – ausgeführt
 
-- **Ausführungsdatensatz:** PROD
-- **Umgebung:** Supabase PROD
-- **Ausführungsweg:** Supabase Migration – noch nicht ausgeführt
-- **Anlass/Zweck:** geschützte Read-API für Vormerkungen des ausgewählten Spieltags.
-- **Betroffene Objekte:** `get_matchday_nomination_reminders(uuid)`
-- **Freigabe/Ausführender:** ausstehend
-- **Status:** Geplant / Nicht ausgeführt
-- **SQL:** `supabase/migrations/20261118103000_epic23_nomination_reminder_read_api_prod.sql`
-- **Ergebnis/Verifikation:** nicht ausgeführt
-- **Rollback:** Drop der API nur nach Prüfung der Frontendabhängigkeit.
-- **Gegenstück DEV:** `20261117150608 epic23_nomination_reminder_read_api_dev` erfolgreich
+- **Umgebung:** Supabase PROD (`qdugtpzgefpswnnqbusd`).
+- **Freigabe:** Fortsetzung des ausdrücklich freigegebenen E23-PROD-Einzelreleaseprozesses am 18.11.2026.
+- **Migration:** `supabase/migrations/20261118103000_epic23_nomination_reminder_read_api_prod.sql`; Blob-SHA `dc5e09dfec258fef7f5c6968a36458917ee6bad9`.
+- **Supabase-Ergebnis:** `success: true`.
+- **Tatsächliche Ledger-Version:** `20261118104708`; **Migrationsname:** `epic23_nomination_reminder_read_api_prod`.
+- **Änderungsumfang:** neue RPC `public.get_matchday_nomination_reminders(uuid)`; liefert offene Vormerkungen für einen Zielspieltag, sofern der Zielspieltag nach dem Ausgangsspieltag liegt und der Spieler dort noch nicht nominiert ist.
+- **Berechtigung:** Trainer/Admin der Mannschaft oder Superadmin mit explizit ausgewähltem Teamkontext; fehlende Authentifizierung, ungültiger Spieltag und fehlende Berechtigung werden abgewiesen.
+- **Postflight:** Funktion vorhanden; STABLE, SECURITY DEFINER, Owner postgres, fester search_path `pg_catalog, public, auth`; EXECUTE für `authenticated`, nicht für `anon` oder PUBLIC.
+- **Datenbestand:** 0 Reminder- und 0 Audit-Zeilen; keine fachlichen Bestandsdaten verändert.
+- **Fachliche Abgrenzung:** Anzeige bereits am Ausgangsspieltag ist noch nicht Bestandteil dieses Schritts und folgt in Paket 5.
+- **Advisor:** Security Advisor meldet projektweit 58 SECURITY-DEFINER-Warnungen sowie bestehende Multiple-Permissive-Policy-Hinweise. Die neue Read-API ist eine bewusst authentifizierten Nutzern freigegebene SECURITY DEFINER RPC mit interner Teamkontextprüfung. Keine bestehenden Policies oder Funktionen außerhalb des Pakets geändert.
+- **Rollback:** nicht ausgeführt; Entfernung der API nur nach Prüfung von Frontendabhängigkeiten.
+- **PROD-Frontend / main:** unverändert.
+- **Gegenstück DEV:** `20261117150608 epic23_nomination_reminder_read_api_dev` erfolgreich.
 
 ### DB-MIG-2026-035 – E23 Wiederöffnung (PROD geplant)
 
