@@ -3954,7 +3954,7 @@ async function buildBackupSnapshot(){
   const c=getClient();
   const [posR,playerR,ppR,trainingR,seriesR,matchdayR,teamR]=await Promise.all([
     c.from('positions').select('id,name,sort_order,color').eq('team_id',team).order('sort_order').order('name'),
-    c.from('players').select('id,team_id,name,first_name,last_name,birth_year,preferred_foot,level,photo_data,photo_path,notes,active,created_at').eq('team_id',team),
+    c.from('players').select('id,team_id,name,first_name,last_name,birth_year,preferred_foot,level,photo_data,notes,active,created_at').eq('team_id',team),
     c.from('player_positions').select('player_id,position_id'),
     c.from('trainings').select('id,training_date,name,start_time,duration_minutes,location,status,note,series_id,overrides').eq('team_id',team).order('training_date'),
     c.from('training_series').select('id,team_id,start_date,end_date,start_time,duration_minutes,weekdays,location,name').eq('team_id',team),
