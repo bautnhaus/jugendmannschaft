@@ -1461,28 +1461,28 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Ergebnis:** Constraint korrigiert; keine bestehenden Audit-Zeilen oder sonstigen Daten geändert. iPhone-End-to-End-Wiederholung steht noch aus.
 - **PROD / main:** unverändert; keine PROD-Ausführung oder Übernahme.
 
-## 8. Epic 23 – PROD-Release vorbereitet (18.11.2026; nicht ausgeführt)
+## 8. Epic 23 – PROD-Release (18.11.2026)
 
 **Zielumgebung:** Supabase PROD, Projekt `qdugtpzgefpswnnqbusd`.  
 **DEV-Referenz:** Supabase DEV, Projekt `pzazqvvoruqnqhcorbwx`.  
-**Status aller nachfolgenden Einträge:** Geplant / Nicht ausgeführt. Es liegt kein PROD-Ausführungsnachweis vor.
+**Releaseweg:** sechs einzelne Migrationen in festgelegter Reihenfolge. Nach vollständigem Datenbank-Postflight erfolgt der reguläre PROD-Deploy von `develop` nach `main`; keine separate Frontend-Isolation.
 
-Die sechs PROD-Migrationsdateien wurden einzeln aus den in DEV ausgeführten und getesteten E23-Migrationen abgeleitet. Die Live-PROD-Basisobjekte und das Fehlen der E23-Zielobjekte wurden am 18.11.2026 read-only geprüft. Die Freigabe zur Ausführung ist nicht erteilt.
+### DB-MIG-2026-031 – E23 Paket 1 Foundation (PROD) – ausgeführt
 
-### DB-MIG-2026-031 – E23 Paket 1 Foundation (PROD geplant)
+- **Umgebung:** Supabase PROD (`qdugtpzgefpswnnqbusd`).
+- **Freigabe:** ausdrückliche Freigabe des Projektverantwortlichen am 18.11.2026.
+- **Migration:** `supabase/migrations/20261118100000_epic23_nomination_reminder_foundation_prod.sql`; Blob-SHA `0b88c8be696c4c251e5347e1d41f432a1452466b`.
+- **Supabase-Ergebnis:** `success: true`.
+- **Tatsächliche Ledger-Version:** `20261118070757`; **Migrationsname:** `epic23_nomination_reminder_foundation_prod`.
+- **Änderungsumfang:** Tabellen `matchday_nomination_reminders` und `matchday_nomination_reminder_audit`, Indizes, RLS/SELECT-Policies, Create-/Cancel-RPCs, Audit-Schutztrigger und Fulfillment-Trigger.
+- **Postflight:** beide Tabellen und beide Policies vorhanden; RLS auf beiden Tabellen aktiv; Fulfillment- und Audit-Guard-Trigger aktiv.
+- **RPC-ACL:** Create-/Cancel-RPCs SECURITY DEFINER, fester search_path `pg_catalog, public, auth`; EXECUTE für `authenticated`, nicht für `anon` oder PUBLIC. Triggerfunktionen nicht direkt für Clientrollen ausführbar.
+- **Datenbestand:** 0 Reminder- und 0 Audit-Zeilen. Keine bestehenden Spieler-, Spieltags- oder Nominierungsdaten verändert.
+- **Advisor-Hinweis:** Security Advisor meldet projektweit bestehende SECURITY-DEFINER- und Policy-Warnungen; darunter die erwarteten neuen authentifizierten Create-/Cancel-RPCs. Keine pauschale Änderung bestehender Funktionen oder Policies vorgenommen.
+- **Rollback:** nicht ausgeführt; keine automatische Rücknahme. Historie ist append-only zu behandeln.
+- **PROD-Frontend / main:** unverändert; der reguläre Deploy folgt erst nach Abschluss aller sechs DB-Schritte.
+- **Gegenstück DEV:** `20261117123114 epic23_nomination_reminder_foundation_dev` sowie nachfolgende DEV-Hotfixes erfolgreich.
 
-- **Ausführungsdatensatz:** PROD
-- **Umgebung:** Supabase PROD (`qdugtpzgefpswnnqbusd`)
-- **Ausführungsweg:** Supabase Migration / `apply_migration` – noch nicht ausgeführt
-- **Anlass/Zweck:** Tabellen, RLS, Create-/Cancel-RPCs, Audit-Schutz und Fulfillment-Trigger für Nominierungsvormerkungen bereitstellen.
-- **Betroffene Objekte:** `matchday_nomination_reminders`, `matchday_nomination_reminder_audit`, Create-/Cancel-RPCs, Trigger und Policies.
-- **Freigabe/Ausführender:** ausstehend
-- **Status:** Geplant / Nicht ausgeführt
-- **SQL:** `supabase/migrations/20261118100000_epic23_nomination_reminder_foundation_prod.sql`
-- **Ergebnis/Verifikation:** nicht ausgeführt
-- **Rollback:** Guarded Rollback der DEV-Foundation ist nicht als PROD-Rollback freigegeben; bei vorhandener Historie keine automatische Rücknahme.
-- **Gegenstück DEV:** `20261117123114 epic23_nomination_reminder_foundation_dev` erfolgreich
-- **Zusätzliche Hinweise:** reguläre PROD-Sicherung und erneuter Schema-Preflight vor Ausführung erforderlich.
 
 ### DB-MIG-2026-032 – E23 Fulfillment-Zeitkorrektur (PROD geplant)
 
