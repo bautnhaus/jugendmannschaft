@@ -2350,7 +2350,7 @@ window.addTrainerToTeam=async()=>{
     showStatus('Mitglied konnte nicht eingeladen werden: '+(e?.message||e),'error');
   }
 };
-window.logout=async()=>{clubMemberOnlyMode=false;currentProfileDisplayName='';currentWelcomeClub=null;currentWelcomeTeamName='';currentWelcomeSeasonName='';if(supabase&&contextReadOnly){try{await getClient().rpc('clear_team_context');}catch(e){console.warn('Mannschaftskontext konnte nicht gelöscht werden:',e);}}if(supabase)await supabase.auth.signOut();currentUser=null;team=null;season=null;clubOnlyMode=false;isSuperAdmin=false;currentClubId=null;canManageClub=false;contextReadOnly=false;adminContextActive=false;$('superAdminPanel')?.classList.add('hidden');$('clubAdminPanel')?.classList.add('hidden');$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');setLoginMsg('Abgemeldet.');};
+window.logout=async()=>{clearPrivateImageCache();clubMemberOnlyMode=false;currentProfileDisplayName='';currentWelcomeClub=null;currentWelcomeTeamName='';currentWelcomeSeasonName='';if(supabase&&contextReadOnly){try{await getClient().rpc('clear_team_context');}catch(e){console.warn('Mannschaftskontext konnte nicht gelöscht werden:',e);}}if(supabase)await supabase.auth.signOut();currentUser=null;team=null;season=null;clubOnlyMode=false;isSuperAdmin=false;currentClubId=null;canManageClub=false;contextReadOnly=false;adminContextActive=false;$('superAdminPanel')?.classList.add('hidden');$('clubAdminPanel')?.classList.add('hidden');$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');setLoginMsg('Abgemeldet.');};
 
 async function loadApp(){
   const c=getClient();
