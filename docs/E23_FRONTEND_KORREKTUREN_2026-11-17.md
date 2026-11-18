@@ -108,3 +108,10 @@ Auf ausdrücklichen Wunsch wurde ausschließlich der Dialog **„Ausnahme zurüc
 - Zu prüfen sind unter anderem Trainings/Anwesenheiten, Spieltage/Nominierungen/Einsätze, Sperren/Ausnahmen sowie Vormerkungen/Audit-Historie. Die vollständige fachliche und technische Bestandsaufnahme erfolgt im separaten Vorhaben.
 
 **Status:** Abgrenzung beschlossen; separates Epic/Backlog-Thema zur Anlage und Ausarbeitung vorgesehen. Keine Backup-Code- oder Datenbankänderung im Rahmen von Epic 23.
+
+### Abschließender Dialogtest E23 – Nutzerbestätigung 18.11.2026
+
+- **E23-Dialoggestaltung:** vom Nutzer auf DEV/iPhone geprüft und bestätigt („Dialoge passen“).
+- **Ergebnis:** bestanden.
+- Damit ist die Prüfung der E23-Dialogdarstellung (Buttonaufteilung und Abstand zwischen Begründungsfeld und Aktionen) abgeschlossen.
+- **PROD:** unverändert; keine Übernahme nach `main`.
