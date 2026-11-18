@@ -1460,3 +1460,99 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Postflight:** PASS. Constraint erlaubt exakt `created`, `fulfilled`, `cancelled`, `reopened`. Audit-Bestand unverändert: `created=8`, `fulfilled=5`, `cancelled=2`; noch keine `reopened`-Zeile.
 - **Ergebnis:** Constraint korrigiert; keine bestehenden Audit-Zeilen oder sonstigen Daten geändert. iPhone-End-to-End-Wiederholung steht noch aus.
 - **PROD / main:** unverändert; keine PROD-Ausführung oder Übernahme.
+
+## 8. Epic 23 – PROD-Release vorbereitet (18.11.2026; nicht ausgeführt)
+
+**Zielumgebung:** Supabase PROD, Projekt `qdugtpzgefpswnnqbusd`.  
+**DEV-Referenz:** Supabase DEV, Projekt `pzazqvvoruqnqhcorbwx`.  
+**Status aller nachfolgenden Einträge:** Geplant / Nicht ausgeführt. Es liegt kein PROD-Ausführungsnachweis vor.
+
+Die sechs PROD-Migrationsdateien wurden einzeln aus den in DEV ausgeführten und getesteten E23-Migrationen abgeleitet. Die Live-PROD-Basisobjekte und das Fehlen der E23-Zielobjekte wurden am 18.11.2026 read-only geprüft. Die Freigabe zur Ausführung ist nicht erteilt.
+
+### DB-MIG-2026-031 – E23 Paket 1 Foundation (PROD geplant)
+
+- **Ausführungsdatensatz:** PROD
+- **Umgebung:** Supabase PROD (`qdugtpzgefpswnnqbusd`)
+- **Ausführungsweg:** Supabase Migration / `apply_migration` – noch nicht ausgeführt
+- **Anlass/Zweck:** Tabellen, RLS, Create-/Cancel-RPCs, Audit-Schutz und Fulfillment-Trigger für Nominierungsvormerkungen bereitstellen.
+- **Betroffene Objekte:** `matchday_nomination_reminders`, `matchday_nomination_reminder_audit`, Create-/Cancel-RPCs, Trigger und Policies.
+- **Freigabe/Ausführender:** ausstehend
+- **Status:** Geplant / Nicht ausgeführt
+- **SQL:** `supabase/migrations/20261118100000_epic23_nomination_reminder_foundation_prod.sql`
+- **Ergebnis/Verifikation:** nicht ausgeführt
+- **Rollback:** Guarded Rollback der DEV-Foundation ist nicht als PROD-Rollback freigegeben; bei vorhandener Historie keine automatische Rücknahme.
+- **Gegenstück DEV:** `20261117123114 epic23_nomination_reminder_foundation_dev` erfolgreich
+- **Zusätzliche Hinweise:** reguläre PROD-Sicherung und erneuter Schema-Preflight vor Ausführung erforderlich.
+
+### DB-MIG-2026-032 – E23 Fulfillment-Zeitkorrektur (PROD geplant)
+
+- **Ausführungsdatensatz:** PROD
+- **Umgebung:** Supabase PROD
+- **Ausführungsweg:** Supabase Migration – noch nicht ausgeführt
+- **Anlass/Zweck:** `clock_timestamp()` und inklusive Zeitgrenze für Fulfillment.
+- **Betroffene Objekte:** `epic23_fulfill_nomination_reminder()`
+- **Freigabe/Ausführender:** ausstehend
+- **Status:** Geplant / Nicht ausgeführt
+- **SQL:** `supabase/migrations/20261118101000_epic23_nomination_reminder_fulfillment_hotfix_prod.sql`
+- **Ergebnis/Verifikation:** nicht ausgeführt
+- **Rollback:** Funktionsdefinition aus vorherigem Schritt nur nach gesonderter Prüfung wiederherstellbar; keine pauschale Rücknahme.
+- **Gegenstück DEV:** `20261117133211 epic23_nomination_reminder_fulfillment_hotfix_dev` erfolgreich
+
+### DB-MIG-2026-033 – E23 Konkurrenz-Hotfix (PROD geplant)
+
+- **Ausführungsdatensatz:** PROD
+- **Umgebung:** Supabase PROD
+- **Ausführungsweg:** Supabase Migration – noch nicht ausgeführt
+- **Anlass/Zweck:** Create und Fulfillment durch gemeinsamen spielerbezogenen Advisory Lock serialisieren.
+- **Betroffene Objekte:** `epic23_fulfill_nomination_reminder()`
+- **Freigabe/Ausführender:** ausstehend
+- **Status:** Geplant / Nicht ausgeführt
+- **SQL:** `supabase/migrations/20261118102000_epic23_nomination_reminder_concurrency_hotfix_prod.sql`
+- **Ergebnis/Verifikation:** nicht ausgeführt
+- **Rollback:** Funktionsdefinition aus vorherigem Schritt nur nach gesonderter Prüfung wiederherstellbar.
+- **Gegenstück DEV:** `20261117144900 epic23_nomination_reminder_concurrency_hotfix_dev` erfolgreich
+
+### DB-MIG-2026-034 – E23 Read-API (PROD geplant)
+
+- **Ausführungsdatensatz:** PROD
+- **Umgebung:** Supabase PROD
+- **Ausführungsweg:** Supabase Migration – noch nicht ausgeführt
+- **Anlass/Zweck:** geschützte Read-API für Vormerkungen des ausgewählten Spieltags.
+- **Betroffene Objekte:** `get_matchday_nomination_reminders(uuid)`
+- **Freigabe/Ausführender:** ausstehend
+- **Status:** Geplant / Nicht ausgeführt
+- **SQL:** `supabase/migrations/20261118103000_epic23_nomination_reminder_read_api_prod.sql`
+- **Ergebnis/Verifikation:** nicht ausgeführt
+- **Rollback:** Drop der API nur nach Prüfung der Frontendabhängigkeit.
+- **Gegenstück DEV:** `20261117150608 epic23_nomination_reminder_read_api_dev` erfolgreich
+
+### DB-MIG-2026-035 – E23 Wiederöffnung (PROD geplant)
+
+- **Ausführungsdatensatz:** PROD
+- **Umgebung:** Supabase PROD
+- **Ausführungsweg:** Supabase Migration – noch nicht ausgeführt
+- **Anlass/Zweck:** Vormerkung am Ausgangsspieltag anzeigen und bei Abwahl der erfüllenden Nominierung wieder öffnen.
+- **Betroffene Objekte:** `get_matchday_nomination_reminders(uuid)`, `epic23_reopen_nomination_reminder_on_delete()`, Trigger auf `matchday_players`.
+- **Freigabe/Ausführender:** ausstehend
+- **Status:** Geplant / Nicht ausgeführt
+- **SQL:** `supabase/migrations/20261118104000_epic23_nomination_reminder_reopen_prod.sql`
+- **Ergebnis/Verifikation:** nicht ausgeführt
+- **Rollback:** kein automatischer Rollback nach Entstehung von Audit-Historie; Historie muss erhalten bleiben.
+- **Gegenstück DEV:** `20261117202735 epic23_nomination_reminder_reopen_dev` erfolgreich
+
+### DB-MIG-2026-036 – E23 Audit-Aktion reopened (PROD geplant)
+
+- **Ausführungsdatensatz:** PROD
+- **Umgebung:** Supabase PROD
+- **Ausführungsweg:** Supabase Migration – noch nicht ausgeführt
+- **Anlass/Zweck:** Audit-Constraint um den Statuswechsel `reopened` ergänzen.
+- **Betroffene Objekte:** Constraint `matchday_nomination_reminder_audit_action_check`.
+- **Freigabe/Ausführender:** ausstehend
+- **Status:** Geplant / Nicht ausgeführt
+- **SQL:** `supabase/migrations/20261118105000_epic23_reopened_audit_action_hotfix_prod.sql`
+- **Ergebnis/Verifikation:** nicht ausgeführt
+- **Rollback:** guarded; nur möglich, solange keine `reopened`-Auditzeile existiert.
+- **Gegenstück DEV:** `20261117210545 epic23_reopened_audit_action_hotfix_dev` erfolgreich
+
+**Release-Dossier:** `docs/prod-release/E23_PROD_RELEASE_PREPARATION_2026-11-18.md`.  
+**Wichtig:** Die sechs SQL-Dateien sind vorbereitet, aber nicht ausgeführt. DEV-Erfolge sind kein PROD-Ausführungsnachweis.
