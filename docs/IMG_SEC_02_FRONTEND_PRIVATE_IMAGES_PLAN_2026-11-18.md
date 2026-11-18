@@ -249,3 +249,18 @@ Cache:
 - Die Initialisierung prüft außerdem, ob Vorschau und Datei-Input im Dialog vorhanden sind, und zeigt andernfalls einen sichtbaren Fehler.
 - Der Datei-Input bleibt an die bestehende Upload-/Resize-Logik gebunden.
 - Keine SQL-, Storage-, Bucket- oder PROD-Änderung.
+
+
+## 2G. Spielerfoto-Dateiauswahl an funktionierendes Profilbild-Muster angeglichen
+
+- Commit: `d53307eeacb459afad89a77d59b0346d3d7fd6fa`
+- Status: auf develop umgesetzt; DEV-Deployment und iPhone-Test ausstehend.
+- Profilbild- und Vereinslogo-Code außerhalb der Spielerverwaltung unverändert.
+
+### Vergleich und Umsetzung
+
+- Profilbild-Editor verwendet direktes Inline-`onclick` mit `document.getElementById('profileEditPhotoInput').click()`.
+- Das Datei-Input verwendet die CSS-Klasse `hidden`, nicht `style="display:none"`.
+- Die Spielerverwaltung verwendet nun dasselbe Muster: direkter Inline-Aufruf auf `newPhotoInput` bzw. `editPhotoInput`, mit identischer Input-Klasse und denselben akzeptierten Bildformaten (PNG/JPEG/WebP).
+- Der zusätzliche Event-Listener `bindPlayerPhotoTrigger` wurde entfernt. `bindPhotoInput` bleibt ausschließlich für die Verarbeitung der ausgewählten Datei zuständig.
+- Keine Datenbank-, Storage-, SQL- oder PROD-Änderung.
