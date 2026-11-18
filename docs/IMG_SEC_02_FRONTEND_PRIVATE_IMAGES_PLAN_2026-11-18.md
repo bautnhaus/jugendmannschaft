@@ -43,6 +43,37 @@ Am 18.11.2026 wurde in `index.html` auf `develop` die erste technische Grundlage
 - Team-/Vereinskontext wird derzeit beim nächsten Resolver-Aufruf anhand des Fingerprints erkannt; ein unmittelbarer zentraler Hook bei jedem Kontextwechsel kann in einem Folgeschritt ergänzt werden, falls Tests dies erfordern.
 - Kein DEV-Deploy und noch keine Browser-/Rollenprüfung.
 
+## 2B. Profilbilder und Vereinswappen auf Signed URLs umgestellt (develop, noch nicht deployed)
+
+**Commit:** `b86f8726237e567aa58b33d8b2ea3a9512718caf`
+
+Umgesetzt in `index.html`:
+
+- Profilbild-Uploads liefern nun den Storage-Pfad statt einer Public URL zurück.
+- Eigene Profilansicht und Profil-Editor verwenden private Bild-Markups.
+- Team-Mitglieder-/Trainerlisten und Bearbeitungsdialoge verwenden private Bild-Markups.
+- Vereinsmitgliederlisten und Mitgliederkarten verwenden private Bild-Markups.
+- Vereinswappen im Dashboard, in der Superadmin-Vereinsliste, im Vereinsbearbeitungsdialog, in der Vereinsdetailansicht und im Teamkontext verwenden den Resolver.
+- Alle bisherigen `getPublicUrl()`-Aufrufe in `index.html` wurden entfernt.
+- Dynamisch eingefügte Bild-Markups werden über einen `MutationObserver` erkannt und mit Signed URLs geladen.
+- Bestehende `avatar_url`-Werte im bisherigen Public-URL-Format werden beim Rendern auf ihren Storage-Pfad zurückgeführt. Neue Uploads speichern direkt den Pfad.
+
+### Technische Hinweise
+
+- Signed URLs werden über den Resolver mit 300 Sekunden Laufzeit erstellt.
+- Signed URLs bleiben ausschließlich im Arbeitsspeicher-Cache.
+- Ein Bildfehler führt zum Fallback/Verbergen des Bildes; es gibt derzeit noch keinen automatischen zweiten Retry nach 401/403.
+- Profilbilder und Vereinswappen können erst erfolgreich geladen werden, wenn ihre Storage-Buckets privat sind und die vorgesehenen SELECT-Policies greifen. Solange die Buckets öffentlich sind, erzeugt die Storage API weiterhin Signed URLs, aber die vollständige Zugriffstrennung ist damit noch nicht bewiesen.
+- Die existierenden Profil-RPCs schreiben weiterhin in `profiles.avatar_url`; der Inhalt ist nun als Storage-Pfad vorgesehen. Keine RPC- oder Datenbanksignatur wurde geändert.
+- Vereinswappen bleiben in `clubs.crest_path` als Storage-Pfad gespeichert.
+
+### Nicht durchgeführt
+
+- Kein SQL und keine Migration.
+- Keine Storage-Policy- oder Bucketänderung.
+- Kein DEV-Deploy und kein Browser-/Rollen-Praxistest.
+- Keine Änderung an PROD.
+
 ## 2. Zielarchitektur
 
 Zentrale Funktionen:
