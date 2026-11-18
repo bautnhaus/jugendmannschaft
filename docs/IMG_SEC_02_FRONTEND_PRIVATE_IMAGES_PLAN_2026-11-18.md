@@ -215,3 +215,20 @@ Cache:
 - Alte Storage-Objekte werden bei Bildwechsel/Entfernen nicht gelöscht; eine gesonderte, kontrollierte Bereinigung bleibt offen.
 - Browser-/Praxistests für Upload, Ersetzen, Entfernen, Neuanlage und Rollenberechtigungen stehen aus.
 - Kein DEV-Deploy und keine Änderung an PROD.
+
+
+## 2D. Foto-Aktionsmenü im Spielerformular robust öffnen
+
+- Datum: 18.11.2026
+- Commit: `4ac053d57c7c9d56812e2cf926281438343364e3`
+- Status: auf develop umgesetzt; DEV-Deployment und iPhone-Browsertest ausstehend.
+- PROD unverändert.
+
+### Änderung
+
+- `openPhotoSheet()` öffnet das Aktionsmenü jetzt unabhängig davon, ob bereits ein Bildpfad im Vorschau-Element erkannt wird.
+- Bei vorhandenem Bild werden „Foto ändern“, „Foto löschen“ und „Abbrechen“ angeboten.
+- Ohne vorhandenes Bild werden „Foto hinzufügen“ und „Abbrechen“ angeboten.
+- Fehlt das Menüelement, wird eine sichtbare Fehlermeldung angezeigt, statt stillschweigend abzubrechen.
+- Die Fotoauswahl wird weiterhin erst nach bewusster Auswahl der Menüaktion über den Datei-Input gestartet.
+- Keine Datenbank-, Storage- oder PROD-Änderungen.
