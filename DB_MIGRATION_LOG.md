@@ -1499,19 +1499,21 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **PROD-Frontend / main:** unverändert.
 - **Gegenstück DEV:** `20261117133211 epic23_nomination_reminder_fulfillment_hotfix_dev` erfolgreich.
 
-### DB-MIG-2026-033 – E23 Konkurrenz-Hotfix (PROD geplant)
+### DB-MIG-2026-033 – E23 Konkurrenz-Hotfix (PROD) – ausgeführt
 
-- **Ausführungsdatensatz:** PROD
-- **Umgebung:** Supabase PROD
-- **Ausführungsweg:** Supabase Migration – noch nicht ausgeführt
-- **Anlass/Zweck:** Create und Fulfillment durch gemeinsamen spielerbezogenen Advisory Lock serialisieren.
-- **Betroffene Objekte:** `epic23_fulfill_nomination_reminder()`
-- **Freigabe/Ausführender:** ausstehend
-- **Status:** Geplant / Nicht ausgeführt
-- **SQL:** `supabase/migrations/20261118102000_epic23_nomination_reminder_concurrency_hotfix_prod.sql`
-- **Ergebnis/Verifikation:** nicht ausgeführt
-- **Rollback:** Funktionsdefinition aus vorherigem Schritt nur nach gesonderter Prüfung wiederherstellbar.
-- **Gegenstück DEV:** `20261117144900 epic23_nomination_reminder_concurrency_hotfix_dev` erfolgreich
+- **Umgebung:** Supabase PROD (`qdugtpzgefpswnnqbusd`).
+- **Freigabe:** Fortsetzung des ausdrücklich freigegebenen E23-PROD-Einzelreleaseprozesses am 18.11.2026.
+- **Migration:** `supabase/migrations/20261118102000_epic23_nomination_reminder_concurrency_hotfix_prod.sql`; Blob-SHA `c4f90604cd3081af20ec5f8f7838c580587b6397`.
+- **Supabase-Ergebnis:** `success: true`.
+- **Tatsächliche Ledger-Version:** `20261118102300`; **Migrationsname:** `epic23_nomination_reminder_concurrency_hotfix_prod`.
+- **Änderungsumfang:** Funktionsdefinition `public.epic23_fulfill_nomination_reminder()` um denselben spielerbezogenen Advisory Transaction Lock ergänzt, den die Create-RPC bereits verwendet: `pg_advisory_xact_lock(hashtextextended(player_id::text,0))`.
+- **Preflight:** Create-RPC verwendete den erwarteten Lock bereits; Fulfillment-Triggerfunktion hatte ihn vor Paket 3 noch nicht.
+- **Postflight:** Beide Funktionen verwenden denselben Lock-Key. `clock_timestamp()` und `created_at <= v_now` aus Paket 2 erhalten. Fulfillment-Trigger weiterhin genau einmal vorhanden.
+- **Sicherheit:** Fulfillment-Funktion bleibt SECURITY DEFINER mit festem search_path `pg_catalog, public, auth`; EXECUTE für `authenticated`, `anon` und PUBLIC nicht gewährt.
+- **Datenbestand:** 0 Reminder- und 0 Audit-Zeilen; keine fachlichen Bestandsdaten verändert.
+- **Rollback:** nicht ausgeführt; Wiederherstellung der vorherigen Funktionsdefinition nur nach gesonderter Prüfung.
+- **PROD-Frontend / main:** unverändert.
+- **Gegenstück DEV:** `20261117144900 epic23_nomination_reminder_concurrency_hotfix_dev` erfolgreich.
 
 ### DB-MIG-2026-034 – E23 Read-API (PROD geplant)
 
