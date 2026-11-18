@@ -1484,19 +1484,20 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Gegenstück DEV:** `20261117123114 epic23_nomination_reminder_foundation_dev` sowie nachfolgende DEV-Hotfixes erfolgreich.
 
 
-### DB-MIG-2026-032 – E23 Fulfillment-Zeitkorrektur (PROD geplant)
+### DB-MIG-2026-032 – E23 Fulfillment-Zeitkorrektur (PROD) – ausgeführt
 
-- **Ausführungsdatensatz:** PROD
-- **Umgebung:** Supabase PROD
-- **Ausführungsweg:** Supabase Migration – noch nicht ausgeführt
-- **Anlass/Zweck:** `clock_timestamp()` und inklusive Zeitgrenze für Fulfillment.
-- **Betroffene Objekte:** `epic23_fulfill_nomination_reminder()`
-- **Freigabe/Ausführender:** ausstehend
-- **Status:** Geplant / Nicht ausgeführt
-- **SQL:** `supabase/migrations/20261118101000_epic23_nomination_reminder_fulfillment_hotfix_prod.sql`
-- **Ergebnis/Verifikation:** nicht ausgeführt
-- **Rollback:** Funktionsdefinition aus vorherigem Schritt nur nach gesonderter Prüfung wiederherstellbar; keine pauschale Rücknahme.
-- **Gegenstück DEV:** `20261117133211 epic23_nomination_reminder_fulfillment_hotfix_dev` erfolgreich
+- **Umgebung:** Supabase PROD (`qdugtpzgefpswnnqbusd`).
+- **Freigabe:** Fortsetzung des ausdrücklich freigegebenen E23-PROD-Einzelreleaseprozesses am 18.11.2026.
+- **Migration:** `supabase/migrations/20261118101000_epic23_nomination_reminder_fulfillment_hotfix_prod.sql`; Blob-SHA `b13d319be6644889ebcf48466ee365f2a0e80ba3`.
+- **Supabase-Ergebnis:** `success: true`.
+- **Tatsächliche Ledger-Version:** `20261118071012`; **Migrationsname:** `epic23_nomination_reminder_fulfillment_hotfix_prod`.
+- **Änderungsumfang:** ausschließlich Funktionsdefinition `public.epic23_fulfill_nomination_reminder()` ersetzt. Zeitanker auf `clock_timestamp()`; Fulfillment-Bedingung auf `created_at <= v_now` geändert.
+- **Postflight:** Funktionsdefinition enthält `clock_timestamp()` und inklusive Zeitbedingung; alte strikte Bedingung `created_at < v_now` nicht mehr vorhanden. Fulfillment-Trigger weiterhin genau einmal aktiv.
+- **Sicherheit:** SECURITY DEFINER und fester search_path `pg_catalog, public, auth` erhalten; EXECUTE für `authenticated`, `anon` und PUBLIC nicht gewährt.
+- **Datenbestand:** 0 Reminder- und 0 Audit-Zeilen; keine fachlichen Bestandsdaten verändert.
+- **Rollback:** nicht ausgeführt; Wiederherstellung der vorherigen Funktionsdefinition nur nach gesonderter Prüfung.
+- **PROD-Frontend / main:** unverändert.
+- **Gegenstück DEV:** `20261117133211 epic23_nomination_reminder_fulfillment_hotfix_dev` erfolgreich.
 
 ### DB-MIG-2026-033 – E23 Konkurrenz-Hotfix (PROD geplant)
 
