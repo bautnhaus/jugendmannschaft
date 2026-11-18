@@ -1,5 +1,5 @@
 -- Epic 23 – Paket 1 Hotfix 1: Fulfillment timestamp ordering
--- PROD release. Applied successfully on 2026-11-17. Safe to re-run. No data changes.
+-- PROD release copy derived from verified DEV migration. NOT EXECUTED; no data migration.
 -- Fix: PostgreSQL now() is transaction_timestamp(); a reminder created and
 -- a later matchday nomination inserted in one transaction share that value.
 -- <= allows the later INSERT event to fulfill the reminder.
