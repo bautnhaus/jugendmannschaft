@@ -145,3 +145,10 @@ Auf ausdrücklichen Wunsch wurde ausschließlich der Dialog **„Ausnahme zurüc
 **Prüfstatus:** Änderung committed auf `develop`. Der Codepfad wurde statisch geprüft. Ein echter Browser-/iPhone-Test mit verzögerten Netzwerkantworten steht noch aus; daher ist die Regression technisch adressiert, aber noch nicht durch einen Laufzeittest abschließend bestätigt.
 
 **PROD:** unverändert; keine Übernahme nach `main`.
+
+### Laufzeittest Spieltag-Wechsel – Nutzerbestätigung 18.11.2026
+
+- Nutzer hat die auf DEV bereitgestellte Korrektur zum Spieltag-Wechsel geprüft und zurückgemeldet: „Sieht gut aus“.
+- Ergebnis: **bestanden**.
+- Damit ist der zuvor offene manuelle Regressionstest für die Anzeige der spieltagbezogenen Vormerkungen und Sperr-/Ausnahmedaten abgeschlossen.
+- **PROD:** unverändert; keine Übernahme nach `main`.
