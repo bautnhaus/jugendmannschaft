@@ -302,3 +302,22 @@ Cache:
 - Die vorhandene direkte Dateiauswahl über den bewährten Inline-Click-Mechanismus bleibt erhalten.
 - Alle Inline-Scripts wurden vor dem Commit syntaktisch geprüft.
 - DEV-/Browser-Test der beiden Entfernen-Aktionen steht noch aus.
+
+
+## 2J. Profilbild-Aktionsbutton nach Entfernen dynamisch aktualisieren
+
+- Datum: 18.11.2026
+- Code-Commit: `d1202a20545c83f551ffd172c3b5dcf6f1c67745`
+- Status: auf develop committed; DEV-Deployment und Praxistest ausstehend.
+- Keine SQL-, Storage-, Bucket- oder PROD-Änderung.
+
+### Befund und Korrektur
+
+- Beim Spielerformular wurde der Aktionsbutton nach dem Entfernen bereits korrekt auf „Foto hinzufügen“ umgestellt.
+- Im Profilbild-Editor war der Buttontext dagegen fest auf „Foto ändern“ gesetzt.
+- Der Profilbild-Button wird nun abhängig vom tatsächlichen Vorschauzustand aktualisiert:
+  - Bild vorhanden: „Foto ändern“
+  - Kein Bild vorhanden: „Foto hinzufügen“
+- Die Aktualisierung erfolgt beim Öffnen des Editors, nach einer neuen Bildauswahl und unmittelbar nach dem Entfernen per X.
+- Die bestehende Speicherung von `avatar_url = NULL` beim Speichern ohne Bild bleibt unverändert.
+- Inline-Scripts wurden syntaktisch geprüft.
