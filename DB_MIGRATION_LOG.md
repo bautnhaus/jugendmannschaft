@@ -1548,19 +1548,19 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **PROD-Frontend / main:** unverändert.
 - **Gegenstück DEV:** `20261117202735 epic23_nomination_reminder_reopen_dev` erfolgreich.
 
-### DB-MIG-2026-036 – E23 Audit-Aktion reopened (PROD geplant)
+### DB-MIG-2026-036 – E23 Audit-Aktion reopened (PROD) – ausgeführt
 
-- **Ausführungsdatensatz:** PROD
-- **Umgebung:** Supabase PROD
-- **Ausführungsweg:** Supabase Migration – noch nicht ausgeführt
-- **Anlass/Zweck:** Audit-Constraint um den Statuswechsel `reopened` ergänzen.
-- **Betroffene Objekte:** Constraint `matchday_nomination_reminder_audit_action_check`.
-- **Freigabe/Ausführender:** ausstehend
-- **Status:** Geplant / Nicht ausgeführt
-- **SQL:** `supabase/migrations/20261118105000_epic23_reopened_audit_action_hotfix_prod.sql`
-- **Ergebnis/Verifikation:** nicht ausgeführt
-- **Rollback:** guarded; nur möglich, solange keine `reopened`-Auditzeile existiert.
-- **Gegenstück DEV:** `20261117210545 epic23_reopened_audit_action_hotfix_dev` erfolgreich
+- **Umgebung:** Supabase PROD (`qdugtpzgefpswnnqbusd`).
+- **Freigabe:** Fortsetzung des ausdrücklich freigegebenen E23-PROD-Einzelreleaseprozesses am 18.11.2026.
+- **Migration:** `supabase/migrations/20261118105000_epic23_reopened_audit_action_hotfix_prod.sql`; Blob-SHA `c5919cb7261c394f71bfd34aa2c8ac6b89a908e1`.
+- **Supabase-Ergebnis:** `success: true`.
+- **Tatsächliche Ledger-Version:** `20261118105730`; **Migrationsname:** `epic23_reopened_audit_action_hotfix_prod`.
+- **Änderungsumfang:** ausschließlich CHECK-Constraint `matchday_nomination_reminder_audit_action_check` ersetzt. Zulässige Actions sind jetzt `created`, `fulfilled`, `cancelled`, `reopened`.
+- **Preflight:** erwartete Constraint vorhanden; 0 Audit-Zeilen und 0 unerwartete Action-Werte; Reopen- und Fulfillment-Trigger jeweils genau einmal vorhanden.
+- **Postflight:** Constraint-Definition enthält alle vier Actions einschließlich `reopened`; 0 unerwartete Action-Werte; 0 Audit- und 0 Reminder-Zeilen; beide Trigger weiterhin genau einmal vorhanden.
+- **Datenbestand:** keine bestehenden Audit- oder Reminder-Zeilen verändert.
+- **Rollback:** nicht ausgeführt; keine automatische Rücknahme.
+- **PROD-Frontend / main:** unverändert.
+- **Gegenstück DEV:** `20261117210545 epic23_reopened_audit_action_hotfix_dev` erfolgreich.
 
-**Release-Dossier:** `docs/prod-release/E23_PROD_RELEASE_PREPARATION_2026-11-18.md`.  
-**Wichtig:** Die sechs SQL-Dateien sind vorbereitet, aber nicht ausgeführt. DEV-Erfolge sind kein PROD-Ausführungsnachweis.
+**Release-Dossier:** `docs/prod-release/E23_PROD_RELEASE_PREPARATION_2026-11-18.md`.
