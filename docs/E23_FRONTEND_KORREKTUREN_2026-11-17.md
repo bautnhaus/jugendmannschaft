@@ -126,3 +126,22 @@ Auf ausdrücklichen Wunsch wurde ausschließlich der Dialog **„Ausnahme zurüc
   - Manueller Dunkelmodus: bestanden
   - Manueller Hellmodus: bestanden
 - **PROD:** unverändert; keine Übernahme nach `main`.
+
+## Technische Korrektur – konkurrierende Ladevorgänge beim Spieltag-Wechsel (18.11.2026)
+
+**Befund:** Die Ladefunktionen für Nominierungsvormerkungen und Sperr-/Ausnahmedaten verwendeten jeweils eine gemeinsame globale Promise-Variable. Ein bereits laufender Abruf für Spieltag A konnte dadurch den Abruf für Spieltag B blockieren. Zusätzlich konnten verspätete Antworten eines nicht mehr geöffneten Spieltags globale Statusarrays überschreiben.
+
+**Korrektur auf develop:**
+- Ladevorgänge werden je Spieltag getrennt verwaltet.
+- Ergebnisse werden nur dann in die globalen Anzeigezustände übernommen, wenn der zugehörige Spieltag weiterhin geöffnet ist.
+- Die Sperrstatus-Abfrage liefert bei nicht passendem geladenem Spieltag keine veralteten Sperr-/Ausnahmedaten zurück.
+- Ladefehler werden weiterhin angezeigt und lösen keine unbehandelten Promise-Rejections aus.
+- Keine Änderung an RPCs, Tabellen, Policies oder gespeicherten Daten.
+
+**Commits:**
+- `c9486f9740c0758f977b54d571237a5750fd0512` – Ladezustände je Spieltag isolieren
+- `af099d8048b1bf1fb3eb8c382db2f2f46ae7c6fd` – Ladefehler ohne unbehandelte Promise-Rejections behandeln
+
+**Prüfstatus:** Änderung committed auf `develop`. Der Codepfad wurde statisch geprüft. Ein echter Browser-/iPhone-Test mit verzögerten Netzwerkantworten steht noch aus; daher ist die Regression technisch adressiert, aber noch nicht durch einen Laufzeittest abschließend bestätigt.
+
+**PROD:** unverändert; keine Übernahme nach `main`.
