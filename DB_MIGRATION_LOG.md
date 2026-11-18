@@ -1532,19 +1532,21 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **PROD-Frontend / main:** unverändert.
 - **Gegenstück DEV:** `20261117150608 epic23_nomination_reminder_read_api_dev` erfolgreich.
 
-### DB-MIG-2026-035 – E23 Wiederöffnung (PROD geplant)
+### DB-MIG-2026-035 – E23 Wiederöffnung (PROD) – ausgeführt
 
-- **Ausführungsdatensatz:** PROD
-- **Umgebung:** Supabase PROD
-- **Ausführungsweg:** Supabase Migration – noch nicht ausgeführt
-- **Anlass/Zweck:** Vormerkung am Ausgangsspieltag anzeigen und bei Abwahl der erfüllenden Nominierung wieder öffnen.
-- **Betroffene Objekte:** `get_matchday_nomination_reminders(uuid)`, `epic23_reopen_nomination_reminder_on_delete()`, Trigger auf `matchday_players`.
-- **Freigabe/Ausführender:** ausstehend
-- **Status:** Geplant / Nicht ausgeführt
-- **SQL:** `supabase/migrations/20261118104000_epic23_nomination_reminder_reopen_prod.sql`
-- **Ergebnis/Verifikation:** nicht ausgeführt
-- **Rollback:** kein automatischer Rollback nach Entstehung von Audit-Historie; Historie muss erhalten bleiben.
-- **Gegenstück DEV:** `20261117202735 epic23_nomination_reminder_reopen_dev` erfolgreich
+- **Umgebung:** Supabase PROD (`qdugtpzgefpswnnqbusd`).
+- **Freigabe:** Fortsetzung des ausdrücklich freigegebenen E23-PROD-Einzelreleaseprozesses am 18.11.2026.
+- **Migration:** `supabase/migrations/20261118104000_epic23_nomination_reminder_reopen_prod.sql`; Blob-SHA `582f8981ef09973419a60a280b8187353b08095e`.
+- **Supabase-Ergebnis:** `success: true`.
+- **Tatsächliche Ledger-Version:** `20261118104831`; **Migrationsname:** `epic23_nomination_reminder_reopen_prod`.
+- **Änderungsumfang:** Read-API schließt jetzt den Ausgangsspieltag ein (`match_date >= source_matchday_date_snapshot`). Neuer AFTER DELETE Trigger auf `matchday_players` öffnet eine erfüllte Vormerkung wieder, wenn die erfüllende Nominierung entfernt wird und keine spätere Nominierung des Spielers verbleibt.
+- **Parallelität:** Reopen-Trigger verwendet denselben spielerbezogenen Advisory Transaction Lock.
+- **Postflight:** Reopen- und Fulfillment-Trigger jeweils genau einmal vorhanden; Read-API enthält Ausgangsspieltag; Reopen-Logik prüft nur erfüllte Vormerkungen, spätere Nominierungen und den Spieler-Lock. Triggerfunktion SECURITY DEFINER mit festem search_path; keine direkte Client-EXECUTE-Berechtigung.
+- **Datenbestand:** 0 Reminder- und 0 Audit-Zeilen; keine fachlichen Bestandsdaten verändert.
+- **Wichtige Reihenfolgeabhängigkeit:** Die bestehende Audit-Action-CHECK-Constraint erlaubt derzeit nur `created`, `fulfilled`, `cancelled`. Der neue Trigger schreibt `reopened`; daher ist die Wiederöffnungsfunktion bis zur unmittelbar folgenden Ausführung von Paket 6 noch nicht vollständig betriebsbereit. Bis Paket 6 abgeschlossen ist, keine Nominierungsabwahl auslösen, die eine Wiederöffnung erzeugen würde.
+- **Rollback:** nicht ausgeführt; Trigger/Funktion nicht isoliert entfernen, ohne fachliche Historie und Folgeschritt zu prüfen.
+- **PROD-Frontend / main:** unverändert.
+- **Gegenstück DEV:** `20261117202735 epic23_nomination_reminder_reopen_dev` erfolgreich.
 
 ### DB-MIG-2026-036 – E23 Audit-Aktion reopened (PROD geplant)
 
