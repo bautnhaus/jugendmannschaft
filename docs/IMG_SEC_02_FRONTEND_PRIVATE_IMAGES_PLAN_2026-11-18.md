@@ -4,7 +4,7 @@
 - Branch-Referenz: develop
 - Frontend-Baseline-Commit: 9d0fb6582d2dfb12ba31027b000d0829d8853ea7
 - Datei: index.html (606.192 Zeichen beim Abruf)
-- Status: Analyse und Umsetzungskonzept vorbereitet; keine Codeänderung, kein Commit, kein Deploy
+- Status: Paket 2A – Resolver-Grundlage in develop implementiert; nicht deployed, nicht funktional im Browser getestet
 - Abhängigkeit: IMG-SEC-01 Paket 1A in DEV ausgeführt.
 
 ## 1. Ist-Stand aus develop/index.html
@@ -20,6 +20,28 @@ Die Datei wurde frisch aus develop abgerufen:
 - Profilbilder erscheinen in Mitglieder-/Trainerlisten, Profilformularen und Eigenprofil.
 - Vereinswappen erscheinen im Dashboard, in Vereinslisten/-details und im Team-/Kontextbereich.
 - Spielerbilder erscheinen in Spielerliste, Spielerkarte, Trainings-, Spieltags-, Ereignis- und historischen Ansichten.
+
+## 2A. Umgesetzte Resolver-Grundlage (DEV-Branch, noch nicht deployed)
+
+Am 18.11.2026 wurde in `index.html` auf `develop` die erste technische Grundlage ergänzt:
+
+- Allowlist für die Buckets `player-photos`, `profile-avatars` und `club-assets`.
+- `resolvePrivateImage(bucket,path)` erzeugt Signed URLs über `createSignedUrl` mit 300 Sekunden Gültigkeit.
+- Signed URLs werden nur in einer JavaScript-Map im Arbeitsspeicher zwischengespeichert; es gibt keine localStorage-/sessionStorage-Persistenz.
+- Erneuerung erfolgt 30 Sekunden vor dem angenommenen Ablaufzeitpunkt.
+- Cache-Key enthält Bucket und Storage-Pfad.
+- Ein Kontext-Fingerprint aus Benutzer-, Team-, Vereins- und Admin-Kontext leert den Cache automatisch, sobald ein anderer Kontext beim nächsten Resolver-Aufruf erkannt wird.
+- `clearPrivateImageCache()` und `resetImageContext()` stehen für explizite Invalidierung bereit.
+- Logout leert den Cache unmittelbar.
+
+### Grenzen / noch nicht erledigt
+
+- Der Resolver ist noch nicht an bestehende Bild-Renderpfade angeschlossen.
+- Die Buckets `profile-avatars` und `club-assets` sind weiterhin öffentlich; es wurde kein Bucket-Cutover durchgeführt.
+- Es wurde keine SQL-Änderung und keine Storage-Policy-Änderung vorgenommen.
+- Fehlerbehandlung mit genau einem erneuten Auflösungsversuch nach Bildladefehler/401/403 ist noch nicht implementiert.
+- Team-/Vereinskontext wird derzeit beim nächsten Resolver-Aufruf anhand des Fingerprints erkannt; ein unmittelbarer zentraler Hook bei jedem Kontextwechsel kann in einem Folgeschritt ergänzt werden, falls Tests dies erfordern.
+- Kein DEV-Deploy und noch keine Browser-/Rollenprüfung.
 
 ## 2. Zielarchitektur
 
