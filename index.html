@@ -2077,7 +2077,6 @@ async function loadMatchdayNominationReminders(matchdayId,force=false){
       if(currentMatchdayId===matchdayId){matchdayNominationReminders=[];matchdayNominationRemindersLoadedFor=null;}
       console.error('Nominierungsvormerkungen konnten nicht geladen werden:',err);
       if(currentMatchdayId===matchdayId)showStatus('Nominierungsvormerkungen konnten nicht geladen werden. Bitte erneut versuchen.','error');
-      throw err;
     }finally{matchdayNominationReminderLoads.delete(matchdayId);}
   })();
   matchdayNominationReminderLoads.set(matchdayId,load);
@@ -2111,7 +2110,6 @@ async function loadMatchdaySuspensions(matchdayId,force=false){
     }catch(err){
       if(currentMatchdayId===matchdayId){matchdaySuspensionLoadedFor=null;showStatus('Sperrstatus konnte nicht geladen werden. Bitte erneut versuchen.','error');}
       console.error('Sperrstatus konnte nicht geladen werden:',err);
-      throw err;
     }finally{matchdaySuspensionLoads.delete(matchdayId);}
   })();
   matchdaySuspensionLoads.set(matchdayId,load);
