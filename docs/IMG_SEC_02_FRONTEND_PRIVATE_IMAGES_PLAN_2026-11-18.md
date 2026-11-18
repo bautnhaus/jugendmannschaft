@@ -264,3 +264,20 @@ Cache:
 - Die Spielerverwaltung verwendet nun dasselbe Muster: direkter Inline-Aufruf auf `newPhotoInput` bzw. `editPhotoInput`, mit identischer Input-Klasse und denselben akzeptierten Bildformaten (PNG/JPEG/WebP).
 - Der zusätzliche Event-Listener `bindPlayerPhotoTrigger` wurde entfernt. `bindPhotoInput` bleibt ausschließlich für die Verarbeitung der ausgewählten Datei zuständig.
 - Keine Datenbank-, Storage-, SQL- oder PROD-Änderung.
+
+
+## 2H. Fotoentfernung im Spieler-Bearbeitungsformular ergänzt
+
+- Datum: 18.11.2026
+- Code-Commit: `4b6c302efef0a2f5587fb729f47a93a88cad2ce7`
+- Status: auf develop umgesetzt; DEV-Deployment und Praxistest ausstehend.
+- Keine SQL-, Storage-, Bucket- oder PROD-Änderung.
+
+### Änderung
+
+- Im bestehenden Spieler-Bearbeitungsformular gibt es neben „Foto ändern“ nun eine eigene Aktion „Foto entfernen“.
+- Die Aktion wird nur angezeigt, wenn aktuell ein Foto in der Formularvorschau vorhanden ist.
+- Nach dem Entfernen wird die Vorschau auf den Avatar-Fallback gesetzt und die Entfernen-Aktion ausgeblendet.
+- Wird anschließend ein neues Foto ausgewählt, wird die Entfernen-Aktion wieder eingeblendet.
+- Beim Speichern bleibt der bestehende Ablauf erhalten: `photo_path` wird auf `NULL` gesetzt, wenn `photoAction === 'remove'`.
+- Der Datei-Auswahlmechanismus für neue und bestehende Fotos wurde nicht verändert.
