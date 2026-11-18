@@ -1,6 +1,6 @@
 # E23 – PROD-Releasevorbereitung (18.11.2026)
 
-**Status:** Paket 1 ausgeführt und nachkontrolliert; Pakete 2–6 vorbereitet  
+**Status:** Alle sechs DB-Pakete in PROD ausgeführt und im Ledger bestätigt; abschließender DB-Preflight bestanden  
 **Ziel:** Supabase PROD `qdugtpzgefpswnnqbusd`  
 **DEV-Referenz:** `pzazqvvoruqnqhcorbwx`  
 **GitHub-Quelle:** `develop`  
@@ -23,14 +23,16 @@ Die PROD-Dateien sind separate Release-Kopien der in DEV ausgeführten Migration
 
 ## 2. Live-Abgleich vor Release
 
-Am 18.11.2026 wurden read-only in PROD geprüft:
+Initialer Preflight vor Paket 1 erfolgte read-only am 18.11.2026. Nach Ausführung aller sechs Pakete wurde der abschließende PROD-Preflight erneut read-only durchgeführt:
 
-- Alle sechs E23-Zielobjekte (Tabellen/RPCs/Triggerfunktionen) fehlen aktuell.
-- Abhängige Tabellen `players`, `teams`, `matchdays`, `matchday_players`, `team_member_roles`, `global_user_roles`, `profiles` und `user_team_context` sind vorhanden.
-- `matchday_players` besitzt die benötigten Spalten `matchday_id`, `player_id`, `available`, `played`, `team_number`, `goalkeeper`.
-- `matchdays` besitzt `id`, `team_id`, `match_date`, `opponent`, `status`.
-- `has_selected_team_context(uuid)` und `is_team_member(uuid)` sind in PROD vorhanden, SECURITY DEFINER, Owner `postgres`.
-- RLS ist auf den relevanten Basis-Tabellen aktiviert.
+- Alle sechs Migrationen sind im Supabase-Produktiv-Ledger vorhanden: `20261118070757`, `20261118071012`, `20261118102300`, `20261118104708`, `20261118104831`, `20261118105730`.
+- Beide Tabellen `matchday_nomination_reminders` und `matchday_nomination_reminder_audit` sind vorhanden; RLS ist aktiviert und jeweils eine Policy vorhanden.
+- Create-, Cancel- und Read-RPC sowie Fulfillment- und Reopen-Triggerfunktionen sind vorhanden.
+- Fulfillment- und Reopen-Trigger sind jeweils genau einmal vorhanden.
+- Audit-Constraint erlaubt exakt `created`, `fulfilled`, `cancelled`, `reopened`.
+- Alle fünf Funktionen verwenden den festen search_path `pg_catalog, public, auth`. Create-/Cancel-/Read-RPC sind für `authenticated`, nicht für `anon` oder PUBLIC ausführbar; Triggerfunktionen sind nicht direkt für Clientrollen ausführbar.
+- Reminder- und Audit-Tabellen enthalten jeweils 0 Zeilen.
+- Die Basisobjekte und Teamkontext-Hilfsfunktionen wurden im initialen Preflight geprüft und blieben Voraussetzung der Migrationen.
 
 ## 3. Kritische Release-Voraussetzungen
 
@@ -81,6 +83,9 @@ Nach vollständiger DB-Ausführung und Verifikation:
 
 ## 6. Ausführungsstand
 
-- Paket 1 wurde am 18.11.2026 erfolgreich in PROD ausgeführt und nachkontrolliert. Ledger-Version `20261118070757`.
-- Pakete 2–6 sind vorbereitet, aber noch nicht ausgeführt.
-- `main` und das PROD-Frontend sind unverändert. Der reguläre Deploy `develop` → `main` erfolgt erst nach erfolgreichem DB-Release aller sechs Schritte.
+- Alle sechs Pakete wurden am 18.11.2026 erfolgreich in PROD ausgeführt und nachkontrolliert. Die tatsächlichen Ledger-Versionen sind oben dokumentiert.
+- Der abschließende DB-Preflight bestätigt Tabellen, RLS/Policies, RPCs, Trigger, ACLs und Audit-Constraint; die beiden E23-Tabellen sind leer.
+- `main` und das PROD-Frontend sind unverändert.
+- GitHub-Vergleich `main...develop`: `develop` liegt 126 Commits vor `main`, ohne Commits auf `main`, die in `develop` fehlen. Der vereinbarte reguläre Deploy ist der vollständige Stand `develop` → `main`; damit werden neben E23 auch die weiteren Änderungen des Branches Teil des PROD-Releases.
+- Security-/Performance-Advisor wurden geprüft. Die Hinweise sind im Release-Preflight dokumentiert; sie umfassen projektweite bestehende Warnungen und sind nicht alle durch E23 verursacht.
+- PROD-Deploy, PROD-Frontend-Smoke-Test und Veröffentlichung der Release Notes sind noch nicht erfolgt.
