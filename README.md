@@ -20,6 +20,9 @@
 - [AP05 – Mitgliedereinladung: DEV und PROD](docs/AP05_INVITE_MEMBER_DEV_DOMAIN_2026-11-05.md)
 - [Vereins- und Mannschaftsanlage](docs/CLUB_TEAM_CREATION_PLAN_2026-10-29.md)
 
+- [IMG-SEC-01 Paket 1A – Private Bildspeicherung (DEV)](docs/IMG_SEC_01_PAKET_1A_PRIVATE_IMAGE_STORAGE_2026-11-18.md) – ausgeführt und strukturell nachkontrolliert
+- [IMG-SEC-02 Paket 2 – Frontend-Unterbau private Bilder](docs/IMG_SEC_02_FRONTEND_PRIVATE_IMAGES_PLAN_2026-11-18.md) – vorbereitet, noch nicht umgesetzt
+
 ## Deployment und Umgebungen
 - `develop` ist die zentrale Quelle für Entwicklung und Dokumentation.
 - Der Workflow [Deploy PROD](.github/workflows/deploy-prod.yml) übernimmt den getesteten Stand aus `develop` nur dann nach `main`, wenn `main` ein Vorfahr des ausgewählten `develop`-Commits ist. Bei unabhängigen Commits auf `main` bricht der Workflow ab, statt diese zu überschreiben.\n- Der ergänzende Workflow [Main Deploy](.github/workflows/deploy-main.yml) deployt manuell ausschließlich den bereits vorhandenen `main`-Stand. Er übernimmt nichts aus `develop` und verändert keine Branches. Er ist für isolierte, bereits gemergte Hotfixes gedacht; kein Ersatz für den regulären Releaseprozess.
