@@ -232,3 +232,20 @@ Cache:
 - Fehlt das Menüelement, wird eine sichtbare Fehlermeldung angezeigt, statt stillschweigend abzubrechen.
 - Die Fotoauswahl wird weiterhin erst nach bewusster Auswahl der Menüaktion über den Datei-Input gestartet.
 - Keine Datenbank-, Storage- oder PROD-Änderungen.
+
+
+## 2E. Fotoaktion im bestehenden Spieler-Bearbeitungsdialog direkt binden
+
+- Datum: 18.11.2026
+- Commit: `5f234f43c4b2a9696914576d5534e5de20f19315`
+- Status: auf develop umgesetzt; DEV-Deployment und Praxistest ausstehend.
+- PROD und Datenbank unverändert.
+
+### Befund und Korrektur
+
+- Foto hinzufügen bei der Neuanlage und Fotoaktionen bei Profil/Vereinslogo funktionieren; das allgemeine Fotoaktionsmenü ist daher nicht die primäre Fehlerstelle.
+- Im bestehenden Spieler-Bearbeitungsdialog wurde der Foto-Button bisher ausschließlich über einen inline `onclick`-Handler aus dem dynamisch erzeugten Formular verdrahtet.
+- Nach dem Rendern des Bearbeitungsdialogs wird der Button jetzt explizit über einen direkten Event-Listener gebunden. Der Listener verhindert das Default-Verhalten und stopPropagation und öffnet gezielt `openPhotoSheet('edit')`.
+- Die Initialisierung prüft außerdem, ob Vorschau und Datei-Input im Dialog vorhanden sind, und zeigt andernfalls einen sichtbaren Fehler.
+- Der Datei-Input bleibt an die bestehende Upload-/Resize-Logik gebunden.
+- Keine SQL-, Storage-, Bucket- oder PROD-Änderung.
