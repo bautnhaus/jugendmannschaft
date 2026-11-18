@@ -183,3 +183,33 @@ Cache:
 - später: eigener DEV-Frontend-Commit und Testnachweis
 - ggf. separate DB-Migration für save_player_with_positions
 - separates Datenmigrations-/Cutover-Paket für Profilbilder, Spielerfotos und Vereinswappen
+
+
+## 2C. Spielerfotos auf privaten Storage-Pfad umgestellt (develop)
+
+- Datum: 18.11.2026
+- Code-Commits:
+  - `f2f56773eb44dcb869e788a0fde3de3b7248bbf4`
+  - `c3d53352cbaeeba6ae8084a36d02c3edc5cb27dd`
+- Status: in develop implementiert; noch nicht deployed und noch nicht im Browser getestet.
+- PROD unverändert.
+
+### Umsetzung
+
+- Aktive und inaktive Spielerabfragen laden zusätzlich `players.photo_path`.
+- Spieler-Renderfunktion unterstützt jetzt sowohl ältere Data-URLs als auch Storage-Pfade. Storage-Pfade werden über `privateImageMarkup('player-photos', ...)` und den bestehenden Signed-URL-Resolver angezeigt.
+- Die Spielerkarten, Trainings-/Spieltagseinträge und historischen Spieleransichten verwenden `photo_path` vorrangig; `photo_data` bleibt als Rückwärtskompatibilität für alte Data-URLs verfügbar.
+- Das Bearbeitungsformular initialisiert seine Vorschau aus `photo_path` (Fallback: `photo_data`).
+- Neue Fotos werden nach Verkleinerung in `player-photos` unter `team_id/player_id/UUID.ext` hochgeladen; Upload erfolgt ohne Upsert mit neuem Objektpfad.
+- Nach erfolgreichem Upload wird `players.photo_path` direkt über den authentifizierten Supabase-Client aktualisiert und der gespeicherte Wert anschließend geprüft.
+- Beim Entfernen wird `photo_path` auf `NULL` gesetzt. Storage-Objekte werden bewusst nicht automatisch gelöscht.
+- Bei der Neuanlage wird zuerst der Spieler über die bestehende RPC ohne Bild angelegt; danach wird das Bild hochgeladen und der Pfad gespeichert. Bei einem fehlgeschlagenen Foto-Upload bleibt der Spieler bestehen und die UI meldet den Teilfehler.
+- Die bestehende RPC `save_player_with_positions` wurde nicht verändert; sie erhält bei neuen und bearbeiteten Spielern `p_photo_data: null`. Bei älteren Data-URL-Fotos wird die Vorschau beim Speichern in den neuen Storage-Pfad migriert.
+- Es wurden keine SQL-, Storage-Policy- oder Bucketänderungen vorgenommen.
+
+### Bewusste Grenzen / Folgearbeiten
+
+- Backup-/Restore-Funktionen verwenden weiterhin `photo_data`; Storage-Dateien und `photo_path` sind noch nicht Bestandteil eines vollständigen Foto-Backups. Backup-/Restore-Anpassung bleibt separat und ist vor einer PROD-Freigabe zu klären.
+- Alte Storage-Objekte werden bei Bildwechsel/Entfernen nicht gelöscht; eine gesonderte, kontrollierte Bereinigung bleibt offen.
+- Browser-/Praxistests für Upload, Ersetzen, Entfernen, Neuanlage und Rollenberechtigungen stehen aus.
+- Kein DEV-Deploy und keine Änderung an PROD.
