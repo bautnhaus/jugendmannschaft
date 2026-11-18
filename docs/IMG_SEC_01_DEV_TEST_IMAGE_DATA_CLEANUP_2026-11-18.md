@@ -2,52 +2,50 @@
 
 **Datum:** 2026-11-18  
 **Projekt:** Supabase DEV `pzazqvvoruqnqhcorbwx`  
-**Status:** freigegebene Bereinigung; PROD ausdrücklich ausgeschlossen.
+**Status:** abgeschlossen und nachgeprüft; PROD ausdrücklich ausgeschlossen.
 
-## Umfang
+## Umfang und Ausführung
 
-Die folgenden DEV-Daten wurden vor der Neuimplementierung als entbehrliche Testdaten freigegeben:
+Die freigegebene DEV-Bereinigung wurde durchgeführt.
 
-- `players.photo_data`: 3 Data-URLs
-- `profiles.avatar_url`: 1 Profilbildreferenz
-- `clubs.crest_path`: 1 Vereinswappenreferenz
+### Storage-Dateien
 
-Die zugehörigen Storage-Dateien sind:
+Die vier freigegebenen Testobjekte wurden durch den Benutzer im Supabase Dashboard gelöscht:
+
 - `profile-avatars/1c84aee5-0569-4c92-a53b-9237382f2b43/avatar-1793460014376.jpg`
 - `profile-avatars/1c84aee5-0569-4c92-a53b-9237382f2b43/avatar-1793460141532.jpg`
 - `club-assets/7f0e09be-2de5-450a-a39b-0061a2c9c56e/crest.jpg`
 - `club-assets/7f0e09be-2de5-450a-a39b-0061a2c9c56e/crest.png`
 
-## Datenbankbereinigung
+Anschließende Datenbankprüfung ergab **0 Storage-Objekte** in den Buckets `club-assets`, `profile-avatars` und `player-photos`.
 
-```sql
-begin;
+### Datenbankreferenzen
 
-update public.players
-set photo_data = null
-where photo_data is not null;
+Die Datenbankbereinigung wurde ausschließlich in DEV ausgeführt:
 
-update public.profiles
-set avatar_url = null
-where id = '1c84aee5-0569-4c92-a53b-9237382f2b43'
-  and avatar_url is not null;
+- 3 Zeilen in `players`: `photo_data = NULL`
+- 1 Zeile in `profiles`: `avatar_url = NULL`
+- 1 Zeile in `clubs`: `crest_path = NULL`
 
-update public.clubs
-set crest_path = null
-where id = '7f0e09be-2de5-450a-a39b-0061a2c9c56e'
-  and crest_path is not null;
+Die Ausführung lieferte die Zähler 3, 1 und 1 für die jeweils zurückgesetzten Werte.
 
-commit;
-```
+## Postflight-Prüfung
 
-## Storage-Dateien – wichtiger Hinweis
+| Prüfung | Ergebnis |
+|---|---:|
+| Storage-Objekte in den drei Bild-Buckets | 0 |
+| Spieler mit `photo_data` | 0 |
+| Spieler mit `photo_path` | 0 |
+| Profile mit `avatar_url` | 0 |
+| Vereine mit `crest_path` | 0 |
+| Spalte `players.photo_path` vorhanden | Ja |
+| Storage-Policies `player_photos_*` vorhanden | 4 |
 
-Supabase dokumentiert ausdrücklich, dass Storage-Objekte ausschließlich über die Storage API (`storage.from(bucket).remove(paths)`) gelöscht werden sollen. Direkte SQL-Löschungen aus `storage.objects` entfernen die Binärdateien nicht zuverlässig und können verwaiste Objekte hinterlassen.
-
-Die Storage-API-Löschung ist in diesem Schritt **noch nicht ausgeführt**. Die vier Objektpfade oben sind die verifizierte Löschliste. Nach API-Löschung muss die Objektanzahl in beiden Buckets erneut geprüft werden.
+Die Bereinigung hat die Vorbereitung aus Paket 1A nicht entfernt: `players.photo_path` und die vier `player_photos_*`-Policies sind weiterhin vorhanden.
 
 ## Schutzgrenze
 
 - Es wurden keine Änderungen an PROD vorgenommen.
 - Es wurden keine Buckets, Policies oder Funktionen geändert.
-- `players.photo_path` bleibt als vorbereitetes Feld bestehen.
+- Es wurde kein Objekt direkt aus `storage.objects` per SQL gelöscht.
+- Die bestehenden Bildspalten bleiben bestehen; lediglich die freigegebenen DEV-Testwerte wurden zurückgesetzt.
