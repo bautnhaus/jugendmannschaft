@@ -281,3 +281,24 @@ Cache:
 - Wird anschließend ein neues Foto ausgewählt, wird die Entfernen-Aktion wieder eingeblendet.
 - Beim Speichern bleibt der bestehende Ablauf erhalten: `photo_path` wird auf `NULL` gesetzt, wenn `photoAction === 'remove'`.
 - Der Datei-Auswahlmechanismus für neue und bestehende Fotos wurde nicht verändert.
+
+
+## 2I. Bildentfernung per X-Kreis in Spieler- und Profilformular
+
+- Datum: 18.11.2026
+- Code-Commit: `61e98ad7863916c58eb1b371b33d7ecd461f77cc`
+- Status: auf develop committed; DEV-Deployment und iPhone-Praxistest ausstehend.
+- Keine SQL-, Storage-, Bucket- oder PROD-Änderung.
+
+### Änderung
+
+- Die bisherige separate Schaltfläche „Foto entfernen“ im Spielerformular wurde durch einen kleinen roten Kreis mit weißem X direkt oben rechts am Bild ersetzt.
+- Die Funktion gilt für neue und bestehende Spieler. Nach einer Bildauswahl erscheint der X-Kreis; beim Entfernen wird nur die lokale Vorschau geleert.
+- Derselbe X-Kreis wurde im Profilbild-Editor ergänzt.
+- Der X-Kreis wird nur angezeigt, wenn ein Bild vorhanden ist.
+- Bei Spielern markiert `photoAction === 'remove'` weiterhin die gewünschte Entfernung; beim Speichern wird `players.photo_path` auf `NULL` gesetzt. Bei einer Neuanlage wird ein vor dem Speichern entferntes Bild nicht hochgeladen.
+- Beim Profilbild wird nach dem Entfernen `avatar_url` beim Speichern auf `NULL` gesetzt.
+- Storage-Objekte werden weiterhin nicht automatisch gelöscht.
+- Die vorhandene direkte Dateiauswahl über den bewährten Inline-Click-Mechanismus bleibt erhalten.
+- Alle Inline-Scripts wurden vor dem Commit syntaktisch geprüft.
+- DEV-/Browser-Test der beiden Entfernen-Aktionen steht noch aus.
