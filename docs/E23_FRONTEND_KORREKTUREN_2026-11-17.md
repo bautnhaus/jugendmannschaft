@@ -115,3 +115,14 @@ Auf ausdrücklichen Wunsch wurde ausschließlich der Dialog **„Ausnahme zurüc
 - **Ergebnis:** bestanden.
 - Damit ist die Prüfung der E23-Dialogdarstellung (Buttonaufteilung und Abstand zwischen Begründungsfeld und Aktionen) abgeschlossen.
 - **PROD:** unverändert; keine Übernahme nach `main`.
+
+### Abschließender Theme-Test – System-Hellmodus (18.11.2026)
+
+- **System-Hellmodus:** vom Nutzer auf DEV/iPhone geprüft und als korrekt bestätigt.
+- **Ergebnis:** bestanden.
+- Damit sind alle vier Theme-Kombinationen geprüft:
+  - System-Dunkelmodus: bestanden
+  - System-Hellmodus: bestanden
+  - Manueller Dunkelmodus: bestanden
+  - Manueller Hellmodus: bestanden
+- **PROD:** unverändert; keine Übernahme nach `main`.
