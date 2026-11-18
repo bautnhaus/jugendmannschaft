@@ -1017,6 +1017,6 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
   4. `20261118103000_epic23_nomination_reminder_read_api_prod`
   5. `20261118104000_epic23_nomination_reminder_reopen_prod`
   6. `20261118105000_epic23_reopened_audit_action_hotfix_prod`
-- **Status:** nur vorbereitet, keine PROD-Ausführung. Vor jedem Schritt sind Sicherung, Preflight, Einzel-Ausführung und Postflight erforderlich.
-- **Frontend:** kein pauschaler Merge von `develop` nach `main`; Branchvergleich zeigt 105 Commits Vorsprung. Die E23-Frontendänderungen müssen vor einem späteren Deploy gezielt vom übrigen Branchumfang getrennt werden.
+- **Status:** Paket 1 am 18.11.2026 erfolgreich in PROD ausgeführt (Ledger `20261118070757`) und nachkontrolliert; Pakete 2–6 vorbereitet, nicht ausgeführt.
+- **Frontend:** nach Abschluss und Postflight aller sechs DB-Schritte erfolgt der reguläre PROD-Deploy von `develop` nach `main`; keine separate Frontend-Isolation. Bis dahin bleiben `main` und PROD-Frontend unverändert.
 - Dossier: `docs/prod-release/E23_PROD_RELEASE_PREPARATION_2026-11-18.md`.
