@@ -2061,31 +2061,34 @@ let matchdayExceptionRows=[];
 let matchdayEarlyResetRows=[];
 let matchdayNominationReminders=[];
 let matchdayNominationRemindersLoadedFor=null;
-let matchdayNominationReminderLoading=null;
+const matchdayNominationReminderLoads=new Map();
 let matchdaySuspensionLoadedFor=null;
-let matchdaySuspensionLoading=null;
+const matchdaySuspensionLoads=new Map();
 async function loadMatchdayNominationReminders(matchdayId,force=false){
   if(!matchdayId)return;
   if(!force&&matchdayNominationRemindersLoadedFor===matchdayId)return;
-  if(matchdayNominationReminderLoading)return matchdayNominationReminderLoading;
-  matchdayNominationReminderLoading=(async()=>{
+  if(matchdayNominationReminderLoads.has(matchdayId))return matchdayNominationReminderLoads.get(matchdayId);
+  const load=(async()=>{
     try{
       const {data,error}=await getClient().rpc('get_matchday_nomination_reminders',{p_matchday_id:matchdayId});
       if(error)throw error;
-      matchdayNominationReminders=data||[];matchdayNominationRemindersLoadedFor=matchdayId;
+      if(currentMatchdayId===matchdayId){matchdayNominationReminders=data||[];matchdayNominationRemindersLoadedFor=matchdayId;}
     }catch(err){
-      matchdayNominationReminders=[];matchdayNominationRemindersLoadedFor=null;
+      if(currentMatchdayId===matchdayId){matchdayNominationReminders=[];matchdayNominationRemindersLoadedFor=null;}
       console.error('Nominierungsvormerkungen konnten nicht geladen werden:',err);
-      showStatus('Nominierungsvormerkungen konnten nicht geladen werden. Bitte erneut versuchen.','error');
-    }finally{matchdayNominationReminderLoading=null;}
+      if(currentMatchdayId===matchdayId)showStatus('Nominierungsvormerkungen konnten nicht geladen werden. Bitte erneut versuchen.','error');
+      throw err;
+    }finally{matchdayNominationReminderLoads.delete(matchdayId);}
   })();
-  return matchdayNominationReminderLoading;
+  matchdayNominationReminderLoads.set(matchdayId,load);
+  return load;
 }
 function matchdayNominationReminderFor(playerId,matchdayId=currentMatchdayId){
   if(matchdayNominationRemindersLoadedFor!==matchdayId)return null;
   return matchdayNominationReminders.find(x=>x.player_id===playerId)||null;
 }
 function matchdaySuspensionFor(playerId,matchdayId=currentMatchdayId){
+  if(matchdaySuspensionLoadedFor!==matchdayId)return {suspension:null,exception:null,blocked:false};
   const suspension=matchdaySuspensionRows.find(x=>x.player_id===playerId&&x.intended_matchday_id===matchdayId&&x.status==='open');
   const exception=matchdayExceptionRows.find(x=>x.player_id===playerId&&x.matchday_id===matchdayId&&x.revoked_at==null);
   return {suspension:suspension||null,exception:exception||null,blocked:!!suspension&&!exception};
@@ -2094,8 +2097,8 @@ function matchdaySuspensionFor(playerId,matchdayId=currentMatchdayId){
 async function loadMatchdaySuspensions(matchdayId,force=false){
   if(!matchdayId)return;
   if(!force&&matchdaySuspensionLoadedFor===matchdayId)return;
-  if(matchdaySuspensionLoading)return matchdaySuspensionLoading;
-  matchdaySuspensionLoading=(async()=>{
+  if(matchdaySuspensionLoads.has(matchdayId))return matchdaySuspensionLoads.get(matchdayId);
+  const load=(async()=>{
     try{
       const c=getClient();
       const [s,e,r]=await Promise.all([
@@ -2104,14 +2107,15 @@ async function loadMatchdaySuspensions(matchdayId,force=false){
         c.from('matchday_early_suspension_resets').select('id,player_id,matchday_id,status,reason,created_at,applied_at,cancelled_at').eq('team_id',team).eq('matchday_id',matchdayId)
       ]);
       if(s.error)throw s.error;if(e.error)throw e.error;if(r.error)throw r.error;
-      matchdaySuspensionRows=s.data||[];matchdayExceptionRows=e.data||[];matchdayEarlyResetRows=r.data||[];
-      matchdaySuspensionLoadedFor=matchdayId;
+      if(currentMatchdayId===matchdayId){matchdaySuspensionRows=s.data||[];matchdayExceptionRows=e.data||[];matchdayEarlyResetRows=r.data||[];matchdaySuspensionLoadedFor=matchdayId;}
     }catch(err){
-      matchdaySuspensionLoadedFor=null;console.error('Sperrstatus konnte nicht geladen werden:',err);
-      showStatus('Sperrstatus konnte nicht geladen werden. Bitte erneut versuchen.','error');
-    }finally{matchdaySuspensionLoading=null;}
+      if(currentMatchdayId===matchdayId){matchdaySuspensionLoadedFor=null;showStatus('Sperrstatus konnte nicht geladen werden. Bitte erneut versuchen.','error');}
+      console.error('Sperrstatus konnte nicht geladen werden:',err);
+      throw err;
+    }finally{matchdaySuspensionLoads.delete(matchdayId);}
   })();
-  return matchdaySuspensionLoading;
+  matchdaySuspensionLoads.set(matchdayId,load);
+  return load;
 }
 window.openSuspensionException=async(playerId)=>{
   const md=state.matchdays.find(x=>x.id===currentMatchdayId);if(!md)return;
