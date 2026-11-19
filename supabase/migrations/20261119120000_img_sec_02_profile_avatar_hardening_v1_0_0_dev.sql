@@ -19,6 +19,9 @@ begin
   end if;
   if to_regprocedure('public.can_manage_club_context(uuid)') is null
      or to_regprocedure('public.is_team_admin(uuid)') is null
+     or to_regprocedure('public.is_team_admin(uuid,uuid)') is null
+     or to_regprocedure('public.is_super_admin()') is null
+     or to_regprocedure('public.has_selected_team_context(uuid)') is null
      or to_regprocedure('public.admin_update_member_profile(uuid,uuid,text,text)') is null
      or to_regprocedure('public.admin_update_club_member_profile(uuid,uuid,text,text)') is null then
     raise exception 'Preflight fehlgeschlagen: erwartete Berechtigungsfunktionen oder Profil-RPCs fehlen.';
