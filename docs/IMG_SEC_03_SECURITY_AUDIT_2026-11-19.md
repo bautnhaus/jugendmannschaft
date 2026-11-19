@@ -107,3 +107,10 @@ IMG-SEC-03 darf nicht vor dem Frontend-Deploy und erfolgreichen Smoke-Test erfol
 - DEV: direkter unauthentifizierter HTTP-Aufruf der öffentlichen URL noch offen.
 - PROD: ausschließlich read-only geprüft; keine Migration, kein Bucket-Update und kein Frontend-Deploy ausgeführt.
 - PROD-Paket: vorbereitet, aber noch nicht zur Ausführung freigegeben.
+
+
+### 2.4 Zusätzliche PROD-Preflight-Prüfung
+
+Alle von den vorbereiteten IMG-SEC-01/02-Migrationen benötigten Tabellen, Kontext-Tabellen, Rollenfunktionen und Profil-RPC-Signaturen sind in PROD vorhanden. Das Schema `private` fehlt erwartungsgemäß und wird in IMG-SEC-01b angelegt. Die vier vorgesehenen PROD-Migrationsversionen sind noch nicht registriert.
+
+Der Release-Branch `release/img-sec-2026-11-19` enthält genau 12 Commits / 12 geänderte Dateien gegenüber `main`: die Bild-Frontend-Datei, vier Migrationen, drei Rollbacks und vier Prüfdokumente. Kein vollständiges Merge von `develop`.
