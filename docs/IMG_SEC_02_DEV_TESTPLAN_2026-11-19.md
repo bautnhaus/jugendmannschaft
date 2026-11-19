@@ -88,3 +88,16 @@ Rollback nur bei ausdrücklicher gesonderter Freigabe, insbesondere wenn:
 Rollback-Datei: `supabase/rollback/20261119161952_img_sec_02_profile_avatar_hardening_rollback_dev.sql`.
 
 Rollback entfernt keine Profilzeilen oder Storage-Dateien. Danach sind die ursprünglichen RPCs und Storage-Schreibregeln wiederhergestellt; SELECT-Policy und Bucket-Einstellungen bleiben unangetastet.
+
+
+## 9. Automatisierte DEV-Datenbankprüfungen nach Ausführung
+
+Am 19.11.2026 erfolgreich durchgeführt (read-only bzw. transaktionsisolierte Funktionssimulation ohne persistente Datenänderung):
+
+- Teamadmin für Mitglied derselben Mannschaft: Berechtigungshelper liefert `true`.
+- Trainer ohne Adminrolle für anderes Mitglied: `false`.
+- Vereinsadmin im eigenen ausgewählten Vereinskontext für Vereinsmitglied: `true`.
+- Superadmin im ausgewählten Mannschaftskontext für Mannschaftsmitglied: `true`.
+- Pfadvalidator: gültiger JPG-Pfad `true`; fremde Benutzer-UUID, SVG und Traversal jeweils `false`.
+- Helper-Rechte: `anon` hat keine EXECUTE-Rechte; `authenticated` hat die erforderlichen EXECUTE-/USAGE-Rechte.
+- Direkte Storage-API-Uploads sowie vollständige App-Praxistests sind hierdurch nicht ersetzt; sie bleiben als manuelle Tests offen.
