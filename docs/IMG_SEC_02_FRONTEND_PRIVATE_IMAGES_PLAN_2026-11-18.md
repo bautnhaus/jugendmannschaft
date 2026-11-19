@@ -616,3 +616,11 @@ Aktuelle Migrationsdatei: `supabase/migrations/20261119161952_img_sec_02_profile
 - Datenbestand: weiterhin 11 Profile, 0 Avatarreferenzen. Je ein Objekt in `profile-avatars` und `club-assets`; die Buckets bleiben `public=true`, da die Privatstellung Teil von IMG-SEC-03 ist.
 - Security Advisor: 56 bestehende Warnungen zu ausführbaren SECURITY DEFINER-Funktionen und die Warnung zum Passwortschutz; die beiden Profil-RPCs erscheinen in dieser allgemeinen Warnung, wie bereits zuvor als bewusst authentifizierte Admin-RPCs. Keine neue IMG-SEC-02-Helper-Warnung und keine IMG-SEC-02-spezifische neue Advisor-Kategorie festgestellt.
 - **Manuelle Rollen-/iPhone-Praxistests sind noch offen.** Daher ist IMG-SEC-02 technisch installiert, aber noch nicht fachlich abgenommen.
+
+
+### 2S. Automatisierte Rollen- und Pfadprüfungen (19.11.2026)
+
+- Helper-Simulation mit den DEV-Testrollen abgeschlossen: Teamadmin -> eigenes Mannschaftsmitglied `true`; Trainer -> anderes Mitglied `false`; Vereinsadmin -> Mitglied des eigenen Vereins `true`; Superadmin -> Mitglied im ausgewählten Teamkontext `true`.
+- Pfadvalidator-Testvektoren bestanden: gültiger JPG-Pfad akzeptiert; fremde Benutzer-UUID, SVG und Traversal abgewiesen.
+- EXECUTE-/USAGE-Prüfung bestanden: keine Helper-Ausführung für `anon`; notwendige Rechte für `authenticated` vorhanden.
+- Die Simulationen prüfen DB-Berechtigungslogik, ersetzen aber keine tatsächlichen Storage-API-Aufrufe und keine iPhone-Praxistests. Diese bleiben offen.
