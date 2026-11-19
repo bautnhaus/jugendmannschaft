@@ -566,7 +566,7 @@ Das ist kein Berechtigungs-Bypass, aber ein Thema für Speicherplatz und Datenmi
 ## 2P. Versionierte DEV-Migration vorbereitet (19.11.2026)
 
 - Nutzerfreigabe zur Erstellung der versionierten Migrationsdatei erteilt.
-- Datei: `supabase/migrations/20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev.sql`.
+- Datei: `supabase/migrations/20261119161952_img_sec_02_profile_avatar_hardening_v1_0_0_dev.sql`.
 - GitHub-Commit mit Datei: `82eb42d8003ec07408f653cbf7d2cb4555ae6911`; nachfolgende Klarstellung des Migrationskopfs: `60697a89eb7dd0a54526a067a2923e6d9c00e676`.
 - DB-Migrationskatalog: Eintrag DB-MIG-2026-038 in `DB_MIGRATION_LOG.md`.
 - DB-Changelog: Eintrag vom 19.11.2026 in `DB_CHANGELOG.md`.
@@ -580,14 +580,14 @@ Das ist kein Berechtigungs-Bypass, aber ein Thema für Speicherplatz und Datenmi
 
 Beim erneuten Review wurde eine wichtige Legacy-Situation abgesichert: Wenn ein Profil noch einen älteren Avatarpfad enthält und ein Admin lediglich den Namen ändert, darf der unveränderte bestehende Bildwert nicht allein wegen des alten Formats blockiert werden. Beide Admin-RPCs validieren daher neue/geänderte Avatarwerte strikt, akzeptieren aber den exakt unveränderten bereits gespeicherten Wert. Neue Storage-Zielpfade bleiben strikt validiert; bestehende Objekte können im berechtigten Kontext ersetzt oder gelöscht werden.
 
-Aktuelle Migrationsdatei: `supabase/migrations/20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev.sql`; letzter Code-Commit dieser Korrektur: `014e462ccceaf0cf112775a97e69b8283c475599`.
+Aktuelle Migrationsdatei: `supabase/migrations/20261119161952_img_sec_02_profile_avatar_hardening_v1_0_0_dev.sql`; letzter Code-Commit dieser Korrektur: `014e462ccceaf0cf112775a97e69b8283c475599`.
 
 
 
 ## 2Q. Gebündeltes DEV-Freigabepaket erstellt (19.11.2026)
 
 - Die versionierte Migration wurde im Preflight um die exakten tatsächlich verwendeten Funktionssignaturen ergänzt: `is_team_admin(uuid)`, `is_team_admin(uuid,uuid)`, `is_super_admin()`, `has_selected_team_context(uuid)` sowie beide Admin-Profil-RPCs.
-- Rollback-Fassung: `supabase/rollback/20261119120000_img_sec_02_profile_avatar_hardening_rollback_dev.sql`. Sie stellt die vor IMG-SEC-02 ausgelesenen Team-/Vereins-RPCs und die ursprünglichen Storage-Schreibpolicies wieder her. Profil- und Storage-Daten werden nicht gelöscht.
+- Rollback-Fassung: `supabase/rollback/20261119161952_img_sec_02_profile_avatar_hardening_rollback_dev.sql`. Sie stellt die vor IMG-SEC-02 ausgelesenen Team-/Vereins-RPCs und die ursprünglichen Storage-Schreibpolicies wieder her. Profil- und Storage-Daten werden nicht gelöscht.
 - Testplan: `docs/IMG_SEC_02_DEV_TESTPLAN_2026-11-19.md`, inklusive positiver, negativer und Regressionstests.
 - Read-only Postflight: `docs/IMG_SEC_02_POSTFLIGHT_READONLY.sql`.
 - Migrationskatalog DB-MIG-2026-038, DB-Changelog und diese Dokumentation wurden aktualisiert.
@@ -601,6 +601,18 @@ Aktuelle Migrationsdatei: `supabase/migrations/20261119120000_img_sec_02_profile
 - Statische Strukturprüfung der Migration bestanden: ein BEGIN/COMMIT-Paar, keine ROLLBACK-Anweisung, vollständiger Preflight inklusive der exakten Rollenfunktionssignaturen, drei Schreib-Policies, keine Änderung der bestehenden SELECT-Policy, Legacy-Pass-through in beiden Admin-RPCs.
 - GitHub-DEV-Deploy-Workflow für den letzten Dokumentationsstand erfolgreich abgeschlossen (Run `44564368550`).
 - `index.html` in `develop` und im DEV-Repository `bautnhaus/jugendmannschaft-dev` ist byte-/Blob-identisch (SHA `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`).
-- Supabase-DEV-Migrationsledger read-only erneut geprüft: IMG-SEC-02-Version `20261119120000` ist NICHT registriert. Letzte Einträge bleiben die beiden IMG-SEC-01-Migrationen.
+- Supabase-DEV-Migrationsledger read-only erneut geprüft: IMG-SEC-02-Version `20261119161952` ist NICHT registriert. Letzte Einträge bleiben die beiden IMG-SEC-01-Migrationen.
 - Keine Datenbank- oder Storageänderung ausgeführt; PROD unverändert.
 - **Ergebnis:** Vorbereitungspaket vollständig. Es ist bereit zur Vorlage für eine gesonderte Ausführungsfreigabe. Die Erstellungfreigabe wird nicht als Ausführungsfreigabe interpretiert.
+
+
+### 2R. DEV-Ausführung und Postflight (19.11.2026)
+
+- Nutzerfreigabe zur Ausführung in Supabase DEV erteilt.
+- Supabase-Migration `img_sec_02_profile_avatar_hardening_v1_0_0_dev` erfolgreich ausgeführt; tatsächliche Ledger-Version: `20261119161952`.
+- GitHub-Migrations- und Rollback-Dateien wurden anschließend auf genau diese Ledger-Version umbenannt; die nicht registrierte Platzhalter-Version `20261119120000` wurde aus dem Repository entfernt.
+- Postflight: drei IMG-SEC-02-Helper vorhanden; Profil-Trigger aktiv; drei Schreib-Policies aktiv; bestehende SELECT-Policy unverändert; keine EXECUTE-Rechte für `anon`; `authenticated` besitzt nur die benötigten Helper-Rechte.
+- Synthetische Pfadtests: gültiger JPG-Pfad akzeptiert; fremde UUID, SVG und Traversal abgewiesen.
+- Datenbestand: weiterhin 11 Profile, 0 Avatarreferenzen. Je ein Objekt in `profile-avatars` und `club-assets`; die Buckets bleiben `public=true`, da die Privatstellung Teil von IMG-SEC-03 ist.
+- Security Advisor: 56 bestehende Warnungen zu ausführbaren SECURITY DEFINER-Funktionen und die Warnung zum Passwortschutz; die beiden Profil-RPCs erscheinen in dieser allgemeinen Warnung, wie bereits zuvor als bewusst authentifizierte Admin-RPCs. Keine neue IMG-SEC-02-Helper-Warnung und keine IMG-SEC-02-spezifische neue Advisor-Kategorie festgestellt.
+- **Manuelle Rollen-/iPhone-Praxistests sind noch offen.** Daher ist IMG-SEC-02 technisch installiert, aber noch nicht fachlich abgenommen.
