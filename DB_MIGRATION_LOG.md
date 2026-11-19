@@ -1600,7 +1600,11 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Preflight:** prüft notwendige Tabellen, Funktionen, private-Schema-USAGE und die vorhandene Profilbild-SELECT-Policy; bei fehlenden Voraussetzungen wird abgebrochen.
 - **Legacy-Kompatibilität:** Die Admin-RPCs erlauben einen bereits gespeicherten unveränderten Avatarwert auch dann weiter, wenn er einem älteren Pfadformat entspricht. Neue/geänderte Werte müssen das aktuelle Format erfüllen. Trigger und Storage-UPDATE/DELETE erhalten dieselbe kontrollierte Legacy-Kompatibilität.
 - **Datenbestand:** read-only-Prüfung in DEV ergab 11 Profile und 0 nichtleere Avatarreferenzen. Es wurden keine Daten oder Storage-Objekte verändert.
-- **Rollback:** keine Rollback-Ausführung; Migration nicht ausgeführt. Vor der späteren Freigabe ist eine passende Rücknahme-/Wiederherstellungsfassung zu erstellen und zu prüfen.
+- **Rollback:** vorbereitet unter `supabase/rollback/20261119120000_img_sec_02_profile_avatar_hardening_rollback_dev.sql`; stellt die vor IMG-SEC-02 aus DEV ausgelesenen RPC-Definitionen und Storage-Schreibpolicies wieder her. Keine Profil-/Storage-Daten werden gelöscht. Nicht ausgeführt.
 - **Ausführungsfreigabe:** Die Nutzerfreigabe vom 19.11.2026 bezog sich ausdrücklich auf das Erstellen der versionierten Migrationsdatei, nicht auf deren Ausführung.
 - **PROD:** nicht betroffen; keine PROD-Migration vorbereitet oder ausgeführt.
-- **Nächster Schritt:** statische Review-/Preflight-Prüfung der versionierten Datei und Erstellung des DEV-Testpakets. Vor `apply_migration` ist eine gesonderte ausdrückliche Ausführungsfreigabe einzuholen.
+- **Prüfpaket:** `docs/IMG_SEC_02_DEV_TESTPLAN_2026-11-19.md` (Positiv-/Negativ- und Regressionstests) sowie `docs/IMG_SEC_02_POSTFLIGHT_READONLY.sql` (nur SELECT).
+
+
+- **Gebündeltes Vorbereitungspaket (19.11.2026):** Rollback-SQL, Testplan und read-only Postflight-SQL wurden ergänzt. Preflight der Migration wurde um die tatsächlich verwendeten Rollen-/Kontext-Funktionssignaturen erweitert. Der letzte Code-Commit für diese Korrektur lautet `6d40675edac61fd7d192b78968d77f192b28a4ed`.
+- **Ausführungsstatus:** weiterhin NICHT ausgeführt. Die bisherige Freigabe deckt nur das Erstellen der Dateien ab. Vor Migration bleibt eine separate ausdrückliche Ausführungsfreigabe erforderlich.
