@@ -1032,3 +1032,12 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 - Postflight strukturell bestanden; player-photos ist leer. Keine bestehenden Bilddaten migriert.
 - profile-avatars und club-assets bleiben bis zum Frontend-Cutover öffentlich; Frontend und PROD unverändert.
 - Dossier: docs/IMG_SEC_01_PAKET_1A_PRIVATE_IMAGE_STORAGE_2026-11-18.md.
+
+
+## 19.11.2026 – IMG-SEC-02 Profilbild-Härtung (DEV-Migration vorbereitet)
+
+- Versionierte Migration `20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev` in `supabase/migrations/` angelegt.
+- Enthält zentrale Pfadvalidierung, Profil-Trigger, Härtung der Profil-RPCs sowie Storage-Policies für INSERT/UPDATE/DELETE.
+- Bestehende Profilbild-SELECT-Regel bleibt unverändert; öffentliche Buckets werden in diesem Schritt nicht umgestellt.
+- **Wichtig:** Datei ist nur vorbereitet und dokumentiert. Nicht auf Supabase DEV oder PROD ausgeführt. Die Nutzerfreigabe umfasst die Erstellung der Datei, nicht die Ausführung.
+- Ausführungsfreigabe, Postflight und Praxistests stehen noch aus.
