@@ -32,11 +32,11 @@ Die folgenden Prüfungen wurden mit transaktionsisolierten Rollen-/JWT-Simulatio
 
 Die zwei nicht referenzierten Profilbildobjekte werden nicht automatisch gelöscht. Für sie ist keine Bereinigungsfreigabe erteilt.
 
-### 1.2 Noch offener direkter HTTP-Negativtest
+### 1.2 Direkter HTTP-Negativtest – bestanden
 
-Die Datenbank-RLS-Simulationen und die Einstellung `public=false` sind bestätigt. Ein echter unauthentifizierter HTTP-Aufruf der früheren `/object/public/...`-Adressen konnte aus der verfügbaren Laufzeit nicht zuverlässig ausgeführt werden, weil der Supabase-Storage-Endpunkt dort nicht erreichbar war.
+Der Nutzer hat beide früheren öffentlichen Bild-URLs (Profilbild und Vereinslogo) in einem privaten Safari-Fenster ohne KADAssist-Login geöffnet. Rückmeldung: **„Ja beide fuhren ins nichts.“** Für beide URLs wurde kein Bildinhalt ausgeliefert. Der direkte öffentliche URL-Negativtest ist damit aus Nutzersicht bestanden.
 
-Daher ist der direkte öffentliche URL-Test als **noch nicht unabhängig per HTTP bestätigt** markiert. Er muss vor endgültiger PROD-Freigabe in einem privaten Browserfenster ohne KADAssist-Login durchgeführt werden. Erwartung: kein Bildinhalt, sondern Zugriff verweigert/Objekt nicht öffentlich verfügbar.
+Hinweis: Dies ist ein manueller Browser-Negativtest; er ersetzt nicht die nach dem PROD-Cutover vorgesehenen direkten URL-Tests in Gate D.
 
 ## 2. PROD – read-only Bestandsaufnahme
 
@@ -104,9 +104,10 @@ IMG-SEC-03 darf nicht vor dem Frontend-Deploy und erfolgreichen Smoke-Test erfol
 ## 6. Status
 
 - DEV: IMG-SEC-01/02/03 installiert; App-Funktionstests und RLS-Simulationen bestanden.
-- DEV: direkter unauthentifizierter HTTP-Aufruf der öffentlichen URL noch offen.
+- DEV: direkter öffentlicher URL-Negativtest für Profilbild und Vereinslogo im privaten Safari-Fenster vom Nutzer bestätigt; bestanden.
+- IMG-SEC DEV-Sicherheitsprüfung: vollständig abgeschlossen.
 - PROD: ausschließlich read-only geprüft; keine Migration, kein Bucket-Update und kein Frontend-Deploy ausgeführt.
-- PROD-Paket: vorbereitet, aber noch nicht zur Ausführung freigegeben.
+- PROD-Paket: vorbereitet und als Release-Kandidat dokumentiert, aber noch nicht zur Ausführung freigegeben.
 
 
 ### 2.4 Zusätzliche PROD-Preflight-Prüfung
@@ -114,3 +115,10 @@ IMG-SEC-03 darf nicht vor dem Frontend-Deploy und erfolgreichen Smoke-Test erfol
 Alle von den vorbereiteten IMG-SEC-01/02-Migrationen benötigten Tabellen, Kontext-Tabellen, Rollenfunktionen und Profil-RPC-Signaturen sind in PROD vorhanden. Das Schema `private` fehlt erwartungsgemäß und wird in IMG-SEC-01b angelegt. Die vier vorgesehenen PROD-Migrationsversionen sind noch nicht registriert.
 
 Der Release-Branch `release/img-sec-2026-11-19` enthält 12 geänderte Dateien (zusätzliche Branch-Commits aktualisieren nur die Prüfdokumentation) gegenüber `main`: die Bild-Frontend-Datei, vier Migrationen, drei Rollbacks und vier Prüfdokumente. Kein vollständiges Merge von `develop`.
+
+
+## 7. Abschluss der DEV-Sicherheitsprüfung
+
+Am 19.11.2026 bestätigte der Nutzer zusätzlich den direkten öffentlichen URL-Negativtest: Sowohl die Profilbild- als auch die Vereinslogo-URL lieferten in einem privaten Safari-Fenster keinen Bildinhalt. Zusammen mit den bestätigten Upload-/Ändern-/Entfernen-Praxistests und den RLS-Simulationen ist die IMG-SEC-Sicherheitsprüfung in DEV abgeschlossen.
+
+**Status:** IMG-SEC ist technischer PROD-Release-Kandidat. Dieser Status ist ausdrücklich keine Freigabe zur Ausführung in PROD.
