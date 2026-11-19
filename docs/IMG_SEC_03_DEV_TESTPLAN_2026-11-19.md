@@ -20,7 +20,7 @@ Vor Migration erneut prüfen:
 - Keine Änderung an Objektanzahl, Pfaden oder Dateiinhalten ist geplant.
 
 Bestandsaufnahme vom 19.11.2026:
-- `profile-avatars`: zwei Objekte; beide Pfade entsprechen dem Benutzer-UUID-/Avatar-Dateinamen-Format.
+- `profile-avatars`: vier Objekte; zwei davon sind exakt durch `profiles.avatar_url` referenziert, zwei sind nicht referenziert und bleiben erhalten.
 - `profiles.avatar_url`: derzeit keine gespeicherten Referenzen. Die vorhandenen Objekte sind daher nicht als aktiv referenzierte Profilbilder belegt und dürfen nicht gelöscht werden.
 - `club-assets`: ein Objekt unter `<club-uuid>/crest.png`; der Pfad stimmt mit `clubs.crest_path` des vorhandenen Vereins überein.
 - Beide Buckets aktuell `public=true`.
@@ -105,3 +105,11 @@ Damit wurden in der DEV-App erfolgreich bestätigt:
 - Bilder funktionieren nach erneutem Login.
 
 Die Bestätigung deckt die genannten UI-/Self-Service-Fälle ab. Die dedizierten Negativtests mit direkter öffentlicher URL und rollenbasierte Fremdzugriffsversuche sind nicht separat bestätigt und bleiben als formale Sicherheitsprüfung offen.
+
+
+## 11. Gezielte Security-Prüfungen und PROD-Abgleich (19.11.2026)
+
+- DEV-RLS-Simulationen bestanden: anon sieht 0 Avatar-/Clubasset-Objekte; nicht zugehöriger authentifizierter Benutzer sieht 0 Objekte; berechtigtes Teammitglied, Vereinsmitglied und Superadmin im ausgewählten Vereinskontext erhalten erwarteten Zugriff.
+- Direkter unauthentifizierter HTTP-Aufruf der öffentlichen Objekt-URL konnte toolseitig nicht ausgeführt werden; manuelle Prüfung bleibt offen.
+- PROD read-only Abgleich zeigt: kein `player-photos`-Bucket, keine `players.photo_path`-Spalte, keine privaten Helper, fehlende Profilbild-SELECT-Policy und öffentliche Profil-/Club-Buckets.
+- PROD-Release-Paket und isolierter Frontend-Branch dokumentiert in `docs/IMG_SEC_PROD_RELEASE_PACKAGE_2026-11-19.md`.
