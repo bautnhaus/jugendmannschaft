@@ -499,3 +499,33 @@ Negativ:
 ### 5. Noch nicht umgesetzt
 
 Dieser Entwurf ist eine technische Vorbereitung. Die Umsetzung benötigt später eine freigegebene, versionierte SQL-Migration (Helper, Trigger, RPC-Härtung und Storage-Policies) sowie DEV-Tests. Bis dahin bleiben Datenbank und Storage unverändert.
+
+
+## 2N. SQL-Entwurf Profilbild-Härtung (19.11.2026)
+
+- Datei: `docs/IMG_SEC_02_PROFILE_AVATAR_HARDENING_DRAFT.sql`
+- Commit: `41bf1c08740ac663e7f9d169cc0a8222efe50705`
+- Status: Entwurf erstellt und auf `develop` abgelegt; NICHT ausgeführt.
+- Die Datei liegt bewusst unter `docs/`, nicht im Supabase-Migrationsverzeichnis.
+- Das Skript ist zusätzlich mit einer abschließenden `ROLLBACK;`-Anweisung versehen. Es ist ein Prüfentwurf, keine freigegebene Migration.
+
+### Inhalt des Entwurfs
+
+1. Zentrale Pfadvalidierung für `<user-uuid>/avatar-<13-stellige Date.now()-Millisekunden>.(jpg|png|webp)`.
+2. Zentrale Verwaltungsberechtigung, die Eigenverwaltung, Vereinsadmin-Kontext und Mannschaftsadmin-Kontext abbildet. Superadmins werden nur über die vorhandenen ausgewählten Kontextprüfungen zugelassen.
+3. Trigger auf `public.profiles`, damit auch direkte Self-Service-Updates abgesichert werden. Unveränderte bestehende Avatarwerte werden bei anderen Profiländerungen nicht neu validiert.
+4. Zusätzliche Pfadprüfung in beiden bestehenden Admin-Profil-RPCs.
+5. Anpassung der Storage-Policies für INSERT, UPDATE und DELETE. Die SELECT-Policy bleibt unverändert.
+
+### Vor einer späteren Migration zwingend zu prüfen
+
+- Ob die Zielumgebung dieselben Tabellen, Funktionssignaturen, Policy-Namen und Grants aufweist.
+- Ob die exakte Pfadform weiterhin dem Frontend entspricht (der aktuelle Upload verwendet `Date.now()` und die Endungen jpg/png/webp).
+- Ob die Rechte der neuen Funktionen auf `authenticated` beschränkt sind und keine unbeabsichtigten PUBLIC-/anon-Rechte entstehen.
+- Ob bestehende produktive Avatarwerte Legacy-URLs oder andere Formate enthalten. Solche Werte dürfen nicht unabsichtlich bei der Migration blockiert werden.
+- Ob Storage-UPDATE-/DELETE-Abläufe mit alten Objekten kompatibel bleiben.
+- Vollständige Positiv- und Negativtests sowie Supabase Security Advisors in DEV.
+
+### Wichtige Abgrenzung
+
+Der SQL-Entwurf wurde nicht auf einer Datenbank ausgeführt, nicht als Migration registriert und nicht auf PROD angewendet. Es wurden keine SQL-Schreibbefehle ausgeführt. Vor einer Freigabe ist ein technisches Review des Entwurfs erforderlich; erst danach darf daraus eine ordnungsgemäß versionierte Migration erstellt werden.
