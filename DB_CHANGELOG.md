@@ -1056,3 +1056,6 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 
 
 - **DEV-Ausführung IMG-SEC-02:** Supabase-Ledger-Version `20261119161952`; Migration erfolgreich registriert. Read-only Postflight bestanden. Keine Datenzeilen oder Storage-Objekte verändert. Öffentliche Bucket-Einstellungen bleiben für den separaten IMG-SEC-03-Cutover unverändert.
+
+
+- Nach erfolgreicher DEV-Migration wurden die Rollenprüfungen (Teamadmin, Trainer, Vereinsadmin, Superadmin im ausgewählten Kontext) und synthetischen Pfadtests erfolgreich ausgeführt. Die manuellen App-/iPhone-Tests bleiben offen.
