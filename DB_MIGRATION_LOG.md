@@ -1619,4 +1619,4 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Manuelle Abnahme:** echte Upload-/Ändern-/Entfernen-Aufrufe über die DEV-App sowie iPhone-/Rollen-Regressionstests stehen noch aus.
 
 
-- **DB-MIG-2026-039 / IMG-SEC-03:** DEV-Migration `20261119163443_img_sec_03_private_profile_and_club_asset_buckets_dev` erfolgreich ausgeführt. Setzt ausschließlich `storage.buckets.public=false` für `profile-avatars` und `club-assets`. Objekte, Pfade und Policies unverändert. Rollback-Datei: `supabase/rollback/20261119163443_img_sec_03_private_profile_and_club_assets_rollback_dev.sql`. Praxistests offen. PROD nicht ausgeführt.
+- **DB-MIG-2026-039 / IMG-SEC-03:** DEV-Migration `20261119163443_img_sec_03_private_profile_and_club_asset_buckets_dev` erfolgreich ausgeführt. Setzt ausschließlich `storage.buckets.public=false` für `profile-avatars` und `club-assets`. Objekte, Pfade und Policies unverändert. Rollback-Datei: `supabase/rollback/20261119163443_img_sec_03_private_profile_and_club_asset_buckets_rollback_dev.sql`. Praxistests offen. PROD nicht ausgeführt.
