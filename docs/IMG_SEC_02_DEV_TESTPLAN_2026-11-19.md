@@ -101,3 +101,13 @@ Am 19.11.2026 erfolgreich durchgeführt (read-only bzw. transaktionsisolierte Fu
 - Pfadvalidator: gültiger JPG-Pfad `true`; fremde Benutzer-UUID, SVG und Traversal jeweils `false`.
 - Helper-Rechte: `anon` hat keine EXECUTE-Rechte; `authenticated` hat die erforderlichen EXECUTE-/USAGE-Rechte.
 - Direkte Storage-API-Uploads sowie vollständige App-Praxistests sind hierdurch nicht ersetzt; sie bleiben als manuelle Tests offen.
+
+
+## 10. Manueller DEV-Abschlusstest – Self-Service
+
+Am 19.11.2026 vom Nutzer in der DEV-App bestätigt:
+- P01: eigenes Profilbild hochladen – bestanden
+- P02: eigenes Profilbild ändern/ersetzen – bestanden
+- P03: eigenes Profilbild entfernen – bestanden
+
+Diese Bestätigung deckt ausdrücklich den Self-Service ab. Die Admin-/Rollen-Praxistests P04–P10, Negativtests N01–N10 sowie Regressionstests V01–V06 sind nicht automatisch als manuell bestanden zu werten. Die automatisierten Rollen-Helper-Simulationen bleiben ein eigener Prüfbeleg.
