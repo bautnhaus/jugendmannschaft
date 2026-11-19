@@ -431,3 +431,71 @@ Der Nutzer hat die technische Empfehlung bestätigt und die Umsetzung dieser fac
 
 Technische Umsetzung bleibt offen. Die Storage-Upload-Policy, die Profilbild-RPCs und der direkte Self-Service-Profilupdate müssen dieselbe Rollen-/Kontextlogik durchsetzen. Es wurde keine SQL-, Policy-, Frontend- oder Storage-Änderung ausgeführt.
 
+
+
+## 2M. Technischer Soll-Entwurf für Profilbild-Berechtigungen und Pfadprüfung (19.11.2026)
+
+- Status: Entwurf auf Basis ausschließlich lesender DEV-Prüfungen; keine Implementierung.
+- Keine SQL-Ausführung mit Schreibwirkung, keine Migration, keine Policy-/Bucketänderung, keine Frontendänderung.
+
+### 1. Einheitliche fachliche Berechtigungslogik
+
+Die Storage-Regeln für INSERT, UPDATE und DELETE im Bucket `profile-avatars` müssen dieselbe Zuständigkeitsgrenze verwenden:
+
+- Eigentümer: darf nur Objekte im eigenen Benutzerordner verwalten.
+- Vereinsadmin: darf Objekte von Mitgliedern des Vereins verwalten, für den `can_manage_club_context(club_id)` wahr ist. Damit bleibt der ausgewählte Vereinskontext für Superadmins zwingend.
+- Mannschaftsadmin: darf Objekte von Mitgliedern einer Mannschaft verwalten, für die `public.is_team_admin(team_id)` wahr ist. Die Ein-Parameter-Variante prüft den angemeldeten Benutzer und berücksichtigt Superadmins nur mit ausdrücklich ausgewähltem Mannschaftskontext.
+- Trainer ohne Adminrolle: keine fremden Profilbildobjekte hochladen, ändern oder löschen.
+- Kein Zugriff auf andere Vereine/Mannschaften durch bloße Kenntnis einer Benutzer-ID.
+
+Die Prüfung muss sich auf das Zielkonto beziehen, dessen UUID der erste Ordnerbestandteil des Storage-Objekts ist. Für Teamadmins muss eine tatsächliche Mitgliedschaft des Zielkontos in derselben Mannschaft nachgewiesen werden; für Vereinsadmins eine Mitgliedschaft des Zielkontos im ausgewählten Verein.
+
+Die gleiche Autorisierungsregel ist auf INSERT, UPDATE und DELETE anzuwenden. Die SELECT-Regel bleibt gesondert: Das Anzeigen von Profilbildern folgt der bestehenden `private.can_view_profile_avatar`-Logik und wird durch diese Verwaltungsentscheidung nicht erweitert.
+
+### 2. Einheitliche Pfadvalidierung
+
+Neue Profilbildreferenzen sollen ausschließlich relative Storage-Pfade in diesem Format sein:
+
+`<user-uuid>/avatar-<unix-milliseconds>.(jpg|png|webp)`
+
+Regeln:
+- `NULL` bedeutet: Profilbild entfernt.
+- Kein vollständiger HTTP-/HTTPS-Link und keine Data-URL.
+- Keine führenden oder doppelten Slashes, keine zusätzlichen Pfadsegmente, keine Traversal-Sequenzen.
+- Der erste Pfadbestandteil muss exakt der UUID des Profilinhabers entsprechen.
+- Dateiendung nur `jpg`, `png` oder `webp`.
+- Die bestehende Frontend-Uploadfunktion erzeugt bereits diesen Pfadtyp.
+
+Vorgesehene technische Durchsetzung:
+- Eine zentrale, deterministische Validierungsfunktion im nicht exponierten `private`-Schema.
+- Ein Trigger auf `public.profiles`, der jede Änderung von `avatar_url` prüft. Das deckt den direkten Self-Service-UPDATE-Pfad ab und schützt auch vor später ergänzten Schreibwegen.
+- Zusätzliche identische Prüfung in beiden Admin-RPCs mit Bezug auf `p_user_id`, damit Fehler früh und mit verständlicher Fehlermeldung abgewiesen werden.
+- Die Validierungsfunktion darf keine Berechtigung ersetzen; Autorisierung und Pfadformat bleiben getrennte Prüfungen.
+
+### 3. Wichtige Bestandsdaten-/Kompatibilitätsbedingung
+
+- In DEV sind derzeit 0 von 11 Profilen mit einem nichtleeren `avatar_url` vorhanden.
+- In DEV existiert ein Profilbildobjekt, dessen Pfad dem erwarteten Format entspricht, das aber derzeit nicht in `profiles.avatar_url` referenziert wird.
+- Vor Umsetzung in PROD ist gesondert zu prüfen, ob bestehende Profilwerte vollständige öffentliche URLs oder andere Legacy-Formate enthalten. Die neue Validierung darf bestehende produktive Profile nicht unbeabsichtigt unlesbar machen.
+- Es wird kein Storage-Objekt automatisch gelöscht. Verwaiste Objekte bleiben von dieser Pfadvalidierung unberührt.
+
+### 4. Geplante Prüffälle vor Freigabe
+
+Positiv:
+1. Benutzer setzt, ändert und entfernt eigenes Profilbild.
+2. Mannschaftsadmin lädt Profilbild für ein Mitglied seiner Mannschaft hoch, ändert und entfernt es.
+3. Vereinsadmin verwaltet Profilbilder von Vereinsmitgliedern, auch wenn diese in mehreren Mannschaften sind.
+4. Superadmin kann dies im ausgewählten Vereins- bzw. Mannschaftskontext.
+5. Bestehende zulässige Profilbilder bleiben sichtbar.
+
+Negativ:
+1. Trainer ohne Adminrolle versucht fremdes Profilbild hochzuladen, zu ersetzen oder zu löschen.
+2. Mannschaftsadmin versucht ein Mitglied einer anderen Mannschaft zu bearbeiten.
+3. Vereinsadmin versucht ein Mitglied eines anderen Vereins zu bearbeiten.
+4. Superadmin versucht Zugriff ohne passenden ausgewählten Kontext.
+5. Ein Benutzer versucht, eine fremde UUID im Pfad zu verwenden.
+6. Ein vollständiger URL-Wert, eine Data-URL, zusätzliche Pfadsegmente oder eine ungültige Dateiendung wird als Profilbildreferenz gespeichert.
+
+### 5. Noch nicht umgesetzt
+
+Dieser Entwurf ist eine technische Vorbereitung. Die Umsetzung benötigt später eine freigegebene, versionierte SQL-Migration (Helper, Trigger, RPC-Härtung und Storage-Policies) sowie DEV-Tests. Bis dahin bleiben Datenbank und Storage unverändert.
