@@ -158,7 +158,11 @@ begin
   end if;
 
   if p_avatar_url is not null
-     and not private.is_valid_profile_avatar_path(p_user_id, p_avatar_url) then
+     and not private.is_valid_profile_avatar_path(p_user_id, p_avatar_url)
+     and not exists (
+       select 1 from public.profiles existing
+       where existing.id = p_user_id and existing.avatar_url = p_avatar_url
+     ) then
     raise exception 'Profilbild-Pfad ist ungültig oder gehört nicht zu diesem Benutzer'
       using errcode = '22023';
   end if;
@@ -202,7 +206,11 @@ begin
   end if;
 
   if p_avatar_url is not null
-     and not private.is_valid_profile_avatar_path(p_user_id, p_avatar_url) then
+     and not private.is_valid_profile_avatar_path(p_user_id, p_avatar_url)
+     and not exists (
+       select 1 from public.profiles existing
+       where existing.id = p_user_id and existing.avatar_url = p_avatar_url
+     ) then
     raise exception 'Profilbild-Pfad ist ungültig oder gehört nicht zu diesem Benutzer'
       using errcode = '22023';
   end if;
