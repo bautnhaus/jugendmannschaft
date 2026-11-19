@@ -51,3 +51,14 @@ IMG-SEC-01-Rollback nur, solange keine Spielerfoto-Pfade und keine Objekte im Bu
 - Kein Merge nach `main`.
 - Keine Löschung nicht referenzierter DEV-Profilbilder.
 - Keine Änderungen an bestehenden Vereinslogo- oder Profilbilddateien.
+
+
+## Read-only Preflight-Ergänzung PROD
+
+Am 19.11.2026 wurde zusätzlich geprüft:
+- Alle von IMG-SEC-01 benötigten Tabellen und Kontext-Tabellen sind vorhanden: `players`, `profiles`, `clubs`, `team_member_roles`, `club_members`, `club_member_roles`, `global_user_roles`, `user_team_context`, `user_club_context`, `storage.buckets`, `storage.objects`.
+- Alle von IMG-SEC-01/02 benötigten Rollen-/Kontextfunktionen und beide Profil-RPC-Signaturen sind vorhanden.
+- `private` fehlt erwartungsgemäß in PROD und wird durch IMG-SEC-01b angelegt.
+- Die vier vorgesehenen PROD-Migrationsversionen sind noch nicht im PROD-Ledger registriert.
+- Das Vereinslogoobjekt stimmt exakt mit `clubs.crest_path` überein.
+- Der isolierte Release-Branch enthält gegenüber `main` genau 12 Commits und 12 geänderte Dateien: die Bild-Frontend-Datei, vier Migrationen, drei Rollbacks und vier Prüfdokumente. Es wurden keine anderen App-Funktionen aus `develop` übernommen.
