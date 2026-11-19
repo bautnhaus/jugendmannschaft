@@ -1,6 +1,6 @@
 # IMG-SEC-02 – DEV-Testpaket Profilbild-Härtung
 
-**Migration:** `20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev`  
+**Migration:** `20261119161952_img_sec_02_profile_avatar_hardening_v1_0_0_dev`  
 **Umgebung:** ausschließlich Supabase DEV / DEV-Web-App  
 **Status:** vorbereitet, nicht ausgeführt und nicht getestet  
 **Freigabegrenze:** Dieses Testpaket ist keine Freigabe zur Migration oder zum Rollback.
@@ -85,6 +85,6 @@ Rollback nur bei ausdrücklicher gesonderter Freigabe, insbesondere wenn:
 - Profilbildanzeige oder Profilbearbeitung regressiert,
 - Datenbank-/Storage-Postflight unerwartete Abweichungen zeigt.
 
-Rollback-Datei: `supabase/rollback/20261119120000_img_sec_02_profile_avatar_hardening_rollback_dev.sql`.
+Rollback-Datei: `supabase/rollback/20261119161952_img_sec_02_profile_avatar_hardening_rollback_dev.sql`.
 
 Rollback entfernt keine Profilzeilen oder Storage-Dateien. Danach sind die ursprünglichen RPCs und Storage-Schreibregeln wiederhergestellt; SELECT-Policy und Bucket-Einstellungen bleiben unangetastet.
