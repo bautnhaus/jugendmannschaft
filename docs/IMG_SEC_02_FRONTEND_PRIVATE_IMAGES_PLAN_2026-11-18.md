@@ -638,3 +638,27 @@ Damit sind die folgenden eigenen Profilbild-Aktionen in der DEV-App erfolgreich 
 **IMG-SEC-02 ist damit für diesen manuellen Self-Service-Prüfumfang abgeschlossen.** Die weitergehenden Admin-/Rollen-Positiv- und Negativfälle aus dem vollständigen Testplan sind nicht als manuell getestet zu markieren; die automatisierten Helper-Simulationen sind separat dokumentiert.
 
 Keine PROD-Änderung.
+
+
+## 3. IMG-SEC-02 – Abschluss
+
+Am 19.11.2026 hat der Nutzer den DEV-Self-Service-Test bestätigt: Profilbild hochladen, ändern und entfernen funktionieren. IMG-SEC-02 ist für diesen Umfang abgeschlossen. Die weitergehenden Rollen-/Negativtests bleiben entsprechend dem Testplan separat offen.
+
+## 4. IMG-SEC-03 – Vorbereitung private Buckets (19.11.2026)
+
+### 4.1 Read-only Bestandsaufnahme
+- `profile-avatars`: public=true, zwei Objekte. Beide Objektpfade entsprechen dem Benutzer-UUID-/Avatar-Dateinamen-Schema.
+- `profiles.avatar_url`: aktuell keine nicht-null Werte. Die zwei vorhandenen Objekte sind daher nicht als aktive Profilbildreferenzen belegt. Sie werden ausdrücklich nicht gelöscht.
+- `club-assets`: public=true, ein Objekt `<club-uuid>/crest.png`; stimmt mit `clubs.crest_path` überein.
+- SELECT-Policies vorhanden: `profile_avatars_select_authorized` und `club_assets_select_scoped`.
+- Aktuelles Frontend `develop/index.html` verwendet für Profilbilder und Vereinslogos den gemeinsamen Signed-URL-Resolver; kein `getPublicUrl()`-Aufruf gefunden.
+- Signed-URL-Retry ist im Frontend bereits vorhanden.
+- Keine Storage- oder Datenbankänderung durchgeführt.
+
+### 4.2 Vorbereitete Artefakte
+- Migration: `supabase/migrations/20261119170000_img_sec_03_private_profile_and_club_asset_buckets_dev.sql`.
+- Rollback: `supabase/rollback/20261119170000_img_sec_03_private_profile_and_club_asset_buckets_rollback_dev.sql`.
+- Testplan: `docs/IMG_SEC_03_DEV_TESTPLAN_2026-11-19.md`.
+- Die Migration ändert ausschließlich `storage.buckets.public` für `profile-avatars` und `club-assets` auf `false`; alle Objekte und Policies bleiben unangetastet.
+- Rollback stellt `public=true` wieder her und macht die Objekte wieder öffentlich. Rollback nur mit separater Freigabe.
+- **Status:** vorbereitet, nicht ausgeführt. Separate ausdrückliche DEV-Ausführungsfreigabe erforderlich. PROD unverändert.
