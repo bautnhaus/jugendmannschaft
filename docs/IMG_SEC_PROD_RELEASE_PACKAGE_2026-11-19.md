@@ -62,3 +62,10 @@ Am 19.11.2026 wurde zusätzlich geprüft:
 - Die vier vorgesehenen PROD-Migrationsversionen sind noch nicht im PROD-Ledger registriert.
 - Das Vereinslogoobjekt stimmt exakt mit `clubs.crest_path` überein.
 - Der isolierte Release-Branch enthält gegenüber `main` 12 geänderte Dateien (die zusätzlichen Branch-Commits betreffen nur Aktualisierungen dieser Dokumentation): die Bild-Frontend-Datei, vier Migrationen, drei Rollbacks und vier Prüfdokumente. Es wurden keine anderen App-Funktionen aus `develop` übernommen.
+
+
+## DEV-Abschluss / Release-Candidate-Status
+
+Am 19.11.2026 wurde der direkte öffentliche URL-Negativtest für Profilbild und Vereinslogo vom Nutzer in einem privaten Safari-Fenster bestätigt: Beide URLs lieferten keinen Bildinhalt. Die DEV-Sicherheitsprüfung ist damit einschließlich RLS-Simulationen und bestätigter Upload-/Ändern-/Entfernen-Praxistests abgeschlossen.
+
+IMG-SEC ist als technischer PROD-Release-Kandidat vorbereitet. **Eine PROD-Ausführungsfreigabe liegt weiterhin nicht vor.** Vor jeder PROD-Ausführung werden die vier Migrationen und die zugehörigen Rollback-Skripte gemeinsam einzeln geprüft. Bis zu einer separaten ausdrücklichen Freigabe bleiben PROD, Buckets, Datenbank und Deployment unverändert.
