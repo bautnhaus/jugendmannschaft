@@ -1041,3 +1041,6 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 - Bestehende Profilbild-SELECT-Regel bleibt unverändert; öffentliche Buckets werden in diesem Schritt nicht umgestellt.
 - **Wichtig:** Datei ist nur vorbereitet und dokumentiert. Nicht auf Supabase DEV oder PROD ausgeführt. Die Nutzerfreigabe umfasst die Erstellung der Datei, nicht die Ausführung.
 - Ausführungsfreigabe, Postflight und Praxistests stehen noch aus.
+
+
+- Ergänzung IMG-SEC-02 Migration: Admin-Profil-RPCs erhalten kontrollierte Legacy-Kompatibilität. Unveränderte bereits gespeicherte Avatarwerte blockieren reine Profil-/Namensänderungen nicht; neue/geänderte Pfade müssen das definierte Format erfüllen. Migration weiterhin nur vorbereitet, nicht ausgeführt.
