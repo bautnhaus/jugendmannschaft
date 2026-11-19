@@ -561,3 +561,16 @@ Das ist kein Berechtigungs-Bypass, aber ein Thema für Speicherplatz und Datenmi
 - Vor der Migration ist noch ein letzter Abgleich der exakten DEV-Funktions-/Policy-Abhängigkeiten sowie der SQL-Ausführungsrechte durchzuführen.
 - Anschließend wird eine echte Migration im Supabase-Migrationsverzeichnis erstellt, im SQL-Release-Katalog dokumentiert und dem Nutzer vor jeder Ausführung ausdrücklich zur Freigabe vorgelegt.
 - Bis zu einer gesonderten Freigabe bleibt DEV-Datenbank/Storage unverändert; PROD bleibt unangetastet.
+
+
+## 2P. Versionierte DEV-Migration vorbereitet (19.11.2026)
+
+- Nutzerfreigabe zur Erstellung der versionierten Migrationsdatei erteilt.
+- Datei: `supabase/migrations/20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev.sql`.
+- GitHub-Commit mit Datei: `82eb42d8003ec07408f653cbf7d2cb4555ae6911`; nachfolgende Klarstellung des Migrationskopfs: `60697a89eb7dd0a54526a067a2923e6d9c00e676`.
+- DB-Migrationskatalog: Eintrag DB-MIG-2026-038 in `DB_MIGRATION_LOG.md`.
+- DB-Changelog: Eintrag vom 19.11.2026 in `DB_CHANGELOG.md`.
+- Die Datei enthält einen Preflight-Block, der bei fehlenden Tabellen/Funktionen/Schema-Rechten oder fehlender bestehender SELECT-Policy abbricht.
+- Der Migrationstext wurde nicht ausgeführt. Keine Datenbank-/Storageänderung, keine Änderung an DEV-Ledger und keine PROD-Änderung.
+- Die Nutzerfreigabe gilt nur für die Erstellung der Datei. Eine separate Freigabe ist vor der Ausführung erforderlich.
+- Nächste Aufgabe: statische Prüfung der Migrationsdatei, Erstellung einer geprüften Rollback-/Wiederherstellungsfassung und eines Positiv-/Negativtestpakets. Danach Vorlage zur ausdrücklichen Ausführungsfreigabe.
