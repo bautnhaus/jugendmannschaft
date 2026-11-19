@@ -415,5 +415,19 @@ Beide Funktionen:
 
 ### Offene fachliche Entscheidung
 
-Dürfen Mannschaftsadmins Profilbilder anderer Mitglieder ihrer eigenen Mannschaft hochladen und ändern, oder soll dies ausschließlich dem jeweiligen Benutzer und Vereinsadmins vorbehalten bleiben?
+Fachliche Entscheidung des Nutzers (19.11.2026): Profilbild-Berechtigungen sollen der bestehenden Mitgliederverwaltung folgen. Benutzer dürfen ihr eigenes Profilbild verwalten; Mannschaftsadmins dürfen Profilbilder von Mitgliedern ihrer eigenen Mannschaft verwalten; Vereinsadmins dürfen Profilbilder von Mitgliedern ihres eigenen Vereins verwalten; Superadmins dürfen dies ausschließlich im ausdrücklich ausgewählten Vereins-/Mannschaftskontext. Trainer ohne Adminrolle dürfen keine fremden Profilbilder verwalten.
+
+
+
+### 2L.1 Fachliche Entscheidung zu Profilbild-Berechtigungen (19.11.2026)
+
+Der Nutzer hat die technische Empfehlung bestätigt und die Umsetzung dieser fachlichen Regel delegiert:
+
+- Benutzer: eigenes Profilbild hochladen, ändern und entfernen.
+- Mannschaftsadmin: Profilbilder von Mitgliedern der eigenen Mannschaft verwalten.
+- Vereinsadmin: Profilbilder von Mitgliedern des eigenen Vereins verwalten.
+- Superadmin: Profilbilder nur innerhalb eines ausdrücklich ausgewählten Vereins- bzw. Mannschaftskontexts verwalten.
+- Trainer ohne Adminrolle: keine Profilbilder anderer Benutzer verwalten.
+
+Technische Umsetzung bleibt offen. Die Storage-Upload-Policy, die Profilbild-RPCs und der direkte Self-Service-Profilupdate müssen dieselbe Rollen-/Kontextlogik durchsetzen. Es wurde keine SQL-, Policy-, Frontend- oder Storage-Änderung ausgeführt.
 
