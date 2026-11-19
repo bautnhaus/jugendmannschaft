@@ -2,7 +2,7 @@
 
 **Status:** vorbereitet, nicht ausgeführt.  
 **Umgebung:** ausschließlich Supabase DEV / DEV-Web-App.  
-**Migration:** `20261119170000_img_sec_03_private_profile_and_club_asset_buckets_dev`.
+**Migration:** `20261119163443_img_sec_03_private_profile_and_club_asset_buckets_dev`.
 
 ## 1. Ziel
 
@@ -77,6 +77,18 @@ Ein Fehler bei der Bildanzeige oder eine unberechtigte Sichtbarkeit ist ein Bloc
 ## 6. Rollback
 
 Rollback nur nach ausdrücklicher gesonderter Freigabe:
-`supabase/rollback/20261119170000_img_sec_03_private_profile_and_club_asset_buckets_rollback_dev.sql`.
+`supabase/rollback/20261119163443_img_sec_03_private_profile_and_club_asset_buckets_rollback_dev.sql`.
 
 Der Rollback stellt `public=true` wieder her und macht die Dateien dadurch wieder öffentlich abrufbar. Er verändert keine Dateien, Pfade oder Policies.
+
+
+## 7. Automatisierter DEV-Postflight nach Ausführung (19.11.2026)
+
+- Supabase-Migration `img_sec_03_private_profile_and_club_asset_buckets_dev` erfolgreich ausgeführt; tatsächliche Ledger-Version `20261119163443`.
+- `profile-avatars.public=false` und `club-assets.public=false`.
+- Bucket-Konfigurationen (2 MiB und erlaubte Bild-MIME-Typen) unverändert.
+- Storage-Objekte unverändert: 2 Profilbilddateien und 1 Vereinslogo; Dateipfade, Besitzer, MIME-Typen und Größen unverändert.
+- `profiles.avatar_url`: weiterhin 0 nicht-null Referenzen.
+- `clubs.crest_path`: unverändert und stimmt mit dem vorhandenen Vereinslogo-Objekt überein.
+- Sämtliche vorhandenen SELECT-/INSERT-/UPDATE-/DELETE-Policies für beide Buckets sind vorhanden und wurden von der Migration nicht geändert.
+- Direkte anonyme HTTP-Abrufversuche sowie echte Signed-URL-/Rollen-/iPhone-Praxistests stehen noch aus.
