@@ -1,4 +1,3 @@
--- KADAssist / IMG-SEC-02
 -- KADAssist IMG-SEC-02 / Profilbild-Härtung / DEV
 -- Version 1.0.0
 -- Erstellt nach ausdrücklicher Nutzerfreigabe zur Erstellung der Migrationsdatei.
@@ -288,6 +287,6 @@ using (
 -- - Positiv-/Negativtests aus dem IMG-SEC-02-Plan.
 -- - Supabase Security Advisors.
 -- - Erst nach erfolgreichem DEV-Test separate PROD-Kompatibilitätsprüfung.
--- Kein Bucket-Cutover in diesem Entwurf.
+-- Kein Bucket-Cutover Bestandteil dieser Migration.
 
 commit;
