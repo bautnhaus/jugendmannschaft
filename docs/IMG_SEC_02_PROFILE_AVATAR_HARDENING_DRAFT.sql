@@ -260,3 +260,8 @@ using (
 -- Kein Bucket-Cutover in diesem Entwurf.
 
 rollback;
+
+
+-- HINWEIS: Dieser ursprüngliche Prüfentwurf wurde durch die versionierte DEV-Migration
+-- supabase/migrations/20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev.sql
+-- abgelöst. Er bleibt als Review-Artefakt erhalten und darf nicht ausgeführt werden.
