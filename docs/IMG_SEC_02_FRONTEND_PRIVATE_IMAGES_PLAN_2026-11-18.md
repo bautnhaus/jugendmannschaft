@@ -593,3 +593,14 @@ Aktuelle Migrationsdatei: `supabase/migrations/20261119120000_img_sec_02_profile
 - Migrationskatalog DB-MIG-2026-038, DB-Changelog und diese Dokumentation wurden aktualisiert.
 - Alle Artefakte liegen auf `develop`; keine Datenbankänderung, keine Storage-Änderung und kein PROD-Eingriff.
 - Die Ausführungsfreigabe wurde noch nicht erteilt. Die Migration bleibt unregistriert und unausgeführt.
+
+
+### 2Q.1 Abschlusskontrolle des Vorbereitungspakets (19.11.2026)
+
+- Alle sieben Paketdateien (Migration, Rollback, Testplan, Postflight-SQL, DB-Migrationslog, DB-Changelog und IMG-SEC-02-Dossier) wurden erneut direkt von `develop` abgerufen.
+- Statische Strukturprüfung der Migration bestanden: ein BEGIN/COMMIT-Paar, keine ROLLBACK-Anweisung, vollständiger Preflight inklusive der exakten Rollenfunktionssignaturen, drei Schreib-Policies, keine Änderung der bestehenden SELECT-Policy, Legacy-Pass-through in beiden Admin-RPCs.
+- GitHub-DEV-Deploy-Workflow für den letzten Dokumentationsstand erfolgreich abgeschlossen (Run `44564368550`).
+- `index.html` in `develop` und im DEV-Repository `bautnhaus/jugendmannschaft-dev` ist byte-/Blob-identisch (SHA `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`).
+- Supabase-DEV-Migrationsledger read-only erneut geprüft: IMG-SEC-02-Version `20261119120000` ist NICHT registriert. Letzte Einträge bleiben die beiden IMG-SEC-01-Migrationen.
+- Keine Datenbank- oder Storageänderung ausgeführt; PROD unverändert.
+- **Ergebnis:** Vorbereitungspaket vollständig. Es ist bereit zur Vorlage für eine gesonderte Ausführungsfreigabe. Die Erstellungfreigabe wird nicht als Ausführungsfreigabe interpretiert.
