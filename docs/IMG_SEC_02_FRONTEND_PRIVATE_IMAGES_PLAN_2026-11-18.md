@@ -674,3 +674,8 @@ Am 19.11.2026 hat der Nutzer den DEV-Self-Service-Test bestätigt: Profilbild ho
 - Sämtliche bestehenden Storage-Policies für beide Buckets sind weiterhin vorhanden.
 - **Fachliche Abnahme noch offen:** App-/Signed-URL-/Rollen-/iPhone-Tests sowie Negativtest direkter öffentlicher URL-Zugriffe.
 - PROD unverändert.
+
+
+### 5.1 IMG-SEC-03 – manueller DEV-Abschlusstest
+
+Am 19.11.2026 bestätigt der Nutzer: „Klappt“. Profilbildanzeige, Vereinslogoanzeige, Profilbild hochladen/ändern/entfernen und Anzeige nach erneutem Login funktionieren in der DEV-App. Die expliziten Negativtests direkter öffentlicher URL-Zugriffe und Rollen-Fremdzugriffe bleiben separat offen. IMG-SEC-03 ist damit für den bestätigten UI-/Self-Service-Umfang erfolgreich.
