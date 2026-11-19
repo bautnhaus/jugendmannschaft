@@ -1627,3 +1627,6 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 
 - **IMG-SEC-Security-Abschluss (DEV):** RLS-Simulationen für anon, nicht zugehörigen authentifizierten Nutzer, gemeinsames Teammitglied, Vereinsmitglied und Superadmin im ausgewählten Vereinskontext bestanden. Direkter unauthentifizierter HTTP-Aufruf der öffentlichen URL ist noch nicht unabhängig bestätigt.
 - **IMG-SEC-PROD-Paket:** vier PROD-Migrationen, drei Rollbacks, read-only Postflight und Abnahmetestplan auf `develop`; Frontend isoliert auf `release/img-sec-2026-11-19`. PROD-Bestand und Abweichungen sind im Security-Audit dokumentiert. Keine PROD-Ausführung.
+
+
+- **IMG-SEC PROD-Preflight (19.11.2026):** benötigte Tabellen, Rollen-/Kontextfunktionen und Profil-RPCs read-only bestätigt; `private` fehlt wie erwartet und wird durch IMG-SEC-01b angelegt. PROD-Ledger enthält keine der vier vorbereiteten IMG-SEC-PROD-Versionen. Isolierter Release-Branch enthält 12 Dateien/Commits, keine fremden develop-Features. Keine PROD-Änderung.
