@@ -1586,3 +1586,20 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Frontend/main:** keine Frontendänderung, kein Deploy, GitHub main unverändert.
 - **Dokumentation:** docs/IMG_SEC_01_PAKET_1A_PRIVATE_IMAGE_STORAGE_2026-11-18.md; Postflight-SQL docs/IMG_SEC_01_PAKET_1A_POSTFLIGHT_2026-11-18.sql.
 - **Nachweisgrenze:** Die auf develop abgelegten SQL-Dateien sind die versionierte Dokumentations-/Wiederherstellungsfassung der ausgeführten Payloads. Vor einer erneuten Ausführung oder einem PROD-Rollout müssen die Dateien bytegenau mit den tatsächlichen Ausführungs-Payloads abgeglichen und gegen das Ziel-Live-Schema geprüft werden. Keine erneute Ausführung aus dem Archiv heraus.
+
+
+### DB-MIG-2026-038 – IMG-SEC-02 Profilbild-Berechtigungen und Pfadvalidierung (DEV vorbereitet)
+
+- **Status:** Migrationsdatei erstellt und auf `develop` versioniert; ausdrücklich NICHT ausgeführt.
+- **Datum:** 19.11.2026.
+- **Zielumgebung:** ausschließlich Supabase DEV (`pzazqvvoruqnqhcorbwx`).
+- **Migration:** `20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev`.
+- **Datei:** `supabase/migrations/20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev.sql`.
+- **Zweck:** einheitliche Profilbild-Pfadvalidierung, Schutz direkter Profiländerungen über Trigger, zusätzliche Prüfung der beiden Admin-Profil-RPCs und einheitliche Storage-Schreibberechtigungen für Eigenverwaltung, Mannschaftsadmins, Vereinsadmins und Superadmins im ausgewählten Kontext.
+- **Berechtigungsumfang:** Trainer ohne Adminrolle dürfen keine fremden Profilbilder verwalten. Die SELECT-Policy bleibt unverändert.
+- **Preflight:** prüft notwendige Tabellen, Funktionen, private-Schema-USAGE und die vorhandene Profilbild-SELECT-Policy; bei fehlenden Voraussetzungen wird abgebrochen.
+- **Datenbestand:** read-only-Prüfung in DEV ergab 11 Profile und 0 nichtleere Avatarreferenzen. Es wurden keine Daten oder Storage-Objekte verändert.
+- **Rollback:** keine Rollback-Ausführung; Migration nicht ausgeführt. Vor der späteren Freigabe ist eine passende Rücknahme-/Wiederherstellungsfassung zu erstellen und zu prüfen.
+- **Ausführungsfreigabe:** Die Nutzerfreigabe vom 19.11.2026 bezog sich ausdrücklich auf das Erstellen der versionierten Migrationsdatei, nicht auf deren Ausführung.
+- **PROD:** nicht betroffen; keine PROD-Migration vorbereitet oder ausgeführt.
+- **Nächster Schritt:** statische Review-/Preflight-Prüfung der versionierten Datei und Erstellung des DEV-Testpakets. Vor `apply_migration` ist eine gesonderte ausdrückliche Ausführungsfreigabe einzuholen.
