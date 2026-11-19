@@ -4,7 +4,7 @@
 -- A. Migration ledger
 select version, name
 from supabase_migrations.schema_migrations
-where version = '20261119120000';
+where version = '20261119161952';
 
 -- B. Helper-Funktionen, Trigger-Funktion und RPC-Signaturen
 select n.nspname as schema_name, p.proname,
