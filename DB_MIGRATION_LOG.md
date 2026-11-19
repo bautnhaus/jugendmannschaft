@@ -1620,3 +1620,6 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 
 
 - **DB-MIG-2026-039 / IMG-SEC-03:** DEV-Migration `20261119163443_img_sec_03_private_profile_and_club_asset_buckets_dev` erfolgreich ausgeführt. Setzt ausschließlich `storage.buckets.public=false` für `profile-avatars` und `club-assets`. Objekte, Pfade und Policies unverändert. Rollback-Datei: `supabase/rollback/20261119163443_img_sec_03_private_profile_and_club_asset_buckets_rollback_dev.sql`. Praxistests offen. PROD nicht ausgeführt.
+
+
+- **IMG-SEC-03 DEV-Funktionstest:** Nutzer hat bestätigt, dass Profilbildanzeige, Vereinslogoanzeige, Profilbild-Upload/Ändern/Entfernen sowie Bildanzeige nach erneutem Login funktionieren. Direkte URL-Negativtests und Rollen-Fremdzugriff bleiben separat offen.
