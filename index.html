@@ -2317,11 +2317,34 @@ function privateImageMarkup(bucket,value,alt='',style=''){
   if(!path)return '';
   return '<img data-private-image-bucket="'+esc(bucket)+'" data-private-image-path="'+esc(path)+'" alt="'+esc(alt)+'"'+(style?' style="'+esc(style)+'"':'')+'>';
 }
+function bindPrivateImageRetry(image,bucket,path){
+  image.dataset.privateImageRetry='0';
+  image.onerror=async()=>{
+    if(!image.isConnected||image.dataset.privateImagePath!==path)return;
+    if(image.dataset.privateImageRetry==='1'){
+      image.removeAttribute('src');image.classList.add('hidden');
+      return;
+    }
+    image.dataset.privateImageRetry='1';
+    privateImageUrlCache.delete(bucket+'|'+path);
+    try{
+      const refreshedUrl=await resolvePrivateImage(bucket,path,true);
+      if(image.isConnected&&image.dataset.privateImagePath===path){
+        image.src=refreshedUrl;
+        image.classList.remove('hidden');
+      }
+    }catch(error){
+      if(image.dataset.privateImagePath===path){image.removeAttribute('src');image.classList.add('hidden');}
+      console.warn('Privates Bild konnte auch nach einmaliger Erneuerung nicht geladen werden:',bucket,path,error?.message||error);
+    }
+  };
+}
 async function setPrivateImageElement(image,bucket,value){
   if(!image)return false;
   const path=privateImageStoragePath(bucket,value);
   if(!path){image.removeAttribute('src');image.classList.add('hidden');return false;}
   image.dataset.privateImageBucket=bucket;image.dataset.privateImagePath=path;
+  bindPrivateImageRetry(image,bucket,path);
   try{
     const url=await resolvePrivateImage(bucket,path);
     if(!image.isConnected||image.dataset.privateImagePath!==path)return false;
@@ -2339,6 +2362,7 @@ async function hydratePrivateImages(root=document){
     if(image.dataset.privateImageHydrated==='1')return;
     image.dataset.privateImageHydrated='1';
     const bucket=image.dataset.privateImageBucket,path=image.dataset.privateImagePath;
+    bindPrivateImageRetry(image,bucket,path);
     try{
       const url=await resolvePrivateImage(bucket,path);
       if(image.isConnected&&image.dataset.privateImagePath===path){image.src=url;image.classList.remove('hidden');}
@@ -2356,7 +2380,7 @@ function observePrivateImageInsertions(){
   window.privateImageObserver.observe(document.body,{childList:true,subtree:true});
   hydratePrivateImages(document);
 }
-async function resolvePrivateImage(bucket,path){
+async function resolvePrivateImage(bucket,path,forceRefresh=false){
   if(!bucket||!PRIVATE_IMAGE_BUCKETS.has(bucket))throw new Error('Nicht unterstützter privater Bildspeicher.');
   const storagePath=String(path||'').trim();
   if(!storagePath)return null;
@@ -2368,13 +2392,23 @@ async function resolvePrivateImage(bucket,path){
   const cacheKey=bucket+'|'+storagePath;
   const cached=privateImageUrlCache.get(cacheKey);
   const now=Date.now();
-  if(cached&&cached.expiresAt>now+PRIVATE_IMAGE_REFRESH_MARGIN_SECONDS*1000)return cached.url;
+  if(!forceRefresh&&cached&&cached.expiresAt>now+PRIVATE_IMAGE_REFRESH_MARGIN_SECONDS*1000)return cached.url;
   privateImageUrlCache.delete(cacheKey);
-  const {data,error}=await getClient().storage.from(bucket).createSignedUrl(storagePath,PRIVATE_IMAGE_URL_TTL_SECONDS);
-  if(error)throw error;
-  if(!data?.signedUrl)throw new Error('Für das Bild konnte keine zeitlich begrenzte URL erstellt werden.');
-  privateImageUrlCache.set(cacheKey,{url:data.signedUrl,expiresAt:now+PRIVATE_IMAGE_URL_TTL_SECONDS*1000});
-  return data.signedUrl;
+  let lastError=null;
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      const {data,error}=await getClient().storage.from(bucket).createSignedUrl(storagePath,PRIVATE_IMAGE_URL_TTL_SECONDS);
+      if(error)throw error;
+      if(!data?.signedUrl)throw new Error('Für das Bild konnte keine zeitlich begrenzte URL erstellt werden.');
+      const signedAt=Date.now();
+      privateImageUrlCache.set(cacheKey,{url:data.signedUrl,expiresAt:signedAt+PRIVATE_IMAGE_URL_TTL_SECONDS*1000});
+      return data.signedUrl;
+    }catch(error){
+      lastError=error;
+      if(attempt===0)continue;
+    }
+  }
+  throw lastError||new Error('Für das Bild konnte keine zeitlich begrenzte URL erstellt werden.');
 }
 
 window.saveConfigAndLogin=async()=>{setLoginMsg('Die Verbindung ist bereits eingerichtet. Bitte E-Mail und Passwort eingeben.');};
@@ -2413,6 +2447,8 @@ window.logout=async()=>{clearPrivateImageCache();clubMemberOnlyMode=false;curren
 
 async function loadApp(){
   const c=getClient();
+  // Jeder erneute App-Aufbau kann einen anderen Login-, Vereins- oder Teamkontext bedeuten.
+  clearPrivateImageCache();
   await loadMyProfile().catch(e=>console.warn('Eigenes Profil konnte nicht geladen werden:',e));
   // Wichtig beim Kontowechsel: keine UI-Berechtigungen aus der vorherigen Sitzung übernehmen.
   // Plattform-/Vereinsstarts blenden Navigationseinträge aus; bei einem anschließenden
