@@ -1,6 +1,6 @@
 -- KADAssist IMG-SEC-03 / Private Buckets / DEV
--- Status: vorbereitet, NICHT ausgeführt.
--- Nur nach gesonderter ausdrücklicher Freigabe in Supabase DEV ausführen.
+-- DEV-Ausführung am 19.11.2026 erfolgreich; Ledger-Version 20261119163443.
+-- PROD-Fassung separat vorbereitet; keine PROD-Ausführung.
 -- Zweck: profile-avatars und club-assets von public auf private umstellen.
 -- Keine Dateien, Profile, Pfade, Policies oder sonstigen Daten verändern.
 
