@@ -1613,3 +1613,7 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Tatsächliche Supabase-Registrierung:** Version `20261119161952`, Name `img_sec_02_profile_avatar_hardening_v1_0_0_dev`. Supabase hat bei der Ausführung diese Zeitversion vergeben. Die GitHub-Migrationsdatei wurde nachträglich auf dieselbe Version umbenannt, damit Repository und DEV-Ledger übereinstimmen.
 - **Ausgeführt in DEV:** 19.11.2026; Supabase meldete `success: true`. Postflight: Helper, Trigger, Policies und Rechte vorhanden; synthetische Pfadtests wie erwartet; 11 Profile, 0 gespeicherte Avatarreferenzen; keine Profil-/Storage-Daten durch die Migration verändert.
 - **Buckets:** `profile-avatars` und `club-assets` bleiben weiterhin öffentlich. Das ist bewusst nicht Teil von IMG-SEC-02, sondern des späteren IMG-SEC-03-Cutovers.
+
+
+- **Automatisierte Rollen-/Pfadprüfungen:** Teamadmin, Trainer, Vereinsadmin und Superadmin im jeweiligen Kontext über den Berechtigungshelper geprüft; erwartete Ergebnisse true/false. Synthetische Pfadtests bestanden. Keine persistente Testdatenänderung.
+- **Manuelle Abnahme:** echte Upload-/Ändern-/Entfernen-Aufrufe über die DEV-App sowie iPhone-/Rollen-Regressionstests stehen noch aus.
