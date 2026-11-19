@@ -1065,3 +1065,6 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 
 
 - **IMG-SEC-03 manueller DEV-Test:** Profilbild und Vereinslogo werden korrekt angezeigt; Profilbild hochladen, ändern und entfernen funktioniert; Anzeige nach erneutem Login bestätigt. Öffentliche URL-Negativtests noch nicht separat bestätigt.
+
+
+- **19.11.2026 – IMG-SEC Security/PROD-Vorbereitung:** DEV-RLS-Simulationen bestanden; direkter HTTP-Negativtest noch offen. PROD ausschließlich read-only geprüft. Vier PROD-Migrationen und drei Rollbacks vorbereitet; isolierter Frontend-Release-Branch erstellt. Keine PROD-Änderung.
