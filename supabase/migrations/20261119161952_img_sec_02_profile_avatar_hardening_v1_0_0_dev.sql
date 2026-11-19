@@ -1,7 +1,7 @@
 -- KADAssist IMG-SEC-02 / Profilbild-Härtung / DEV
 -- Version 1.0.0
--- Erstellt nach ausdrücklicher Nutzerfreigabe zur Erstellung der Migrationsdatei.
--- Diese Migration wurde NICHT ausgeführt. Supabase DEV/PROD bleiben unverändert.
+-- DEV-Ausführung am 19.11.2026 erfolgreich; Ledger-Version 20261119161952.
+-- PROD-Fassung separat vorbereitet; keine PROD-Ausführung.
 -- Voraussetzung: IMG-SEC-01 Migrationen 20261118180946 und 20261118181010.
 
 begin;
