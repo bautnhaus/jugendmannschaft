@@ -624,3 +624,17 @@ Aktuelle Migrationsdatei: `supabase/migrations/20261119161952_img_sec_02_profile
 - Pfadvalidator-Testvektoren bestanden: gültiger JPG-Pfad akzeptiert; fremde Benutzer-UUID, SVG und Traversal abgewiesen.
 - EXECUTE-/USAGE-Prüfung bestanden: keine Helper-Ausführung für `anon`; notwendige Rechte für `authenticated` vorhanden.
 - Die Simulationen prüfen DB-Berechtigungslogik, ersetzen aber keine tatsächlichen Storage-API-Aufrufe und keine iPhone-Praxistests. Diese bleiben offen.
+
+
+### 2T. IMG-SEC-02 – manueller DEV-Abschlusstest (19.11.2026)
+
+Der Nutzer hat den manuellen Test in der DEV-App bestätigt: **„Klappt“**.
+
+Damit sind die folgenden eigenen Profilbild-Aktionen in der DEV-App erfolgreich bestätigt:
+- Profilbild hochladen
+- Profilbild ändern/ersetzen
+- Profilbild entfernen
+
+**IMG-SEC-02 ist damit für diesen manuellen Self-Service-Prüfumfang abgeschlossen.** Die weitergehenden Admin-/Rollen-Positiv- und Negativfälle aus dem vollständigen Testplan sind nicht als manuell getestet zu markieren; die automatisierten Helper-Simulationen sind separat dokumentiert.
+
+Keine PROD-Änderung.
