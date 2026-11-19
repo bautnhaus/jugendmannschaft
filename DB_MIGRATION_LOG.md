@@ -1593,14 +1593,14 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Status:** Migrationsdatei erstellt und auf `develop` versioniert; ausdrücklich NICHT ausgeführt.
 - **Datum:** 19.11.2026.
 - **Zielumgebung:** ausschließlich Supabase DEV (`pzazqvvoruqnqhcorbwx`).
-- **Migration:** `20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev`.
-- **Datei:** `supabase/migrations/20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev.sql`.
+- **Migration:** `20261119161952_img_sec_02_profile_avatar_hardening_v1_0_0_dev`.
+- **Datei:** `supabase/migrations/20261119161952_img_sec_02_profile_avatar_hardening_v1_0_0_dev.sql`.
 - **Zweck:** einheitliche Profilbild-Pfadvalidierung, Schutz direkter Profiländerungen über Trigger, zusätzliche Prüfung der beiden Admin-Profil-RPCs und einheitliche Storage-Schreibberechtigungen für Eigenverwaltung, Mannschaftsadmins, Vereinsadmins und Superadmins im ausgewählten Kontext.
 - **Berechtigungsumfang:** Trainer ohne Adminrolle dürfen keine fremden Profilbilder verwalten. Die SELECT-Policy bleibt unverändert.
 - **Preflight:** prüft notwendige Tabellen, Funktionen, private-Schema-USAGE und die vorhandene Profilbild-SELECT-Policy; bei fehlenden Voraussetzungen wird abgebrochen.
 - **Legacy-Kompatibilität:** Die Admin-RPCs erlauben einen bereits gespeicherten unveränderten Avatarwert auch dann weiter, wenn er einem älteren Pfadformat entspricht. Neue/geänderte Werte müssen das aktuelle Format erfüllen. Trigger und Storage-UPDATE/DELETE erhalten dieselbe kontrollierte Legacy-Kompatibilität.
 - **Datenbestand:** read-only-Prüfung in DEV ergab 11 Profile und 0 nichtleere Avatarreferenzen. Es wurden keine Daten oder Storage-Objekte verändert.
-- **Rollback:** vorbereitet unter `supabase/rollback/20261119120000_img_sec_02_profile_avatar_hardening_rollback_dev.sql`; stellt die vor IMG-SEC-02 aus DEV ausgelesenen RPC-Definitionen und Storage-Schreibpolicies wieder her. Keine Profil-/Storage-Daten werden gelöscht. Nicht ausgeführt.
+- **Rollback:** vorbereitet unter `supabase/rollback/20261119161952_img_sec_02_profile_avatar_hardening_rollback_dev.sql`; stellt die vor IMG-SEC-02 aus DEV ausgelesenen RPC-Definitionen und Storage-Schreibpolicies wieder her. Keine Profil-/Storage-Daten werden gelöscht. Nicht ausgeführt.
 - **Ausführungsfreigabe:** Die Nutzerfreigabe vom 19.11.2026 bezog sich ausdrücklich auf das Erstellen der versionierten Migrationsdatei, nicht auf deren Ausführung.
 - **PROD:** nicht betroffen; keine PROD-Migration vorbereitet oder ausgeführt.
 - **Prüfpaket:** `docs/IMG_SEC_02_DEV_TESTPLAN_2026-11-19.md` (Positiv-/Negativ- und Regressionstests) sowie `docs/IMG_SEC_02_POSTFLIGHT_READONLY.sql` (nur SELECT).
@@ -1608,3 +1608,8 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 
 - **Gebündeltes Vorbereitungspaket (19.11.2026):** Rollback-SQL, Testplan und read-only Postflight-SQL wurden ergänzt. Preflight der Migration wurde um die tatsächlich verwendeten Rollen-/Kontext-Funktionssignaturen erweitert. Der letzte Code-Commit für diese Korrektur lautet `6d40675edac61fd7d192b78968d77f192b28a4ed`.
 - **Ausführungsstatus:** weiterhin NICHT ausgeführt. Die bisherige Freigabe deckt nur das Erstellen der Dateien ab. Vor Migration bleibt eine separate ausdrückliche Ausführungsfreigabe erforderlich.
+
+
+- **Tatsächliche Supabase-Registrierung:** Version `20261119161952`, Name `img_sec_02_profile_avatar_hardening_v1_0_0_dev`. Supabase hat bei der Ausführung diese Zeitversion vergeben. Die GitHub-Migrationsdatei wurde nachträglich auf dieselbe Version umbenannt, damit Repository und DEV-Ledger übereinstimmen.
+- **Ausgeführt in DEV:** 19.11.2026; Supabase meldete `success: true`. Postflight: Helper, Trigger, Policies und Rechte vorhanden; synthetische Pfadtests wie erwartet; 11 Profile, 0 gespeicherte Avatarreferenzen; keine Profil-/Storage-Daten durch die Migration verändert.
+- **Buckets:** `profile-avatars` und `club-assets` bleiben weiterhin öffentlich. Das ist bewusst nicht Teil von IMG-SEC-02, sondern des späteren IMG-SEC-03-Cutovers.
