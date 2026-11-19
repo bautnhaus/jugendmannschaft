@@ -360,3 +360,60 @@ Cache:
 - Damit ist das Frontend auf DEV deployed. Es erfolgte keine Änderung an Supabase-Datenbank, Storage-Konfiguration oder PROD.
 - Der funktionale iPhone-/Browser-Praxistest ist noch offen.
 
+
+
+## 2L. Read-only-Prüfung Profilbild-RPCs und Pfadsemantik (19.11.2026)
+
+- Branch: `develop`; Supabase-Projekt: DEV (`pzazqvvoruqnqhcorbwx`)
+- Status: Bestandsaufnahme abgeschlossen; keine Code-, SQL-, Policy-, Storage- oder PROD-Änderung.
+- Alle Abfragen waren reine SELECT-/Metadatenprüfungen.
+
+### Geprüfte RPCs
+
+- `public.admin_update_member_profile(p_team_id, p_user_id, p_display_name, p_avatar_url)`
+- `public.admin_update_club_member_profile(p_club_id, p_user_id, p_display_name, p_avatar_url)`
+
+Beide Funktionen:
+- sind `SECURITY DEFINER`, Eigentümer `postgres`, und setzen einen festen `search_path` auf `pg_catalog, public, auth`.
+- prüfen `auth.uid()` und den passenden ausgewählten Team-/Vereinskontext bzw. die Adminberechtigung.
+- prüfen, dass das Zielkonto zur angegebenen Mannschaft bzw. zum Verein gehört.
+- prüfen einen nichtleeren Anzeigenamen.
+- begrenzen `p_avatar_url` derzeit nur auf maximal 2048 Zeichen.
+- haben EXECUTE für `authenticated` und `service_role`; `anon` kann beide RPCs nicht ausführen.
+
+### Befund: Pfadvalidierung fehlt
+
+- Keine der beiden RPCs prüft, ob `p_avatar_url` tatsächlich ein Storage-Pfad im Bucket `profile-avatars` ist.
+- Es wird insbesondere nicht geprüft, ob der erste Pfadbestandteil der `p_user_id` entspricht.
+- Die normale Frontend-Uploadfunktion erzeugt den Pfad im Format `<user_uuid>/avatar-<timestamp>.<ext>` und speichert diesen Pfad, keine vollständige URL.
+- Das eigene Profil wird direkt über `profiles` aktualisiert; die RLS-Policy erlaubt UPDATE nur auf die eigene Profilzeile, enthält aber ebenfalls keine Prüfung des Avatar-Pfads.
+- Daher muss die spätere Härtung sowohl die beiden Admin-RPCs als auch den direkten Self-Service-UPDATE-Pfad berücksichtigen. Eine Härtung nur der RPCs wäre unvollständig.
+
+### Befund: Berechtigungsabweichung beim Avatar-Upload
+
+- Die Storage-INSERT-Policy für `profile-avatars` erlaubt Uploads für den Eigentümer des Zielordners oder für einen berechtigten Vereinsadmin.
+- Ein Mannschaftsadmin darf laut `admin_update_member_profile` das Profil eines Mitglieds seiner Mannschaft bearbeiten.
+- Die aktuelle Storage-INSERT-Policy enthält aber keine entsprechende Mannschaftsadmin-/Teamkontext-Prüfung.
+- Damit besteht eine Berechtigungsabweichung: Ein Mannschaftsadmin kann den Profilbildpfad per RPC ändern, kann aber nicht notwendigerweise ein neues Bild für dieses Mitglied in den Storage-Bucket hochladen.
+- Vor einer Policy-Anpassung muss die fachliche Berechtigung bestätigt werden. Keine Policy wurde geändert.
+
+### Daten- und Bucket-Befund DEV
+
+- `profiles`: 11 Datensätze, aktuell 0 nichtleere `avatar_url`-Werte.
+- `profile-avatars`: Bucket steht noch auf `public = true`; ein Objekt vorhanden.
+- Das vorhandene Objekt liegt im erwarteten Benutzerordner `<user_uuid>/avatar-<timestamp>.jpg`; der Objekt-Eigentümer entspricht dem Benutzerordner.
+- Der vorhandene Profilbild-Storage-Eintrag ist aktuell nicht in `profiles.avatar_url` referenziert. Er wurde nicht gelöscht oder verändert.
+- `club-assets` steht ebenfalls noch auf `public = true`; ein vorhandenes Wappenobjekt liegt im erwarteten Format `<club_uuid>/crest.png`.
+- Keine Bucket- oder Objektänderung durchgeführt.
+
+### Empfohlene Härtung – noch nicht umgesetzt
+
+1. Gemeinsame Pfadregel für Profilbilder festlegen: `NULL` zum Entfernen oder ein relativer Pfad im Format `<p_user_id>/avatar-<timestamp>.(jpg|png|webp)`; keine vollständigen URLs, fremden Benutzerordner, führenden Slashes oder Traversal-Segmente.
+2. Diese Regel sowohl in `admin_update_member_profile` und `admin_update_club_member_profile` als auch beim direkten eigenen Profil-UPDATE erzwingen (z. B. über eine geeignete zentrale DB-Validierung).
+3. Fachlich entscheiden, ob Mannschaftsadmins Profilbilder anderer Mitglieder ihrer Mannschaft hochladen dürfen. Falls ja, muss die Storage-INSERT-Policy exakt auf die bestehende Teamadmin-/Kontextberechtigung abgestimmt werden.
+4. Vor IMG-SEC-03 die nicht referenzierte Avatar-Datei inventarisieren; keine automatische Löschung ohne separate Entscheidung.
+
+### Offene fachliche Entscheidung
+
+Dürfen Mannschaftsadmins Profilbilder anderer Mitglieder ihrer eigenen Mannschaft hochladen und ändern, oder soll dies ausschließlich dem jeweiligen Benutzer und Vereinsadmins vorbehalten bleiben?
+
