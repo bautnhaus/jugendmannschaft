@@ -582,3 +582,14 @@ Beim erneuten Review wurde eine wichtige Legacy-Situation abgesichert: Wenn ein 
 
 Aktuelle Migrationsdatei: `supabase/migrations/20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev.sql`; letzter Code-Commit dieser Korrektur: `014e462ccceaf0cf112775a97e69b8283c475599`.
 
+
+
+## 2Q. Gebündeltes DEV-Freigabepaket erstellt (19.11.2026)
+
+- Die versionierte Migration wurde im Preflight um die exakten tatsächlich verwendeten Funktionssignaturen ergänzt: `is_team_admin(uuid)`, `is_team_admin(uuid,uuid)`, `is_super_admin()`, `has_selected_team_context(uuid)` sowie beide Admin-Profil-RPCs.
+- Rollback-Fassung: `supabase/rollback/20261119120000_img_sec_02_profile_avatar_hardening_rollback_dev.sql`. Sie stellt die vor IMG-SEC-02 ausgelesenen Team-/Vereins-RPCs und die ursprünglichen Storage-Schreibpolicies wieder her. Profil- und Storage-Daten werden nicht gelöscht.
+- Testplan: `docs/IMG_SEC_02_DEV_TESTPLAN_2026-11-19.md`, inklusive positiver, negativer und Regressionstests.
+- Read-only Postflight: `docs/IMG_SEC_02_POSTFLIGHT_READONLY.sql`.
+- Migrationskatalog DB-MIG-2026-038, DB-Changelog und diese Dokumentation wurden aktualisiert.
+- Alle Artefakte liegen auf `develop`; keine Datenbankänderung, keine Storage-Änderung und kein PROD-Eingriff.
+- Die Ausführungsfreigabe wurde noch nicht erteilt. Die Migration bleibt unregistriert und unausgeführt.
