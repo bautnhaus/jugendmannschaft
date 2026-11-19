@@ -287,7 +287,7 @@ Cache:
 
 - Datum: 18.11.2026
 - Code-Commit: `61e98ad7863916c58eb1b371b33d7ecd461f77cc`
-- Status: auf develop committed; DEV-Deployment und iPhone-Praxistest ausstehend.
+- Status: auf develop committed; Upload-/Ändern-/Entfernen-Praxistests inzwischen vom Nutzer als bestanden bestätigt.
 - Keine SQL-, Storage-, Bucket- oder PROD-Änderung.
 
 ### Änderung
@@ -321,3 +321,31 @@ Cache:
 - Die Aktualisierung erfolgt beim Öffnen des Editors, nach einer neuen Bildauswahl und unmittelbar nach dem Entfernen per X.
 - Die bestehende Speicherung von `avatar_url = NULL` beim Speichern ohne Bild bleibt unverändert.
 - Inline-Scripts wurden syntaktisch geprüft.
+
+
+## 2K. Signed-URL-Fehlerbehandlung und Cache-Invalidierung
+
+- Datum: 19.11.2026
+- Code-Commit: `48d8d0f4cefa3ef8670e867d7bd8961d4789ca5d`
+- Branch: `develop`
+- Status: implementiert; statische Prüfung und DEV-Browsertest stehen noch aus.
+- Keine SQL-, Storage-Policy-, Bucket- oder PROD-Änderung.
+
+### Umsetzung
+
+- `resolvePrivateImage(bucket, path, forceRefresh)` versucht die Erstellung einer Signed URL bei einem API-Fehler höchstens ein zweites Mal.
+- Ein bereits zwischengespeicherter URL-Wert wird bei einem normalen Aufruf weiterverwendet, solange die Sicherheitsfrist von 30 Sekunden vor Ablauf nicht unterschritten ist.
+- Bei einem tatsächlichen Bildladefehler (`img.onerror`) wird der Cache-Eintrag für genau dieses Bild entfernt und die Signed URL einmal erzwungen neu erstellt.
+- Jeder Bildknoten erhält einen eigenen Retry-Zähler. Scheitert auch der zweite Bildladeversuch, wird das Bild ausgeblendet; es gibt keine Endlosschleife.
+- Die Retry-Behandlung ist sowohl an dynamisch hydratisierte Bild-Markups als auch an direkt über `setPrivateImageElement` gesetzte Bilder gebunden.
+- `loadApp()` leert den Signed-URL-Cache jetzt zu Beginn jedes App-Aufbaus. Damit werden erneute Anmeldungen sowie erneute Aufbauten nach einem Vereins-/Mannschaftskontextwechsel abgedeckt.
+- Logout leert den Cache weiterhin unmittelbar vor dem Abmelden.
+- Der bestehende Kontext-Fingerprint bleibt als zusätzliche Absicherung erhalten und leert den Cache, sobald ein abweichender Kontext beim nächsten Resolver-Aufruf erkannt wird.
+
+### Noch offen
+
+- Die Retry- und Cache-Invalidierungslogik ist noch nicht im DEV-Browser geprüft.
+- Es muss insbesondere geprüft werden, dass ein abgelaufener bzw. ungültiger Signed-URL-Aufruf genau einmal erneuert wird und nach einem zweiten Fehler der Fallback greift.
+- Login, Logout sowie Vereins-/Mannschaftskontextwechsel müssen im Browser getestet werden.
+- Die drei Upload-/Ändern-/Entfernen-Funktionstests (Spielerfoto, Profilbild, Vereinslogo) wurden vom Nutzer bereits als bestanden bestätigt und müssen ohne Änderung an diesen Funktionen nicht wiederholt werden.
+
