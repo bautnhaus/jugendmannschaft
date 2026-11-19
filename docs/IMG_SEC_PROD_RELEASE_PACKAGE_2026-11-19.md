@@ -61,4 +61,4 @@ Am 19.11.2026 wurde zusätzlich geprüft:
 - `private` fehlt erwartungsgemäß in PROD und wird durch IMG-SEC-01b angelegt.
 - Die vier vorgesehenen PROD-Migrationsversionen sind noch nicht im PROD-Ledger registriert.
 - Das Vereinslogoobjekt stimmt exakt mit `clubs.crest_path` überein.
-- Der isolierte Release-Branch enthält gegenüber `main` genau 12 Commits und 12 geänderte Dateien: die Bild-Frontend-Datei, vier Migrationen, drei Rollbacks und vier Prüfdokumente. Es wurden keine anderen App-Funktionen aus `develop` übernommen.
+- Der isolierte Release-Branch enthält gegenüber `main` 12 geänderte Dateien (die zusätzlichen Branch-Commits betreffen nur Aktualisierungen dieser Dokumentation): die Bild-Frontend-Datei, vier Migrationen, drei Rollbacks und vier Prüfdokumente. Es wurden keine anderen App-Funktionen aus `develop` übernommen.
