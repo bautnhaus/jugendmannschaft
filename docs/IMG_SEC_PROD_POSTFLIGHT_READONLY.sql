@@ -1,0 +1,64 @@
+-- IMG-SEC PROD Postflight – ausschließlich lesende Prüfungen
+-- Nur nach separater PROD-Freigabe ausführen. Alle Statements sind SELECT.
+
+-- 1. Bucket visibility and limits
+select id,public,file_size_limit,allowed_mime_types
+from storage.buckets
+where id in ('player-photos','profile-avatars','club-assets')
+order by id;
+
+-- 2. Relevant storage policies
+select policyname,cmd,roles,qual,with_check
+from pg_policies
+where schemaname='storage' and tablename='objects'
+  and (policyname ilike 'player_photos_%'
+    or policyname ilike 'profile_avatars_%'
+    or policyname ilike 'club_assets_%')
+order by policyname;
+
+-- 3. Required helper functions and RPCs
+select n.nspname,p.proname,pg_get_function_identity_arguments(p.oid) as arguments,
+       p.prosecdef as security_definer,p.proconfig as settings
+from pg_proc p
+join pg_namespace n on n.oid=p.pronamespace
+where (n.nspname='private' and p.proname in (
+  'can_manage_player_photo','can_view_club_asset','can_view_profile_avatar',
+  'can_manage_profile_avatar','is_valid_profile_avatar_path','enforce_profile_avatar_path'
+))
+or (n.nspname='public' and p.proname in (
+  'admin_update_member_profile','admin_update_club_member_profile'
+))
+order by n.nspname,p.proname;
+
+-- 4. Trigger
+select t.tgname,pg_get_triggerdef(t.oid) as definition
+from pg_trigger t
+where t.tgrelid='public.profiles'::regclass
+  and not t.tgisinternal
+  and t.tgname='profiles_validate_avatar_path';
+
+-- 5. Data inventory (compare before/after; migration must not delete data)
+select
+ (select count(*) from public.players) as players,
+ (select count(*) from public.players where photo_path is not null) as players_with_photo_path,
+ (select count(*) from public.players where photo_data is not null) as legacy_photo_data,
+ (select count(*) from public.profiles) as profiles,
+ (select count(*) from public.profiles where avatar_url is not null) as avatar_references,
+ (select count(*) from public.clubs where crest_path is not null) as crest_references,
+ (select count(*) from storage.objects where bucket_id='player-photos') as player_photo_objects,
+ (select count(*) from storage.objects where bucket_id='profile-avatars') as avatar_objects,
+ (select count(*) from storage.objects where bucket_id='club-assets') as club_asset_objects;
+
+-- 6. Club crest path matching
+select c.id,c.crest_path,o.name,(c.crest_path=o.name) as exact_match
+from public.clubs c
+left join storage.objects o
+  on o.bucket_id='club-assets' and o.name=c.crest_path
+where c.crest_path is not null;
+
+-- Expected after full release:
+-- player-photos: public=false; profile-avatars: public=false; club-assets: public=false.
+-- All bucket-specific SELECT/INSERT/UPDATE/DELETE policies remain present.
+-- Trigger exists; helper functions are in private schema.
+-- Existing club crest reference still has its matching object.
+-- No profile/player/club data or storage object was deleted.
