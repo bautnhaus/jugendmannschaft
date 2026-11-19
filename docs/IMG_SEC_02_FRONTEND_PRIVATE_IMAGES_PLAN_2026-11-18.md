@@ -647,7 +647,7 @@ Am 19.11.2026 hat der Nutzer den DEV-Self-Service-Test bestätigt: Profilbild ho
 ## 4. IMG-SEC-03 – Vorbereitung private Buckets (19.11.2026)
 
 ### 4.1 Read-only Bestandsaufnahme
-- `profile-avatars`: public=true, zwei Objekte. Beide Objektpfade entsprechen dem Benutzer-UUID-/Avatar-Dateinamen-Schema.
+- `profile-avatars`: nach den DEV-Praxistests vier Objekte; zwei sind aktuell exakt durch `profiles.avatar_url` referenziert, zwei sind nicht referenziert und bleiben erhalten.
 - `profiles.avatar_url`: aktuell keine nicht-null Werte. Die zwei vorhandenen Objekte sind daher nicht als aktive Profilbildreferenzen belegt. Sie werden ausdrücklich nicht gelöscht.
 - `club-assets`: public=true, ein Objekt `<club-uuid>/crest.png`; stimmt mit `clubs.crest_path` überein.
 - SELECT-Policies vorhanden: `profile_avatars_select_authorized` und `club_assets_select_scoped`.
@@ -679,3 +679,13 @@ Am 19.11.2026 hat der Nutzer den DEV-Self-Service-Test bestätigt: Profilbild ho
 ### 5.1 IMG-SEC-03 – manueller DEV-Abschlusstest
 
 Am 19.11.2026 bestätigt der Nutzer: „Klappt“. Profilbildanzeige, Vereinslogoanzeige, Profilbild hochladen/ändern/entfernen und Anzeige nach erneutem Login funktionieren in der DEV-App. Die expliziten Negativtests direkter öffentlicher URL-Zugriffe und Rollen-Fremdzugriffe bleiben separat offen. IMG-SEC-03 ist damit für den bestätigten UI-/Self-Service-Umfang erfolgreich.
+
+
+## 6. Security-Abschluss und PROD-Paket (19.11.2026)
+
+- RLS-Simulationen in DEV bestanden: anonymer Zugriff 0 Zeilen; nicht zugehöriger authentifizierter Nutzer 0 Zeilen; berechtigtes gemeinsames Teammitglied kann Profilbild sehen; Vereinsmitglied und Superadmin im ausgewählten Vereinskontext können Vereinslogo sehen.
+- Direkte unauthentifizierte HTTP-Anfrage an die alte öffentliche URL konnte aus der verfügbaren Laufzeit nicht durchgeführt werden. Dieser einzelne Negativtest bleibt als manueller Check offen.
+- PROD read-only geprüft: `player-photos` fehlt; `players.photo_path` fehlt; `photo_data` ist leer; Profilavatar-SELECT-Policy und private Helper fehlen; beide bestehenden Buckets sind öffentlich.
+- Vier PROD-Migrationen, drei Rollbacks und ein isolierter Frontend-Release-Branch wurden vorbereitet. Details: `docs/IMG_SEC_PROD_RELEASE_PACKAGE_2026-11-19.md`.
+- Der Release-Branch basiert auf `main` und enthält nur die Bild-Frontend-Änderungen. Kein vollständiges Merge der 96 Commits von develop.
+- PROD wurde nicht verändert.
