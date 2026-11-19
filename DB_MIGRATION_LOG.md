@@ -1598,6 +1598,7 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Zweck:** einheitliche Profilbild-Pfadvalidierung, Schutz direkter Profiländerungen über Trigger, zusätzliche Prüfung der beiden Admin-Profil-RPCs und einheitliche Storage-Schreibberechtigungen für Eigenverwaltung, Mannschaftsadmins, Vereinsadmins und Superadmins im ausgewählten Kontext.
 - **Berechtigungsumfang:** Trainer ohne Adminrolle dürfen keine fremden Profilbilder verwalten. Die SELECT-Policy bleibt unverändert.
 - **Preflight:** prüft notwendige Tabellen, Funktionen, private-Schema-USAGE und die vorhandene Profilbild-SELECT-Policy; bei fehlenden Voraussetzungen wird abgebrochen.
+- **Legacy-Kompatibilität:** Die Admin-RPCs erlauben einen bereits gespeicherten unveränderten Avatarwert auch dann weiter, wenn er einem älteren Pfadformat entspricht. Neue/geänderte Werte müssen das aktuelle Format erfüllen. Trigger und Storage-UPDATE/DELETE erhalten dieselbe kontrollierte Legacy-Kompatibilität.
 - **Datenbestand:** read-only-Prüfung in DEV ergab 11 Profile und 0 nichtleere Avatarreferenzen. Es wurden keine Daten oder Storage-Objekte verändert.
 - **Rollback:** keine Rollback-Ausführung; Migration nicht ausgeführt. Vor der späteren Freigabe ist eine passende Rücknahme-/Wiederherstellungsfassung zu erstellen und zu prüfen.
 - **Ausführungsfreigabe:** Die Nutzerfreigabe vom 19.11.2026 bezog sich ausdrücklich auf das Erstellen der versionierten Migrationsdatei, nicht auf deren Ausführung.
