@@ -529,3 +529,35 @@ Dieser Entwurf ist eine technische Vorbereitung. Die Umsetzung benötigt später
 ### Wichtige Abgrenzung
 
 Der SQL-Entwurf wurde nicht auf einer Datenbank ausgeführt, nicht als Migration registriert und nicht auf PROD angewendet. Es wurden keine SQL-Schreibbefehle ausgeführt. Vor einer Freigabe ist ein technisches Review des Entwurfs erforderlich; erst danach darf daraus eine ordnungsgemäß versionierte Migration erstellt werden.
+
+
+## 2O. Technisches Review des SQL-Entwurfs (19.11.2026)
+
+- Status: Review abgeschlossen; Entwurf konsolidiert, weiterhin NICHT ausgeführt.
+- Review-Commit für SQL-Datei: `ec5de29ce435427836cd199907cb0a0344f7bccc`.
+- Es wurden nur GitHub-Dokumente aktualisiert. Keine SQL-Schreibabfrage, Migration oder Storage-Änderung ausgeführt.
+
+### Review-Ergebnis
+
+1. **Frontend-Pfadformat abgeglichen:** `uploadProfileAvatar()` erzeugt `<userId>/avatar-<Date.now()>.<ext>`; erlaubte Endungen sind `jpg`, `png`, `webp`. Die Validator-Regel mit 13-stelligem Millisekundenwert entspricht dem aktuellen Frontend.
+2. **Self-Service abgesichert:** Der Profil-Trigger prüft neue/geänderte Avatarwerte auch bei direktem UPDATE auf `profiles`. Unveränderte bestehende Legacy-Werte werden bei einer reinen Namensänderung nicht erneut validiert.
+3. **Adminwege abgesichert:** Beide Admin-RPCs behalten ihre bisherigen Kontext- und Mitgliedschaftsprüfungen und erhalten zusätzlich die Pfadprüfung gegen die UUID des Zielkontos.
+4. **Rollenabgrenzung:** Vereinsadmins werden über `can_manage_club_context` geprüft; Mannschaftsadmins über `is_team_admin(team_id)` und die Mitgliedschaft des Zielkontos in derselben Mannschaft. Superadmins benötigen weiterhin den ausgewählten passenden Kontext.
+5. **Storage-Policy-Semantik:** INSERT prüft Berechtigung und neuen Pfad. UPDATE prüft die Berechtigung des bestehenden Objekts über `USING` und Berechtigung plus gültiges Format des Zielpfads über `WITH CHECK`. DELETE prüft die Verwaltungsberechtigung des Zielkontos.
+6. **Legacy-Kompatibilität:** Bestehende, berechtigte Legacy-Objekte können weiterhin ersetzt bzw. gelöscht werden. Nur neu gespeicherte Avatarreferenzen und neue Storage-Zielpfade müssen das aktuelle Format erfüllen.
+7. **Sichtbarkeit getrennt:** Die SELECT-Policy und `private.can_view_profile_avatar` bleiben unverändert. Die neue Verwaltungsberechtigung erweitert nicht den Kreis der Personen, die Profilbilder ansehen dürfen.
+8. **Funktionsschutz:** Neue Helper liegen im nicht exponierten `private`-Schema, haben festen `search_path` und keine EXECUTE-Freigabe für `PUBLIC`/ `anon`. Die vorhandene private-Schema-USAGE-Berechtigung für `authenticated` wurde nur lesend geprüft.
+9. **DEV-Datenbestand:** 11 Profile, aktuell 0 nichtleere Avatarreferenzen. Damit gibt es in DEV keine bestehenden Profilreferenzen, die durch die neue Formatregel blockiert würden. Der bereits inventarisierte unreferenzierte Storage-Eintrag bleibt unberührt.
+
+### Bewusst zurückgestellte Aufgabe: verwaiste Dateien
+
+Die Frontend-Uploadfunktion erzeugt bei jedem Upload einen neuen eindeutigen Storage-Pfad. Beim Ändern oder Entfernen eines Profilbildes wird der alte Storage-Gegenstand derzeit nicht automatisch gelöscht. Dadurch können nicht mehr referenzierte Dateien verbleiben.
+
+Das ist kein Berechtigungs-Bypass, aber ein Thema für Speicherplatz und Datenminimierung. Es wird nicht im Rahmen dieser Berechtigungsmigration automatisch bereinigt. Dafür ist eine separate, sichere Cleanup-Logik erforderlich, die erst nach erfolgreichem Speichern der neuen Profilreferenz löscht und Fehlerfälle berücksichtigt.
+
+### Ergebnis und nächste Schritte
+
+- Der Entwurf ist nach Review konsolidiert und kann als Grundlage für die Erstellung einer versionierten DEV-Migration dienen.
+- Vor der Migration ist noch ein letzter Abgleich der exakten DEV-Funktions-/Policy-Abhängigkeiten sowie der SQL-Ausführungsrechte durchzuführen.
+- Anschließend wird eine echte Migration im Supabase-Migrationsverzeichnis erstellt, im SQL-Release-Katalog dokumentiert und dem Nutzer vor jeder Ausführung ausdrücklich zur Freigabe vorgelegt.
+- Bis zu einer gesonderten Freigabe bleibt DEV-Datenbank/Storage unverändert; PROD bleibt unangetastet.
