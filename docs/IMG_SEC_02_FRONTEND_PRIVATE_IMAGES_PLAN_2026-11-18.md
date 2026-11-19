@@ -574,3 +574,11 @@ Das ist kein Berechtigungs-Bypass, aber ein Thema für Speicherplatz und Datenmi
 - Der Migrationstext wurde nicht ausgeführt. Keine Datenbank-/Storageänderung, keine Änderung an DEV-Ledger und keine PROD-Änderung.
 - Die Nutzerfreigabe gilt nur für die Erstellung der Datei. Eine separate Freigabe ist vor der Ausführung erforderlich.
 - Nächste Aufgabe: statische Prüfung der Migrationsdatei, Erstellung einer geprüften Rollback-/Wiederherstellungsfassung und eines Positiv-/Negativtestpakets. Danach Vorlage zur ausdrücklichen Ausführungsfreigabe.
+
+
+### 2P.1 Ergänzung nach Kompatibilitätsreview (19.11.2026)
+
+Beim erneuten Review wurde eine wichtige Legacy-Situation abgesichert: Wenn ein Profil noch einen älteren Avatarpfad enthält und ein Admin lediglich den Namen ändert, darf der unveränderte bestehende Bildwert nicht allein wegen des alten Formats blockiert werden. Beide Admin-RPCs validieren daher neue/geänderte Avatarwerte strikt, akzeptieren aber den exakt unveränderten bereits gespeicherten Wert. Neue Storage-Zielpfade bleiben strikt validiert; bestehende Objekte können im berechtigten Kontext ersetzt oder gelöscht werden.
+
+Aktuelle Migrationsdatei: `supabase/migrations/20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev.sql`; letzter Code-Commit dieser Korrektur: `014e462ccceaf0cf112775a97e69b8283c475599`.
+
