@@ -92,3 +92,16 @@ Der Rollback stellt `public=true` wieder her und macht die Dateien dadurch wiede
 - `clubs.crest_path`: unverändert und stimmt mit dem vorhandenen Vereinslogo-Objekt überein.
 - Sämtliche vorhandenen SELECT-/INSERT-/UPDATE-/DELETE-Policies für beide Buckets sind vorhanden und wurden von der Migration nicht geändert.
 - Direkte anonyme HTTP-Abrufversuche sowie echte Signed-URL-/Rollen-/iPhone-Praxistests stehen noch aus.
+
+
+## 8. Manueller DEV-Abschlusstest (19.11.2026)
+
+Nutzerbestätigung: **„Klappt“**.
+
+Damit wurden in der DEV-App erfolgreich bestätigt:
+- Profilbild wird angezeigt.
+- Vereinslogo wird in der App angezeigt.
+- Profilbild kann weiterhin hochgeladen, geändert und entfernt werden.
+- Bilder funktionieren nach erneutem Login.
+
+Die Bestätigung deckt die genannten UI-/Self-Service-Fälle ab. Die dedizierten Negativtests mit direkter öffentlicher URL und rollenbasierte Fremdzugriffsversuche sind nicht separat bestätigt und bleiben als formale Sicherheitsprüfung offen.
