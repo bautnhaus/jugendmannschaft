@@ -1044,3 +1044,12 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 
 
 - Ergänzung IMG-SEC-02 Migration: Admin-Profil-RPCs erhalten kontrollierte Legacy-Kompatibilität. Unveränderte bereits gespeicherte Avatarwerte blockieren reine Profil-/Namensänderungen nicht; neue/geänderte Pfade müssen das definierte Format erfüllen. Migration weiterhin nur vorbereitet, nicht ausgeführt.
+
+
+## 19.11.2026 – IMG-SEC-02 DEV-Migrationspaket vollständig vorbereitet
+
+- Migration DB-MIG-2026-038 um exakte Preflight-Prüfung der Rollen-/Kontext-Funktionen ergänzt.
+- Rollback-Skript erstellt: `supabase/rollback/20261119120000_img_sec_02_profile_avatar_hardening_rollback_dev.sql`.
+- Testplan erstellt: `docs/IMG_SEC_02_DEV_TESTPLAN_2026-11-19.md`.
+- Read-only Postflight-SQL erstellt: `docs/IMG_SEC_02_POSTFLIGHT_READONLY.sql`.
+- Keine Ausführung auf Supabase DEV, keine Änderung an Daten oder Storage und keine PROD-Änderung.
