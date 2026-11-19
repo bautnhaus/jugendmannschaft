@@ -1036,7 +1036,7 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 
 ## 19.11.2026 – IMG-SEC-02 Profilbild-Härtung (DEV-Migration vorbereitet)
 
-- Versionierte Migration `20261119120000_img_sec_02_profile_avatar_hardening_v1_0_0_dev` in `supabase/migrations/` angelegt.
+- Versionierte Migration `20261119161952_img_sec_02_profile_avatar_hardening_v1_0_0_dev` in `supabase/migrations/` angelegt.
 - Enthält zentrale Pfadvalidierung, Profil-Trigger, Härtung der Profil-RPCs sowie Storage-Policies für INSERT/UPDATE/DELETE.
 - Bestehende Profilbild-SELECT-Regel bleibt unverändert; öffentliche Buckets werden in diesem Schritt nicht umgestellt.
 - **Wichtig:** Datei ist nur vorbereitet und dokumentiert. Nicht auf Supabase DEV oder PROD ausgeführt. Die Nutzerfreigabe umfasst die Erstellung der Datei, nicht die Ausführung.
@@ -1049,7 +1049,10 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 ## 19.11.2026 – IMG-SEC-02 DEV-Migrationspaket vollständig vorbereitet
 
 - Migration DB-MIG-2026-038 um exakte Preflight-Prüfung der Rollen-/Kontext-Funktionen ergänzt.
-- Rollback-Skript erstellt: `supabase/rollback/20261119120000_img_sec_02_profile_avatar_hardening_rollback_dev.sql`.
+- Rollback-Skript erstellt: `supabase/rollback/20261119161952_img_sec_02_profile_avatar_hardening_rollback_dev.sql`.
 - Testplan erstellt: `docs/IMG_SEC_02_DEV_TESTPLAN_2026-11-19.md`.
 - Read-only Postflight-SQL erstellt: `docs/IMG_SEC_02_POSTFLIGHT_READONLY.sql`.
 - Keine Ausführung auf Supabase DEV, keine Änderung an Daten oder Storage und keine PROD-Änderung.
+
+
+- **DEV-Ausführung IMG-SEC-02:** Supabase-Ledger-Version `20261119161952`; Migration erfolgreich registriert. Read-only Postflight bestanden. Keine Datenzeilen oder Storage-Objekte verändert. Öffentliche Bucket-Einstellungen bleiben für den separaten IMG-SEC-03-Cutover unverändert.
