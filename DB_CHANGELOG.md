@@ -1062,3 +1062,6 @@ Die letzte noch erforderliche DB-Ergänzung für den Superadmin-Start ist vorber
 
 
 - **19.11.2026 – IMG-SEC-03 in DEV:** Buckets `profile-avatars` und `club-assets` auf privat gesetzt. Ledger-Version `20261119163443`. Keine Storage-Objekte oder Policies verändert. Automatisierter Postflight bestanden; manuelle App-/Rollen-/Direkt-URL-Tests offen. PROD unverändert.
+
+
+- **IMG-SEC-03 manueller DEV-Test:** Profilbild und Vereinslogo werden korrekt angezeigt; Profilbild hochladen, ändern und entfernen funktioniert; Anzeige nach erneutem Login bestätigt. Öffentliche URL-Negativtests noch nicht separat bestätigt.
