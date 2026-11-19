@@ -217,8 +217,94 @@ using (
   bucket_id = 'profile-avatars'
   and case
     when split_part(name, '/', 1) ~*
+      '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+  and case
+    when split_part(name, '/', 1) ~*
       '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
     then private.can_manage_profile_avatar(split_part(name, '/', 1)::uuid)
+      and private.is_valid_profile_avatar_path(split_part(name, '/', 1)::uuid, name)
+    else false
+  end
+);
+
+drop policy if exists profile_avatars_delete_self_or_admin on storage.objects;
+create policy profile_avatars_delete_self_or_admin
+on storage.objects
+for delete
+to authenticated
+using (
+  bucket_id = 'profile-avatars'
+  and case
+    when split_part(name, '/', 1) ~*
+      '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+-- - SELECT-Prüfung von Funktionsdefinitionen, Triggern und Policy-Ausdrücken.
+-- - Prüfung der EXECUTE-/USAGE-Rechte; keine PUBLIC-/anon-EXECUTE-Rechte auf neue Helper.
+-- - Positiv-/Negativtests aus dem IMG-SEC-02-Plan.
+-- - Supabase Security Advisors.
+-- - Erst nach erfolgreichem DEV-Test separate PROD-Kompatibilitätsprüfung.
+-- Kein Bucket-Cutover in diesem Entwurf.
+
+rollback;
+
+    then private.can_manage_profile_avatar(split_part(name, '/', 1)::uuid)
+      and private.is_valid_profile_avatar_path(split_part(name, '/', 1)::uuid, name)
+    else false
+  end
+)
+with check (
+  bucket_id = 'profile-avatars'
+  and case
+    when split_part(name, '/', 1) ~*
+      '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    then private.can_manage_profile_avatar(split_part(name, '/', 1)::uuid)
+      and private.is_valid_profile_avatar_path(split_part(name, '/', 1)::uuid, name)
+    else false
+  end
+);
+
+drop policy if exists profile_avatars_delete_self_or_admin on storage.objects;
+create policy profile_avatars_delete_self_or_admin
+on storage.objects
+for delete
+to authenticated
+using (
+  bucket_id = 'profile-avatars'
+  and case
+    when split_part(name, '/', 1) ~*
+      '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    then private.can_manage_profile_avatar(split_part(name, '/', 1)::uuid)
+    else false
+  end
+);
+
+-- 6) Nach Ausführung zwingend:
+-- - SELECT-Prüfung von Funktionsdefinitionen, Triggern und Policy-Ausdrücken.
+-- - Prüfung der EXECUTE-/USAGE-Rechte; keine PUBLIC-/anon-EXECUTE-Rechte auf neue Helper.
+-- - Positiv-/Negativtests aus dem IMG-SEC-02-Plan.
+-- - Supabase Security Advisors.
+-- - Erst nach erfolgreichem DEV-Test separate PROD-Kompatibilitätsprüfung.
+-- Kein Bucket-Cutover in diesem Entwurf.
+
+rollback;
+
+    then private.can_manage_profile_avatar(split_part(name, '/', 1)::uuid)
+      and private.is_valid_profile_avatar_path(split_part(name, '/', 1)::uuid, name)
+    else false
+  end
+);
+
+-- 6) Nach Ausführung zwingend:
+-- - SELECT-Prüfung von Funktionsdefinitionen, Triggern und Policy-Ausdrücken.
+-- - Prüfung der EXECUTE-/USAGE-Rechte; keine PUBLIC-/anon-EXECUTE-Rechte auf neue Helper.
+-- - Positiv-/Negativtests aus dem IMG-SEC-02-Plan.
+-- - Supabase Security Advisors.
+-- - Erst nach erfolgreichem DEV-Test separate PROD-Kompatibilitätsprüfung.
+-- Kein Bucket-Cutover in diesem Entwurf.
+
+rollback;
+
+    then private.can_manage_profile_avatar(split_part(name, '/', 1)::uuid)
+      and private.is_valid_profile_avatar_path(split_part(name, '/', 1)::uuid, name)
     else false
   end
 )
