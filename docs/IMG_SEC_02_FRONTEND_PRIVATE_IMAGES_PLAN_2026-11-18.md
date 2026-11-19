@@ -656,9 +656,21 @@ Am 19.11.2026 hat der Nutzer den DEV-Self-Service-Test bestätigt: Profilbild ho
 - Keine Storage- oder Datenbankänderung durchgeführt.
 
 ### 4.2 Vorbereitete Artefakte
-- Migration: `supabase/migrations/20261119170000_img_sec_03_private_profile_and_club_asset_buckets_dev.sql`.
-- Rollback: `supabase/rollback/20261119170000_img_sec_03_private_profile_and_club_asset_buckets_rollback_dev.sql`.
+- Migration: `supabase/migrations/20261119163443_img_sec_03_private_profile_and_club_asset_buckets_dev.sql`.
+- Rollback: `supabase/rollback/20261119163443_img_sec_03_private_profile_and_club_asset_buckets_rollback_dev.sql`.
 - Testplan: `docs/IMG_SEC_03_DEV_TESTPLAN_2026-11-19.md`.
 - Die Migration ändert ausschließlich `storage.buckets.public` für `profile-avatars` und `club-assets` auf `false`; alle Objekte und Policies bleiben unangetastet.
 - Rollback stellt `public=true` wieder her und macht die Objekte wieder öffentlich. Rollback nur mit separater Freigabe.
 - **Status:** vorbereitet, nicht ausgeführt. Separate ausdrückliche DEV-Ausführungsfreigabe erforderlich. PROD unverändert.
+
+
+## 5. IMG-SEC-03 – DEV-Ausführung (19.11.2026)
+
+- Nutzerfreigabe zur Ausführung in DEV erteilt; Migration erfolgreich mit `success=true`.
+- Tatsächliche Supabase-Ledger-Version: `20261119163443`. GitHub-Migrations- und Rollback-Dateien wurden an diese Version angeglichen.
+- `profile-avatars` und `club-assets` stehen nun auf `public=false`.
+- Objektbestand unverändert: zwei Profilbilder und ein Vereinslogo; keine Datei verschoben oder gelöscht.
+- `profiles.avatar_url` bleibt ohne nicht-null Referenzen; `clubs.crest_path` bleibt unverändert.
+- Sämtliche bestehenden Storage-Policies für beide Buckets sind weiterhin vorhanden.
+- **Fachliche Abnahme noch offen:** App-/Signed-URL-/Rollen-/iPhone-Tests sowie Negativtest direkter öffentlicher URL-Zugriffe.
+- PROD unverändert.
