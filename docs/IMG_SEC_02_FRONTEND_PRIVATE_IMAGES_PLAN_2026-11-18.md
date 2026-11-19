@@ -328,7 +328,7 @@ Cache:
 - Datum: 19.11.2026
 - Code-Commit: `48d8d0f4cefa3ef8670e867d7bd8961d4789ca5d`
 - Branch: `develop`
-- Status: implementiert; statische Prüfung und DEV-Browsertest stehen noch aus.
+- Status: implementiert, statisch geprüft und automatisch nach DEV deployed; funktionaler DEV-Browsertest steht noch aus.
 - Keine SQL-, Storage-Policy-, Bucket- oder PROD-Änderung.
 
 ### Umsetzung
@@ -348,4 +348,15 @@ Cache:
 - Es muss insbesondere geprüft werden, dass ein abgelaufener bzw. ungültiger Signed-URL-Aufruf genau einmal erneuert wird und nach einem zweiten Fehler der Fallback greift.
 - Login, Logout sowie Vereins-/Mannschaftskontextwechsel müssen im Browser getestet werden.
 - Die drei Upload-/Ändern-/Entfernen-Funktionstests (Spielerfoto, Profilbild, Vereinslogo) wurden vom Nutzer bereits als bestanden bestätigt und müssen ohne Änderung an diesen Funktionen nicht wiederholt werden.
+
+
+
+### 2K.1 Statische Prüfung und DEV-Deployment (19.11.2026)
+
+- JavaScript-Syntaxprüfung der Inline-Scripts: bestanden. Der ES-Module-Import wurde für die Syntaxprüfung entfernt; beide Inline-Script-Blöcke ließen sich anschließend fehlerfrei kompilieren.
+- GitHub-Actions-Workflow `Deploy DEV` für Code-Commit `48d8d0f4cefa3ef8670e867d7bd8961d4789ca5d`: erfolgreich (Run `44469136221`).
+- Der anschließende Dokumentations-Commit `7f5335615c60f6541a99bfa85c7a40130f3127b5` löste ebenfalls einen erfolgreichen DEV-Deploy aus (Run `44469155117`).
+- DEV-Repository `bautnhaus/jugendmannschaft-dev`, Branch `main`: `index.html`-Blob-SHA stimmt exakt mit dem geprüften develop-Stand `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c` überein.
+- Damit ist das Frontend auf DEV deployed. Es erfolgte keine Änderung an Supabase-Datenbank, Storage-Konfiguration oder PROD.
+- Der funktionale iPhone-/Browser-Praxistest ist noch offen.
 
