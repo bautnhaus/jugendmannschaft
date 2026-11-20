@@ -256,3 +256,6 @@ Die AP02-Migration grenzt nun zusätzlich Vereins- und Mannschaftskontext für T
 
 
 Der read-only DEV-Kontextstatus zeigt aktuell einen ausgewählten Vereinskontext, aber keinen ausgewählten Mannschaftskontext. Die zusätzliche gespeicherte Teamrolle ist in DEV `trainer`; in PROD wurde zuvor `admin` festgestellt. Beide Bestände bleiben erhalten. Die AP02-Migration verlangt für Superadmins bei teambezogenen Admin-RPCs ausdrücklich den ausgewählten Mannschaftskontext.
+
+
+Der AP02-Rollback prüft zusätzlich, dass die globale Superadmin-Rolle seit der Migration unverändert besteht und die zentralen Kontextfunktionen noch dem gehärteten AP02-Zielzustand entsprechen. Nach Wiederherstellung werden sämtliche Vereinsrollen exakt mit dem Snapshot verglichen; erst danach wird das Backup-Schema entfernt.
