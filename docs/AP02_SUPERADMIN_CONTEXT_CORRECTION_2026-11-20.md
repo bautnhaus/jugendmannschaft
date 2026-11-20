@@ -69,6 +69,16 @@ Die Migration ist absichtlich streng und bricht bei abweichendem Bestand ab. Sie
 - IMG-SEC-PROD bleibt bis zur AP02-Abnahme gesperrt.
 
 
+## Read-only-Kontextabgleich DEV (20.11.2026)
+
+Der aktuelle Datenbestand zeigt einen ausgewählten Vereinskontext, keinen ausgewählten Mannschaftskontext, eine zusätzliche `club_admin`-Rolle und eine zusätzliche `trainer`-Teamrolle. Nach der vorgesehenen Zielsemantik ergibt sich daraus:
+
+- Vereinskontextzugriff: zulässig, weil der Verein ausdrücklich ausgewählt ist.
+- Teamadmin-Funktion: nicht zulässig, weil kein Mannschaftskontext ausgewählt ist; die gespeicherte Trainerrolle ändert daran nichts.
+- Teamrollen-Schreib-RPCs: nicht zulässig, bis die passende Mannschaft ausdrücklich ausgewählt ist.
+
+Das ist ein read-only Abgleich der erwarteten Zielregeln mit dem aktuellen Kontextbestand, noch kein Laufzeittest der geänderten Funktionen.
+
 ## Vorgesehene DEV-Abnahmematrix (nach separater Ausführungsfreigabe)
 
 | Rolle / Kontext | Vereinsverwaltung | Teamverwaltung / Teamrollen |
