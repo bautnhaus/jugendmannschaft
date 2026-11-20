@@ -11,7 +11,7 @@
 1. Superadmins bleiben global Superadmins und vereinsneutral.
 2. Superadmin-Zugriffe auf Vereinsverwaltung sind ausschließlich im ausdrücklich ausgewählten Vereinskontext zulässig.
 3. Eine zusätzliche Mannschaftsadmin- oder Trainerrolle bleibt als Datensatz erhalten.
-4. Diese Mannschaftsrolle begründet für einen Superadmin keinen kontextunabhängigen Zugriff. Der eigene Superadmin-Zugriff auf ein Team wird über `is_team_admin(team_id)` und den ausgewählten Teamkontext geprüft.
+4. Diese Mannschaftsrolle begründet für einen Superadmin keinen kontextunabhängigen Zugriff. Der eigene Superadmin-Zugriff auf ein Team wird bereits in der zentralen Funktion `is_team_admin(team_id)` ausschließlich über den ausgewählten Teamkontext geprüft. Die zusätzliche gespeicherte Mannschaftsadmin-Rolle eröffnet keinen Bypass.
 5. Normale Vereinsadmins, Mannschaftsadmins und Trainer behalten ihre bisherigen Rollenrechte.
 6. Keine DEV-Daten werden nach PROD übernommen.
 
@@ -28,6 +28,7 @@
 
 - `can_manage_club_context(uuid)`: CASE-Priorität. Wenn der aufrufende Benutzer Superadmin ist, zählt ausschließlich `user_club_context`; die zusätzliche club_admin-Rolle darf keinen OR-Fallback eröffnen.
 - Verwaltungs-RPCs, die bisher `is_team_admin(auth.uid(), team_id)` als Berechtigungsprüfung des Aufrufers verwenden, wechseln auf `is_team_admin(team_id)`. Betroffen: `admin_add_team_role`, `admin_remove_team_role`, `admin_update_member_profile`, `admin_set_trainer_label`, `get_team_trainers`, `get_team_trainers_v2`.
+- `is_team_admin(uuid)`: Superadmins werden vor der Rollenprüfung ausschließlich über `has_selected_team_context(team_id)` autorisiert; Nicht-Superadmins behalten die bisherige Rollenprüfung.
 - `get_team_role_change_log(uuid)`: direkter Superadmin-Bypass wird an `has_selected_team_context(team_id)` gebunden.
 - Die Zwei-Argument-Funktion `is_team_admin(user_id, team_id)` bleibt als allgemeine Rollenabfrage für Zielbenutzer unverändert. Sie darf nicht global umgedeutet werden.
 
@@ -46,7 +47,7 @@ Die Migration ist absichtlich streng und bricht bei abweichendem Bestand ab. Sie
 
 ## Noch offene Prüfungen vor Ausführung
 
-1. Statische SQL-Prüfung und Abgleich aller sieben Funktionsersetzungen mit den Live-Definitionen.
+1. Statische SQL-Prüfung und Abgleich der zentralen Kontextfunktionen sowie aller sieben RPC-Ersetzungen mit den DEV-Live-Definitionen.
 2. DEV-Transaktionssimulation (inkl. Positiv-/Negativtests für Superadmin ohne Kontext, mit falschem Kontext und mit passendem Kontext).
 3. Regression für normalen Vereinsadmin, Mannschaftsadmin und Trainer.
 4. Nachweis, dass die zusätzliche Superadmin-Teamrolle unverändert bleibt.
@@ -55,6 +56,7 @@ Die Migration ist absichtlich streng und bricht bei abweichendem Bestand ab. Sie
 
 ## Status / Sicherheitsgrenze
 
+- DEV-Live-Preflight (20.11.2026): genau ein Superadmin, eine direkte Vereinsmitgliedschaft, eine club_admin-Rolle, eine Teamrolle und eine Teammitgliedschaft; FK `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE` bestätigt; keine benutzerdefinierten Trigger auf den beiden Vereinsmitgliedschaftstabellen.
 - Keine SQL-Migration ausgeführt.
 - Keine Rollen oder Mitgliedschaften verändert.
 - Keine PROD-Änderung.
