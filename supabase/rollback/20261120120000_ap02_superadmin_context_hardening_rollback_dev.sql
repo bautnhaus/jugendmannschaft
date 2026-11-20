@@ -17,15 +17,22 @@ BEGIN
   SELECT user_id INTO v_user_id
   FROM ap02_release_private.superadmin_membership_backup;
 
+  IF NOT EXISTS (SELECT 1 FROM public.global_user_roles WHERE user_id=v_user_id AND role='super_admin') THEN
+    RAISE EXCEPTION 'AP02 Rollback: globale Superadmin-Rolle hat sich geändert; manueller Abgleich erforderlich';
+  END IF;
   IF EXISTS (SELECT 1 FROM public.club_members WHERE user_id=v_user_id) THEN
     RAISE EXCEPTION 'AP02 Rollback: Vereinsmitgliedschaft wurde zwischenzeitlich neu angelegt; manueller Abgleich erforderlich';
   END IF;
   IF position('CASE WHEN public.is_super_admin()' IN
        pg_get_functiondef('public.can_manage_club_context(uuid)'::regprocedure))=0
+     OR position('OR EXISTS' IN
+       pg_get_functiondef('public.can_manage_club_context(uuid)'::regprocedure))>0
      OR position('WHEN public.is_super_admin()' IN
        pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))=0
      OR position('public.has_selected_team_context(p_team_id)' IN
-       pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))=0 THEN
+       pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))=0
+     OR position('OR EXISTS' IN
+       pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))>0 THEN
     RAISE EXCEPTION 'AP02 Rollback: zentrale Kontextfunktionen entsprechen nicht dem erwarteten AP02-Stand';
   END IF;
 END;
@@ -148,8 +155,11 @@ DO $postflight$
 DECLARE
   v_user_id uuid;
   v_club_id uuid;
+  v_expected_club_roles text[];
+  v_actual_club_roles text[];
 BEGIN
-  SELECT user_id,club_id INTO v_user_id,v_club_id
+  SELECT user_id,club_id,club_roles
+    INTO v_user_id,v_club_id,v_expected_club_roles
   FROM ap02_release_private.superadmin_membership_backup;
 
   IF NOT EXISTS (
@@ -158,11 +168,13 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'AP02 Rollback Postflight: Vereinsmitgliedschaft wurde nicht wiederhergestellt';
   END IF;
-  IF NOT EXISTS (
-    SELECT 1 FROM public.club_member_roles
-    WHERE user_id=v_user_id AND role='club_admin'
-  ) THEN
-    RAISE EXCEPTION 'AP02 Rollback Postflight: club_admin-Rolle wurde nicht wiederhergestellt';
+  SELECT COALESCE(array_agg(role ORDER BY role),ARRAY[]::text[])
+    INTO v_actual_club_roles
+  FROM public.club_member_roles
+  WHERE user_id=v_user_id;
+
+  IF v_actual_club_roles IS DISTINCT FROM v_expected_club_roles THEN
+    RAISE EXCEPTION 'AP02 Rollback Postflight: Vereinsrollen stimmen nicht mit dem gesicherten Ausgangsbestand überein';
   END IF;
 END;
 $postflight$;
