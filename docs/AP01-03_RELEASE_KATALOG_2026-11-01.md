@@ -219,8 +219,8 @@ Aktueller Ausführungsstatus und verbindliche Reihenfolge: `docs/prod-release/DB
 
 AP02 ist auf DEV dauerhaft angewendet und der Anwendungstest wurde vom Nutzer positiv rückgemeldet. Für PROD wurde nach separater Read-only-Bestandsaufnahme ein eigenständiges PROD-Paket erstellt.
 
-- PROD-Migration: `supabase/migrations/20261120230000_ap02_superadmin_context_hardening_prod.sql`
-- PROD-Rollback: `supabase/rollback/20261120230000_ap02_superadmin_context_hardening_rollback_prod.sql`
+- PROD-Migration: `supabase/migrations/20261120225600_ap02_superadmin_context_hardening_prod.sql`
+- PROD-Rollback: `supabase/rollback/20261120225600_ap02_superadmin_context_hardening_rollback_prod.sql`
 - Release-Dokument: `docs/prod-release/AP02_SUPERADMIN_CONTEXT_PROD_2026-11-20.md`
 
 Wesentliche PROD-Abweichungen: Die vorhandene Superadmin-Teamrolle lautet `admin` (DEV: `trainer`). `is_team_admin(uuid)` ist in PROD bereits korrekt teamkontextgebunden und wird nicht erneut geändert. Das PROD-Paket korrigiert nur die noch offenen Funktions-/RPC-Bypässe, sichert die tatsächlichen Rollen und neutralisiert die direkte Vereinszuweisung reversibel.
