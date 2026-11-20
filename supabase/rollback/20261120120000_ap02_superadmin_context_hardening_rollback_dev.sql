@@ -23,7 +23,9 @@ BEGIN
   IF EXISTS (SELECT 1 FROM public.club_members WHERE user_id=v_user_id) THEN
     RAISE EXCEPTION 'AP02 Rollback: Vereinsmitgliedschaft wurde zwischenzeitlich neu angelegt; manueller Abgleich erforderlich';
   END IF;
-  IF position('CASE WHEN public.is_super_admin()' IN
+  IF position('WHEN public.is_super_admin() THEN EXISTS' IN
+       pg_get_functiondef('public.can_manage_club_context(uuid)'::regprocedure))=0
+     OR position('ELSE EXISTS' IN
        pg_get_functiondef('public.can_manage_club_context(uuid)'::regprocedure))=0
      OR position('OR EXISTS' IN
        pg_get_functiondef('public.can_manage_club_context(uuid)'::regprocedure))>0
