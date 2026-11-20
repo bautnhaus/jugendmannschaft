@@ -41,8 +41,8 @@ as $function$
 declare v_name text := trim(coalesce(p_display_name, ''));
 begin
   if auth.uid() is null or not (
-    public.is_team_admin(auth.uid(), p_team_id)
-    or (public.is_super_admin() and public.has_selected_team_context(p_team_id))
+    (public.is_super_admin() and public.has_selected_team_context(p_team_id))
+    or (not public.is_super_admin() and public.is_team_admin(auth.uid(), p_team_id))
   ) then
     raise exception 'Nicht berechtigt' using errcode = '42501';
   end if;
