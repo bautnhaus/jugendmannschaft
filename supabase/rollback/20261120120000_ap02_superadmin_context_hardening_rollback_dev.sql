@@ -21,8 +21,12 @@ BEGIN
     RAISE EXCEPTION 'AP02 Rollback: Vereinsmitgliedschaft wurde zwischenzeitlich neu angelegt; manueller Abgleich erforderlich';
   END IF;
   IF position('CASE WHEN public.is_super_admin()' IN
-       pg_get_functiondef('public.can_manage_club_context(uuid)'::regprocedure))=0 THEN
-    RAISE EXCEPTION 'AP02 Rollback: zentrale Funktion entspricht nicht dem erwarteten AP02-Stand';
+       pg_get_functiondef('public.can_manage_club_context(uuid)'::regprocedure))=0
+     OR position('WHEN public.is_super_admin()' IN
+       pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))=0
+     OR position('public.has_selected_team_context(p_team_id)' IN
+       pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))=0 THEN
+    RAISE EXCEPTION 'AP02 Rollback: zentrale Kontextfunktionen entsprechen nicht dem erwarteten AP02-Stand';
   END IF;
 END;
 $preflight$;
