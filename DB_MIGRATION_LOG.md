@@ -1671,3 +1671,6 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 
 - **Statische Paketprüfung (20.11.2026):** Migration und Rollback haben jeweils genau einen BEGIN-/COMMIT-Rahmen und ausgeglichene Dollar-Quote-Delimiter. Alle neun Berechtigungstext-Ersetzungen und ihre Rücksetzungsregeln wurden gegen die aktuellen DEV-Funktionsdefinitionen abgeglichen. Die Migration enthält keine DELETE-Anweisung für `team_members` oder `team_member_roles`; der Snapshot bleibt nach erfolgreicher Migration erhalten. Eine formale PostgreSQL-/PLpgSQL-Parse- bzw. Transaktionssimulation ist noch offen. Keine Migration ausgeführt.
 - **DEV-Migrationsledger:** Die AP02-Korrekturmigration ist nicht eingetragen; der letzte vorhandene Stand bleibt IMG-SEC-03 vom 19.11.2026.
+
+
+- **Rollback zusätzlich gehärtet:** Vor der Wiederherstellung muss die globale Superadmin-Rolle unverändert bestehen; die zentralen AP02-Kontextfunktionen müssen weiterhin dem erwarteten gehärteten Zustand entsprechen. Nach dem Restore werden alle Vereinsrollen mit dem gesicherten Snapshot verglichen, bevor das Backup-Schema entfernt wird.
