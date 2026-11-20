@@ -1755,3 +1755,14 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - Primärschlüssel, FK CASCADE, `club_admin`-Check-Constraint, Funktionsowner und EXECUTE-ACLs read-only geprüft.
 - PROD-Migrationsledger zuletzt `20261118105730`; AP02-Version `20261120221618` liegt danach und ist nicht registriert.
 - Keine Ausführungssimulation oder Datenbankänderung auf PROD. Paket ist bereit zur separaten ausdrücklichen PROD-Freigabe.
+
+
+### AP02 PROD – Migration ausgeführt und Postflight bestanden (20.11.2026)
+
+- Ausdrückliche Nutzerfreigabe erteilt.
+- Supabase PROD (`qdugtpzgefpswnnqbusd`) Migration `ap02_superadmin_context_hardening_prod` erfolgreich angewendet.
+- Tatsächliche Supabase-Version: `20261120221618`; Migrationshistorie bestätigt Eintrag.
+- Postflight: 1 globaler Superadmin; 0 direkte Vereinsmitgliedschaften; 0 direkte Vereinsrollen; bestehende Teamrolle `admin` und Teammitgliedschaft `admin` erhalten; privates Backup mit genau einem Datensatz und ursprünglicher `club_admin`-Rolle; RLS aktiv; kein Schema-USAGE/SELECT für anon/authenticated/service_role.
+- Alle geprüften Kontext-RPCs aktiv gehärtet; `is_team_admin(uuid)`-Hash unverändert.
+- GitHub-Migrations- und Rollback-Dateien auf Supabase-Version `20261120221618` umbenannt.
+- **PROD-Datenbankmigration erfolgreich.** Frontend-Praxistest noch ausstehend; keine Rollback-Ausführung.
