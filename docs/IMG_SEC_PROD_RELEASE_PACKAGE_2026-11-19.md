@@ -1,6 +1,6 @@
 # IMG-SEC – PROD-Freigabe- und Ausführungsplan
 
-**Status:** vorbereitet, nicht ausgeführt.  
+**Status:** vorbereitet, nicht ausgeführt; PROD-Freigabe bis zur AP02-Korrektur gesperrt.  
 **PROD-Projekt:** `qdugtpzgefpswnnqbusd`.  
 **Freigabe:** Eine separate ausdrückliche PROD-Ausführungsfreigabe ist zwingend erforderlich.
 
@@ -68,7 +68,7 @@ Am 19.11.2026 wurde zusätzlich geprüft:
 
 Am 19.11.2026 wurde der direkte öffentliche URL-Negativtest für Profilbild und Vereinslogo vom Nutzer in einem privaten Safari-Fenster bestätigt: Beide URLs lieferten keinen Bildinhalt. Die DEV-Sicherheitsprüfung ist damit einschließlich RLS-Simulationen und bestätigter Upload-/Ändern-/Entfernen-Praxistests abgeschlossen.
 
-IMG-SEC ist als technischer PROD-Release-Kandidat vorbereitet. **Eine PROD-Ausführungsfreigabe liegt weiterhin nicht vor.** Vor jeder PROD-Ausführung werden die vier Migrationen und die zugehörigen Rollback-Skripte gemeinsam einzeln geprüft. Bis zu einer separaten ausdrücklichen Freigabe bleiben PROD, Buckets, Datenbank und Deployment unverändert.
+IMG-SEC ist technisch vorbereitet, aber wegen des dokumentierten AP02-Superadmin-Kontext-Bypasses noch nicht PROD-freigabefähig. **Eine PROD-Ausführungsfreigabe liegt nicht vor.** Vor jeder PROD-Ausführung werden die vier Migrationen und die zugehörigen Rollback-Skripte gemeinsam einzeln geprüft. Bis zu einer separaten ausdrücklichen Freigabe bleiben PROD, Buckets, Datenbank und Deployment unverändert.
 
 
 ## Ergänzung: geplante Logo-Neuanlage unmittelbar vor dem Release
@@ -159,3 +159,13 @@ Die IMG-SEC-02-Migration wurde deshalb korrigiert:
 Die Rollenprüfungen wurden in DEV ausschließlich lesend bzw. in vollständig zurückgerollten Simulationstransaktionen durchgeführt. Bestanden: Superadmin ohne Kontext = kein Fremdzugriff; Superadmin mit ausgewähltem Vereinskontext = Zugriff im ausgewählten Verein; normaler Vereinsadmin = Zugriff im eigenen Verein; Mannschaftsadmin = Zugriff auf Mitglieder der eigenen Mannschaft; Trainer = kein Fremdzugriff, aber Selbstverwaltung bleibt möglich.
 
 **Hinweis:** Die Änderung ist bislang nur in den GitHub-SQL-Dateien enthalten. Keine DEV- oder PROD-Migration wurde ausgeführt.
+
+## Release-Blocker: übergreifender AP02-Superadmin-Kontext (20.11.2026)
+
+Die read-only Prüfung von DEV und PROD hat einen über IMG-SEC hinausgehenden AP02-Kontext-Bypass bestätigt. In beiden Umgebungen besitzt jeweils ein Superadmin zusätzlich eine `club_admin`-Rollenzuweisung und eine direkte `club_members`-Mitgliedschaft. `public.can_manage_club_context(uuid)` kann dadurch für diesen Superadmin ohne ausgewählten Vereinskontext `true` liefern.
+
+IMG-SEC härtet die unmittelbar betroffenen Profilbild- und Vereinsasset-Zugriffe mit `public.is_club_admin(...)` bzw. `public.is_team_member(...)`. Die übrigen Club-Management-Funktionen und Policies, die weiterhin `can_manage_club_context` verwenden, sind nicht Teil dieses Release-Pakets.
+
+**IMG-SEC darf nicht in PROD freigegeben werden, bevor die separate AP02-Korrektur umgesetzt und geprüft wurde.** Erforderlich sind eine gehärtete zentrale `can_manage_club_context`-Semantik (Superadmins ausschließlich im ausgewählten Vereinskontext) und eine separat freizugebende Datenbereinigung der direkten Vereinsmitgliedschaft/-rolle des Superadmins. Dafür ist ein eigener Preflight, eine eigene Migration, eine Rollback-/Auswirkungsprüfung und ein DEV-Praxistest erforderlich.
+
+Dieser Release-Blocker wurde ausschließlich dokumentiert. Keine Supabase-Daten oder Rollen wurden verändert.
