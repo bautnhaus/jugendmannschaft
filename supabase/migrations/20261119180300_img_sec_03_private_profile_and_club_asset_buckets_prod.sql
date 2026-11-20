@@ -31,19 +31,61 @@ begin
   end if;
 
   if not exists (
-    select 1 from pg_policies
-    where schemaname='storage' and tablename='objects'
-      and policyname='profile_avatars_select_authorized' and cmd='SELECT'
+    select 1 from storage.buckets
+    where id='player-photos' and public=false
   ) then
-    raise exception 'IMG-SEC-03 Preflight: Profilbild-SELECT-Policy fehlt.';
+    raise exception 'IMG-SEC-03 Preflight: player-photos fehlt oder ist nicht privat.';
+  end if;
+  if to_regclass('public.players') is null
+     or not exists (
+       select 1 from information_schema.columns
+       where table_schema='public' and table_name='players' and column_name='photo_path'
+     ) then
+    raise exception 'IMG-SEC-03 Preflight: players.photo_path fehlt.';
+  end if;
+
+  if to_regprocedure('private.can_manage_player_photo(uuid,uuid)') is null
+     or to_regprocedure('private.can_view_club_asset(uuid)') is null
+     or to_regprocedure('private.can_view_profile_avatar(uuid)') is null
+     or to_regprocedure('private.can_manage_profile_avatar(uuid)') is null
+     or to_regprocedure('private.is_valid_profile_avatar_path(uuid,text)') is null then
+    raise exception 'IMG-SEC-03 Preflight: mindestens ein erforderlicher privater IMG-SEC-Helper fehlt.';
+  end if;
+  if not has_schema_privilege('authenticated','private','USAGE')
+     or has_schema_privilege('anon','private','USAGE') then
+    raise exception 'IMG-SEC-03 Preflight: private-Schema-Rechte sind unerwartet.';
+  end if;
+  if not has_function_privilege('authenticated','private.can_manage_player_photo(uuid,uuid)','EXECUTE')
+     or not has_function_privilege('authenticated','private.can_view_club_asset(uuid)','EXECUTE')
+     or not has_function_privilege('authenticated','private.can_view_profile_avatar(uuid)','EXECUTE')
+     or not has_function_privilege('authenticated','private.can_manage_profile_avatar(uuid)','EXECUTE')
+     or not has_function_privilege('authenticated','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE')
+     or has_function_privilege('anon','private.can_manage_player_photo(uuid,uuid)','EXECUTE')
+     or has_function_privilege('anon','private.can_view_club_asset(uuid)','EXECUTE')
+     or has_function_privilege('anon','private.can_view_profile_avatar(uuid)','EXECUTE')
+     or has_function_privilege('anon','private.can_manage_profile_avatar(uuid)','EXECUTE')
+     or has_function_privilege('anon','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE') then
+    raise exception 'IMG-SEC-03 Preflight: private Helper EXECUTE-Rechte sind unerwartet.';
   end if;
 
   if not exists (
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
-      and policyname='club_assets_select_scoped' and cmd='SELECT'
+      and policyname='profile_avatars_select_authorized'
+      and cmd='SELECT'
+      and qual like '%private.can_view_profile_avatar%'
   ) then
-    raise exception 'IMG-SEC-03 Preflight: Vereinsasset-SELECT-Policy fehlt.';
+    raise exception 'IMG-SEC-03 Preflight: Profilbild-SELECT-Policy fehlt oder verwendet nicht den privaten Helper.';
+  end if;
+
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_select_scoped'
+      and cmd='SELECT'
+      and qual like '%private.can_view_club_asset%'
+  ) then
+    raise exception 'IMG-SEC-03 Preflight: Vereinsasset-SELECT-Policy fehlt oder verwendet nicht den privaten Helper.';
   end if;
 
   if exists (
@@ -82,9 +124,9 @@ do $postflight$
 begin
   if exists (
     select 1 from storage.buckets
-    where id in ('profile-avatars','club-assets') and public is distinct from false
+    where id in ('player-photos','profile-avatars','club-assets') and public is distinct from false
   ) then
-    raise exception 'IMG-SEC-03 Postflight fehlgeschlagen: mindestens ein Bucket ist weiterhin öffentlich.';
+    raise exception 'IMG-SEC-03 Postflight fehlgeschlagen: mindestens ein Bild-Bucket ist weiterhin öffentlich.';
   end if;
 end;
 $postflight$;
