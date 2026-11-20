@@ -24,7 +24,7 @@
 - `public.is_team_admin(uuid)` ist bereits korrekt CASE-/Teamkontext-gebunden (MD5 `f983aaebc7db5fcbb9284ffacc280b2c`). Diese Funktion wird vom AP02-PROD-Paket ausdrücklich nicht verändert.
 - `public.can_manage_club_context(uuid)` enthält noch die alte parallele OR-Alternative über die direkte Vereinsmitgliedschaft und Vereinsadmin-Rolle (MD5 `2b114e55a680a0337225bbfbef8f9f7c`).
 - Sieben betroffene Verwaltungs-/Lese-RPCs enthalten noch alte Berechtigungsabfragen bzw. einen direkten Superadmin-Bypass.
-- FK: `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE`; genau ein FK verweist auf `club_members`.
+- FK: `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE`; genau ein FK verweist auf `club_members`. Der Check-Constraint begrenzt Vereinsrollen auf `club_admin`; beide Rollback-relevanten Constraints sind im Preflight abgesichert.
 - Keine benutzerdefinierten Trigger auf `club_members` oder `club_member_roles`.
 - Backup-Schema `ap02_release_private` existiert noch nicht.
 - AP02 ist nicht in der PROD-Migrationshistorie registriert.
@@ -68,6 +68,8 @@ Der Rollback prüft zusätzlich, dass Teamrollen und Mannschaftsmitgliedschaften
 - Die PROD-Rollen-/Mitgliedschaftsdaten entsprechen den Preflight-Annahmen.
 - FK-/CASCADE-Struktur und Triggerbestand entsprechen den geprüften Voraussetzungen.
 - Migration und Rollback wurden auf GitHub erneut eingelesen und auf PROD-spezifische Kennzeichnung, neun Ersetzungen, Teamrollen-Schutz und Backup-/Rollback-Guards geprüft.
+- Die Migration ist vollständig mit `BEGIN`/`COMMIT` geklammert; auch das Rollback ist transaktional. Der Preflight prüft zusätzlich den konkreten `club_admin`-Check-Constraint.
+- Der PROD-Liveabgleich der Tabellen-Constraints bestätigt `club_members(user_id)` als Primärschlüssel und `club_member_roles(user_id, role)` als Primärschlüssel; der Rollback-Upsert adressiert damit einen vorhandenen eindeutigen Schlüssel.
 
 **Nicht durchgeführt:** keine PL/pgSQL-Ausführungssimulation in PROD, keine Transaktionssimulation in PROD, keine Migration, kein Rollback, keine Datenänderung und kein Frontend-Deploy. Die statische Prüfung ersetzt keinen kontrollierten DEV-Test; DEV ist bereits erfolgreich migriert und praktisch getestet. Eine PROD-Ausführung bleibt bis zur separaten ausdrücklichen Freigabe gesperrt.
 
