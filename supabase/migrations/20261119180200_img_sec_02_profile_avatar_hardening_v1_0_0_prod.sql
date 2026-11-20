@@ -307,11 +307,83 @@ using (
   bucket_id = 'profile-avatars'
   and case
     when split_part(name, '/', 1) ~*
-      '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+
+-- 6) Nach Ausführung zwingend:
+-- - SELECT-Prüfung von Funktionsdefinitionen, Triggern und Policy-Ausdrücken.
+-- - Prüfung der EXECUTE-/USAGE-Rechte; keine PUBLIC-/anon-EXECUTE-Rechte auf neue Helper.
+-- - Positiv-/Negativtests aus dem IMG-SEC-02-Plan.
+-- - Supabase Security Advisors.
+-- - Erst nach erfolgreichem DEV-Test separate PROD-Kompatibilitätsprüfung.
+-- Kein Bucket-Cutover Bestandteil dieser Migration.
+
+commit;
+
     then private.can_manage_profile_avatar(split_part(name, '/', 1)::uuid)
     else false
   end
 );
+
+-- 6) Postflight: Rechte, Trigger und Policy-Verknüpfungen müssen exakt passen.
+do $postflight$
+begin
+  if not has_schema_privilege('authenticated','private','USAGE')
+     or has_schema_privilege('anon','private','USAGE') then
+    raise exception 'IMG-SEC-02 Postflight: private-Schema-Rechte sind unerwartet.';
+  end if;
+
+  if not has_function_privilege('authenticated','private.can_manage_profile_avatar(uuid)','EXECUTE')
+     or not has_function_privilege('authenticated','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE')
+     or has_function_privilege('anon','private.can_manage_profile_avatar(uuid)','EXECUTE')
+     or has_function_privilege('anon','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE')
+     or has_function_privilege('service_role','private.can_manage_profile_avatar(uuid)','EXECUTE')
+     or has_function_privilege('service_role','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE')
+     or has_function_privilege('public','private.can_manage_profile_avatar(uuid)','EXECUTE')
+     or has_function_privilege('public','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE') then
+    raise exception 'IMG-SEC-02 Postflight: unerwartete Helper-EXECUTE-Rechte.';
+  end if;
+
+  if not exists (
+    select 1 from pg_trigger t
+    join pg_class c on c.oid=t.tgrelid
+    join pg_namespace n on n.oid=c.relnamespace
+    where n.nspname='public' and c.relname='profiles'
+      and t.tgname='profiles_validate_avatar_path' and not t.tgisinternal
+  ) then
+    raise exception 'IMG-SEC-02 Postflight: Profilbild-Validierungstrigger fehlt.';
+  end if;
+
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_insert_self_or_admin'
+      and with_check like '%private.can_manage_profile_avatar%'
+      and with_check like '%private.is_valid_profile_avatar_path%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_update_self_or_admin'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%private.can_manage_profile_avatar%'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%private.is_valid_profile_avatar_path%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_delete_self_or_admin'
+      and qual like '%private.can_manage_profile_avatar%'
+  ) then
+    raise exception 'IMG-SEC-02 Postflight: Profilbild-Schreibpolicies sind unvollständig.';
+  end if;
+
+  if position('public.is_super_admin()' in pg_get_functiondef('public.admin_update_member_profile(uuid,uuid,text,text)'::regprocedure)) = 0
+     or position('public.is_club_admin(p_club_id)' in pg_get_functiondef('public.admin_update_club_member_profile(uuid,uuid,text,text)'::regprocedure)) = 0 then
+    raise exception 'IMG-SEC-02 Postflight: Profil-RPCs enthalten nicht die explizite Kontextpriorität.';
+  end if;
+end;
+$postflight$;
+
+-- 7) Nach Ausführung zwingend:
+-- - Supabase Security Advisors und Positiv-/Negativtests aus dem IMG-SEC-02-Plan.
+-- - Kein Bucket-Cutover Bestandteil dieser Migration.
 
 -- 6) Nach Ausführung zwingend:
 -- - SELECT-Prüfung von Funktionsdefinitionen, Triggern und Policy-Ausdrücken.
