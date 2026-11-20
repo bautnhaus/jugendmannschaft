@@ -41,6 +41,21 @@ or (n.nspname='public' and p.proname in (
 ))
 order by n.nspname,p.proname;
 
+-- 3a. Schema and function privileges (authenticated must be able to use helpers; anon must not).
+select
+  has_schema_privilege('authenticated','private','USAGE') as authenticated_private_usage,
+  has_schema_privilege('anon','private','USAGE') as anon_private_usage,
+  has_function_privilege('authenticated','private.can_manage_player_photo(uuid,uuid)','EXECUTE') as authenticated_manage_player_photo,
+  has_function_privilege('anon','private.can_manage_player_photo(uuid,uuid)','EXECUTE') as anon_manage_player_photo,
+  has_function_privilege('authenticated','private.can_view_club_asset(uuid)','EXECUTE') as authenticated_view_club_asset,
+  has_function_privilege('anon','private.can_view_club_asset(uuid)','EXECUTE') as anon_view_club_asset,
+  has_function_privilege('authenticated','private.can_view_profile_avatar(uuid)','EXECUTE') as authenticated_view_profile_avatar,
+  has_function_privilege('anon','private.can_view_profile_avatar(uuid)','EXECUTE') as anon_view_profile_avatar,
+  has_function_privilege('authenticated','private.can_manage_profile_avatar(uuid)','EXECUTE') as authenticated_manage_profile_avatar,
+  has_function_privilege('anon','private.can_manage_profile_avatar(uuid)','EXECUTE') as anon_manage_profile_avatar,
+  has_function_privilege('authenticated','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE') as authenticated_validate_profile_avatar,
+  has_function_privilege('anon','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE') as anon_validate_profile_avatar;
+
 -- 4. Trigger
 select t.tgname,pg_get_triggerdef(t.oid) as definition
 from pg_trigger t
