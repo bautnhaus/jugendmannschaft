@@ -50,7 +50,7 @@ Die Migration ist absichtlich streng und bricht bei abweichendem Bestand ab. Sie
 
 ## Noch offene Prüfungen vor Ausführung
 
-1. Statische SQL-Prüfung und Abgleich der zentralen Kontextfunktionen sowie aller neun gezielten Berechtigungsersetzungen in sieben RPC-Definitionen mit den DEV-Live-Definitionen.
+1. Statische Struktur- und Musterprüfung der zentralen Kontextfunktionen sowie aller neun gezielten Berechtigungstext-Ersetzungen innerhalb von sieben RPCs: bestanden. Formale PostgreSQL-/PLpgSQL-Parse- bzw. Transaktionssimulation bleibt offen.
 2. DEV-Transaktionssimulation (inkl. Positiv-/Negativtests für Superadmin ohne Kontext, mit falschem Kontext und mit passendem Kontext).
 3. Regression für normalen Vereinsadmin, Mannschaftsadmin und Trainer.
 4. Nachweis, dass die zusätzliche Superadmin-Teamrolle unverändert bleibt.
@@ -60,7 +60,6 @@ Die Migration ist absichtlich streng und bricht bei abweichendem Bestand ab. Sie
 ## Status / Sicherheitsgrenze
 
 - DEV-Live-Preflight (20.11.2026): genau ein Superadmin, eine direkte Vereinsmitgliedschaft, eine club_admin-Rolle, eine Teamrolle (`trainer`) und eine Teammitgliedschaft; der Vereinskontext ist ausgewählt, ein Teamkontext aktuell nicht; FK `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE` bestätigt; keine benutzerdefinierten Trigger auf den beiden Vereinsmitgliedschaftstabellen.
-- DEV-Live-Preflight (20.11.2026): genau ein Superadmin, eine direkte Vereinsmitgliedschaft, eine club_admin-Rolle, eine Teamrolle und eine Teammitgliedschaft; FK `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE` bestätigt; keine benutzerdefinierten Trigger auf den beiden Vereinsmitgliedschaftstabellen.
 - Statische Strukturprüfung: BEGIN/COMMIT und Dollar-Quote-Delimiter ausgeglichen; neun Ersetzungs- und Rücksetzungsregeln gegen die DEV-Live-Definitionen abgeglichen; Teamrollen-Löschbefehle fehlen; Rollback-Snapshot und Guards vorhanden.
 - Formale PostgreSQL-/PLpgSQL-Parse- bzw. Transaktionssimulation und Rollenmatrix bleiben offen.
 - Keine SQL-Migration ausgeführt.
