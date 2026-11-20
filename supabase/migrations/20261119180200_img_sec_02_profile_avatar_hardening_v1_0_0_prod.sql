@@ -70,7 +70,7 @@ as $function$
        ('^' || p_user_id::text || '/avatar-[0-9]{13}[.](jpg|png|webp)$');
 $function$;
 
-revoke all on function private.is_valid_profile_avatar_path(uuid, text) from public, anon;
+revoke all on function private.is_valid_profile_avatar_path(uuid, text) from public, anon, service_role;
 grant execute on function private.is_valid_profile_avatar_path(uuid, text) to authenticated;
 
 -- 2) Zentrale Autorisierung für die Verwaltung fremder Profilbilder.
@@ -114,7 +114,7 @@ as $function$
      );
 $function$;
 
-revoke all on function private.can_manage_profile_avatar(uuid) from public, anon;
+revoke all on function private.can_manage_profile_avatar(uuid) from public, anon, service_role;
 grant execute on function private.can_manage_profile_avatar(uuid) to authenticated;
 
 -- 3) Schutz für jeden Schreibweg auf profiles.avatar_url.
