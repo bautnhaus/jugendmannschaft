@@ -64,7 +64,7 @@ Die vorbereitete IMG-SEC-01-PROD-Migration ergänzt die fehlenden Helper und set
 - `main/index.html` enthält noch 7 Aufrufe von `getPublicUrl()`.
 - Der PROD-Stand hat weder den gemeinsamen Signed-URL-Resolver noch die `photo_path`-Integration.
 - `main` liegt 194 Commits hinter `develop`. Ein pauschales Merge von `develop` nach `main` würde zahlreiche andere Änderungen mitnehmen und ist ausdrücklich nicht Teil dieses Bildsicherheits-Releases.
-- Deshalb wurde ein isolierter Release-Branch `release/img-sec-2026-11-19` von `main` erstellt. Darin wurden ausschließlich die 15 nachvollziehbaren Bild-/Storage-Frontend-Änderungen angewendet. Die resultierende `index.html` hat denselben Blob-SHA wie die getestete DEV-Datei: `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`.
+- Deshalb wurde ein isolierter Release-Branch `release/img-sec-prod-2026-11-20` von `main` erstellt. Darin wurden ausschließlich die 15 nachvollziehbaren Bild-/Storage-Frontend-Änderungen angewendet. Die resultierende `index.html` hat denselben Blob-SHA wie die getestete DEV-Datei: `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`.
 - Der Release-Branch enthält keine Übernahme der übrigen 194 Commits als Branch-Merge.
 
 ## 3. PROD-Migrationspaket
@@ -87,7 +87,7 @@ Rollback-Dateien:
 2. IMG-SEC-01a ausführen: `photo_path`, privaten `player-photos`-Bucket, Helper und Storage-Policies anlegen.
 3. IMG-SEC-01b ausführen: Helper ins Schema `private` verschieben und Rechte härten.
 4. IMG-SEC-02 ausführen: Profilbildpfade validieren, Trigger und Storage-Schreibregeln härten.
-5. Isolierten Frontend-Stand aus `release/img-sec-2026-11-19` deployen. Die Buckets `profile-avatars` und `club-assets` sind zu diesem Zeitpunkt noch öffentlich; die App muss mit Signed URLs und dem neuen Spielerfoto-Pfad bereits funktionieren.
+5. Isolierten Frontend-Stand aus `release/img-sec-prod-2026-11-20` deployen. Die Buckets `profile-avatars` und `club-assets` sind zu diesem Zeitpunkt noch öffentlich; die App muss mit Signed URLs und dem neuen Spielerfoto-Pfad bereits funktionieren.
 6. Smoke- und Rollenprüfungen ausführen.
 7. Erst danach IMG-SEC-03 ausführen: `profile-avatars` und `club-assets` auf privat umstellen.
 8. Direkte öffentliche URLs, Signed URLs, Rollen, iPhone/Safari, Login/Logout und Kontextwechsel erneut prüfen.
@@ -114,7 +114,7 @@ IMG-SEC-03 darf nicht vor dem Frontend-Deploy und erfolgreichen Smoke-Test erfol
 
 Alle von den vorbereiteten IMG-SEC-01/02-Migrationen benötigten Tabellen, Kontext-Tabellen, Rollenfunktionen und Profil-RPC-Signaturen sind in PROD vorhanden. Das Schema `private` fehlt erwartungsgemäß und wird in IMG-SEC-01b angelegt. Die vier vorgesehenen PROD-Migrationsversionen sind noch nicht registriert.
 
-Der Release-Branch `release/img-sec-2026-11-19` enthält 12 geänderte Dateien (zusätzliche Branch-Commits aktualisieren nur die Prüfdokumentation) gegenüber `main`: die Bild-Frontend-Datei, vier Migrationen, drei Rollbacks und vier Prüfdokumente. Kein vollständiges Merge von `develop`.
+Der Release-Branch `release/img-sec-prod-2026-11-20` enthält 12 geänderte Dateien (zusätzliche Branch-Commits aktualisieren nur die Prüfdokumentation) gegenüber `main`: die Bild-Frontend-Datei, vier Migrationen, drei Rollbacks und vier Prüfdokumente. Kein vollständiges Merge von `develop`.
 
 
 ## 7. Abschluss der DEV-Sicherheitsprüfung
