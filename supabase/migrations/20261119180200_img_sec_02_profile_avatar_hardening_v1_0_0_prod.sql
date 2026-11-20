@@ -73,7 +73,7 @@ as $function$
 $function$;
 
 revoke all on function private.is_valid_profile_avatar_path(uuid, text) from public, anon;
-grant execute on function private.is_valid_profile_avatar_path(uuid, text) to authenticated, service_role;
+grant execute on function private.is_valid_profile_avatar_path(uuid, text) to authenticated;
 
 -- 2) Zentrale Autorisierung für die Verwaltung fremder Profilbilder.
 -- Vereinsadmins: nur für Mitglieder des eigenen Vereins; public.is_club_admin
@@ -82,7 +82,8 @@ grant execute on function private.is_valid_profile_avatar_path(uuid, text) to au
 -- diese Funktion kann bei einem Superadmin mit zusätzlicher club_admin-Rolle
 -- auch ohne ausgewählten Vereinskontext true liefern.
 -- Mannschaftsadmins: nur für Mitglieder derselben Mannschaft. Superadmins benötigen
--- ausdrücklich den passenden ausgewählten Mannschaftskontext.
+-- ausdrücklich den passenden ausgewählten Mannschaftskontext; die Superadmin-Prüfung
+-- hat Vorrang vor möglichen historischen Teamrollen desselben Kontos.
 create or replace function private.can_manage_profile_avatar(
   p_target_user_id uuid
 )
@@ -106,13 +107,17 @@ as $function$
          select 1
          from public.team_member_roles target
          where target.user_id = p_target_user_id
-           and public.is_team_admin(target.team_id)
+           and case
+             when public.is_super_admin()
+               then public.has_selected_team_context(target.team_id)
+             else public.is_team_admin(target.team_id)
+           end
        )
      );
 $function$;
 
 revoke all on function private.can_manage_profile_avatar(uuid) from public, anon;
-grant execute on function private.can_manage_profile_avatar(uuid) to authenticated, service_role;
+grant execute on function private.can_manage_profile_avatar(uuid) to authenticated;
 
 -- 3) Schutz für jeden Schreibweg auf profiles.avatar_url.
 -- Unveränderte Legacy-Werte werden bei reinen Namensänderungen nicht neu validiert.
@@ -162,8 +167,8 @@ declare
   v_name text := trim(coalesce(p_display_name, ''));
 begin
   if auth.uid() is null or not (
-    public.is_team_admin(auth.uid(), p_team_id)
-    or (public.is_super_admin() and public.has_selected_team_context(p_team_id))
+    (public.is_super_admin() and public.has_selected_team_context(p_team_id))
+    or (not public.is_super_admin() and public.is_team_admin(auth.uid(), p_team_id))
   ) then
     raise exception 'Nicht berechtigt' using errcode = '42501';
   end if;
