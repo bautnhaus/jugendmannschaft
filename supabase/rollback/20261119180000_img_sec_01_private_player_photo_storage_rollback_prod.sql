@@ -53,26 +53,98 @@ drop policy if exists player_photos_select_team on storage.objects;
 drop policy if exists profile_avatars_select_authorized on storage.objects;
 drop policy if exists club_assets_select_scoped on storage.objects;
 
--- 3) Ursprüngliche PROD-SELECT-Policy für club-assets wiederherstellen.
--- Die ursprüngliche Policy war vor IMG-SEC-01 vorhanden. Ihre Zugriffsbeschränkung
--- wird mit public.is_club_admin wiederhergestellt, damit Superadmins auch bei einer
--- zusätzlichen club_admin-Rolle zwingend einen ausgewählten Vereinskontext benötigen.
--- Die IMG-SEC-01-Policy für profile-avatars war vorher nicht vorhanden.
+-- 3) Ursprüngliche club-assets-Policies und Crest-RPC wiederherstellen.
+-- Die Admin-Prüfung verwendet public.is_club_admin statt can_manage_club_context,
+-- damit Superadmins auch bei zusätzlicher club_admin-Rolle den ausgewählten
+-- Vereinskontext benötigen. Die IMG-SEC-01-Lesepolicy für profile-avatars war
+-- vorher nicht vorhanden und wird deshalb entfernt.
+
 create policy club_assets_select_scoped
-on storage.objects
-for select
-to authenticated
+on storage.objects for select to authenticated
 using (
-  bucket_id = 'club-assets'
-  and public.is_club_admin(
-    case
-      when split_part(name, '/', 1) ~*
-        '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-      then split_part(name, '/', 1)::uuid
-      else null::uuid
-    end
-  )
+  bucket_id='club-assets'
+  and case
+    when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    then public.is_club_admin(split_part(name,'/',1)::uuid)
+    else false
+  end
 );
+
+create policy club_assets_insert_scoped
+on storage.objects for insert to authenticated
+with check (
+  bucket_id='club-assets'
+  and case
+    when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    then public.is_club_admin(split_part(name,'/',1)::uuid)
+    else false
+  end
+);
+
+create policy club_assets_update_scoped
+on storage.objects for update to authenticated
+using (
+  bucket_id='club-assets'
+  and case
+    when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    then public.is_club_admin(split_part(name,'/',1)::uuid)
+    else false
+  end
+)
+with check (
+  bucket_id='club-assets'
+  and case
+    when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    then public.is_club_admin(split_part(name,'/',1)::uuid)
+    else false
+  end
+);
+
+create policy club_assets_delete_scoped
+on storage.objects for delete to authenticated
+using (
+  bucket_id='club-assets'
+  and case
+    when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    then public.is_club_admin(split_part(name,'/',1)::uuid)
+    else false
+  end
+);
+
+create or replace function public.admin_update_club_crest(
+  p_club_id uuid,
+  p_crest_path text
+)
+returns void
+language plpgsql
+security definer
+set search_path = pg_catalog, public, storage
+as $function$
+begin
+  if auth.uid() is null or not public.is_club_admin(p_club_id) then
+    raise exception 'Nicht berechtigt, das Vereinswappen zu ändern'
+      using errcode = '42501';
+  end if;
+
+  if p_crest_path is not null then
+    if split_part(p_crest_path, '/', 1) <> p_club_id::text then
+      raise exception 'Wappenpfad muss im Ordner des ausgewählten Vereins liegen'
+        using errcode = '22023';
+    end if;
+    if not exists (
+      select 1 from storage.objects
+      where bucket_id = 'club-assets' and name = p_crest_path
+    ) then
+      raise exception 'Die Wappendatei wurde im Storage nicht gefunden'
+        using errcode = '22023';
+    end if;
+  end if;
+
+  update public.clubs
+  set crest_path = p_crest_path, updated_at = now()
+  where id = p_club_id;
+end;
+$function$;
 
 -- 4) Helper-Funktionen entfernen.
 -- Nach IMG-SEC-01a liegen sie in public; nach IMG-SEC-01b in private.
