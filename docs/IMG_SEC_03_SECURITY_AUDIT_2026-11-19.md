@@ -139,6 +139,7 @@ Das IMG-SEC-01-Rollback wurde korrigiert:
 - unterstützt IMG-SEC-01a allein und den Zustand nach IMG-SEC-01a plus IMG-SEC-01b;
 - entfernt Helper abhängig davon, ob sie in `public` oder `private` liegen;
 - stoppt, wenn IMG-SEC-02 noch installiert ist;
+- entfernt das von IMG-SEC-01b angelegte Schema `private` nur dann, wenn es nach dem Entfernen der Helper leer ist; unabhängige Objekte werden ohne `CASCADE` geschützt;
 - stellt die ursprüngliche `club_assets_select_scoped`-Policy mit explizitem `public.can_manage_club_context(...)` wieder her;
 - löscht keine Storage-Objekte oder fachlichen Datensätze.
 
