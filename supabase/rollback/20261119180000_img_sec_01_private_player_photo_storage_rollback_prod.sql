@@ -11,6 +11,10 @@ begin;
 -- 1) Vorbedingungen prüfen, bevor irgendeine Änderung erfolgt.
 do $preflight$
 begin
+  if to_regprocedure('public.is_club_admin(uuid)') is null then
+    raise exception 'IMG-SEC-01 Rollback abgebrochen: public.is_club_admin(uuid) fehlt.';
+  end if;
+
   if exists (
     select 1 from public.players
     where photo_path is not null
@@ -52,6 +56,9 @@ drop policy if exists player_photos_insert_team on storage.objects;
 drop policy if exists player_photos_select_team on storage.objects;
 drop policy if exists profile_avatars_select_authorized on storage.objects;
 drop policy if exists club_assets_select_scoped on storage.objects;
+drop policy if exists club_assets_insert_scoped on storage.objects;
+drop policy if exists club_assets_update_scoped on storage.objects;
+drop policy if exists club_assets_delete_scoped on storage.objects;
 
 -- 3) Ursprüngliche club-assets-Policies und Crest-RPC wiederherstellen.
 -- Die Admin-Prüfung verwendet public.is_club_admin statt can_manage_club_context,
