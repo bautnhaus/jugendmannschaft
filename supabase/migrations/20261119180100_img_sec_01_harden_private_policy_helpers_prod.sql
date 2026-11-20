@@ -1,5 +1,66 @@
 -- KADAssist IMG-SEC-01 helper hardening follow-up; PROD release copy; apply only after explicit PROD approval.
 begin;
+
+-- Preflight: nur den vollständig installierten IMG-SEC-01a-Zwischenstand härten.
+do $preflight$
+begin
+  if to_regprocedure('public.can_view_player_photo(uuid)') is null
+     or to_regprocedure('public.can_manage_player_photo(uuid,uuid)') is null
+     or to_regprocedure('public.can_view_club_asset(uuid)') is null
+     or to_regprocedure('public.can_view_profile_avatar(uuid)') is null then
+    raise exception 'IMG-SEC-01b Preflight: öffentliche IMG-SEC-01a-Helper fehlen.';
+  end if;
+
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_select_authorized'
+      and cmd='SELECT'
+      and qual like '%public.can_view_profile_avatar%'
+  ) then
+    raise exception 'IMG-SEC-01b Preflight: Profilbild-Policy referenziert nicht den erwarteten IMG-SEC-01a-Helper.';
+  end if;
+
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_select_scoped'
+      and cmd='SELECT'
+      and qual like '%public.can_view_club_asset%'
+  ) then
+    raise exception 'IMG-SEC-01b Preflight: Vereinsasset-Policy referenziert nicht den erwarteten IMG-SEC-01a-Helper.';
+  end if;
+
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='player_photos_select_team'
+      and cmd='SELECT'
+      and qual like '%public.can_manage_player_photo%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='player_photos_insert_team'
+      and cmd='INSERT'
+      and with_check like '%public.can_manage_player_photo%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='player_photos_update_team'
+      and cmd='UPDATE'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%public.can_manage_player_photo%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='player_photos_delete_team'
+      and cmd='DELETE'
+      and qual like '%public.can_manage_player_photo%'
+  ) then
+    raise exception 'IMG-SEC-01b Preflight: Spielerfoto-Policies referenzieren nicht vollständig den erwarteten IMG-SEC-01a-Helper.';
+  end if;
+end;
+$preflight$;
+
 create schema if not exists private;
 revoke all on schema private from public,anon;
 grant usage on schema private to authenticated;
