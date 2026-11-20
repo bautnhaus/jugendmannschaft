@@ -140,7 +140,7 @@ Das IMG-SEC-01-Rollback wurde korrigiert:
 - entfernt Helper abhängig davon, ob sie in `public` oder `private` liegen;
 - stoppt, wenn IMG-SEC-02 noch installiert ist;
 - entfernt das von IMG-SEC-01b angelegte Schema `private` nur dann, wenn es nach dem Entfernen der Helper leer ist; unabhängige Objekte werden ohne `CASCADE` geschützt;
-- stellt die ursprüngliche `club_assets_select_scoped`-Policy mit explizitem `public.can_manage_club_context(...)` wieder her;
+- stellt die `club_assets_select_scoped`-Policy mit `public.is_club_admin(...)` wieder her, damit Superadmins auch im Rollback einen ausgewählten Vereinskontext benötigen;
 - löscht keine Storage-Objekte oder fachlichen Datensätze.
 
 Diese Prüfung war read-only. Keine PROD-Migration, kein Storage-Update, keine Datenänderung und kein Deployment wurden ausgeführt.
@@ -186,7 +186,8 @@ Daher wurde die IMG-SEC-02-PROD-Migration auf beiden Branches korrigiert:
 - `private.can_manage_profile_avatar(uuid)` verwendet für Vereinszugriffe `public.is_club_admin(target.club_id)` statt `public.can_manage_club_context(target.club_id)`.
 - `public.admin_update_club_member_profile(...)` verwendet ebenfalls `public.is_club_admin(p_club_id)`.
 - Das IMG-SEC-02-Preflight prüft nun explizit, dass `public.is_club_admin(uuid)` vorhanden ist.
-- Das IMG-SEC-02-Rollback behält diese Kontextprüfung bewusst bei, statt den festgestellten Superadmin-Kontext-Bypass wieder einzuführen. Die übrigen Profilbild-Validierungsänderungen werden zurückgesetzt.
+- Das IMG-SEC-02-Rollback behält diese Kontextprüfung in der Vereinsprofil-RPC und in allen drei Profilbild-Schreibpolicies bewusst bei, statt den festgestellten Superadmin-Kontext-Bypass wieder einzuführen. Die übrigen Profilbild-Validierungsänderungen werden zurückgesetzt.
+- Auch das IMG-SEC-01-Rollback verwendet für die wiederhergestellte `club_assets_select_scoped`-Policy `public.is_club_admin(...)` statt der alten `can_manage_club_context(...)`-Prüfung.
 
 Read-only DEV-Tests in zurückgerollten Transaktionen:
 | Test | Ergebnis |
