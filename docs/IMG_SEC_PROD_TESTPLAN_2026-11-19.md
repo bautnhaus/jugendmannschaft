@@ -9,7 +9,8 @@ Nur nach separater PROD-Ausführungsfreigabe und nach dem jeweiligen Migrations-
 - Gemeinsame Teammitglieder sehen Profilbilder gemäß DEV-Regel.
 - Vereinsmitglied sieht das Vereinslogo.
 - Vereinsadmin kann Vereinslogo verwalten.
-- Superadmin sieht Vereinslogo/Profilbilder ausschließlich im ausdrücklich ausgewählten Vereins-/Teamkontext.
+- Superadmin sieht Vereinslogo/Profilbilder ausschließlich im ausdrücklich ausgewählten Vereins-/Teamkontext – auch wenn im Datenbestand zusätzlich Vereins- oder Mannschaftsrollen existieren.
+- Superadmin mit zusätzlicher Vereins-/Mannschaftsadmin-Rolle kann Vereinsasset-Upload, -Änderung, -Löschung und Profilbildverwaltung nur im ausgewählten Kontext ausführen.
 - Alle Bilder laden über Signed URLs; Ablauf/Retry funktioniert.
 
 ## Negative Tests
@@ -17,7 +18,9 @@ Nur nach separater PROD-Ausführungsfreigabe und nach dem jeweiligen Migrations-
 - Authentifizierter Benutzer ohne gemeinsame Mannschaft sieht kein fremdes Spielerfoto.
 - Benutzer ohne Berechtigung sieht kein fremdes Profilbild.
 - Nichtmitglied eines Vereins sieht kein Vereinslogo.
-- Superadmin ohne passenden ausgewählten Kontext sieht keine Vereins-/Teamdateien.
+- Superadmin ohne passenden ausgewählten Kontext sieht keine Vereins-/Teamdateien und kann keine fremden Profilbilder oder Vereinsassets verwalten – auch bei zusätzlichen `club_admin`-/`admin`-Zuweisungen.
+- Trainer kann kein fremdes Profilbild hochladen, ersetzen oder löschen.
+- Superadmin mit ausgewähltem Vereinskontext kann nicht auf andere Vereine zugreifen; mit ausgewähltem Mannschaftskontext nicht auf andere Mannschaften.
 - Manipulierte Profilbildpfade und fremde Benutzerordner werden abgewiesen.
 
 ## Regression
