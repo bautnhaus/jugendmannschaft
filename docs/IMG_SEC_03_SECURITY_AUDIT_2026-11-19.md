@@ -130,10 +130,10 @@ Die PROD-Funktionsdefinitionen wurden read-only geprüft. Dabei wurde insbesonde
 - `public.is_team_admin(uuid)` erlaubt normalen Benutzern die Prüfung ihrer Admin-Rolle in der angegebenen Mannschaft.
 - Bei Superadmins verlangt dieselbe Funktion `public.has_selected_team_context(team_id)`.
 - `public.is_team_member(uuid)` verwendet für Superadmins ebenfalls den ausdrücklich ausgewählten Mannschaftskontext.
-- `public.can_manage_club_context(uuid)` begrenzt Superadmins auf den ausgewählten Verein; Vereinsadmins werden auf ihre eigene Vereinsmitgliedschaft mit Rolle `club_admin` begrenzt.
+- `public.is_club_admin(uuid)` begrenzt Superadmins auch bei zusätzlicher `club_admin`-Rolle auf den ausgewählten Verein. `public.can_manage_club_context(uuid)` hat dagegen bei diesem dual-role-Sonderfall einen Kontext-Bypass; siehe Abschnitt 10.
 - Die verwendeten Funktionen sind `SECURITY DEFINER` mit festgelegtem `search_path`. Für `is_team_admin` wurde zusätzlich geprüft: EXECUTE für `authenticated` vorhanden, für `anon` nicht vorhanden.
 
-Daraus folgt: Die zentrale IMG-SEC-02-Funktion `private.can_manage_profile_avatar(uuid)` passt zu den vorhandenen PROD-Rollen- und Kontextfunktionen. Die Dokumentationskommentare der Migration wurden präzisiert; die Berechtigungslogik selbst wurde nicht verändert.
+Die erste Bewertung wurde durch die vertiefte Rollenprüfung präzisiert: Für Superadmins mit zusätzlicher `club_admin`-Rolle darf IMG-SEC-02 nicht `can_manage_club_context` verwenden. Die korrigierte Migration verwendet stattdessen `is_club_admin`; Details und Tests stehen in Abschnitt 10.
 
 Das IMG-SEC-01-Rollback wurde korrigiert:
 - unterstützt IMG-SEC-01a allein und den Zustand nach IMG-SEC-01a plus IMG-SEC-01b;
@@ -174,3 +174,30 @@ Die PROD-Migrationen wurden um zusätzliche Preflight-/Postflight-Prüfungen erg
 - IMG-SEC-03 verlangt alle privaten Helper, die private Spielerfoto-Bucket-Konfiguration und die tatsächlichen Policy-Ausdrücke für Profilbilder und Vereinsassets; nach dem Update müssen alle drei Bild-Buckets privat sein.
 
 Der installierte DEV-Stand erfüllt die geprüften Bucket- und Rechteerwartungen. Die erwarteten SELECT-Policy-Ausdrücke lauten auf die Funktionen im Schema `private`. Die Ergänzungen wurden ausschließlich in GitHub vorgenommen; PROD blieb unverändert.
+
+
+## 10. Korrektur Superadmin-Kontext bei Profilbildverwaltung (20.11.2026)
+
+Bei der vertieften DEV-Rollenprüfung wurde ein echter Sonderfall entdeckt: Der DEV-Superadmin besitzt zusätzlich eine `club_admin`-Rolle. `public.can_manage_club_context(uuid)` liefert für diesen Account auch ohne ausgewählten Vereinskontext `true`, weil die Funktion neben dem Superadmin-Kontextpfad auch die Vereinsadmin-Rolle akzeptiert. Das widerspricht der verbindlichen KADAssist-Regel, dass Superadmins ausschließlich im ausdrücklich ausgewählten Vereins- oder Mannschaftskontext handeln.
+
+Die vorhandene Funktion `public.is_club_admin(uuid)` behandelt diesen Fall korrekt: Bei Superadmins wird ausschließlich der ausgewählte Vereinskontext geprüft; bei normalen Vereinsadmins die zugewiesene `club_admin`-Rolle.
+
+Daher wurde die IMG-SEC-02-PROD-Migration auf beiden Branches korrigiert:
+- `private.can_manage_profile_avatar(uuid)` verwendet für Vereinszugriffe `public.is_club_admin(target.club_id)` statt `public.can_manage_club_context(target.club_id)`.
+- `public.admin_update_club_member_profile(...)` verwendet ebenfalls `public.is_club_admin(p_club_id)`.
+- Das IMG-SEC-02-Preflight prüft nun explizit, dass `public.is_club_admin(uuid)` vorhanden ist.
+- Das IMG-SEC-02-Rollback behält diese Kontextprüfung bewusst bei, statt den festgestellten Superadmin-Kontext-Bypass wieder einzuführen. Die übrigen Profilbild-Validierungsänderungen werden zurückgesetzt.
+
+Read-only DEV-Tests in zurückgerollten Transaktionen:
+| Test | Ergebnis |
+|---|---|
+| Superadmin mit zusätzlicher `club_admin`-Rolle, ohne Vereins- und Mannschaftskontext | Fremde Profilbilder nicht verwaltbar |
+| Derselbe Superadmin mit ausgewähltem Vereinskontext | Mitglieder dieses Vereins verwaltbar |
+| Normale Vereinsadmin-Rolle | Vereinsmitglieder verwaltbar |
+| Mannschaftsadmin | Profilbild eines Mitglieds derselben Mannschaft verwaltbar |
+| Trainer | Fremdes Profilbild nicht verwaltbar |
+| Trainer | Eigenes Profilbild weiterhin verwaltbar |
+
+Die Tests zeigen zugleich, dass `can_manage_club_context` im konkreten dual-role-Sonderfall ohne Kontext zu weitreichend ist. Die Bildberechtigungen und die IMG-SEC-02-Vereinsprofil-RPC verwenden deshalb künftig `is_club_admin`.
+
+Diese Korrektur ist bislang ausschließlich in den SQL-Dateien auf GitHub enthalten. Die DEV-Datenbank wurde nicht verändert; die Simulationen wurden zurückgerollt. PROD blieb vollständig read-only.
