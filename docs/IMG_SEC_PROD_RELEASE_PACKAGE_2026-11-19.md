@@ -93,3 +93,43 @@ Verbindliche Reihenfolge:
 ## Ergänzung: IMG-SEC-01-Rollback-Korrektur
 
 Das IMG-SEC-01-Rollback wurde am 20.11.2026 korrigiert und auf `develop` sowie diesem Release-Branch aktualisiert. Es unterstützt jetzt beide Zwischenstände (IMG-SEC-01a allein sowie IMG-SEC-01a plus IMG-SEC-01b), entfernt die Helper je nach vorhandenem Schema und stoppt, solange IMG-SEC-02 noch installiert ist. Es löscht keine Storage-Objekte oder fachlichen Datensätze.
+
+
+## Ergänzung: Migrationsledger und Ausführungsweg
+
+Die PROD-Migrationen werden zum Release über den Supabase-Migrationsmechanismus ausgeführt (nicht als unprotokollierte Einzel-Ausführung im SQL Editor). Für jede Migration wird der genaue Name aus der folgenden Liste verwendet; die vom Migrationsmechanismus zurückgegebene Versions-ID wird unmittelbar im Release-Protokoll und SQL-Release-Katalog festgehalten:
+
+- `img_sec_01_private_player_photo_storage_v1_0_0_prod`
+- `img_sec_01_harden_private_policy_helpers_prod`
+- `img_sec_02_profile_avatar_hardening_v1_0_0_prod`
+- `img_sec_03_private_profile_and_club_asset_buckets_prod`
+
+Die Dateien im Release-Branch sind die verbindlichen SQL-Inhalte. Vor jeder Ausführung werden Dateipfad, Inhalt, Zielprojekt **PROD** und Reihenfolge gemeinsam bestätigt. Der Migrationsmechanismus muss den Eintrag in `supabase_migrations.schema_migrations` selbst registrieren. Keine manuelle, unvollständige oder geratene Ledger-Eintragung. Falls eine Migration ausnahmsweise im SQL Editor ausgeführt werden muss, wird vorher ein eigener, freigegebener Plan für die korrekte Ledger-Nachführung erstellt; nicht einfach fortfahren.
+
+## Ergänzung: abgestufte Rollback-Strategie inklusive Frontend
+
+Ein Datenbank-Rollback darf nicht isoliert von der ausgelieferten Frontend-Version betrachtet werden. Die neue Frontend-Version nutzt `players.photo_path` und speichert Profilbildreferenzen als Storage-Pfade; der bisherige PROD-Frontend-Stand verwendet dagegen `players.photo_data` und erwartet bei Profilbildern öffentliche URLs.
+
+### A. Teil-Rollback bei weiterverwendetem IMG-SEC-01-Frontend
+
+Wenn bereits neue Profilbildpfade oder Spielerfotos angelegt wurden, darf nicht pauschal auf das alte Frontend zurückgestellt werden. In diesem Fall:
+- IMG-SEC-01 und die neue Bild-Frontend-Version bleiben bestehen, damit `photo_path` und die gespeicherten Pfade weiter funktionieren.
+- Ein erforderlicher Rollback von IMG-SEC-03 (Buckets wieder öffentlich) und/oder IMG-SEC-02 wird separat auf Datenkompatibilität und Sicherheitsfolgen geprüft.
+- Das alte Frontend wird nicht deployt, solange neue Pfade in `profiles.avatar_url` oder `players.photo_path` vorhanden sind.
+
+### B. Vollständige Rückkehr zum bisherigen PROD-Stand
+
+Eine vollständige Rückkehr zum bisherigen Frontend und zur alten IMG-SEC-Datenbankstruktur ist nur zulässig, wenn die nachfolgende read-only Prüfung bestätigt, dass keine neuen Bilddaten entstanden sind:
+- `players.photo_path` enthält keine Werte und `player-photos` enthält keine Objekte.
+- `profiles.avatar_url` enthält keine neuen Pfade im Format `<user-uuid>/avatar-<13-stellige Millisekunden>.(jpg|png|webp)`.
+- `profile-avatars` enthält keine neu hochgeladenen Objekte, die das alte Frontend nicht als öffentliche URL referenzieren kann.
+- Vorhandene Vereinslogo-Neuanlage ist mit dem alten Frontend kompatibel, weil der bisherige `club-assets`-Pfad und `clubs.crest_path` weiterverwendet werden.
+
+Wenn diese Bedingungen erfüllt sind, ist die Rückwärtsreihenfolge:
+1. IMG-SEC-03-Rollback: beide Buckets wieder öffentlich stellen (nur nach ausdrücklicher Freigabe; Sicherheitsdowngrade).
+2. IMG-SEC-02-Rollback: ursprüngliche Profilbild-RPCs und Schreibpolicies wiederherstellen.
+3. Bisheriges Frontend aus `main` wieder deployen und Funktion prüfen.
+4. IMG-SEC-01-Rollback: erst danach und nur bei weiterhin leeren `photo_path`-Daten und leerem `player-photos`-Bucket ausführen.
+
+Bei neuen Profilbild- oder Spielerfotodaten ist die vollständige Rückkehr blockiert, bis ein gesonderter Datenkompatibilitäts-/Migrationsplan erstellt und freigegeben wurde. Rollbacks erfolgen nie automatisch.
+
