@@ -1776,3 +1776,15 @@ Zielprojekt: Supabase PROD `qdugtpzgefpswnnqbusd`. Ausführung erfolgte mit dem 
 - `20261120224402` – `img_sec_02_profile_avatar_hardening_v1_0_0_prod`
 
 Postflight erfolgreich: `photo_path` ergänzt; bestehende Spieler-/Legacy-Daten unverändert (39 Spieler, 0 `photo_path`, 0 `photo_data`); privater `player-photos`-Bucket mit 2 MiB und JPEG/PNG/WebP; Storage-Policies, private Helper und Profilbild-Trigger geprüft. IMG-SEC-03 (Privatstellung von `profile-avatars` und `club-assets`) ist noch offen und erfolgt erst nach Gate-C-Funktionstest. Frontend-Deployment: gezielte Übernahme der getesteten `index.html` nach `main`, Commit `af27aed00d5776e72ab0234b98882bd155449b30`, Blob-SHA `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`. Kein Branch-Merge. Das bekannte alte Logoobjekt war bei erneuter Prüfung bereits nicht mehr vorhanden; kein Storage-Delete und kein DB-UPDATE vorgenommen. Kein kostenpflichtiges Backup (Free-Tier; Nutzerentscheidung).
+
+
+### IMG-SEC PROD – letzte Migration IMG-SEC-03 erfolgreich (20.11.2026)
+
+- Zielprojekt: Supabase PROD `qdugtpzgefpswnnqbusd`.
+- Ausführung nach ausdrücklicher Nutzerfreigabe mit Supabase-Migrationsmechanismus.
+- Ledger-Version `20261120230220`; Name `img_sec_03_private_profile_and_club_asset_buckets_prod`.
+- Preflight und transaktionaler Cutover erfolgreich.
+- Postflight: `player-photos`, `profile-avatars` und `club-assets` jeweils privat (`public=false`); alle drei mit 2 MiB und JPEG/PNG/WebP.
+- Keine Storage-Objekte oder fachlichen Datensätze gelöscht/geändert.
+- IMG-SEC SQL-Release 01a/01b/02/03 vollständig in PROD.
+- Bild-Praxistest wartet auf den sauberen regulären PROD-Deploy-Workflow. Direkter Frontend-Commit auf `main` war außerhalb des vereinbarten Prozesses; keine weiteren direkten Änderungen an `main`. Workflow-Abgleich und Veröffentlichung aus `develop` werden als nächster Arbeitsschritt vorbereitet.
