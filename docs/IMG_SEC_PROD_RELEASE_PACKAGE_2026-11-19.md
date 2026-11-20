@@ -259,3 +259,18 @@ Der read-only DEV-Kontextstatus zeigt aktuell einen ausgewählten Vereinskontext
 
 
 Der AP02-Rollback prüft zusätzlich, dass die globale Superadmin-Rolle seit der Migration unverändert besteht und die zentralen Kontextfunktionen noch dem gehärteten AP02-Zielzustand entsprechen. Nach Wiederherstellung werden sämtliche Vereinsrollen exakt mit dem Snapshot verglichen; erst danach wird das Backup-Schema entfernt.
+
+
+## AP02 – aktualisierter Stand nach DEV-Abschluss und PROD-Bestandsaufnahme (20.11.2026)
+
+Die älteren AP02-Statusangaben in diesem Dokument sind historisch und werden durch diesen Abschnitt ersetzt:
+
+- AP02-Migration wurde auf DEV unter Version `20261120212557` dauerhaft erfolgreich angewendet.
+- Die kontrollierte Transaktionssimulation einschließlich Rollenmatrix und Rollback war erfolgreich; der DEV-Anwendungstest wurde vom Nutzer positiv rückgemeldet.
+- Ein eigenständiges PROD-Paket wurde aus dem aktuellen PROD-Livebestand erstellt:
+  - `supabase/migrations/20261120230000_ap02_superadmin_context_hardening_prod.sql`
+  - `supabase/rollback/20261120230000_ap02_superadmin_context_hardening_rollback_prod.sql`
+  - `docs/prod-release/AP02_SUPERADMIN_CONTEXT_PROD_2026-11-20.md`
+- PROD weicht von DEV ab: Teamrolle `admin` statt `trainer`; die zentrale `is_team_admin(uuid)`-Funktion ist in PROD bereits gehärtet und bleibt unverändert.
+- Das PROD-Paket ist vorbereitet und statisch mit dem PROD-Livebestand abgeglichen. Es wurde nicht ausgeführt. Separate ausdrückliche PROD-Freigabe erforderlich.
+- AP02 ist ein eigenständiges Rollen-/Kontextrelease und nicht Bestandteil des IMG-SEC-Deployments. Die IMG-SEC-Migrationen, Logo-Löschung, Frontend-Deployment und Bucket-Cutover behalten ihren separat dokumentierten Status.
