@@ -11,7 +11,7 @@
 1. Superadmins bleiben global Superadmins und vereinsneutral.
 2. Superadmin-Zugriffe auf Vereinsverwaltung sind ausschließlich im ausdrücklich ausgewählten Vereinskontext zulässig.
 3. Eine zusätzliche Mannschaftsadmin- oder Trainerrolle bleibt als Datensatz erhalten.
-4. Diese Mannschaftsrolle begründet für einen Superadmin keinen kontextunabhängigen Zugriff. Der eigene Superadmin-Zugriff auf ein Team wird bereits in der zentralen Funktion `is_team_admin(team_id)` ausschließlich über den ausgewählten Teamkontext geprüft. Die zusätzliche gespeicherte Mannschaftsadmin-Rolle eröffnet keinen Bypass. Auch ein ausgewählter Vereinskontext darf bei Teamverwaltungs-RPCs den Mannschaftskontext nicht ersetzen.
+4. Diese Mannschaftsrolle begründet für einen Superadmin keinen kontextunabhängigen Zugriff. Der eigene Superadmin-Zugriff auf ein Team wird bereits in der zentralen Funktion `is_team_admin(team_id)` ausschließlich über den ausgewählten Teamkontext geprüft. Die zusätzliche gespeicherte Teamrolle (DEV derzeit `trainer`, PROD derzeit `admin`) eröffnet keinen Bypass. Auch ein ausgewählter Vereinskontext darf bei Teamverwaltungs-RPCs den Mannschaftskontext nicht ersetzen.
 5. Normale Vereinsadmins, Mannschaftsadmins und Trainer behalten ihre bisherigen Rollenrechte.
 6. Keine DEV-Daten werden nach PROD übernommen.
 
@@ -59,7 +59,7 @@ Die Migration ist absichtlich streng und bricht bei abweichendem Bestand ab. Sie
 
 ## Status / Sicherheitsgrenze
 
-- DEV-Live-Preflight (20.11.2026): genau ein Superadmin, eine direkte Vereinsmitgliedschaft, eine club_admin-Rolle, eine Teamrolle und eine Teammitgliedschaft; FK `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE` bestätigt; keine benutzerdefinierten Trigger auf den beiden Vereinsmitgliedschaftstabellen.
+- DEV-Live-Preflight (20.11.2026): genau ein Superadmin, eine direkte Vereinsmitgliedschaft, eine club_admin-Rolle, eine Teamrolle (`trainer`) und eine Teammitgliedschaft; der Vereinskontext ist ausgewählt, ein Teamkontext aktuell nicht; FK `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE` bestätigt; keine benutzerdefinierten Trigger auf den beiden Vereinsmitgliedschaftstabellen.
 - DEV-Live-Preflight (20.11.2026): genau ein Superadmin, eine direkte Vereinsmitgliedschaft, eine club_admin-Rolle, eine Teamrolle und eine Teammitgliedschaft; FK `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE` bestätigt; keine benutzerdefinierten Trigger auf den beiden Vereinsmitgliedschaftstabellen.
 - Keine SQL-Migration ausgeführt.
 - Keine Rollen oder Mitgliedschaften verändert.
