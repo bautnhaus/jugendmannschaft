@@ -1,6 +1,7 @@
 -- AP02: Superadmin-Kontextkorrektur und reversible Neutralisierung der direkten Vereinszuweisung.
 -- Ziel: zunächst DEV; nicht ausführen, bevor separate DEV-Ausführungsfreigabe vorliegt.
--- Erstellt aus dem read-only PROD-Livebestand vom 20.11.2026.
+-- Funktions- und Daten-Preflight gegen den read-only DEV-Livebestand vom 20.11.2026;
+-- der übergreifende Sicherheitsbefund wurde zusätzlich in PROD bestätigt.
 -- Die Teamrollen des Superadmins werden NICHT verändert.
 -- Die direkte Vereinsmitgliedschaft wird vor dem Entfernen in einem gesperrten
 -- Backup-Schema gesichert. club_member_roles wird per FK ON DELETE CASCADE entfernt.
