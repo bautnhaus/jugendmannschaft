@@ -1685,3 +1685,18 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Rollback-Korrektur:** falsches Literal `CASE WHEN` im Rollback-Preflight ersetzt durch Prüfungen auf die tatsächliche Funktionsausgabe `WHEN public.is_super_admin() THEN EXISTS` und `ELSE EXISTS`.
 - **Datenbestand:** erneute read-only-Prüfung bestätigt unveränderten DEV-Bestand; keine SQL-Ausführung.
 - **Offen:** keine echte PL/pgSQL-Parser-/Ausführungssimulation, keine Rollenmatrix-Praxistests, keine Transaktionssimulation, keine Rollback-Simulation. Diese Punkte benötigen kontrollierte Ausführung und bleiben Voraussetzung für die separate DEV-Ausführungsfreigabe.
+
+
+### AP02 – kontrollierte DEV-Transaktionssimulation bestanden (20.11.2026)
+
+- **Umgebung:** Supabase DEV, PostgreSQL 17.6.
+- **Ablauf:** tatsächliche AP02-Migration, Berechtigungs-/Rollenmatrix, tatsächliches Rollback in derselben expliziten Transaktion; abschließendes `ROLLBACK`.
+- **Superadmin:** ohne Vereinskontext kein Vereinszugriff; mit Vereinskontext ohne Teamkontext Vereinsverwaltung zulässig, Teamadmin-/Teamverwaltungs-RPCs verweigert; mit passendem Teamkontext Teamverwaltungszugriff zulässig.
+- **RPC-Matrix:** `admin_add_team_role`, `admin_remove_team_role`, `admin_update_member_profile`, `admin_set_trainer_label`, `get_team_trainers`, `get_team_trainers_v2`, `get_team_role_change_log) mit erwarteten Denials bzw. positiven Pfaden geprüft.
+- **Regulärer Vereinsadmin:** Vereinskontext und bisheriger Vereinsadmin-Fallback für Teamrollen hinzufügen/entfernen blieben funktionsfähig.
+- **Nicht-Admin:** Vereins- und Teamrollenverwaltung wurde verweigert.
+- **Rollenbestand:** die zusätzliche Superadmin-Teamrolle `trainer` blieb erhalten. Temporäre Teständerungen an einer anderen Teammitgliedschaft wurden innerhalb der Transaktion zurückgerollt.
+- **Rollback:** direkte Vereinsmitgliedschaft und `club_admin`-Rolle wiederhergestellt; Backup-Schema entfernt; Teamrolle unverändert.
+- **Nachkontrolle:** DEV-Bestand entspricht dem Ausgangsstand; keine temporären Testwerte, kein Backup-Schema; zentrale Funktions-MD5-Werte entsprechen dem geprüften Ausgangsstand.
+- **Paketfehler während der Simulation behoben:** Rollback-CASE-Preflight und Teilstring-Erkennung im Rollback-Ersetzungscheck korrigiert; erneute vollständige Simulation erfolgreich.
+- **Status:** kontrollierte Simulation bestanden; Migration nicht dauerhaft ausgeführt; PROD unverändert. Separate Freigabe zur tatsächlichen DEV-Migration weiterhin erforderlich.
