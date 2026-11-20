@@ -221,3 +221,16 @@ Bewertung: Der Anwendungstest ist damit vorläufig positiv. Die Superadmin-Konte
 **PROD:** unverändert; keine Freigabe oder Ausführung für PROD erfolgt.
 
 Nächster Schritt: PROD-Übertragung vorbereiten. Vor einer PROD-Migration sind PROD-Ausgangsschema, Funktionsdefinitionen, Datenbestand, Rollen-/Kontextbeziehungen und die dortige FK-/Triggerstruktur separat read-only zu prüfen. Anschließend ist ein eigenständiges, PROD-spezifisches SQL-Paket samt Rollback- und Postflight-Prüfungen vorzulegen. Keine PROD-Ausführung ohne separate ausdrückliche Freigabe.
+
+
+## PROD-Bestandsaufnahme und Release-Vorbereitung (20.11.2026)
+
+Siehe vollständiges Release-Dokument `docs/prod-release/AP02_SUPERADMIN_CONTEXT_PROD_2026-11-20.md`.
+
+- PROD-Livebestand read-only geprüft; PostgreSQL 17.6, Projekt aktiv.
+- PROD-Teamrolle des Superadmins ist `admin` (DEV: `trainer`) und bleibt erhalten.
+- PROD-`is_team_admin(uuid)` ist bereits korrekt teamkontextgebunden und wird vom PROD-Paket nicht verändert.
+- Die verbleibende Lücke liegt in `can_manage_club_context` sowie neun Berechtigungsausdrücken in sieben Verwaltungs-/Lese-RPCs.
+- Alle neun alten Ausdrücke kommen in PROD exakt einmal vor; die PROD-spezifischen MD5-Preflight-Werte stimmen.
+- PROD-Migration und Rollback wurden eigenständig erstellt; das Rollback schützt zusätzlich vor zwischenzeitlich geänderten Teamrollen/-mitgliedschaften.
+- Status: vorbereitet, statisch geprüft, nicht ausgeführt. PROD bleibt unverändert; separate ausdrückliche Freigabe erforderlich.
