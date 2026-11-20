@@ -52,7 +52,10 @@ begin
     raise exception 'Rollback abgebrochen: profile-avatars enthält neue IMG-SEC-02-Objekte. Zuerst Datenkompatibilität herstellen.';
   end if;
 
-  if exists (
+  if (
+    select count(*) from storage.buckets
+    where id in ('profile-avatars','club-assets')
+  ) <> 2 or exists (
     select 1 from storage.buckets
     where id in ('profile-avatars','club-assets') and public is distinct from true
   ) then
