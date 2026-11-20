@@ -9,7 +9,8 @@ begin;
 
 do $preflight$
 begin
-  if to_regprocedure('private.can_manage_profile_avatar(uuid)') is null
+  if to_regprocedure('public.is_club_admin(uuid)') is null
+     or to_regprocedure('private.can_manage_profile_avatar(uuid)') is null
      or to_regprocedure('private.is_valid_profile_avatar_path(uuid,text)') is null
      or to_regprocedure('private.enforce_profile_avatar_path()') is null then
     raise exception 'Rollback abgebrochen: IMG-SEC-02 Helper fehlen; Migration möglicherweise nicht installiert.';
