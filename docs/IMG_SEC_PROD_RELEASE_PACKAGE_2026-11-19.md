@@ -138,8 +138,8 @@ Bei neuen Profilbild- oder Spielerfotodaten ist die vollständige Rückkehr bloc
 ## Ergänzung: verschärfte Migrations-Preflights
 
 Die vier PROD-Migrationsdateien wurden am 20.11.2026 nochmals gegen den installierten DEV-Stand geprüft und mit zusätzlichen Abbruchbedingungen versehen:
-- IMG-SEC-01a prüft nach Bucket-Anlage neben `public=false` auch die erwartete Dateigrößenbegrenzung von 2 MiB und die exakte MIME-Allowlist.
-- IMG-SEC-01b prüft nach dem Verschieben, dass die drei Policy-Helper ausschließlich in `private` liegen, `authenticated` Schema-/EXECUTE-Rechte hat und `anon` weder Schema-USAGE noch EXECUTE erhält.
+- IMG-SEC-01a prüft vor Änderungen den erwarteten PROD-Ausgangsstand (fehlende `photo_path`-Spalte und Helper, vorhandene ursprüngliche Vereinsasset-SELECT-Policy, keine bereits vorhandenen IMG-SEC-Policies). Nach Bucket-Anlage prüft es neben `public=false` auch die erwartete Dateigrößenbegrenzung von 2 MiB und die exakte MIME-Allowlist.
+- IMG-SEC-01b prüft vor dem Schemawechsel, dass alle IMG-SEC-01a-Helper und die erwarteten Policies vorhanden sind und tatsächlich auf die öffentlichen IMG-SEC-01a-Helper zeigen. Nach dem Verschieben, dass die drei Policy-Helper ausschließlich in `private` liegen, `authenticated` Schema-/EXECUTE-Rechte hat und `anon` weder Schema-USAGE noch EXECUTE erhält.
 - IMG-SEC-02 prüft vor Ausführung, dass der private IMG-SEC-01-Helper existiert, die erwarteten Rechte gelten und die bestehende Profilbild-SELECT-Policy tatsächlich den privaten Helper verwendet.
 - IMG-SEC-03 prüft zusätzlich den privaten Spielerfoto-Bucket, die `photo_path`-Spalte, alle benötigten privaten Helper, die Auth-/Anon-Rechte und die tatsächlichen SELECT-Policy-Ausdrücke. Nach dem Cutover müssen alle drei Bild-Buckets privat sein.
 
