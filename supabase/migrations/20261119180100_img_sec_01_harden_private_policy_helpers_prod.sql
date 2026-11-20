@@ -79,7 +79,8 @@ grant execute on function private.can_view_profile_avatar(uuid) to authenticated
 do $postflight$
 begin
   if not has_schema_privilege('authenticated','private','USAGE')
-     or has_schema_privilege('anon','private','USAGE') then
+     or has_schema_privilege('anon','private','USAGE')
+     or has_schema_privilege('service_role','private','USAGE') then
     raise exception 'IMG-SEC-01b Postflight: unexpected private schema USAGE privileges.';
   end if;
 
