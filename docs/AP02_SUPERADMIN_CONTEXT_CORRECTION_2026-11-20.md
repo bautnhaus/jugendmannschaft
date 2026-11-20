@@ -92,3 +92,18 @@ Das ist ein read-only Abgleich der erwarteten Zielregeln mit dem aktuellen Konte
 | Trainer | keine Adminrechte | keine Teamadmin-Rechte |
 
 Zusätzlich werden Negativtests mit einem falschen bzw. fremden Teamkontext durchgeführt. Die Tests umfassen `can_manage_club_context`, `is_team_admin`, `admin_add_team_role`, `admin_remove_team_role`, `admin_update_member_profile`, `admin_set_trainer_label`, `get_team_trainers_v2` und `get_team_role_change_log`. Der Trainerzugriff auf die normale App-Funktionalität wird separat regressionsgeprüft.
+
+
+## Ergänzende statische Prüfung (20.11.2026)
+
+- Alle neun vorgesehenen alten Berechtigungsausdrücke wurden read-only gegen die aktuellen DEV-Funktionsdefinitionen abgeglichen. Jeder Ausdruck kommt in seiner jeweiligen Funktion exakt einmal vor.
+- Die zentrale DEV-Ausgangsdefinition von `is_team_admin(uuid)` und `can_manage_club_context(uuid)` stimmt mit den MD5-Preflight-Werten der Migration überein.
+- Die sieben betroffenen RPCs sind vorhanden. Ihre bestehenden Eigenschaften (SECURITY DEFINER, Owner, search_path und ACL) wurden read-only erfasst. Die dynamischen Ersetzungen verwenden `CREATE OR REPLACE` auf der bestehenden Funktionsdefinition, sodass die bestehenden Owner-/ACL-Einstellungen nicht absichtlich geändert werden.
+- Die Migration und der Rollback prüfen jetzt zusätzlich, dass jeder zu ersetzende Ausdruck exakt einmal vorhanden ist.
+- **Rollback-Prüffehler gefunden und korrigiert:** Die vorherige Rollback-Prüfung suchte nach dem nicht passenden Literal `CASE WHEN`. Sie prüft jetzt die tatsächliche Ausgabeform `WHEN public.is_super_admin() THEN EXISTS` sowie den `ELSE EXISTS`-Zweig.
+- Der DEV-Datenbestand wurde erneut read-only geprüft und ist unverändert: ein Superadmin, eine direkte Vereinsmitgliedschaft, eine Vereinsadmin-Rolle, eine Mannschaftsrolle und eine Mannschaftsmitgliedschaft. FK-/Trigger-Befund unverändert.
+- Keine Migration und kein Rollback ausgeführt.
+
+### Abgrenzung der abgeschlossenen Prüfung
+
+Diese Prüfung ist ein vollständiger statischer Quelltext-/Live-Definitionsabgleich der vorgesehenen Ersetzungen und ihrer Ausgangsbedingungen. Sie ist **keine** PostgreSQL-Ausführungssimulation und kein erfolgreicher Lauf der Migration/des Rollbacks. Eine echte Parser-/Ausführungskontrolle der PL/pgSQL-Blöcke sowie Rollenmatrix-, Transaktions- und Rollback-Praxistests bleiben vor der DEV-Ausführungsfreigabe erforderlich.
