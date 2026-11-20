@@ -7,14 +7,31 @@ comment on column public.players.photo_path is 'Storage path in private player-p
 insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
 values ('player-photos','player-photos',false,2097152,array['image/jpeg','image/png','image/webp'])
 on conflict (id) do nothing;
-do $$
-declare v_public boolean;
+do $
+declare
+  v_public boolean;
+  v_file_size_limit bigint;
+  v_allowed_mime_types text[];
 begin
-  select public into v_public from storage.buckets where id='player-photos';
-  if not found then raise exception 'Bucket player-photos missing after insert.'; end if;
-  if v_public is distinct from false then raise exception 'Existing player-photos bucket is not private; aborting without changing it.'; end if;
+  select public,file_size_limit,allowed_mime_types
+    into v_public,v_file_size_limit,v_allowed_mime_types
+  from storage.buckets
+  where id='player-photos';
+
+  if not found then
+    raise exception 'Bucket player-photos missing after insert.';
+  end if;
+  if v_public is distinct from false then
+    raise exception 'Existing player-photos bucket is not private; aborting without changing it.';
+  end if;
+  if v_file_size_limit is distinct from 2097152 then
+    raise exception 'Bucket player-photos has an unexpected file_size_limit; aborting.';
+  end if;
+  if v_allowed_mime_types is distinct from array['image/jpeg','image/png','image/webp']::text[] then
+    raise exception 'Bucket player-photos has unexpected allowed_mime_types; aborting.';
+  end if;
 end;
-$$;
+$;
 create or replace function public.can_view_player_photo(p_team_id uuid)
 returns boolean language sql stable security definer set search_path=pg_catalog,public
 as $function$ select auth.uid() is not null and p_team_id is not null and public.is_team_member(p_team_id); $function$;
