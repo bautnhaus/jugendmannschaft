@@ -114,3 +114,33 @@ Der Rollback prüft zusätzlich, dass Teamrollen und Mannschaftsmitgliedschaften
 Der Review war statisch und read-only. Es wurde keine PL/pgSQL-Ausführungssimulation auf PROD durchgeführt. Eine solche Simulation wäre eine Datenbankausführung und ist durch die bisherige Freigabe nicht gedeckt. Der tatsächliche Lauf wird durch die Preflight-Gates innerhalb der Transaktion geschützt; ein Fehler führt zum Abbruch und Rollback.
 
 **Review-Ergebnis:** Kein weiterer statischer Blocker festgestellt. Das Paket ist für die finale Freigabevorlage vorbereitet, aber noch nicht ausgeführt. Die separate ausdrückliche PROD-Ausführungsfreigabe bleibt erforderlich.
+
+
+## 9. PROD-Ausführung und Datenbank-Postflight – 20.11.2026
+
+**Freigabe:** ausdrückliche Nutzerfreigabe erteilt.  
+**Supabase-Projekt:** Jugendmannschaft PROD (`qdugtpzgefpswnnqbusd`), PostgreSQL 17.6.  
+**Ergebnis:** Migration erfolgreich angewendet (`success: true`).  
+**Tatsächliche Supabase-Migrationsversion:** `20261120221618`; Name `ap02_superadmin_context_hardening_prod`.
+
+### Postflight-Ergebnis (read-only)
+
+- globale Superadmins: 1
+- direkte Vereinsmitgliedschaften des Superadmins: 0
+- direkte Vereinsrollen `club_admin`: 0
+- Teamrollen des Superadmins: genau 1, weiterhin `admin`
+- Teammitgliedschaften des Superadmins: genau 1, weiterhin `admin`
+- private Backup-Tabelle: vorhanden, genau 1 Datensatz
+- gesicherte ursprüngliche Vereinsrolle: `club_admin`
+- RLS auf Backup-Tabelle: aktiviert
+- Schema-USAGE und Tabellen-SELECT für `anon`, `authenticated` und `service_role`: jeweils verweigert
+- `can_manage_club_context`: Superadmin-Zweig mit CASE-Priorität und ausgewähltem Vereinskontext aktiv
+- alle sieben betroffenen RPCs: Teamkontextprüfungen bzw. Superadmin-Fallback-Sperren aktiv
+- `get_team_role_change_log`: an den ausgewählten Mannschaftskontext gebunden
+- `is_team_admin(uuid)`: Hash unverändert gegenüber dem bereits gehärteten PROD-Ausgangsstand
+
+Die Supabase-Migrationshistorie enthält `20261120221618 / ap02_superadmin_context_hardening_prod`. Die GitHub-Migrations- und Rollback-Dateien wurden auf diese tatsächlich vergebene Version umbenannt. Der vorläufige Zeitstempel `20261120225600` wird nicht mehr verwendet.
+
+### Noch ausstehend
+
+Der Datenbank-Postflight ist erfolgreich. Der abschließende Frontend-Praxistest mit dem Superadmin-Konto steht noch aus: Vereinsauswahl/-verwaltung, Mannschaftsauswahl/-verwaltung, Kontextwechsel und Rollenhistorie. Bis zu diesem Test ist AP02 PROD datenbankseitig erfolgreich, aber die fachliche Release-Abnahme noch nicht vollständig geschlossen.
