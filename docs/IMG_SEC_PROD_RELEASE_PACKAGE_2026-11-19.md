@@ -229,3 +229,15 @@ Am 20.11.2026 wurden die Supabase Security Advisors in DEV und PROD read-only ab
 ## Finaler Release-Branch
 
 Der finale, bereinigte Release-Branch lautet release/img-sec-prod-2026-11-20. Er wurde frisch von main erstellt und enthält genau die zwölf vorgesehenen Dateien: vier Migrationen, drei Rollbacks, vier Prüfdokumente und die getestete index.html. Der Branch ist 12 Commits ahead und 0 Commits behind von main; es wurde kein Merge nach main ausgeführt. Die index.html besitzt weiterhin denselben Blob-SHA wie der getestete DEV-Stand (cc2ff9534d3847e9e9c343f3da2b741c865c5b9c).
+
+
+## AP02-Korrekturpaket – Vorbereitungsstand 20.11.2026
+
+Die gezielte AP02-Superadmin-Kontextkorrektur wurde auf `develop` vorbereitet und dokumentiert:
+- `supabase/migrations/20261120120000_ap02_superadmin_context_hardening_dev.sql`
+- `supabase/rollback/20261120120000_ap02_superadmin_context_hardening_rollback_dev.sql`
+- `docs/AP02_SUPERADMIN_CONTEXT_CORRECTION_2026-11-20.md`
+
+**Verbindliche fachliche Präzisierung:** Die zusätzliche Mannschaftsadmin-/Trainerrolle des Superadmins bleibt erhalten. Auch der zugehörige Datensatz in `team_members` bleibt erhalten. Die Team-Verwaltungsfunktionen prüfen den Superadmin-Zugriff über den explizit ausgewählten Teamkontext. Die direkte Vereinsmitgliedschaft und die daran gekoppelten Vereinsrollen werden reversibel gesichert und neutralisiert.
+
+**Status:** Dateien vorbereitet, noch nicht statisch abschließend validiert, nicht in DEV ausgeführt, nicht in PROD ausgeführt. Die bisherige AP02-Release-Sperre bleibt bestehen. Nach statischer Prüfung und erfolgreichem DEV-Test wird ein separates PROD-Paket aus dem dann aktuellen PROD-Livebestand erstellt. Die IMG-SEC-PROD-Migrationen, Logo-Löschung, Frontend-Deployment und Bucket-Cutover bleiben unverändert ausstehend.
