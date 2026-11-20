@@ -101,6 +101,59 @@ begin
      or has_function_privilege('anon','private.can_view_profile_avatar(uuid)','EXECUTE') then
     raise exception 'IMG-SEC-01b Postflight: unexpected helper EXECUTE privileges.';
   end if;
+
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_select_authorized'
+      and qual like '%private.can_view_profile_avatar%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_select_scoped'
+      and qual like '%private.can_view_club_asset%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='player_photos_select_team'
+      and qual like '%private.can_manage_player_photo%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='player_photos_insert_team'
+      and with_check like '%private.can_manage_player_photo%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='player_photos_update_team'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%private.can_manage_player_photo%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='player_photos_delete_team'
+      and qual like '%private.can_manage_player_photo%'
+  ) then
+    raise exception 'IMG-SEC-01b Postflight: Storage-Policies wurden nicht vollständig auf private Helper umgestellt.';
+  end if;
+
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_insert_scoped'
+      and with_check like '%public.is_club_admin%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_update_scoped'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%public.is_club_admin%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_delete_scoped'
+      and qual like '%public.is_club_admin%'
+  ) then
+    raise exception 'IMG-SEC-01b Postflight: Vereinsasset-Schreibpolicies verwenden nicht den expliziten Vereinskontext.';
+  end if;
 end;
 $postflight$;
 
