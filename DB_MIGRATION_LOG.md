@@ -1732,7 +1732,7 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Bereits korrekt:** `is_team_admin(uuid)` ist in PROD bereits CASE-/Teamkontext-gebunden (MD5 `f983aaebc7db5fcbb9284ffacc280b2c`) und wird nicht erneut verändert. `get_super_admin_clubs()` ist bereits vorhanden (Migration `20261115151239`).
 - **Noch offen:** `can_manage_club_context(uuid)` und neun Berechtigungsausdrücke in sieben Verwaltungs-/Lese-RPCs. Alle neun alten Ausdrücke wurden exakt einmal in den Live-Definitionen gefunden; die PROD-spezifischen MD5-Preflight-Werte stimmen.
 - **Struktur:** genau ein FK verweist auf `club_members`; `club_member_roles.user_id` hat `ON DELETE CASCADE`; keine benutzerdefinierten Trigger auf den beiden Vereinsmitgliedschaftstabellen.
-- **Paket auf develop:** `supabase/migrations/20261120225600_ap02_superadmin_context_hardening_prod.sql` und `supabase/rollback/20261120225600_ap02_superadmin_context_hardening_rollback_prod.sql`. Das PROD-Rollback schützt zusätzlich vor zwischenzeitlichen Änderungen der Teamrollen/-mitgliedschaften.
+- **Paket auf develop:** `supabase/migrations/20261120221618_ap02_superadmin_context_hardening_prod.sql` und `supabase/rollback/20261120221618_ap02_superadmin_context_hardening_rollback_prod.sql`. Das PROD-Rollback schützt zusätzlich vor zwischenzeitlichen Änderungen der Teamrollen/-mitgliedschaften.
 - **Status:** vorbereitet und statisch geprüft, nicht ausgeführt. Keine PROD-Daten, Funktionen oder Migrationseinträge verändert. Separate ausdrückliche PROD-Freigabe bleibt erforderlich.
 
 
@@ -1753,5 +1753,5 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - Neun PROD-Hash-Gates, neun dynamische Funktionsersetzungen, Teamrollen-Schutz und Rollback-Drift-Guards geprüft.
 - Nur `club_members` wird gelöscht; keine Änderung an `team_members` oder `team_member_roles`.
 - Primärschlüssel, FK CASCADE, `club_admin`-Check-Constraint, Funktionsowner und EXECUTE-ACLs read-only geprüft.
-- PROD-Migrationsledger zuletzt `20261118105730`; AP02-Version `20261120225600` liegt danach und ist nicht registriert.
+- PROD-Migrationsledger zuletzt `20261118105730`; AP02-Version `20261120221618` liegt danach und ist nicht registriert.
 - Keine Ausführungssimulation oder Datenbankänderung auf PROD. Paket ist bereit zur separaten ausdrücklichen PROD-Freigabe.
