@@ -53,8 +53,8 @@ Zusätzlich ist `is_team_admin(uuid)` in PROD bereits durch frühere PROD-Arbeit
 
 ## 5. PROD-Dateien auf develop
 
-- Migration: `supabase/migrations/20261120230000_ap02_superadmin_context_hardening_prod.sql`
-- Rollback: `supabase/rollback/20261120230000_ap02_superadmin_context_hardening_rollback_prod.sql`
+- Migration: `supabase/migrations/20261120225600_ap02_superadmin_context_hardening_prod.sql`
+- Rollback: `supabase/rollback/20261120225600_ap02_superadmin_context_hardening_rollback_prod.sql`
 - Dieses Release-Dokument: `docs/prod-release/AP02_SUPERADMIN_CONTEXT_PROD_2026-11-20.md`
 
 Die Migration enthält PROD-spezifische MD5-Preflight-Gates für die zentralen Kontextfunktionen und alle sieben betroffenen RPCs. Alle neun dynamischen Text-Ersetzungen müssen exakt einmal vorhanden sein. Jede Abweichung führt zum Abbruch vor der Datenänderung.
