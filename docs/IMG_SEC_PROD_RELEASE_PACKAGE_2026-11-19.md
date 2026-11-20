@@ -172,3 +172,14 @@ IMG-SEC härtet die unmittelbar betroffenen Profilbild- und Vereinsasset-Zugriff
 **IMG-SEC darf nicht in PROD freigegeben werden, bevor die separate AP02-Korrektur umgesetzt und geprüft wurde.** Erforderlich sind eine gehärtete zentrale `can_manage_club_context`-Semantik (Superadmins ausschließlich im ausgewählten Vereinskontext) und eine separat freizugebende Datenbereinigung der direkten Vereinsmitgliedschaft/-rolle sowie einer etwaigen Teamadmin-Zuweisung des Superadmins. Dafür ist ein eigener Preflight, eine eigene Migration, eine Rollback-/Auswirkungsprüfung und ein DEV-Praxistest erforderlich.
 
 Dieser Release-Blocker wurde ausschließlich dokumentiert. Keine Supabase-Daten oder Rollen wurden verändert.
+
+## Ergänzende Sicherheits-Gates nach der Paketprüfung
+
+- IMG-SEC-01 prüft und ersetzt alle vier club_assets_* Policies; Schreibzugriffe und admin_update_club_crest verwenden public.is_club_admin(...).
+- can_view_club_asset ignoriert eine direkte club_members-Mitgliedschaft bei Superadmins und verlangt den ausgewählten Vereinskontext.
+- can_view_profile_avatar verwendet die kontextbewussten Funktionen public.is_team_member(...) und public.is_club_admin(...).
+- IMG-SEC-02 vergibt Helper-EXECUTE nur an authenticated. anon und service_role erhalten weder private-Schema-USAGE noch Helper-EXECUTE.
+- IMG-SEC-03 prüft vor dem Cutover alle zwölf erwarteten Storage-Policies sowie die kontextgebundenen Vereinsasset-Schreibpolicies und Crest-RPC.
+- Rollback 02 stoppt bei neuen relativen Profilbildpfaden/-objekten und verlangt vorheriges IMG-SEC-03-Rollback. Rollback 01 verlangt ebenfalls öffentliche Alt-Bucket-Sichtbarkeit und stoppt bei IMG-SEC-02-Abhängigkeiten oder neuen Spielerfotos.
+
+Diese zusätzlichen Gates sind in den SQL-Dateien enthalten und statisch geprüft. Die korrigierten Migrationen wurden noch nicht in DEV ausgeführt; eine separate DEV-Testfreigabe ist vor jeder PROD-Freigabe erforderlich.
