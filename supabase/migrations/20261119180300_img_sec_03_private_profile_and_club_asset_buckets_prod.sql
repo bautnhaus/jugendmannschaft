@@ -135,17 +135,17 @@ begin
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
       and policyname='club_assets_insert_scoped'
-      and with_check like '%public.is_club_admin%'
+      and with_check like '%is_club_admin%'
   ) or not exists (
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
       and policyname='club_assets_update_scoped'
-      and coalesce(qual,'') || coalesce(with_check,'') like '%public.is_club_admin%'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%is_club_admin%'
   ) or not exists (
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
       and policyname='club_assets_delete_scoped'
-      and qual like '%public.is_club_admin%'
+      and qual like '%is_club_admin%'
   ) then
     raise exception 'IMG-SEC-03 Preflight: Vereinsasset-Schreibpolicies verwenden nicht den expliziten Vereinskontext.';
   end if;
