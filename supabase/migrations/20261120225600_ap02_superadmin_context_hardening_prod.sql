@@ -4,6 +4,8 @@
 -- Die vorhandene Superadmin-Teamrolle 'admin' wird vollständig erhalten.
 -- Nur nach separater ausdrücklicher PROD-Freigabe ausführen.
 
+BEGIN;
+
 DO $preflight$
 DECLARE
   v_superadmins integer;
@@ -294,3 +296,5 @@ BEGIN
   END IF;
 END;
 $postflight$;
+
+COMMIT;
