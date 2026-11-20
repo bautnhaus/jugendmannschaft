@@ -1766,3 +1766,13 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - Alle geprüften Kontext-RPCs aktiv gehärtet; `is_team_admin(uuid)`-Hash unverändert.
 - GitHub-Migrations- und Rollback-Dateien auf Supabase-Version `20261120221618` umbenannt.
 - **PROD-Datenbankmigration erfolgreich.** Frontend-Praxistest noch ausstehend; keine Rollback-Ausführung.
+
+
+## IMG-SEC PROD – 20.11.2026 – Teilrelease (01a, 01b, 02)
+
+Zielprojekt: Supabase PROD `qdugtpzgefpswnnqbusd`. Ausführung erfolgte mit dem dokumentierten Supabase-Migrationsmechanismus nach Nutzerfreigabe. Die tatsächlichen Ledger-Versionen:
+- `20261120224346` – `img_sec_01_private_player_photo_storage_v1_0_0_prod`
+- `20261120224359` – `img_sec_01_harden_private_policy_helpers_prod`
+- `20261120224402` – `img_sec_02_profile_avatar_hardening_v1_0_0_prod`
+
+Postflight erfolgreich: `photo_path` ergänzt; bestehende Spieler-/Legacy-Daten unverändert (39 Spieler, 0 `photo_path`, 0 `photo_data`); privater `player-photos`-Bucket mit 2 MiB und JPEG/PNG/WebP; Storage-Policies, private Helper und Profilbild-Trigger geprüft. IMG-SEC-03 (Privatstellung von `profile-avatars` und `club-assets`) ist noch offen und erfolgt erst nach Gate-C-Funktionstest. Frontend-Deployment: gezielte Übernahme der getesteten `index.html` nach `main`, Commit `af27aed00d5776e72ab0234b98882bd155449b30`, Blob-SHA `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`. Kein Branch-Merge. Das bekannte alte Logoobjekt war bei erneuter Prüfung bereits nicht mehr vorhanden; kein Storage-Delete und kein DB-UPDATE vorgenommen. Kein kostenpflichtiges Backup (Free-Tier; Nutzerentscheidung).
