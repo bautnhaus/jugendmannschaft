@@ -17,7 +17,7 @@ begin
      or to_regclass('storage.objects') is null then
     raise exception 'Preflight fehlgeschlagen: erforderliche Tabellen fehlen.';
   end if;
-  if to_regprocedure('public.can_manage_club_context(uuid)') is null
+  if to_regprocedure('public.is_club_admin(uuid)') is null
      or to_regprocedure('public.is_team_admin(uuid)') is null
      or to_regprocedure('public.is_team_admin(uuid,uuid)') is null
      or to_regprocedure('public.is_super_admin()') is null
@@ -61,9 +61,11 @@ revoke all on function private.is_valid_profile_avatar_path(uuid, text) from pub
 grant execute on function private.is_valid_profile_avatar_path(uuid, text) to authenticated, service_role;
 
 -- 2) Zentrale Autorisierung für die Verwaltung fremder Profilbilder.
--- Vereinsadmins: nur für Mitglieder des eigenen Vereins; public.can_manage_club_context
--- prüft die Vereinsadmin-Zugehörigkeit. Superadmins benötigen ausdrücklich den
--- passenden ausgewählten Vereinskontext.
+-- Vereinsadmins: nur für Mitglieder des eigenen Vereins; public.is_club_admin
+-- prüft die Vereinsadmin-Zugehörigkeit und verlangt bei Superadmins ausdrücklich
+-- den ausgewählten Vereinskontext. Nicht can_manage_club_context verwenden:
+-- diese Funktion kann bei einem Superadmin mit zusätzlicher club_admin-Rolle
+-- auch ohne ausgewählten Vereinskontext true liefern.
 -- Mannschaftsadmins: nur für Mitglieder derselben Mannschaft. Superadmins benötigen
 -- ausdrücklich den passenden ausgewählten Mannschaftskontext.
 create or replace function private.can_manage_profile_avatar(
@@ -83,7 +85,7 @@ as $function$
          select 1
          from public.club_members target
          where target.user_id = p_target_user_id
-           and public.can_manage_club_context(target.club_id)
+           and public.is_club_admin(target.club_id)
        )
        or exists (
          select 1
@@ -194,7 +196,7 @@ as $function$
 declare
   v_name text := trim(coalesce(p_display_name, ''));
 begin
-  if auth.uid() is null or not public.can_manage_club_context(p_club_id) then
+  if auth.uid() is null or not public.is_club_admin(p_club_id) then
     raise exception 'Nicht berechtigt oder kein ausgewählter Vereinskontext'
       using errcode = '42501';
   end if;
