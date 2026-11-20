@@ -37,7 +37,7 @@ where (n.nspname='private' and p.proname in (
   'can_manage_profile_avatar','is_valid_profile_avatar_path','enforce_profile_avatar_path'
 ))
 or (n.nspname='public' and p.proname in (
-  'admin_update_member_profile','admin_update_club_member_profile'
+  'admin_update_member_profile','admin_update_club_member_profile','admin_update_club_crest'
 ))
 order by n.nspname,p.proname;
 
@@ -45,6 +45,7 @@ order by n.nspname,p.proname;
 select
   has_schema_privilege('authenticated','private','USAGE') as authenticated_private_usage,
   has_schema_privilege('anon','private','USAGE') as anon_private_usage,
+  has_schema_privilege('service_role','private','USAGE') as service_role_private_usage,
   has_function_privilege('authenticated','private.can_manage_player_photo(uuid,uuid)','EXECUTE') as authenticated_manage_player_photo,
   has_function_privilege('anon','private.can_manage_player_photo(uuid,uuid)','EXECUTE') as anon_manage_player_photo,
   has_function_privilege('authenticated','private.can_view_club_asset(uuid)','EXECUTE') as authenticated_view_club_asset,
@@ -54,7 +55,12 @@ select
   has_function_privilege('authenticated','private.can_manage_profile_avatar(uuid)','EXECUTE') as authenticated_manage_profile_avatar,
   has_function_privilege('anon','private.can_manage_profile_avatar(uuid)','EXECUTE') as anon_manage_profile_avatar,
   has_function_privilege('authenticated','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE') as authenticated_validate_profile_avatar,
-  has_function_privilege('anon','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE') as anon_validate_profile_avatar;
+  has_function_privilege('anon','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE') as anon_validate_profile_avatar,
+  has_function_privilege('service_role','private.can_manage_player_photo(uuid,uuid)','EXECUTE') as service_role_manage_player_photo,
+  has_function_privilege('service_role','private.can_view_club_asset(uuid)','EXECUTE') as service_role_view_club_asset,
+  has_function_privilege('service_role','private.can_view_profile_avatar(uuid)','EXECUTE') as service_role_view_profile_avatar,
+  has_function_privilege('service_role','private.can_manage_profile_avatar(uuid)','EXECUTE') as service_role_manage_profile_avatar,
+  has_function_privilege('service_role','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE') as service_role_validate_profile_avatar;
 
 -- 4. Trigger
 select t.tgname,pg_get_triggerdef(t.oid) as definition
