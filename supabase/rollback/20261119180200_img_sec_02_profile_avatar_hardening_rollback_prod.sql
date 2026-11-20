@@ -48,7 +48,21 @@ begin
   if exists (
     select 1 from public.profiles
     where avatar_url ~*
-      '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/avatar-[0-9]{13}[.](jpg|png|webp)
+      '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/avatar-[0-9]{13}[.](jpg|png|webp)$'
+  ) then
+    raise exception 'Rollback abgebrochen: profiles.avatar_url enthält neue IMG-SEC-02-Pfade. Zuerst Datenkompatibilität herstellen.';
+  end if;
+
+  if exists (
+    select 1 from storage.objects
+    where bucket_id='profile-avatars'
+      and name ~*
+        '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/avatar-[0-9]{13}[.](jpg|png|webp)$'
+  ) then
+    raise exception 'Rollback abgebrochen: profile-avatars enthält neue IMG-SEC-02-Objekte. Zuerst Datenkompatibilität herstellen.';
+  end if;
+end;
+$preflight$;
 
 -- 1) Trigger entfernen.
 drop trigger if exists profiles_validate_avatar_path on public.profiles;
