@@ -1,7 +1,6 @@
 -- KADAssist IMG-SEC-01 / Paket 1A / Version 1.0.0
 -- Production release copy; apply only after explicit PROD approval. Existing profile-avatars and club-assets buckets remain public.
 -- profiles_select and existing profile-avatar write policies remain unchanged.
--- Superadmins are evaluated only through their explicitly selected team/club context, even if legacy role rows exist.
 begin;
 
 -- Preflight: PROD muss dem geprüften Ausgangsstand entsprechen.
@@ -20,7 +19,9 @@ begin
   end if;
   if to_regprocedure('public.is_team_member(uuid)') is null
      or to_regprocedure('public.is_club_member(uuid)') is null
-     or to_regprocedure('public.is_club_admin(uuid)') is null then
+     or to_regprocedure('public.is_club_admin(uuid)') is null
+     or to_regprocedure('public.is_super_admin()') is null
+     or to_regprocedure('public.admin_update_club_crest(uuid,text)') is null then
     raise exception 'IMG-SEC-01a Preflight: benötigte Rollen-/Kontextfunktionen fehlen.';
   end if;
   if to_regprocedure('public.can_view_player_photo(uuid)') is not null
@@ -29,12 +30,12 @@ begin
      or to_regprocedure('public.can_view_profile_avatar(uuid)') is not null then
     raise exception 'IMG-SEC-01a Preflight: mindestens ein IMG-SEC-Helper existiert bereits; Zustand prüfen.';
   end if;
-  if not exists (
-    select 1 from pg_policies
+  if (
+    select count(*) from pg_policies
     where schemaname='storage' and tablename='objects'
-      and policyname='club_assets_select_scoped' and cmd='SELECT'
-  ) then
-    raise exception 'IMG-SEC-01a Preflight: bestehende club-assets-SELECT-Policy fehlt.';
+      and policyname in ('club_assets_select_scoped','club_assets_insert_scoped','club_assets_update_scoped','club_assets_delete_scoped')
+  ) <> 4 then
+    raise exception 'IMG-SEC-01a Preflight: bestehende club-assets-Policies sind unvollständig.';
   end if;
   if exists (
     select 1 from pg_policies
@@ -57,7 +58,7 @@ comment on column public.players.photo_path is 'Storage path in private player-p
 insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
 values ('player-photos','player-photos',false,2097152,array['image/jpeg','image/png','image/webp'])
 on conflict (id) do nothing;
-do $
+do $$
 declare
   v_public boolean;
   v_file_size_limit bigint;
@@ -81,7 +82,7 @@ begin
     raise exception 'Bucket player-photos has unexpected allowed_mime_types; aborting.';
   end if;
 end;
-$;
+$$;
 create or replace function public.can_view_player_photo(p_team_id uuid)
 returns boolean language sql stable security definer set search_path=pg_catalog,public
 as $function$ select auth.uid() is not null and p_team_id is not null and public.is_team_member(p_team_id); $function$;
@@ -95,33 +96,19 @@ $function$;
 create or replace function public.can_view_club_asset(p_club_id uuid)
 returns boolean language sql stable security definer set search_path=pg_catalog,public
 as $function$
-select auth.uid() is not null
-   and p_club_id is not null
-   and (
-     (not public.is_super_admin() and public.is_club_member(p_club_id))
-     or public.is_club_admin(p_club_id)
-   );
+select auth.uid() is not null and p_club_id is not null and (
+  (not public.is_super_admin() and public.is_club_member(p_club_id))
+  or public.is_club_admin(p_club_id)
+);
 $function$;
 create or replace function public.can_view_profile_avatar(p_target_user_id uuid)
 returns boolean language sql stable security definer set search_path=pg_catalog,public
 as $function$
-select auth.uid() is not null
-   and p_target_user_id is not null
-   and (
-     p_target_user_id = auth.uid()
-     or exists (
-       select 1
-       from public.team_member_roles target
-       where target.user_id = p_target_user_id
-         and public.is_team_member(target.team_id)
-     )
-     or exists (
-       select 1
-       from public.club_members target
-       where target.user_id = p_target_user_id
-         and public.is_club_admin(target.club_id)
-     )
-   );
+select auth.uid() is not null and p_target_user_id is not null and (
+ p_target_user_id=auth.uid()
+ or exists(select 1 from public.team_member_roles target where target.user_id=p_target_user_id and public.is_team_member(target.team_id))
+ or exists(select 1 from public.club_members target_member where target_member.user_id=p_target_user_id and public.is_club_admin(target_member.club_id))
+);
 $function$;
 revoke all on function public.can_view_player_photo(uuid) from public,anon;
 revoke all on function public.can_manage_player_photo(uuid,uuid) from public,anon;
@@ -140,35 +127,12 @@ create policy club_assets_select_scoped on storage.objects for select to authent
  bucket_id='club-assets' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then public.can_view_club_asset(split_part(name,'/',1)::uuid) else false end
 );
 
--- Die Vereinsasset-Schreibrechte müssen dieselbe explizite Superadmin-Kontextregel
--- verwenden. can_manage_club_context kann bei einem Superadmin mit zusätzlicher
--- club_admin-Rolle auch ohne ausgewählten Vereinskontext true liefern.
+-- Vereinsasset-Schreibrechte: Superadmins müssen auch dann einen explizit
+-- ausgewählten Vereinskontext besitzen, wenn sie zusätzlich club_admin sind.
 drop policy if exists club_assets_insert_scoped on storage.objects;
 create policy club_assets_insert_scoped on storage.objects for insert to authenticated with check (
  bucket_id='club-assets' and case
-   when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
-create policy player_photos_select_team on storage.objects for select to authenticated using (
- bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end
-);
-drop policy if exists player_photos_insert_team on storage.objects;
-create policy player_photos_insert_team on storage.objects for insert to authenticated with check (
- bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end
-);
-drop policy if exists player_photos_update_team on storage.objects;
-create policy player_photos_update_team on storage.objects for update to authenticated
-using (bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end)
-with check (bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end);
-drop policy if exists player_photos_delete_team on storage.objects;
-create policy player_photos_delete_team on storage.objects for delete to authenticated using (
- bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end
-);
-commit;
-
+   when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
    then public.is_club_admin(split_part(name,'/',1)::uuid)
    else false
  end
@@ -177,58 +141,14 @@ drop policy if exists club_assets_update_scoped on storage.objects;
 create policy club_assets_update_scoped on storage.objects for update to authenticated
 using (
  bucket_id='club-assets' and case
-   when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
-create policy player_photos_select_team on storage.objects for select to authenticated using (
- bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end
-);
-drop policy if exists player_photos_insert_team on storage.objects;
-create policy player_photos_insert_team on storage.objects for insert to authenticated with check (
- bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end
-);
-drop policy if exists player_photos_update_team on storage.objects;
-create policy player_photos_update_team on storage.objects for update to authenticated
-using (bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end)
-with check (bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end);
-drop policy if exists player_photos_delete_team on storage.objects;
-create policy player_photos_delete_team on storage.objects for delete to authenticated using (
- bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end
-);
-commit;
-
+   when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
    then public.is_club_admin(split_part(name,'/',1)::uuid)
    else false
  end
 )
 with check (
  bucket_id='club-assets' and case
-   when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
-create policy player_photos_select_team on storage.objects for select to authenticated using (
- bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end
-);
-drop policy if exists player_photos_insert_team on storage.objects;
-create policy player_photos_insert_team on storage.objects for insert to authenticated with check (
- bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end
-);
-drop policy if exists player_photos_update_team on storage.objects;
-create policy player_photos_update_team on storage.objects for update to authenticated
-using (bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end)
-with check (bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end);
-drop policy if exists player_photos_delete_team on storage.objects;
-create policy player_photos_delete_team on storage.objects for delete to authenticated using (
- bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end
-);
-commit;
-
+   when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
    then public.is_club_admin(split_part(name,'/',1)::uuid)
    else false
  end
@@ -236,35 +156,12 @@ commit;
 drop policy if exists club_assets_delete_scoped on storage.objects;
 create policy club_assets_delete_scoped on storage.objects for delete to authenticated using (
  bucket_id='club-assets' and case
-   when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
-create policy player_photos_select_team on storage.objects for select to authenticated using (
- bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end
-);
-drop policy if exists player_photos_insert_team on storage.objects;
-create policy player_photos_insert_team on storage.objects for insert to authenticated with check (
- bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end
-);
-drop policy if exists player_photos_update_team on storage.objects;
-create policy player_photos_update_team on storage.objects for update to authenticated
-using (bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end)
-with check (bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end);
-drop policy if exists player_photos_delete_team on storage.objects;
-create policy player_photos_delete_team on storage.objects for delete to authenticated using (
- bucket_id='player-photos' and case when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' and split_part(name,'/',2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
- then public.can_manage_player_photo(split_part(name,'/',1)::uuid,split_part(name,'/',2)::uuid) else false end
-);
-commit;
-
+   when split_part(name,'/',1) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
    then public.is_club_admin(split_part(name,'/',1)::uuid)
    else false
  end
 );
 
--- Auch die Crest-RPC muss den Superadmin-Kontext explizit prüfen.
 create or replace function public.admin_update_club_crest(
   p_club_id uuid,
   p_crest_path text
