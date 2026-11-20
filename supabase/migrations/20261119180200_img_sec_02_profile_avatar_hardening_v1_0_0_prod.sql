@@ -29,12 +29,27 @@ begin
   if not has_schema_privilege('authenticated','private','USAGE') then
     raise exception 'Preflight fehlgeschlagen: authenticated besitzt kein USAGE auf private.';
   end if;
+  if not has_schema_privilege('authenticated','private','USAGE')
+     or has_schema_privilege('anon','private','USAGE') then
+    raise exception 'Preflight fehlgeschlagen: private-Schema-Rechte sind unerwartet.';
+  end if;
+  if to_regprocedure('private.can_view_profile_avatar(uuid)') is null
+     or to_regprocedure('private.can_manage_player_photo(uuid,uuid)') is null
+     or to_regprocedure('private.can_view_club_asset(uuid)') is null then
+    raise exception 'Preflight fehlgeschlagen: IMG-SEC-01 private Helper fehlen.';
+  end if;
+  if not has_function_privilege('authenticated','private.can_view_profile_avatar(uuid)','EXECUTE')
+     or has_function_privilege('anon','private.can_view_profile_avatar(uuid)','EXECUTE') then
+    raise exception 'Preflight fehlgeschlagen: Profilbild-SELECT-Helper-Rechte sind unerwartet.';
+  end if;
   if not exists (
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
-      and policyname='profile_avatars_select_authorized' and cmd='SELECT'
+      and policyname='profile_avatars_select_authorized'
+      and cmd='SELECT'
+      and qual like '%private.can_view_profile_avatar%'
   ) then
-    raise exception 'Preflight fehlgeschlagen: erwartete Profilbild-SELECT-Policy fehlt.';
+    raise exception 'Preflight fehlgeschlagen: Profilbild-SELECT-Policy fehlt oder verwendet nicht den privaten IMG-SEC-01-Helper.';
   end if;
 end;
 $preflight$;
