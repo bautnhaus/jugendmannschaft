@@ -106,8 +106,22 @@ where id = 'player-photos'
     select 1 from storage.objects where bucket_id = 'player-photos'
   );
 
--- Das von IMG-SEC-01b angelegte private-Schema bleibt absichtlich bestehen,
--- falls es inzwischen weitere, unabhängige Objekte enthält. Es enthält nach
--- dem Rollback keine IMG-SEC-01-Helper mehr.
+-- Das Schema private wurde in PROD vor IMG-SEC-01 nicht verwendet.
+-- Nach Entfernen der IMG-SEC-01/02-Helper wird es entfernt, sofern es leer ist.
+-- Ohne CASCADE: unabhängige Objekte verhindern das Löschen und bleiben erhalten.
+do $drop_private_schema$
+begin
+  if to_regnamespace('private') is not null then
+    begin
+      execute 'drop schema private';
+    exception
+      when dependent_objects_still_exist then
+        raise notice 'Schema private bleibt bestehen, da es noch unabhängige Objekte enthält.';
+    end;
+  end if;
+end;
+$drop_private_schema$;
+
+
 
 commit;
