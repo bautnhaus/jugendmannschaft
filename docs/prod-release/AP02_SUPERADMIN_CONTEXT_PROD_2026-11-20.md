@@ -84,3 +84,33 @@ Der Rollback prüft zusätzlich, dass Teamrollen und Mannschaftsmitgliedschaften
 7. Release-Log und Migrationskatalog aktualisieren.
 
 **Freigaberegel:** Dieses Dokument und die SQL-Dateien sind Vorbereitung. Sie stellen ausdrücklich keine PROD-Ausführungsfreigabe dar.
+
+
+## 8. Abschließender unabhängiger Review – 20.11.2026
+
+### Geprüfte technische Eigenschaften
+
+- Migration und Rollback sind jeweils vollständig mit `BEGIN` / `COMMIT` geklammert.
+- Die Migration enthält neun PROD-Ausgangs-Hash-Gates (eine zusätzliche Wiederholung des `is_team_admin(uuid)`-Hashes ist der separate Postflight-Schutz und beabsichtigt).
+- Die neun dynamischen Ersetzungen in sieben RPCs wurden zuvor einzeln gegen die PROD-Live-Definitionen geprüft; jeder alte Ausdruck kam exakt einmal vor.
+- Der einzige DELETE-Befehl der Migration betrifft `public.club_members`. Es gibt keine DELETE- oder UPDATE-Anweisung gegen `team_members` oder `team_member_roles`.
+- PROD-Primärschlüssel: `club_members(user_id)`, `club_member_roles(user_id, role)`. Der Rollback-Konfliktschlüssel `(user_id, role)` ist damit eindeutig abgesichert.
+- Der Vereinsrollen-Check-Constraint begrenzt `club_member_roles.role` auf `club_admin`; dieser Constraint ist jetzt ebenfalls Teil des Migrations-Preflights.
+- FK `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE` wurde bestätigt.
+- Die vorhandenen SECURITY DEFINER-Eigentümer und EXECUTE-Rechte der betroffenen PROD-Funktionen wurden read-only geprüft. `CREATE OR REPLACE` bzw. das Ersetzen der Funktionsdefinitionen erhält die bestehenden Funktions-ACLs und Eigentümer.
+- Das Backup-Schema und die Backup-Tabelle entziehen `PUBLIC`, `anon`, `authenticated` und `service_role` alle Rechte; RLS ist zusätzlich aktiviert und es werden keine Policies angelegt.
+- PROD-Migrationshistorie zuletzt: `20261118105730`. Die vorgesehene AP02-Version `20261120225600` liegt chronologisch danach und ist noch nicht registriert.
+
+### Rollback-Review
+
+- Wiederherstellung der Vereinsmitgliedschaft erfolgt vor dem Einspielen der gesicherten `club_admin`-Rolle.
+- `ON CONFLICT (user_id, role)` ist durch den bestätigten Primärschlüssel gedeckt.
+- Das Rollback bricht ab, wenn der Superadmin inzwischen keine globale Superadmin-Rolle mehr besitzt, wenn eine neue Vereinsmitgliedschaft angelegt wurde oder wenn Teamrollen/Mannschaftsmitgliedschaften seit der Migration verändert wurden.
+- Die vor AP02 gehärtete `is_team_admin(uuid)`-Funktion wird weder in Migration noch Rollback ersetzt.
+- Das Backup-Schema wird erst nach erfolgreicher Wiederherstellung entfernt.
+
+### Verbleibende Grenze der Prüfung
+
+Der Review war statisch und read-only. Es wurde keine PL/pgSQL-Ausführungssimulation auf PROD durchgeführt. Eine solche Simulation wäre eine Datenbankausführung und ist durch die bisherige Freigabe nicht gedeckt. Der tatsächliche Lauf wird durch die Preflight-Gates innerhalb der Transaktion geschützt; ein Fehler führt zum Abbruch und Rollback.
+
+**Review-Ergebnis:** Kein weiterer statischer Blocker festgestellt. Das Paket ist für die finale Freigabevorlage vorbereitet, aber noch nicht ausgeführt. Die separate ausdrückliche PROD-Ausführungsfreigabe bleibt erforderlich.
