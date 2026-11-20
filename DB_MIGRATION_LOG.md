@@ -1649,3 +1649,13 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **AP02-Prüfvertiefung (20.11.2026):** DEV read-only bestätigt: ein Superadmin, eine direkte Vereinsmitgliedschaft, eine `club_admin`-Rolle, eine Mannschaftsadmin-Rolle und eine Mannschaftsmitgliedschaft. `club_member_roles.user_id` referenziert `club_members.user_id` mit `ON DELETE CASCADE`; keine benutzerdefinierten Trigger auf diesen beiden Tabellen.
 - **Zentrale Teamadmin-Härtung ergänzt:** `public.is_team_admin(uuid)` prüft Superadmins nun vorrangig über den ausgewählten Mannschaftskontext; die zusätzliche gespeicherte Teamadmin-Rolle ist kein Kontext-Bypass. Die DEV-Ausgangsdefinition wird per MD5-Preflight geschützt. Die Rollback-Datei stellt die vorherige Funktionsdefinition wieder her.
 - **Erweiterte Preflight-Gates:** exakte DEV-Ausgangsdefinitionen für `can_manage_club_context(uuid)` und `is_team_admin(uuid)`, erwartete FK-Struktur und Abwesenheit benutzerdefinierter Trigger werden vor jeder Änderung geprüft.
+
+
+### AP02 – Ausschluss des Vereinskontext-Bypasses bei Teamverwaltungs-RPCs (20.11.2026)
+
+- **Status:** Korrektur in Migration, Rollback und AP02-Dokumentation auf `develop`; nicht ausgeführt.
+- **DEV-Live-Befund:** `admin_add_team_role` und `admin_remove_team_role` enthielten neben der Teamadmin-Prüfung eine alternative Berechtigung über `can_manage_club_context(v_club_id)`. Damit hätte ein Superadmin mit ausgewähltem Vereinskontext Teamverwaltungsrechte ohne ausgewählten Mannschaftskontext erhalten können.
+- **Korrektur:** Vereinskontext-Alternative bleibt für reguläre Nicht-Superadmin-Vereinsadmins erhalten, wird aber bei Superadmins ausgeschlossen. Superadmins benötigen für diese Funktionen den ausgewählten Mannschaftskontext.
+- **Validierungsgates:** Migration prüft die exakten DEV-Ausgangsdefinitionen von `is_team_admin(uuid)` und `can_manage_club_context(uuid)` per MD5 sowie FK-/Trigger-Struktur; Postflight prüft den Ausschluss des Superadmin-Vereinskontext-Bypasses in beiden Teamverwaltungs-RPCs.
+- **Umfang:** neun gezielte Ersetzungen/Wiederherstellungen in sieben RPC-Definitionen sowie zentrale Kontextfunktionen. Rollback stellt die ursprünglichen Bedingungen wieder her.
+- **Sicherheitsgrenze:** keine SQL-Ausführung, keine Rollen-/Mitgliedschaftsänderung, keine PROD-Änderung. Die separate Freigabe zur DEV-Ausführung bleibt erforderlich.
