@@ -241,3 +241,12 @@ Die gezielte AP02-Superadmin-Kontextkorrektur wurde auf `develop` vorbereitet un
 **Verbindliche fachliche Präzisierung:** Die zusätzliche Mannschaftsadmin-/Trainerrolle des Superadmins bleibt erhalten. Auch der zugehörige Datensatz in `team_members` bleibt erhalten. Die Team-Verwaltungsfunktionen prüfen den Superadmin-Zugriff über den explizit ausgewählten Teamkontext. Die direkte Vereinsmitgliedschaft und die daran gekoppelten Vereinsrollen werden reversibel gesichert und neutralisiert.
 
 **Status:** Dateien vorbereitet, noch nicht statisch abschließend validiert, nicht in DEV ausgeführt, nicht in PROD ausgeführt. Die bisherige AP02-Release-Sperre bleibt bestehen. Nach statischer Prüfung und erfolgreichem DEV-Test wird ein separates PROD-Paket aus dem dann aktuellen PROD-Livebestand erstellt. Die IMG-SEC-PROD-Migrationen, Logo-Löschung, Frontend-Deployment und Bucket-Cutover bleiben unverändert ausstehend.
+
+
+## Ergänzende AP02-Prüfung vom 20.11.2026
+
+Die read-only DEV-Prüfung bestätigte denselben relevanten Rollenbestand: ein Superadmin mit einer direkten Vereinsmitgliedschaft, einer club_admin-Rolle sowie einer zusätzlichen Mannschaftsadmin-Rolle und Mannschaftsmitgliedschaft. Die FK-Beziehung `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE` und das Fehlen benutzerdefinierter Trigger auf den beiden Vereinsmitgliedschaftstabellen wurden bestätigt.
+
+Die AP02-Korrektur wurde erweitert: Nicht nur die aufrufenden Verwaltungs-RPCs, sondern auch `public.is_team_admin(uuid)` selbst erzwingt für Superadmins den ausgewählten Mannschaftskontext vor jeder Rollenprüfung. Die zusätzliche Teamadmin-Rolle begründet keinen Zugriff ohne Kontext. Die Migration prüft die exakten DEV-Ausgangsdefinitionen beider zentraler Kontextfunktionen sowie die FK-/Trigger-Struktur vor jeder Änderung.
+
+**Status unverändert:** Vorbereitung und Dokumentation auf `develop`; keine SQL-Ausführung in DEV oder PROD. Vor einer Ausführung sind die abschließende statische Validierung und danach eine separate DEV-Ausführungsfreigabe erforderlich.
