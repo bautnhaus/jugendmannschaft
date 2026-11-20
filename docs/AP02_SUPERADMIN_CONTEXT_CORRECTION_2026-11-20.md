@@ -60,7 +60,7 @@ Die Migration ist absichtlich streng und bricht bei abweichendem Bestand ab. Sie
 ## Status / Sicherheitsgrenze
 
 - DEV-Live-Preflight (20.11.2026): genau ein Superadmin, eine direkte Vereinsmitgliedschaft, eine club_admin-Rolle, eine Teamrolle (`trainer`) und eine Teammitgliedschaft; der Vereinskontext ist ausgewählt, ein Teamkontext aktuell nicht; FK `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE` bestätigt; keine benutzerdefinierten Trigger auf den beiden Vereinsmitgliedschaftstabellen.
-- Statische Strukturprüfung: BEGIN/COMMIT und Dollar-Quote-Delimiter ausgeglichen; neun Ersetzungs- und Rücksetzungsregeln gegen die DEV-Live-Definitionen abgeglichen; Teamrollen-Löschbefehle fehlen; Rollback-Snapshot und Guards vorhanden.
+- Statische Strukturprüfung: BEGIN/COMMIT und Dollar-Quote-Delimiter ausgeglichen; neun Ersetzungs- und Rücksetzungsregeln gegen die DEV-Live-Definitionen abgeglichen; Teamrollen-Löschbefehle fehlen; Rollback-Snapshot, globale Superadmin-Identitätsprüfung und exakter Abgleich der wiederhergestellten Vereinsrollen vorhanden.
 - Formale PostgreSQL-/PLpgSQL-Parse- bzw. Transaktionssimulation und Rollenmatrix bleiben offen.
 - Keine SQL-Migration ausgeführt.
 - Keine Rollen oder Mitgliedschaften verändert.
