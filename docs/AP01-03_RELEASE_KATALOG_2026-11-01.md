@@ -219,8 +219,8 @@ Aktueller Ausführungsstatus und verbindliche Reihenfolge: `docs/prod-release/DB
 
 AP02 ist auf DEV dauerhaft angewendet und der Anwendungstest wurde vom Nutzer positiv rückgemeldet. Für PROD wurde nach separater Read-only-Bestandsaufnahme ein eigenständiges PROD-Paket erstellt.
 
-- PROD-Migration: `supabase/migrations/20261120225600_ap02_superadmin_context_hardening_prod.sql`
-- PROD-Rollback: `supabase/rollback/20261120225600_ap02_superadmin_context_hardening_rollback_prod.sql`
+- PROD-Migration: `supabase/migrations/20261120221618_ap02_superadmin_context_hardening_prod.sql`
+- PROD-Rollback: `supabase/rollback/20261120221618_ap02_superadmin_context_hardening_rollback_prod.sql`
 - Release-Dokument: `docs/prod-release/AP02_SUPERADMIN_CONTEXT_PROD_2026-11-20.md`
 
 Wesentliche PROD-Abweichungen: Die vorhandene Superadmin-Teamrolle lautet `admin` (DEV: `trainer`). `is_team_admin(uuid)` ist in PROD bereits korrekt teamkontextgebunden und wird nicht erneut geändert. Das PROD-Paket korrigiert nur die noch offenen Funktions-/RPC-Bypässe, sichert die tatsächlichen Rollen und neutralisiert die direkte Vereinszuweisung reversibel.
@@ -235,5 +235,5 @@ Wesentliche PROD-Abweichungen: Die vorhandene Superadmin-Teamrolle lautet `admin
 - Einziger DELETE betrifft `club_members`; keine Teamrollen oder Teammitgliedschaften werden gelöscht/geändert.
 - PKs, FK CASCADE und `club_admin`-Check-Constraint read-only bestätigt; Rollback-Konfliktschlüssel ist gültig.
 - SECURITY DEFINER-Eigentümer/EXECUTE-ACLs read-only geprüft.
-- Letzte PROD-Migrationsversion `20261118105730`; AP02-Version `20261120225600` ist chronologisch nachfolgend und noch nicht registriert.
+- Letzte PROD-Migrationsversion `20261118105730`; AP02-Version `20261120221618` ist chronologisch nachfolgend und noch nicht registriert.
 - Status: statischer Review ohne weiteren Blocker. Keine SQL-Ausführungssimulation, Migration oder Datenänderung in PROD. Separate ausdrückliche Freigabe bleibt erforderlich.
