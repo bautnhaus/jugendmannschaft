@@ -199,6 +199,9 @@ BEGIN
     IF position(v_old IN v_def)=0 THEN
       RAISE EXCEPTION 'AP02 Preflight: erwarteter alter Berechtigungsaufruf in % nicht gefunden',v_sig;
     END IF;
+    IF (length(v_def)-length(replace(v_def,v_old,'')))/length(v_old) <> 1 THEN
+      RAISE EXCEPTION 'AP02 Preflight: erwarteter Berechtigungsaufruf in % ist nicht exakt einmal vorhanden',v_sig;
+    END IF;
     IF position(v_new IN v_def)>0 THEN
       RAISE EXCEPTION 'AP02 Preflight: % enthält bereits den Zielaufruf; manueller Abgleich erforderlich',v_sig;
     END IF;
