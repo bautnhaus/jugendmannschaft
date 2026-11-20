@@ -66,6 +66,21 @@ AS $function$
      );
 $function$;
 
+CREATE OR REPLACE FUNCTION public.is_team_admin(p_team_id uuid)
+ RETURNS boolean
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+  select auth.uid() is not null and (
+    exists (select 1 from public.team_member_roles r where r.team_id=p_team_id and r.user_id=auth.uid() and r.role='admin')
+    or (
+      exists (select 1 from public.global_user_roles gur where gur.user_id=auth.uid() and gur.role='super_admin')
+      and public.has_selected_team_context(p_team_id)
+    )
+  );
+$function$;
+
 DO $restore_functions$
 DECLARE
   v_sig text;
@@ -88,13 +103,13 @@ BEGIN
        'public.is_team_admin(auth.uid(), p_team_id)'),
       ('public.admin_set_trainer_label(uuid,text,text)',
        'public.is_team_admin(p_team_id)',
-       'public.is_team_admin(auth.uid(), p_team_id)'),
+       'public.is_team_admin(auth.uid(),p_team_id)'),
       ('public.get_team_trainers(uuid)',
        'public.is_team_admin(p_team_id)',
        'public.is_team_admin(auth.uid(), p_team_id)'),
       ('public.get_team_trainers_v2(uuid)',
        'public.is_team_admin(p_team_id)',
-       'public.is_team_admin(auth.uid(), p_team_id)'),
+       'public.is_team_admin(auth.uid(),p_team_id)'),
       ('public.get_team_role_change_log(uuid)',
        '(public.is_super_admin() AND public.has_selected_team_context(p_team_id))',
        'public.is_super_admin()')
