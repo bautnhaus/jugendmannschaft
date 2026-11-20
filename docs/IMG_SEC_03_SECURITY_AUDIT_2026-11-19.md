@@ -214,3 +214,24 @@ Am 20.11.2026 wurde die neue IMG-SEC-01a-Preflight-Bedingung als reine SELECT-Pr
 - keine der IMG-SEC-01-Policies ist bereits vorhanden.
 
 Der aktuelle PROD-Ausgangsstand passt damit zum neuen IMG-SEC-01a-Preflight. Es wurde keine Migration ausgeführt.
+
+
+## 11. Abgrenzung: übergreifender AP02-Superadmin-Kontext-Bypass (20.11.2026)
+
+Eine zusätzliche read-only Suche über Funktionsdefinitionen und RLS-Policies in DEV und PROD zeigt, dass `public.can_manage_club_context(uuid)` weiterhin von mehreren nicht zu IMG-SEC gehörenden Club-Management-Funktionen und Policies verwendet wird. Bei einem Superadmin, der zusätzlich eine `club_admin`-Rolle besitzt, kann diese Funktion auch ohne ausgewählten Vereinskontext `true` liefern.
+
+Der Datenbestand bestätigt den Sonderfall in beiden Umgebungen: Jeweils ein Superadmin hat zusätzlich eine `club_admin`-Rollenzuweisung und eine direkte `club_members`-Mitgliedschaft. Das widerspricht der fachlichen AP02-Entscheidung: Superadmins sind neutral und keine direkten Vereinsmitglieder. Es wurden keine Daten verändert.
+
+Beispiele weiterer betroffener Bereiche außerhalb des IMG-SEC-Pakets sind `admin_add_club_member_by_email`, `admin_add_team_role`, `admin_remove_team_role`, `admin_set_club_member_role`, `admin_update_club_details`, `get_club_members_v3`, `get_club_suspension_game_types`, `set_club_suspension_game_types` sowie mehrere Vereins-RLS-Policies. Diese Funktionen/Policies wurden im Rahmen dieser IMG-SEC-Prüfung nicht geändert.
+
+IMG-SEC härtet ausschließlich die direkt betroffenen Bild-/Asset-Zugriffe:
+- `can_view_club_asset` ignoriert direkte Vereinsmitgliedschaft für Superadmins und verlangt `is_club_admin` mit ausgewähltem Kontext.
+- `can_view_profile_avatar` verwendet `is_team_member` bzw. `is_club_admin`, damit Superadmins nur im ausgewählten Team-/Vereinskontext fremde Profilbilder sehen.
+- `club_assets_insert_scoped`, `club_assets_update_scoped` und `club_assets_delete_scoped` verwenden `is_club_admin`.
+- `admin_update_club_crest` verwendet `is_club_admin`.
+- IMG-SEC-02 verwendet `is_club_admin` für fremde Profilbilder und die Vereinsprofil-RPC.
+- Die zugehörigen IMG-SEC-Rollbacks behalten diese strikte Kontextregel bei.
+
+**Konsequenz:** Die globale AP02-Regel ist durch IMG-SEC allein noch nicht vollständig umgesetzt. Vor einer PROD-Freigabe ist eine separate AP02-Korrektur erforderlich: `can_manage_club_context` muss Superadmins unabhängig von zusätzlichen Vereinsrollen ausschließlich über den ausgewählten Vereinskontext autorisieren; zusätzlich muss die direkte `club_members`-/`club_member_roles`-Zuweisung des Superadmins nach einer geprüften, ausdrücklich freigegebenen Datenbereinigung entfernt werden. Diese Arbeiten benötigen einen eigenen Preflight, eine Migration, Rollback-/Auswirkungsprüfung und separate Freigabe.
+
+DEV- und PROD-Prüfungen waren read-only bzw. vollständig zurückgerollte Simulationen. Keine Daten-, Rollen-, Policy- oder Funktionsänderung wurde in Supabase ausgeführt.
