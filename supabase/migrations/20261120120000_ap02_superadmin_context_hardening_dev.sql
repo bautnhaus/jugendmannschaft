@@ -19,12 +19,12 @@ BEGIN
      OR to_regprocedure('public.has_selected_team_context(uuid)') IS NULL
      OR to_regprocedure('public.is_team_admin(uuid)') IS NULL
      OR to_regprocedure('public.is_super_admin()') IS NULL THEN
+    RAISE EXCEPTION 'AP02 Preflight: erforderliche Kontextfunktionen fehlen';
+  END IF;
+
   IF md5(pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))
        IS DISTINCT FROM '466701a808244b3fe9a14b91bda17af0' THEN
     RAISE EXCEPTION 'AP02 Preflight: is_team_admin(uuid) weicht vom geprüften DEV-Ausgangsstand ab';
-  END IF;
-
-    RAISE EXCEPTION 'AP02 Preflight: erforderliche Kontextfunktionen fehlen';
   END IF;
 
   SELECT count(*) INTO v_superadmins
