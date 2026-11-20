@@ -8,7 +8,7 @@
 
 | Reihenfolge | Datei | Zweck |
 |---|---|---|
-| 1 | `supabase/migrations/20261119180000_img_sec_01_private_player_photo_storage_v1_0_0_prod.sql` | `photo_path`, privater Bucket `player-photos`, Helper und Policies |
+| 1 | `supabase/migrations/20261119180000_img_sec_01_private_player_photo_storage_v1_0_0_prod.sql` | `photo_path`, privater Bucket `player-photos`, kontextgebundene Bild-/Vereinsasset-Policies und Crest-RPC |
 | 2 | `supabase/migrations/20261119180100_img_sec_01_harden_private_policy_helpers_prod.sql` | Helper ins private Schema verschieben, Rechte begrenzen |
 | 3 | `supabase/migrations/20261119180200_img_sec_02_profile_avatar_hardening_v1_0_0_prod.sql` | Profilbild-Pfadvalidierung, Trigger, RPC- und Schreibpolicy-Härtung |
 | 4 | Frontend-Deploy aus `release/img-sec-2026-11-19` | Signed URLs, `photo_path`, Retry und Kontext-Cache |
@@ -152,6 +152,8 @@ Bei der DEV-Rollenprüfung wurde festgestellt, dass `public.can_manage_club_cont
 
 Die IMG-SEC-02-Migration wurde deshalb korrigiert:
 - Avatar-Verwaltung für Vereinsmitglieder verwendet `public.is_club_admin(target.club_id)`.
+- `can_view_club_asset` und `can_view_profile_avatar` respektieren den ausgewählten Vereins-/Mannschaftskontext auch bei Superadmins mit zusätzlicher Vereinsmitgliedschaft.
+- Die Vereinsasset-INSERT-/UPDATE-/DELETE-Policies und `admin_update_club_crest` verwenden `public.is_club_admin(...)`.
 - Die Vereinsprofil-RPC verwendet `public.is_club_admin(p_club_id)`.
 - Das Preflight prüft diese Funktion explizit.
 - Das IMG-SEC-02-Rollback behält diese strengere Kontextprüfung in der Vereinsprofil-RPC und in allen drei Profilbild-Schreibpolicies bewusst bei. Auch das IMG-SEC-01-Rollback verwendet für `club_assets_select_scoped` `public.is_club_admin(...)`. Kein Rollback führt den bekannten Bypass wieder ein.
