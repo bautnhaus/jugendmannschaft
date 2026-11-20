@@ -53,8 +53,8 @@ Zusätzlich ist `is_team_admin(uuid)` in PROD bereits durch frühere PROD-Arbeit
 
 ## 5. PROD-Dateien auf develop
 
-- Migration: `supabase/migrations/20261120225600_ap02_superadmin_context_hardening_prod.sql`
-- Rollback: `supabase/rollback/20261120225600_ap02_superadmin_context_hardening_rollback_prod.sql`
+- Migration: `supabase/migrations/20261120221618_ap02_superadmin_context_hardening_prod.sql`
+- Rollback: `supabase/rollback/20261120221618_ap02_superadmin_context_hardening_rollback_prod.sql`
 - Dieses Release-Dokument: `docs/prod-release/AP02_SUPERADMIN_CONTEXT_PROD_2026-11-20.md`
 
 Die Migration enthält PROD-spezifische MD5-Preflight-Gates für die zentralen Kontextfunktionen und alle sieben betroffenen RPCs. Alle neun dynamischen Text-Ersetzungen müssen exakt einmal vorhanden sein. Jede Abweichung führt zum Abbruch vor der Datenänderung.
@@ -99,7 +99,7 @@ Der Rollback prüft zusätzlich, dass Teamrollen und Mannschaftsmitgliedschaften
 - FK `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE` wurde bestätigt.
 - Die vorhandenen SECURITY DEFINER-Eigentümer und EXECUTE-Rechte der betroffenen PROD-Funktionen wurden read-only geprüft. `CREATE OR REPLACE` bzw. das Ersetzen der Funktionsdefinitionen erhält die bestehenden Funktions-ACLs und Eigentümer.
 - Das Backup-Schema und die Backup-Tabelle entziehen `PUBLIC`, `anon`, `authenticated` und `service_role` alle Rechte; RLS ist zusätzlich aktiviert und es werden keine Policies angelegt.
-- PROD-Migrationshistorie zuletzt: `20261118105730`. Die vorgesehene AP02-Version `20261120225600` liegt chronologisch danach und ist noch nicht registriert.
+- PROD-Migrationshistorie zuletzt: `20261118105730`. Die vorgesehene AP02-Version `20261120221618` liegt chronologisch danach und ist noch nicht registriert.
 
 ### Rollback-Review
 
