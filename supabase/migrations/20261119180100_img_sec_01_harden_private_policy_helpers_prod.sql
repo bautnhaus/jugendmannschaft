@@ -16,7 +16,7 @@ begin
     where schemaname='storage' and tablename='objects'
       and policyname='profile_avatars_select_authorized'
       and cmd='SELECT'
-      and qual like '%public.can_view_profile_avatar%'
+      and qual like '%can_view_profile_avatar%'
   ) then
     raise exception 'IMG-SEC-01b Preflight: Profilbild-Policy referenziert nicht den erwarteten IMG-SEC-01a-Helper.';
   end if;
@@ -26,7 +26,7 @@ begin
     where schemaname='storage' and tablename='objects'
       and policyname='club_assets_select_scoped'
       and cmd='SELECT'
-      and qual like '%public.can_view_club_asset%'
+      and qual like '%can_view_club_asset%'
   ) then
     raise exception 'IMG-SEC-01b Preflight: Vereinsasset-Policy referenziert nicht den erwarteten IMG-SEC-01a-Helper.';
   end if;
@@ -36,25 +36,25 @@ begin
     where schemaname='storage' and tablename='objects'
       and policyname='player_photos_select_team'
       and cmd='SELECT'
-      and qual like '%public.can_manage_player_photo%'
+      and qual like '%can_manage_player_photo%'
   ) or not exists (
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
       and policyname='player_photos_insert_team'
       and cmd='INSERT'
-      and with_check like '%public.can_manage_player_photo%'
+      and with_check like '%can_manage_player_photo%'
   ) or not exists (
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
       and policyname='player_photos_update_team'
       and cmd='UPDATE'
-      and coalesce(qual,'') || coalesce(with_check,'') like '%public.can_manage_player_photo%'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%can_manage_player_photo%'
   ) or not exists (
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
       and policyname='player_photos_delete_team'
       and cmd='DELETE'
-      and qual like '%public.can_manage_player_photo%'
+      and qual like '%can_manage_player_photo%'
   ) then
     raise exception 'IMG-SEC-01b Preflight: Spielerfoto-Policies referenzieren nicht vollständig den erwarteten IMG-SEC-01a-Helper.';
   end if;
@@ -144,17 +144,17 @@ begin
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
       and policyname='club_assets_insert_scoped'
-      and with_check like '%public.is_club_admin%'
+      and with_check like '%is_club_admin%'
   ) or not exists (
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
       and policyname='club_assets_update_scoped'
-      and coalesce(qual,'') || coalesce(with_check,'') like '%public.is_club_admin%'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%is_club_admin%'
   ) or not exists (
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
       and policyname='club_assets_delete_scoped'
-      and qual like '%public.is_club_admin%'
+      and qual like '%is_club_admin%'
   ) then
     raise exception 'IMG-SEC-01b Postflight: Vereinsasset-Schreibpolicies verwenden nicht den expliziten Vereinskontext.';
   end if;
