@@ -1700,3 +1700,18 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Nachkontrolle:** DEV-Bestand entspricht dem Ausgangsstand; keine temporären Testwerte, kein Backup-Schema; zentrale Funktions-MD5-Werte entsprechen dem geprüften Ausgangsstand.
 - **Paketfehler während der Simulation behoben:** Rollback-CASE-Preflight und Teilstring-Erkennung im Rollback-Ersetzungscheck korrigiert; erneute vollständige Simulation erfolgreich.
 - **Status:** kontrollierte Simulation bestanden; Migration nicht dauerhaft ausgeführt; PROD unverändert. Separate Freigabe zur tatsächlichen DEV-Migration weiterhin erforderlich.
+
+
+### AP02 – dauerhafte DEV-Migration erfolgreich (20.11.2026)
+
+- **Freigabe:** separate Nutzerfreigabe erteilt.
+- **Projekt:** Jugendmannschaft DEV, PostgreSQL 17.6.
+- **Supabase-Version:** `20261120212557`; Name `ap02_superadmin_context_hardening_dev`.
+- **Ergebnis:** Migration erfolgreich angewendet und in Supabase-Migrationshistorie registriert.
+- **Datenbestand:** Superadmin weiterhin 1; direkte Vereinsmitgliedschaft und Vereinsrollen 0; bestehende Teamrolle `trainer` und Teammitgliedschaft jeweils 1; kein ausgewählter Mannschaftskontext.
+- **Backup:** privates Schema vorhanden, genau ein Sicherungsdatensatz. `anon`, `authenticated` und `service_role` besitzen weder Schema-USAGE noch SELECT auf die Backup-Tabelle; RLS aktiviert und keine Policies.
+- **Funktionspostflight:** zentrale Kontextfunktionen aktualisiert; Vereinsadmin-Fallback für Nicht-Superadmins in den Teamrollen-RPCs erhalten.
+- **Security Advisor:** INFO `rls_enabled_no_policy` auf der absichtlich nicht zugänglichen privaten Backup-Tabelle; außerdem 56 SECURITY-DEFINER-Funktionen mit authenticated EXECUTE und deaktivierte Leaked-Password-Protection als separate, nicht durch AP02 behobene Befunde.
+- **Dateiabgleich:** GitHub-Migrationsdatei auf tatsächliche Supabase-Version `20261120212557` umgestellt; vorbereitende Datei mit vorläufiger Versionsnummer entfernt.
+- **PROD:** unverändert.
+- **Nächster Schritt:** DEV-Frontend-Praxistest mit Superadmin-, Vereins- und Mannschaftskontext; noch keine PROD-Freigabe.
