@@ -268,8 +268,8 @@ Die älteren AP02-Statusangaben in diesem Dokument sind historisch und werden du
 - AP02-Migration wurde auf DEV unter Version `20261120212557` dauerhaft erfolgreich angewendet.
 - Die kontrollierte Transaktionssimulation einschließlich Rollenmatrix und Rollback war erfolgreich; der DEV-Anwendungstest wurde vom Nutzer positiv rückgemeldet.
 - Ein eigenständiges PROD-Paket wurde aus dem aktuellen PROD-Livebestand erstellt:
-  - `supabase/migrations/20261120230000_ap02_superadmin_context_hardening_prod.sql`
-  - `supabase/rollback/20261120230000_ap02_superadmin_context_hardening_rollback_prod.sql`
+  - `supabase/migrations/20261120225600_ap02_superadmin_context_hardening_prod.sql`
+  - `supabase/rollback/20261120225600_ap02_superadmin_context_hardening_rollback_prod.sql`
   - `docs/prod-release/AP02_SUPERADMIN_CONTEXT_PROD_2026-11-20.md`
 - PROD weicht von DEV ab: Teamrolle `admin` statt `trainer`; die zentrale `is_team_admin(uuid)`-Funktion ist in PROD bereits gehärtet und bleibt unverändert.
 - Das PROD-Paket ist vorbereitet und statisch mit dem PROD-Livebestand abgeglichen. Es wurde nicht ausgeführt. Separate ausdrückliche PROD-Freigabe erforderlich.
