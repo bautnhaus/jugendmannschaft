@@ -336,3 +336,33 @@ Erneute ausschließlich lesende Prüfung auf PROD nach erfolgreicher AP02-Migrat
 3. **Frontend:** Nicht deployed. Die geprüfte Release-Branch-Datei bleibt `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`; `main` bleibt unverändert.
 
 **Ergebnis:** Read-only Preflight ausgeführt; PROD-Datenbank und Storage wurden in diesem Prüfschritt nicht verändert. IMG-SEC bleibt bis zur Klärung des Backup-Gates und der separaten Freigabe für das verwaiste Logoobjekt auf HOLD.
+
+
+## Tatsächlicher IMG-SEC-PROD-Ausführungsstand (20.11.2026, aktualisiert)
+
+Diese Statuskorrektur ersetzt alle früheren Aussagen in diesem Dokument, wonach IMG-SEC noch nicht ausgeführt oder das PROD-Frontend nicht deployed sei.
+
+### Vorherige read-only Kontrolle
+- Das zuvor bekannte Logoobjekt wurde unmittelbar vor dem Release erneut geprüft: Es war nicht mehr im Bucket `club-assets` vorhanden. Der Bucket enthielt keine Objekte; `clubs.crest_path` war bereits `NULL`. Es wurde deshalb keine Logo-Löschung und kein SQL-UPDATE vorgenommen.
+- PROD-Ausgangsstand: 39 Spieler, 0 gefüllte `photo_data`, `photo_path` fehlte, die vier erwarteten `club_assets_*`-Policies waren vorhanden, IMG-SEC-Ledger war leer.
+- Kein kostenpflichtiges Backup wurde erstellt; der Nutzer hat bestätigt, dass aufgrund des Free-Tiers kein zusätzliches Backup vorgesehen ist. Dieses Fehlen wurde nicht als künstlicher Release-Blocker behandelt.
+
+### Erfolgreich angewendete Migrationen
+| IMG-SEC-Migration | Ledger-Version | Status |
+|---|---|---|
+| IMG-SEC-01a | `20261120224346` | angewendet, Postflight bestanden |
+| IMG-SEC-01b | `20261120224359` | angewendet, Postflight bestanden |
+| IMG-SEC-02 | `20261120224402` | angewendet, Postflight bestanden |
+| IMG-SEC-03 | – | noch NICHT angewendet; wartet auf Gate-C-Funktionstest |
+
+Postflight bestätigt: `players.photo_path` vorhanden; 39 Spieler, weiterhin 0 `photo_path` und 0 Legacy-`photo_data`; `player-photos` ist privat, 2 MiB, MIME-Allowlist JPEG/PNG/WebP; alle vier Spielerfoto-Policies und die kontextgehärteten Vereinsasset-Policies vorhanden; Profilbild-Helper befinden sich im Schema `private`; Profilbild-Validierungstrigger vorhanden; Profilbild-Schreibpolicies verwenden die geprüften privaten Helper. Die Buckets `profile-avatars` und `club-assets` sind derzeit noch öffentlich.
+
+### Frontend-Deployment
+- Die getestete Release-Datei mit Blob-SHA `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c` wurde gezielt nach `main/index.html` übernommen.
+- Deployment-Commit: `af27aed00d5776e72ab0234b98882bd155449b30`.
+- Kein pauschaler Merge des Release-Branches und kein Merge von `develop` nach `main`.
+
+### Nächster verbindlicher Schritt – Gate C
+Vor IMG-SEC-03 muss die neue PROD-Oberfläche im tatsächlichen Deployment geprüft werden: Anmeldung, Profilbildanzeige/-bearbeitung, Spielerfoto-Funktion soweit UI-seitig verfügbar, Vereinslogo-Upload (derzeit noch kein Logoobjekt), Kontextwechsel sowie iPhone/Safari. Erst nach bestätigtem Funktionstest wird IMG-SEC-03 freigegeben und ausgeführt. Danach: Bucket-Privatstatus, Signed-URL-Anzeige, direkte öffentliche URL-Negativtests und Logo-Neu-Upload über KADAssist.
+
+IMG-SEC-03 ist ein gesonderter letzter Cutover-Schritt; er wurde nicht automatisch durch die vorherigen Migrationen ausgelöst.
