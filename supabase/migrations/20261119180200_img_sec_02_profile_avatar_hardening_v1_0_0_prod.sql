@@ -337,9 +337,7 @@ begin
      or has_function_privilege('anon','private.can_manage_profile_avatar(uuid)','EXECUTE')
      or has_function_privilege('anon','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE')
      or has_function_privilege('service_role','private.can_manage_profile_avatar(uuid)','EXECUTE')
-     or has_function_privilege('service_role','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE')
-     or has_function_privilege('public','private.can_manage_profile_avatar(uuid)','EXECUTE')
-     or has_function_privilege('public','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE') then
+     or has_function_privilege('service_role','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE') then
     raise exception 'IMG-SEC-02 Postflight: unerwartete Helper-EXECUTE-Rechte.';
   end if;
 
