@@ -68,6 +68,28 @@ begin
     raise exception 'IMG-SEC-03 Preflight: private Helper EXECUTE-Rechte sind unerwartet.';
   end if;
 
+  -- Alle benötigten Policies müssen vor dem privaten Bucket-Cutover vorhanden sein.
+  if (
+    select count(*) from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname in (
+        'profile_avatars_select_authorized',
+        'profile_avatars_insert_self_or_admin',
+        'profile_avatars_update_self_or_admin',
+        'profile_avatars_delete_self_or_admin',
+        'club_assets_select_scoped',
+        'club_assets_insert_scoped',
+        'club_assets_update_scoped',
+        'club_assets_delete_scoped',
+        'player_photos_select_team',
+        'player_photos_insert_team',
+        'player_photos_update_team',
+        'player_photos_delete_team'
+      )
+  ) <> 12 then
+    raise exception 'IMG-SEC-03 Preflight: mindestens eine erforderliche Storage-Policy fehlt.';
+  end if;
+
   if not exists (
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
