@@ -99,9 +99,17 @@ BEGIN
       ('public.admin_add_team_role(uuid,uuid,text)',
        'public.is_team_admin(p_team_id)',
        'public.is_team_admin(auth.uid(), p_team_id)'),
+      ('public.admin_add_team_role(uuid,uuid,text)',
+       'OR (NOT public.is_super_admin() AND v_club_id IS NOT NULL
+               AND public.can_manage_club_context(v_club_id))',
+       'OR (v_club_id IS NOT NULL
+               AND public.can_manage_club_context(v_club_id))'),
       ('public.admin_remove_team_role(uuid,uuid,text)',
        'public.is_team_admin(p_team_id)',
        'public.is_team_admin(auth.uid(),p_team_id)'),
+      ('public.admin_remove_team_role(uuid,uuid,text)',
+       'or (NOT public.is_super_admin() AND v_club_id is not null and public.can_manage_club_context(v_club_id))',
+       'or (v_club_id is not null and public.can_manage_club_context(v_club_id))'),
       ('public.admin_update_member_profile(uuid,uuid,text,text)',
        'public.is_team_admin(p_team_id)',
        'public.is_team_admin(auth.uid(), p_team_id)'),
@@ -130,8 +138,8 @@ BEGIN
     EXECUTE replace(v_def,v_old,v_new);
     v_count := v_count + 1;
   END LOOP;
-  IF v_count <> 7 THEN
-    RAISE EXCEPTION 'AP02 Rollback: erwartete sieben Funktionswiederherstellungen, ausgeführt %',v_count;
+  IF v_count <> 9 THEN
+    RAISE EXCEPTION 'AP02 Rollback: erwartete neun Funktionswiederherstellungen, ausgeführt %',v_count;
   END IF;
 END;
 $restore_functions$;
