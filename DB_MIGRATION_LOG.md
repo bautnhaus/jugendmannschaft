@@ -1674,3 +1674,14 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 
 
 - **Rollback zusätzlich gehärtet:** Vor der Wiederherstellung muss die globale Superadmin-Rolle unverändert bestehen; die zentralen AP02-Kontextfunktionen müssen weiterhin dem erwarteten gehärteten Zustand entsprechen. Nach dem Restore werden alle Vereinsrollen mit dem gesicherten Snapshot verglichen, bevor das Backup-Schema entfernt wird.
+
+
+### AP02 – vollständige statische Live-Definitionsprüfung (20.11.2026)
+
+- **Status:** read-only Prüfung abgeschlossen; Paket korrigiert und dokumentiert; nicht ausgeführt.
+- **Abgleich:** alle neun erwarteten Berechtigungsausdrücke wurden gegen sieben aktuelle DEV-RPC-Definitionen geprüft. Jeder alte Ausdruck kommt exakt einmal vor. Die MD5-Ausgangswerte der beiden zentralen Kontextfunktionen stimmen mit den Migration-Preflight-Gates überein.
+- **Funktionssicherheit:** SECURITY DEFINER, Owner, search_path und ACL der sieben betroffenen RPCs wurden read-only erfasst. Die Ersetzungen arbeiten auf `pg_get_functiondef` mit `CREATE OR REPLACE`; keine separaten GRANT-/REVOKE-Änderungen sind vorgesehen.
+- **Zusätzliche Härtung:** Migration und Rollback brechen ab, wenn ein erwarteter alter Ausdruck nicht exakt einmal vorkommt oder der Zielausdruck bereits vorhanden ist.
+- **Rollback-Korrektur:** falsches Literal `CASE WHEN` im Rollback-Preflight ersetzt durch Prüfungen auf die tatsächliche Funktionsausgabe `WHEN public.is_super_admin() THEN EXISTS` und `ELSE EXISTS`.
+- **Datenbestand:** erneute read-only-Prüfung bestätigt unveränderten DEV-Bestand; keine SQL-Ausführung.
+- **Offen:** keine echte PL/pgSQL-Parser-/Ausführungssimulation, keine Rollenmatrix-Praxistests, keine Transaktionssimulation, keine Rollback-Simulation. Diese Punkte benötigen kontrollierte Ausführung und bleiben Voraussetzung für die separate DEV-Ausführungsfreigabe.
