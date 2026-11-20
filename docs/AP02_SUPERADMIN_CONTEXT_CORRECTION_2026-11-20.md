@@ -107,3 +107,54 @@ Zusätzlich werden Negativtests mit einem falschen bzw. fremden Teamkontext durc
 ### Abgrenzung der abgeschlossenen Prüfung
 
 Diese Prüfung ist ein vollständiger statischer Quelltext-/Live-Definitionsabgleich der vorgesehenen Ersetzungen und ihrer Ausgangsbedingungen. Sie ist **keine** PostgreSQL-Ausführungssimulation und kein erfolgreicher Lauf der Migration/des Rollbacks. Eine echte Parser-/Ausführungskontrolle der PL/pgSQL-Blöcke sowie Rollenmatrix-, Transaktions- und Rollback-Praxistests bleiben vor der DEV-Ausführungsfreigabe erforderlich.
+
+
+## Kontrollierte DEV-Transaktionssimulation – erfolgreich (20.11.2026)
+
+**Umgebung:** Supabase-Projekt `Jugendmannschaft DEV`, PostgreSQL 17.6.  
+**Ausführung:** tatsächliche AP02-Migration und tatsächliches AP02-Rollback innerhalb derselben expliziten Datenbanktransaktion; abschließendes `ROLLBACK`. Keine dauerhafte Datenbankänderung.
+
+### Geprüfte Berechtigungsmatrix
+
+| Identität / Kontext | Prüfung | Ergebnis |
+|---|---|---|
+| Superadmin ohne Vereinskontext | `can_manage_club_context` | verweigert |
+| Superadmin mit ausgewähltem Vereinskontext, ohne Teamkontext | Vereinsverwaltung | erlaubt |
+| Superadmin mit ausgewähltem Vereinskontext, ohne Teamkontext | `is_team_admin` | verweigert |
+| Superadmin ohne Teamkontext | `admin_add_team_role`, `admin_remove_team_role` | verweigert |
+| Superadmin ohne Teamkontext | Profil-, Trainerlabel-, Trainerlisten- und Rollenlog-RPCs | verweigert |
+| Superadmin mit ausgewähltem Teamkontext | Teamadmin-Prüfung und Teamlisten/Rollenlog | erlaubt |
+| Superadmin mit ausgewähltem Teamkontext | Profilaktualisierung und Trainerlabel | erlaubte Schreibpfade erreicht |
+| Superadmin mit ausgewähltem Teamkontext | Teamrolle hinzufügen/entfernen | erlaubt; bestehende Adminrolle des Testziels blieb erhalten |
+| Regulärer Vereinsadmin | Vereinskontext und Teamrollen-Schreib-RPCs über Vereinsadmin-Fallback | erlaubt |
+| Benutzer ohne Adminrolle | Vereinskontext und Teamrollen-Schreib-RPC | verweigert |
+
+Die Tests verwendeten ausschließlich temporäre Änderungen innerhalb der zurückgerollten Transaktion. Der reguläre Vereinsadmin-Test fügte dem Superadmin vorübergehend eine zusätzliche Teamrolle hinzu und entfernte sie wieder; die ursprüngliche Trainerrolle blieb dabei erhalten. Vor dem Rollback wurde die nur testweise erzeugte direkte Vereinsmitgliedschaft bereinigt, damit der Rollback-Preflight seine vorgesehene Konfliktsperre korrekt prüfen konnte.
+
+### Rollback-Nachweis
+
+- Die Migration lief vollständig bis zum Commit-Statement innerhalb der äußeren Testtransaktion.
+- Das Rollback lief anschließend vollständig durch, einschließlich Wiederherstellung der direkten Vereinsmitgliedschaft und Vereinsadmin-Rolle.
+- Der gesicherte Teamrollenbestand blieb unverändert.
+- Das private Backup-Schema wurde durch den Rollback entfernt.
+- Abschließende Assertions nach dem Rollback waren erfolgreich.
+
+### Nachkontrolle nach Transaktionsende (read-only)
+
+- Superadmins: 1
+- direkte Vereinsmitgliedschaft: 1
+- Vereinsadmin-Rolle: 1
+- Superadmin-Teamrollen: 1, weiterhin `trainer`
+- Superadmin-Teammitgliedschaften: 1
+- ausgewählter Mannschaftskontext: keiner
+- privates AP02-Backup-Schema: nicht vorhanden
+- temporärer Profil-/Trainerlabel-Testwert: nicht vorhanden
+- MD5 der zentralen Kontextfunktionen entspricht wieder exakt dem DEV-Ausgangsstand.
+
+### Während der Simulation gefundene und behobene Paketfehler
+
+1. Rollback-Preflight suchte nach einem nicht zutreffenden Literal für die CASE-Funktionsdefinition; Prüfung auf die tatsächliche Ausgabeform umgestellt.
+2. Rollback-Ersetzungsprüfung erkannte beim Rollenlog den ursprünglichen Ausdruck als Teilstring des gehärteten Ausdrucks; Teilstring-Sonderfall korrekt berücksichtigt.
+3. Migration und Rollback verlangen jetzt für jeden dynamischen Ersetzungsausdruck genau ein Vorkommen.
+
+**Ergebnis:** Die kontrollierte Transaktionssimulation einschließlich Rollenmatrix und Rollback ist erfolgreich. Dies ist keine dauerhafte DEV-Migration. Eine separate Freigabe zur tatsächlichen DEV-Ausführung bleibt erforderlich.
