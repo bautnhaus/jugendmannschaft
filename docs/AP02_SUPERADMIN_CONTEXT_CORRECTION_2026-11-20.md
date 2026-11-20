@@ -11,7 +11,7 @@
 1. Superadmins bleiben global Superadmins und vereinsneutral.
 2. Superadmin-Zugriffe auf Vereinsverwaltung sind ausschließlich im ausdrücklich ausgewählten Vereinskontext zulässig.
 3. Eine zusätzliche Mannschaftsadmin- oder Trainerrolle bleibt als Datensatz erhalten.
-4. Diese Mannschaftsrolle begründet für einen Superadmin keinen kontextunabhängigen Zugriff. Der eigene Superadmin-Zugriff auf ein Team wird bereits in der zentralen Funktion `is_team_admin(team_id)` ausschließlich über den ausgewählten Teamkontext geprüft. Die zusätzliche gespeicherte Mannschaftsadmin-Rolle eröffnet keinen Bypass.
+4. Diese Mannschaftsrolle begründet für einen Superadmin keinen kontextunabhängigen Zugriff. Der eigene Superadmin-Zugriff auf ein Team wird bereits in der zentralen Funktion `is_team_admin(team_id)` ausschließlich über den ausgewählten Teamkontext geprüft. Die zusätzliche gespeicherte Mannschaftsadmin-Rolle eröffnet keinen Bypass. Auch ein ausgewählter Vereinskontext darf bei Teamverwaltungs-RPCs den Mannschaftskontext nicht ersetzen.
 5. Normale Vereinsadmins, Mannschaftsadmins und Trainer behalten ihre bisherigen Rollenrechte.
 6. Keine DEV-Daten werden nach PROD übernommen.
 
@@ -49,7 +49,7 @@ Die Migration ist absichtlich streng und bricht bei abweichendem Bestand ab. Sie
 
 ## Noch offene Prüfungen vor Ausführung
 
-1. Statische SQL-Prüfung und Abgleich der zentralen Kontextfunktionen sowie aller sieben RPC-Ersetzungen mit den DEV-Live-Definitionen.
+1. Statische SQL-Prüfung und Abgleich der zentralen Kontextfunktionen sowie aller neun gezielten Berechtigungsersetzungen in sieben RPC-Definitionen mit den DEV-Live-Definitionen.
 2. DEV-Transaktionssimulation (inkl. Positiv-/Negativtests für Superadmin ohne Kontext, mit falschem Kontext und mit passendem Kontext).
 3. Regression für normalen Vereinsadmin, Mannschaftsadmin und Trainer.
 4. Nachweis, dass die zusätzliche Superadmin-Teamrolle unverändert bleibt.
