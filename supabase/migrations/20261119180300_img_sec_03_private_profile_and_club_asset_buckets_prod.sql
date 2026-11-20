@@ -77,6 +77,19 @@ begin
     raise exception 'IMG-SEC-03 Preflight: private Helper EXECUTE-Rechte sind unerwartet.';
   end if;
 
+  if (
+    select count(*) from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname in ('club_assets_insert_scoped','club_assets_update_scoped','club_assets_delete_scoped')
+      and (coalesce(qual,'') || coalesce(with_check,'')) like '%is_club_admin%'
+  ) <> 3 then
+    raise exception 'IMG-SEC-03 Preflight: Vereinsasset-Schreibpolicies verwenden nicht vollständig is_club_admin.';
+  end if;
+
+  if position('is_club_admin' in pg_get_functiondef('public.admin_update_club_crest(uuid,text)'::regprocedure)) = 0 then
+    raise exception 'IMG-SEC-03 Preflight: Crest-RPC erzwingt den ausgewählten Vereinskontext nicht.';
+  end if;
+
   if not exists (
     select 1 from pg_policies
     where schemaname='storage' and tablename='objects'
