@@ -23,8 +23,37 @@ BEGIN
   END IF;
 
   IF md5(pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))
-       IS DISTINCT FROM '466701a808244b3fe9a14b91bda17af0' THEN
-    RAISE EXCEPTION 'AP02 Preflight: is_team_admin(uuid) weicht vom geprüften DEV-Ausgangsstand ab';
+       IS DISTINCT FROM '466701a808244b3fe9a14b91bda17af0'
+     OR md5(pg_get_functiondef('public.can_manage_club_context(uuid)'::regprocedure))
+       IS DISTINCT FROM '40b864bf0cee883fbe9a5f37c675bfaa' THEN
+    RAISE EXCEPTION 'AP02 Preflight: zentrale Kontextfunktionen weichen vom geprüften DEV-Ausgangsstand ab';
+  END IF;
+
+  IF (
+    SELECT count(*) FROM pg_constraint
+    WHERE contype='f'
+      AND confrelid='public.club_members'::regclass
+  ) <> 1
+  OR NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE contype='f'
+      AND conrelid='public.club_member_roles'::regclass
+      AND confrelid='public.club_members'::regclass
+      AND pg_get_constraintdef(oid) ILIKE '%ON DELETE CASCADE%'
+  ) THEN
+    RAISE EXCEPTION 'AP02 Preflight: FK-Struktur von club_members weicht vom geprüften DEV-Ausgangsstand ab';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM pg_trigger t
+    JOIN pg_class c ON c.oid=t.tgrelid
+    JOIN pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname='public'
+      AND c.relname IN ('club_members','club_member_roles')
+      AND NOT t.tgisinternal
+  ) THEN
+    RAISE EXCEPTION 'AP02 Preflight: unerwarteter benutzerdefinierter Trigger auf Vereinsmitgliedschaftstabellen';
   END IF;
 
   SELECT count(*) INTO v_superadmins
