@@ -52,6 +52,12 @@ BEGIN
          AND conrelid='public.club_member_roles'::regclass
          AND confrelid='public.club_members'::regclass
          AND pg_get_constraintdef(oid) ILIKE '%ON DELETE CASCADE%'
+     )
+     OR NOT EXISTS (
+       SELECT 1 FROM pg_constraint
+       WHERE contype='c'
+         AND conrelid='public.club_member_roles'::regclass
+         AND pg_get_constraintdef(oid) = "CHECK ((role = 'club_admin'::text))"
      ) THEN
     RAISE EXCEPTION 'AP02 PROD Preflight: FK-Struktur von club_members weicht vom geprüften PROD-Stand ab';
   END IF;
