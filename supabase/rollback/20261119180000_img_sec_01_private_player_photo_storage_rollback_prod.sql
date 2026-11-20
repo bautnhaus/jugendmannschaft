@@ -54,8 +54,10 @@ drop policy if exists profile_avatars_select_authorized on storage.objects;
 drop policy if exists club_assets_select_scoped on storage.objects;
 
 -- 3) Ursprüngliche PROD-SELECT-Policy für club-assets wiederherstellen.
--- Diese Policy war vor IMG-SEC-01 vorhanden und verwendet den bestehenden
--- Kontext-Check. Die IMG-SEC-01-Policy für profile-avatars war vorher nicht vorhanden.
+-- Die ursprüngliche Policy war vor IMG-SEC-01 vorhanden. Ihre Zugriffsbeschränkung
+-- wird mit public.is_club_admin wiederhergestellt, damit Superadmins auch bei einer
+-- zusätzlichen club_admin-Rolle zwingend einen ausgewählten Vereinskontext benötigen.
+-- Die IMG-SEC-01-Policy für profile-avatars war vorher nicht vorhanden.
 create policy club_assets_select_scoped
 on storage.objects
 for select
