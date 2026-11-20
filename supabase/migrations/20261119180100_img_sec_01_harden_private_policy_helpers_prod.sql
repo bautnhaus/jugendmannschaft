@@ -99,7 +99,10 @@ begin
      or not has_function_privilege('authenticated','private.can_view_profile_avatar(uuid)','EXECUTE')
      or has_function_privilege('anon','private.can_manage_player_photo(uuid,uuid)','EXECUTE')
      or has_function_privilege('anon','private.can_view_club_asset(uuid)','EXECUTE')
-     or has_function_privilege('anon','private.can_view_profile_avatar(uuid)','EXECUTE') then
+     or has_function_privilege('anon','private.can_view_profile_avatar(uuid)','EXECUTE')
+     or has_function_privilege('service_role','private.can_manage_player_photo(uuid,uuid)','EXECUTE')
+     or has_function_privilege('service_role','private.can_view_club_asset(uuid)','EXECUTE')
+     or has_function_privilege('service_role','private.can_view_profile_avatar(uuid)','EXECUTE') then
     raise exception 'IMG-SEC-01b Postflight: unexpected helper EXECUTE privileges.';
   end if;
 
