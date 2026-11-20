@@ -1630,3 +1630,17 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 
 
 - **IMG-SEC PROD-Preflight (19.11.2026):** benötigte Tabellen, Rollen-/Kontextfunktionen und Profil-RPCs read-only bestätigt; `private` fehlt wie erwartet und wird durch IMG-SEC-01b angelegt. PROD-Ledger enthält keine der vier vorbereiteten IMG-SEC-PROD-Versionen. Isolierter Release-Branch enthält 12 geänderte Dateien, keine fremden develop-Features. Keine PROD-Änderung.
+
+
+
+### AP02 – Superadmin-Kontextkorrektur (Vorbereitung, nicht ausgeführt; 20.11.2026)
+
+- **Status:** SQL-Migrations- und Rollback-Datei auf `develop` vorbereitet; weder DEV noch PROD ausgeführt.
+- **Migration:** `supabase/migrations/20261120120000_ap02_superadmin_context_hardening_dev.sql`.
+- **Rollback:** `supabase/rollback/20261120120000_ap02_superadmin_context_hardening_rollback_dev.sql`.
+- **Dokumentation:** `docs/AP02_SUPERADMIN_CONTEXT_CORRECTION_2026-11-20.md`.
+- **Auslöser:** Read-only PROD-Prüfung vom 20.11.2026 bestätigte, dass `can_manage_club_context(uuid)` für Superadmins trotz fehlendem Vereinskontext über eine zusätzliche `club_admin`-Rolle wahr werden konnte. Verwaltungs-RPCs verwendeten teilweise die Zwei-Argument-Rollenabfrage `is_team_admin(auth.uid(), team_id)` für die Berechtigung des Aufrufers; die Rollenhistorie enthielt einen direkten Superadmin-Bypass.
+- **Änderungsumfang:** zentrale Vereinskontextfunktion auf CASE-Priorität umgestellt; sechs Team-Verwaltungs-/Read-RPCs prüfen den handelnden Benutzer über `is_team_admin(team_id)`; `get_team_role_change_log(uuid)` verlangt für Superadmins den ausgewählten Teamkontext.
+- **Fachliche Entscheidung:** globale Superadmin-Rolle bleibt erhalten. Zusätzliche Mannschaftsadmin-/Trainerrolle und Mannschaftsmitgliedschaft bleiben vollständig erhalten und werden nicht bereinigt. Die direkte Vereinsmitgliedschaft und zugehörige Vereinsrollen werden vor dem Entfernen in einem gesperrten Snapshot-Schema gesichert; der Rollback stellt sie wieder her.
+- **Daten-/Rollback-Schutz:** Migration vergleicht im Postflight die vollständigen Teamrollen- und Teammitgliedschaftslisten mit dem Snapshot. Der Backup-Snapshot bleibt bis zum Ablauf des Rollback-Fensters erhalten. Kein Frontend-Deploy.
+- **Freigabegrenze:** Nutzerfreigabe vom 20.11.2026 umfasst die Vorbereitung und Versionierung des Pakets, nicht die Ausführung. Vor einer DEV-Ausführung sind statische SQL-Prüfung, Transaktionssimulation, Rollenmatrix und Rollback-Simulation abzuschließen und separat freizugeben. Für PROD ist nach erfolgreichem DEV-Test eine eigene, gegen den aktuellen PROD-Livebestand geprüfte Migration erforderlich.
