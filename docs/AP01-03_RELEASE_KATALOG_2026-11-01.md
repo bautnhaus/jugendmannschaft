@@ -237,3 +237,12 @@ Wesentliche PROD-Abweichungen: Die vorhandene Superadmin-Teamrolle lautet `admin
 - SECURITY DEFINER-Eigentümer/EXECUTE-ACLs read-only geprüft.
 - Letzte PROD-Migrationsversion `20261118105730`; AP02-Version `20261120221618` ist chronologisch nachfolgend und noch nicht registriert.
 - Status: statischer Review ohne weiteren Blocker. Keine SQL-Ausführungssimulation, Migration oder Datenänderung in PROD. Separate ausdrückliche Freigabe bleibt erforderlich.
+
+
+### AP02 PROD – Migration erfolgreich angewendet (20.11.2026)
+
+- Nutzerfreigabe erteilt; Migration `ap02_superadmin_context_hardening_prod` erfolgreich auf Supabase PROD angewendet.
+- Tatsächliche Supabase-Version: `20261120221618`.
+- Postflight: direkte Vereinsmitgliedschaft/-rolle entfernt; Teamrolle und Teammitgliedschaft `admin` erhalten; Backup-Snapshot genau ein Datensatz; Clientzugriff auf Backup verweigert; alle geprüften Kontext-RPCs korrekt gehärtet; `is_team_admin(uuid)` unverändert.
+- GitHub-Migrations- und Rollback-Dateien auf die tatsächliche Supabase-Version umbenannt.
+- Status: **PROD-Datenbankmigration erfolgreich; Frontend-Praxistest noch ausstehend.**
