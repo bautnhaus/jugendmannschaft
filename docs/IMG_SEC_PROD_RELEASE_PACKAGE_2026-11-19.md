@@ -30,7 +30,7 @@
 - `profile-avatars` und `club-assets` sind derzeit öffentlich.
 - `player-photos` fehlt in PROD.
 
-Es ist keine bestehende Spielerfoto-Datei zu migrieren. Das Vereinslogo wird nicht verschoben oder gelöscht.
+Es ist keine bestehende Spielerfoto-Datei zu migrieren. Das vorhandene Vereinslogo wird unmittelbar vor dem Release kontrolliert aus PROD entfernt (Storage-Objekt und `clubs.crest_path`-Referenz); nach dem privaten Bucket-Cutover wird es über die KADAssist-Oberfläche neu hochgeladen.
 
 ## Frontend-Abgrenzung
 
@@ -50,7 +50,7 @@ IMG-SEC-01-Rollback nur, solange keine Spielerfoto-Pfade und keine Objekte im Bu
 - Kein PROD-Bucket-Cutover.
 - Kein Merge nach `main`.
 - Keine Löschung nicht referenzierter DEV-Profilbilder.
-- Keine Änderungen an bestehenden Vereinslogo- oder Profilbilddateien.
+- Keine sonstigen Änderungen an bestehenden Vereinslogo- oder Profilbilddateien; die ausdrücklich geplante Logo-Neuanlage ist in der Release-Vorbereitung beschrieben.
 
 
 ## Read-only Preflight-Ergänzung PROD
@@ -69,3 +69,27 @@ Am 19.11.2026 wurde zusätzlich geprüft:
 Am 19.11.2026 wurde der direkte öffentliche URL-Negativtest für Profilbild und Vereinslogo vom Nutzer in einem privaten Safari-Fenster bestätigt: Beide URLs lieferten keinen Bildinhalt. Die DEV-Sicherheitsprüfung ist damit einschließlich RLS-Simulationen und bestätigter Upload-/Ändern-/Entfernen-Praxistests abgeschlossen.
 
 IMG-SEC ist als technischer PROD-Release-Kandidat vorbereitet. **Eine PROD-Ausführungsfreigabe liegt weiterhin nicht vor.** Vor jeder PROD-Ausführung werden die vier Migrationen und die zugehörigen Rollback-Skripte gemeinsam einzeln geprüft. Bis zu einer separaten ausdrücklichen Freigabe bleiben PROD, Buckets, Datenbank und Deployment unverändert.
+
+
+## Ergänzung: geplante Logo-Neuanlage unmittelbar vor dem Release
+
+Der bisherige PROD-Logo-Datensatz soll nicht in den neuen privaten Bucket-Pfad übernommen werden. Stattdessen wird das vorhandene Logo unmittelbar vor Beginn der IMG-SEC-PROD-Ausführung kontrolliert entfernt und nach erfolgreichem Cutover über KADAssist neu hochgeladen.
+
+Verbindliche Reihenfolge:
+1. Direkt vor dem Release erneut read-only prüfen, welcher Datensatz in `public.clubs` betroffen ist und welchen exakten Objektpfad `clubs.crest_path` referenziert.
+2. Vor jeder Löschung die Zuordnung von Verein, Referenz und Storage-Objekt gemeinsam anzeigen und vom Nutzer bestätigen lassen.
+3. Das exakt bestätigte Objekt im Supabase-Dashboard unter **Storage → club-assets** löschen.
+4. Anschließend die exakt zugehörige `clubs.crest_path`-Referenz kontrolliert auf `NULL` setzen. Vorherige SELECT-Kontrolle, eng begrenztes UPDATE und anschließende SELECT-Verifikation sind verpflichtend.
+5. Erst wenn Objekt und Referenz nachweislich entfernt sind, IMG-SEC-Migrationen und Frontend-Release nach den Gates ausführen.
+6. Nach IMG-SEC-03 das Vereinslogo über die KADAssist-Oberfläche neu hochladen. Danach neuen Objektpfad, Referenz, Signed-URL-Anzeige und fehlenden öffentlichen Direktzugriff prüfen.
+
+**Sicherheits- und Freigaberegeln:**
+- Diese Schritte sind nur geplant; sie wurden nicht ausgeführt.
+- Keine Löschung und kein SQL-UPDATE ohne separate ausdrückliche Freigabe.
+- Die konkrete Vereins-ID und der konkrete Objektpfad werden erst unmittelbar vor dem Release erneut read-only ermittelt; keine Werte aus älteren Prüfungen blind übernehmen.
+- Die Löschung des Storage-Objekts und das Leeren der Referenz erfolgen als zwei nachvollziehbare, einzeln verifizierte Schritte. Ich leite den Nutzer dabei in Supabase Schritt für Schritt an.
+- Bis dahin bleiben PROD-Logo, Referenz, Buckets, Datenbank und Deployment unverändert.
+
+## Ergänzung: IMG-SEC-01-Rollback-Korrektur
+
+Das IMG-SEC-01-Rollback wurde am 20.11.2026 korrigiert und auf `develop` sowie diesem Release-Branch aktualisiert. Es unterstützt jetzt beide Zwischenstände (IMG-SEC-01a allein sowie IMG-SEC-01a plus IMG-SEC-01b), entfernt die Helper je nach vorhandenem Schema und stoppt, solange IMG-SEC-02 noch installiert ist. Es löscht keine Storage-Objekte oder fachlichen Datensätze.
