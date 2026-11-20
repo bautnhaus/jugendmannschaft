@@ -121,7 +121,7 @@ Der Release-Branch `release/img-sec-2026-11-19` enthält 12 geänderte Dateien (
 
 Am 19.11.2026 bestätigte der Nutzer zusätzlich den direkten öffentlichen URL-Negativtest: Sowohl die Profilbild- als auch die Vereinslogo-URL lieferten in einem privaten Safari-Fenster keinen Bildinhalt. Zusammen mit den bestätigten Upload-/Ändern-/Entfernen-Praxistests und den RLS-Simulationen ist die IMG-SEC-Sicherheitsprüfung in DEV abgeschlossen.
 
-**Status:** IMG-SEC ist technischer PROD-Release-Kandidat. Dieser Status ist ausdrücklich keine Freigabe zur Ausführung in PROD.
+**Status:** IMG-SEC ist technisch vorbereitet, aber wegen des übergreifenden AP02-Superadmin-Kontext-Bypasses noch nicht PROD-freigabefähig. Die nachträglich korrigierten SQL-Dateien wurden noch nicht in DEV installiert oder end-to-end getestet.
 
 
 ## 8. Ergänzende PROD-Kompatibilitäts- und Rollback-Prüfung (20.11.2026)
