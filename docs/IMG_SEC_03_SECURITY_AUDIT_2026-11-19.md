@@ -235,3 +235,105 @@ IMG-SEC härtet ausschließlich die direkt betroffenen Bild-/Asset-Zugriffe:
 **Konsequenz:** Die globale AP02-Regel ist durch IMG-SEC allein noch nicht vollständig umgesetzt. Vor einer PROD-Freigabe ist eine separate AP02-Korrektur erforderlich: `can_manage_club_context` muss Superadmins unabhängig von zusätzlichen Vereinsrollen ausschließlich über den ausgewählten Vereinskontext autorisieren; zusätzlich müssen direkte `club_members`-/`club_member_roles`- sowie `team_member_roles`-Admin-Zuweisungen des Superadmins nach einer geprüften, ausdrücklich freigegebenen Datenbereinigung entfernt werden. Diese Arbeiten benötigen einen eigenen Preflight, eine Migration, Rollback-/Auswirkungsprüfung und separate Freigabe.
 
 DEV- und PROD-Prüfungen waren read-only bzw. vollständig zurückgerollte Simulationen. Keine Daten-, Rollen-, Policy- oder Funktionsänderung wurde in Supabase ausgeführt.
+
+## 12. Abschlussrunde – Rollen-, Pfad-, Migrations- und Rollbacktests (20.11.2026)
+
+### 12.1 Bestätigter Kontextfehler und Korrektur
+
+Die aktuelle Rollenbelegung in DEV und PROD enthält jeweils einen Superadmin mit zusätzlicher club_admin-Rolle und direkter Vereinsmitgliedschaft. In PROD hat der Superadmin zusätzlich eine team_member_roles-Zuweisung mit role='admin'.
+
+Ein transaktionsisolierter DEV-Test bestätigte den Fehler im bisherigen zentralen Helper:
+- ohne ausgewählten Vereins- oder Mannschaftskontext: public.can_manage_club_context(club_id)=true;
+- gleichzeitig: public.is_club_admin(club_id)=false, public.is_team_admin(team_id)=false und public.is_team_member(team_id)=false.
+
+Die IMG-SEC-PROD-Migrationen umgehen diesen Bypass gezielt für Bild-/Asset-Zugriffe:
+- can_view_club_asset: direkte Clubmitgliedschaft zählt für Superadmins nicht; erforderlich ist is_club_admin im ausgewählten Vereinskontext;
+- can_view_profile_avatar: Teamzugriff über is_team_member, Vereinsadminzugriff über is_club_admin;
+- can_manage_profile_avatar: Superadmin-Kontextprüfung hat Vorrang vor möglichen historischen Rollen;
+- Vereinsasset-INSERT-/UPDATE-/DELETE-Policies und admin_update_club_crest: is_club_admin;
+- IMG-SEC-02-Profil-RPCs: Superadmin-Kontextprüfung hat Vorrang.
+
+### 12.2 Transaktionsisolierte DEV-Rollentests
+
+Die korrigierten IMG-SEC-01/02-Helper wurden in einer vollständig zurückgerollten Transaktion simuliert. Alle folgenden Erwartungen wurden bestätigt:
+
+| Test | Ergebnis |
+|---|---|
+| Trainer verwaltet eigenes Profilbild | erlaubt |
+| Trainer verwaltet Profilbild eines anderen Trainers | verhindert |
+| Trainer verwaltet Profilbild eines Teamadmins | verhindert |
+| Teamadmin verwaltet Profilbild eines Trainers derselben Mannschaft | erlaubt |
+| Superadmin mit zusätzlicher Club-/Teamrolle ohne ausgewählten Kontext | Vereinsasset, fremdes Profilbild und Teammitglied-Verwaltung verhindert |
+| Derselbe Superadmin mit ausgewähltem Vereins- und Mannschaftskontext | Zugriff nur im ausgewählten Kontext erlaubt |
+
+Zusätzliche direkte Funktionsprüfungen bestätigten:
+- is_club_admin, is_team_admin und is_team_member liefern für den Superadmin ohne Kontext false;
+- can_manage_club_context liefert im aktuellen Bestand ohne Kontext weiterhin true, weshalb AP02 separat korrigiert werden muss;
+- nach Auswahl des passenden Kontexts liefern die kontextgebundenen Funktionen true.
+
+### 12.3 Profilbildpfad und Trigger
+
+| Test | Ergebnis |
+|---|---|
+| gültiger JPG-Pfad mit passender User-ID und 13-stelligem Zeitstempel | akzeptiert |
+| gültiger WEBP-Pfad | akzeptiert |
+| Pfad mit fremder User-ID | abgewiesen |
+| Zeitstempel mit falscher Länge | abgewiesen |
+| nicht erlaubte Dateiendung SVG | abgewiesen |
+| Traversal-Pfad | abgewiesen |
+| direkter Profil-UPDATE mit ungültigem Pfad | Trigger lehnt mit SQLSTATE 22023 ab |
+| gültiger Pfad | Trigger akzeptiert |
+| reine Namensänderung bei unverändertem Legacy-Pfad | akzeptiert |
+
+Alle Trigger- und Rollen-Simulationen wurden vollständig zurückgerollt.
+
+### 12.4 Vollständige Migrationstests in DEV-Transaktionen
+
+Die PROD-Dateien wurden jeweils in einer vorbereiteten DEV-Transaktion mit passenden Ausgangsbedingungen ausgeführt. Alle Testtransaktionen wurden anschließend zurückgerollt:
+
+| Paket | Simulierter Ablauf | Ergebnis |
+|---|---|---|
+| IMG-SEC-01b | Preflight, Verschieben der Helper von public nach private, Rechte und Policy-Postflight | bestanden |
+| IMG-SEC-02 | Preflight, Helper, Trigger, RPCs, Storage-Schreibpolicies und Postflight | bestanden |
+| IMG-SEC-03 | Preflight, Bucket-Cutover, Postflight | bestanden |
+| IMG-SEC-03-Rollback | nach Cutover beide Buckets wieder public=true; player-photos blieb privat | bestanden |
+
+Bei IMG-SEC-01b wurde während der Simulation sichtbar, dass bestehende DEV-Helper zusätzlich EXECUTE für service_role hatten. Die PROD-Migration wurde deshalb ergänzt, diese nicht benötigten Rechte ausdrücklich zu entziehen. IMG-SEC-02 entzieht solche geerbten Rechte für seine beiden Helper ebenfalls. Die Postflights prüfen nun, dass authenticated die benötigten Rechte besitzt, anon und service_role dagegen nicht.
+
+### 12.5 Bewusst nicht ausgeführte Rollbacks
+
+- IMG-SEC-02-Rollback wurde in DEV nicht bis zum Abschluss ausgeführt: Sein Datenkompatibilitäts-Preflight erkannte vorhandene neue Profilbildpfade und brach korrekt ab. Es wurden keine Profilbilder oder Referenzen gelöscht, um den Test künstlich zu erzwingen.
+- IMG-SEC-01-Rollback wurde nicht ausgeführt: DEV enthält Spielerfotoobjekte und befüllte photo_path-Referenzen. Die Rollback-Vorbedingungen sind damit bewusst nicht erfüllt.
+- Beide Rollbacks bleiben datenabhängig und sind nur nach gesonderter Datenkompatibilitätsprüfung und ausdrücklicher Freigabe zulässig.
+
+### 12.6 PROD-Preflight IMG-SEC-01a
+
+Der verschärfte IMG-SEC-01a-Preflight wurde als reine SELECT-Prüfung gegen PROD abgeglichen. Alle erwarteten Ausgangsbedingungen waren erfüllt:
+- players.photo_path fehlt;
+- Schema private fehlt;
+- Bucket player-photos fehlt;
+- die vier IMG-SEC-Helper fehlen;
+- die vier ursprünglichen club_assets_*-Policies sind vorhanden und verwenden can_manage_club_context;
+- admin_update_club_crest verwendet den erwarteten alten Kontext-Helper;
+- keine IMG-SEC-01-Policies sind bereits vorhanden.
+
+Es wurde keine PROD-Migration ausgeführt.
+
+### 12.7 Supabase Advisors – Ausgangsbefund
+
+Read-only Advisor-Prüfung vom 20.11.2026:
+- DEV Security: 56 Warnungen zu bestehenden authentifizierten SECURITY-DEFINER-Funktionen sowie 1 Warnung zu deaktiviertem Leaked-Password-Schutz.
+- PROD Security: 58 Warnungen derselben allgemeinen Kategorie sowie 1 Warnung zu deaktiviertem Leaked-Password-Schutz.
+- In den Security-Advisor-Findings wurde keine der neuen privaten IMG-SEC-Helper-Funktionen als eigener Befund aufgeführt.
+- DEV Performance: 39 unindexierte Foreign Keys, 65 Auth/RLS-Initplan-Warnungen, 65 Gruppen mehrfach permissiver Policies und 1 ungenutzter Index.
+- PROD Performance: 42 unindexierte Foreign Keys, 68 Auth/RLS-Initplan-Warnungen, 65 Gruppen mehrfach permissiver Policies und 6 ungenutzte Indizes.
+
+Diese Advisor-Befunde sind übergreifende Bestandsbefunde und wurden nicht im IMG-SEC-Paket verändert. Sie sind dokumentiert, aber kein neu entdeckter IMG-SEC-spezifischer Fehler.
+
+### 12.8 Endstatus
+
+Die IMG-SEC-Migrationsdateien und die getestete IMG-SEC-03-Rücknahme sind technisch vorbereitet. IMG-SEC-01- und IMG-SEC-02-Rollbacks enthalten zusätzliche Schutz- und Datenkompatibilitäts-Gates.
+
+PROD bleibt dennoch gesperrt, bis die separate AP02-Korrektur des globalen Superadmin-Kontextmodells und die freigegebene Bereinigung der direkten Superadmin-Mitgliedschaften/-Rollen umgesetzt und getestet sind. IMG-SEC allein korrigiert nicht alle außerhalb des Bild-/Asset-Bereichs liegenden AP02-Funktionen und Policies.
+
+Keine Supabase-Migration, Datenänderung, Storage-Änderung oder PROD-Deployment wurde ausgeführt.
