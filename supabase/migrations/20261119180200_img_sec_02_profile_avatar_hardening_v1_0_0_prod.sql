@@ -26,9 +26,6 @@ begin
      or to_regprocedure('public.admin_update_club_member_profile(uuid,uuid,text,text)') is null then
     raise exception 'Preflight fehlgeschlagen: erwartete Berechtigungsfunktionen oder Profil-RPCs fehlen.';
   end if;
-  if not has_schema_privilege('authenticated','private','USAGE') then
-    raise exception 'Preflight fehlgeschlagen: authenticated besitzt kein USAGE auf private.';
-  end if;
   if not has_schema_privilege('authenticated','private','USAGE')
      or has_schema_privilege('anon','private','USAGE') then
     raise exception 'Preflight fehlgeschlagen: private-Schema-Rechte sind unerwartet.';
