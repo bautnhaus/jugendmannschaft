@@ -1,6 +1,17 @@
 -- IMG-SEC PROD Postflight – ausschließlich lesende Prüfungen
 -- Nur nach separater PROD-Freigabe ausführen. Alle Statements sind SELECT.
 
+-- 0. Supabase migration ledger: all four named PROD migrations must be recorded.
+select version,name,created_by
+from supabase_migrations.schema_migrations
+where name in (
+  'img_sec_01_private_player_photo_storage_v1_0_0_prod',
+  'img_sec_01_harden_private_policy_helpers_prod',
+  'img_sec_02_profile_avatar_hardening_v1_0_0_prod',
+  'img_sec_03_private_profile_and_club_asset_buckets_prod'
+)
+order by version;
+
 -- 1. Bucket visibility and limits
 select id,public,file_size_limit,allowed_mime_types
 from storage.buckets
@@ -56,9 +67,12 @@ left join storage.objects o
   on o.bucket_id='club-assets' and o.name=c.crest_path
 where c.crest_path is not null;
 
--- Expected after full release:
+-- Expected after full release AND after the club logo has been re-uploaded:
+-- All four migration names are present in supabase_migrations.schema_migrations.
 -- player-photos: public=false; profile-avatars: public=false; club-assets: public=false.
 -- All bucket-specific SELECT/INSERT/UPDATE/DELETE policies remain present.
 -- Trigger exists; helper functions are in private schema.
--- Existing club crest reference still has its matching object.
--- No profile/player/club data or storage object was deleted.
+-- Newly uploaded club crest reference has its matching object.
+-- Player/profile data is preserved. The old club logo object and crest_path
+-- reference were deliberately removed as a separately approved release prerequisite,
+-- then the logo was re-uploaded through KADAssist. No other object is deleted.
