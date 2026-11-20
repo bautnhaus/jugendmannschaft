@@ -253,3 +253,6 @@ Die AP02-Korrektur wurde erweitert: Nicht nur die aufrufenden Verwaltungs-RPCs, 
 
 
 Die AP02-Migration grenzt nun zusätzlich Vereins- und Mannschaftskontext für Teamrollen-Schreibaktionen ausdrücklich ab: `admin_add_team_role` und `admin_remove_team_role` akzeptieren die Vereinsadmin-Alternative nur für Nicht-Superadmins. Superadmins benötigen bei diesen teambezogenen Schreibaktionen den ausgewählten Mannschaftskontext; die Auswahl eines Vereins allein genügt nicht. Migration und Rollback enthalten neun gezielte Funktionsersetzungen/-rücksetzungen.
+
+
+Der read-only DEV-Kontextstatus zeigt aktuell einen ausgewählten Vereinskontext, aber keinen ausgewählten Mannschaftskontext. Die zusätzliche gespeicherte Teamrolle ist in DEV `trainer`; in PROD wurde zuvor `admin` festgestellt. Beide Bestände bleiben erhalten. Die AP02-Migration verlangt für Superadmins bei teambezogenen Admin-RPCs ausdrücklich den ausgewählten Mannschaftskontext.
