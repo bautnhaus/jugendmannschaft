@@ -226,3 +226,14 @@ AP02 ist auf DEV dauerhaft angewendet und der Anwendungstest wurde vom Nutzer po
 Wesentliche PROD-Abweichungen: Die vorhandene Superadmin-Teamrolle lautet `admin` (DEV: `trainer`). `is_team_admin(uuid)` ist in PROD bereits korrekt teamkontextgebunden und wird nicht erneut geändert. Das PROD-Paket korrigiert nur die noch offenen Funktions-/RPC-Bypässe, sichert die tatsächlichen Rollen und neutralisiert die direkte Vereinszuweisung reversibel.
 
 **Status:** PROD-Paket vorbereitet und statisch gegen den PROD-Livebestand abgeglichen; keine PROD-Ausführung, kein Rollback, kein Frontend-Deploy. Separate ausdrückliche PROD-Freigabe bleibt zwingend.
+
+
+### AP02 PROD – unabhängiger SQL-/Rollback-Review abgeschlossen (20.11.2026)
+
+- Migration und Rollback sind transaktional geklammert.
+- Neun PROD-Ausgangs-Hash-Gates und neun dynamische Ersetzungen (sieben RPCs) geprüft; `is_team_admin(uuid)` wird zusätzlich im Postflight geschützt.
+- Einziger DELETE betrifft `club_members`; keine Teamrollen oder Teammitgliedschaften werden gelöscht/geändert.
+- PKs, FK CASCADE und `club_admin`-Check-Constraint read-only bestätigt; Rollback-Konfliktschlüssel ist gültig.
+- SECURITY DEFINER-Eigentümer/EXECUTE-ACLs read-only geprüft.
+- Letzte PROD-Migrationsversion `20261118105730`; AP02-Version `20261120225600` ist chronologisch nachfolgend und noch nicht registriert.
+- Status: statischer Review ohne weiteren Blocker. Keine SQL-Ausführungssimulation, Migration oder Datenänderung in PROD. Separate ausdrückliche Freigabe bleibt erforderlich.
