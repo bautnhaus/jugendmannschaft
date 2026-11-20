@@ -202,3 +202,15 @@ Read-only DEV-Tests in zurückgerollten Transaktionen:
 Die Tests zeigen zugleich, dass `can_manage_club_context` im konkreten dual-role-Sonderfall ohne Kontext zu weitreichend ist. Die Bildberechtigungen und die IMG-SEC-02-Vereinsprofil-RPC verwenden deshalb künftig `is_club_admin`.
 
 Diese Korrektur ist bislang ausschließlich in den SQL-Dateien auf GitHub enthalten. Die DEV-Datenbank wurde nicht verändert; die Simulationen wurden zurückgerollt. PROD blieb vollständig read-only.
+
+### 10.1 Read-only Abgleich des IMG-SEC-01a-PROD-Ausgangsstands
+
+Am 20.11.2026 wurde die neue IMG-SEC-01a-Preflight-Bedingung als reine SELECT-Prüfung gegen PROD ausgeführt. Alle erwarteten Ausgangsbedingungen waren erfüllt:
+- benötigte Tabellen vorhanden;
+- `players.photo_path` fehlt;
+- alle drei benötigten Rollen-/Kontextfunktionen vorhanden;
+- die vier neuen IMG-SEC-Helper fehlen noch;
+- ursprüngliche `club_assets_select_scoped`-SELECT-Policy vorhanden;
+- keine der IMG-SEC-01-Policies ist bereits vorhanden.
+
+Der aktuelle PROD-Ausgangsstand passt damit zum neuen IMG-SEC-01a-Preflight. Es wurde keine Migration ausgeführt.
