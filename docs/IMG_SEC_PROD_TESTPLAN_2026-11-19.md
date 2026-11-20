@@ -28,3 +28,17 @@ Nur nach separater PROD-Ausführungsfreigabe und nach dem jeweiligen Migrations-
 
 ## Abnahme
 Alle positiven und negativen Tests müssen bestanden sein. Ein unerlaubter Zugriff ist ein Sicherheitsblocker. Ein nicht ladendes Bild für berechtigte Benutzer ist ein Funktionsblocker. Kein PROD-Abschluss, bis alle Gates dokumentiert sind.
+
+
+## Rollback-Gate: Frontend-Kompatibilität
+
+Vor einer vollständigen Rückkehr zum alten Frontend zusätzlich read-only prüfen:
+- Keine neuen Werte in `players.photo_path`.
+- Keine Objekte in `player-photos`.
+- Keine neuen Profilbildpfade im Format `<user-uuid>/avatar-<13-stellige Millisekunden>.(jpg|png|webp)` in `profiles.avatar_url`.
+- Keine neu hochgeladenen Profilbildobjekte, die vom alten Frontend nicht als öffentliche URL referenziert werden können.
+
+Sind neue Profilbild- oder Spielerfotodaten vorhanden, darf das alte Frontend nicht einfach zurückdeployt und IMG-SEC-01 nicht entfernt werden. Dann ist ein gesonderter Kompatibilitäts-/Migrationsplan erforderlich. Das neue Frontend bleibt bis dahin bestehen.
+
+Für vollständigen Rollback gilt die Reihenfolge: IMG-SEC-03 (Buckets public; Sicherheitsdowngrade) → IMG-SEC-02 → altes Frontend deployen → IMG-SEC-01. Jede Stufe benötigt eine eigene ausdrückliche Freigabe.
+
