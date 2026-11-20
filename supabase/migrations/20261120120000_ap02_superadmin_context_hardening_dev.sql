@@ -305,7 +305,9 @@ BEGIN
   IF position('WHEN public.is_super_admin()' IN
        pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))=0
      OR position('public.has_selected_team_context(p_team_id)' IN
-       pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))=0 THEN
+       pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))=0
+     OR position('OR EXISTS' IN
+       pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))>0 THEN
     RAISE EXCEPTION 'AP02 Postflight: Superadmin-Kontext hat in is_team_admin Vorrang';
   END IF;
 
