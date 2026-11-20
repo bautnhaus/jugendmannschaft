@@ -63,9 +63,9 @@ Die vorbereitete IMG-SEC-01-PROD-Migration ergänzt die fehlenden Helper und set
 
 - `main/index.html` enthält noch 7 Aufrufe von `getPublicUrl()`.
 - Der PROD-Stand hat weder den gemeinsamen Signed-URL-Resolver noch die `photo_path`-Integration.
-- `main` liegt 186 Commits hinter `develop`. Ein pauschales Merge von `develop` nach `main` würde zahlreiche andere Änderungen mitnehmen und ist ausdrücklich nicht Teil dieses Bildsicherheits-Releases.
+- `main` liegt 194 Commits hinter `develop`. Ein pauschales Merge von `develop` nach `main` würde zahlreiche andere Änderungen mitnehmen und ist ausdrücklich nicht Teil dieses Bildsicherheits-Releases.
 - Deshalb wurde ein isolierter Release-Branch `release/img-sec-2026-11-19` von `main` erstellt. Darin wurden ausschließlich die 15 nachvollziehbaren Bild-/Storage-Frontend-Änderungen angewendet. Die resultierende `index.html` hat denselben Blob-SHA wie die getestete DEV-Datei: `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`.
-- Der Release-Branch enthält keine Übernahme der übrigen 186 Commits als Branch-Merge.
+- Der Release-Branch enthält keine Übernahme der übrigen 194 Commits als Branch-Merge.
 
 ## 3. PROD-Migrationspaket
 
