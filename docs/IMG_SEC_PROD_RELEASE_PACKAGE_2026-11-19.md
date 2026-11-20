@@ -156,6 +156,7 @@ Die IMG-SEC-02-Migration wurde deshalb korrigiert:
 - Die Vereinsasset-INSERT-/UPDATE-/DELETE-Policies und `admin_update_club_crest` verwenden `public.is_club_admin(...)`.
 - Die Vereinsprofil-RPC verwendet `public.is_club_admin(p_club_id)`.
 - Das Preflight prüft diese Funktion explizit.
+- `admin_update_member_profile(...)` verlangt bei Superadmins ausdrücklich den ausgewählten Mannschaftskontext; eine zusätzliche Teamadmin-Rolle umgeht diese Prüfung nicht.
 - Das IMG-SEC-02-Rollback behält diese strengere Kontextprüfung in der Vereinsprofil-RPC und in allen drei Profilbild-Schreibpolicies bewusst bei. Auch das IMG-SEC-01-Rollback verwendet für `club_assets_select_scoped` `public.is_club_admin(...)`. Kein Rollback führt den bekannten Bypass wieder ein.
 
 Die Rollenprüfungen wurden in DEV ausschließlich lesend bzw. in vollständig zurückgerollten Simulationstransaktionen durchgeführt. Bestanden: Superadmin ohne Kontext = kein Fremdzugriff; Superadmin mit ausgewähltem Vereinskontext = Zugriff im ausgewählten Verein; normaler Vereinsadmin = Zugriff im eigenen Verein; Mannschaftsadmin = Zugriff auf Mitglieder der eigenen Mannschaft; Trainer = kein Fremdzugriff, aber Selbstverwaltung bleibt möglich.
@@ -164,10 +165,10 @@ Die Rollenprüfungen wurden in DEV ausschließlich lesend bzw. in vollständig z
 
 ## Release-Blocker: übergreifender AP02-Superadmin-Kontext (20.11.2026)
 
-Die read-only Prüfung von DEV und PROD hat einen über IMG-SEC hinausgehenden AP02-Kontext-Bypass bestätigt. In beiden Umgebungen besitzt jeweils ein Superadmin zusätzlich eine `club_admin`-Rollenzuweisung und eine direkte `club_members`-Mitgliedschaft. `public.can_manage_club_context(uuid)` kann dadurch für diesen Superadmin ohne ausgewählten Vereinskontext `true` liefern.
+Die read-only Prüfung von DEV und PROD hat einen über IMG-SEC hinausgehenden AP02-Kontext-Bypass bestätigt. In beiden Umgebungen besitzt jeweils ein Superadmin zusätzlich eine `club_admin`-Rollenzuweisung und eine direkte `club_members`-Mitgliedschaft. In PROD besitzt ein Superadmin zusätzlich eine `team_member_roles`-Zuweisung mit `role='admin'`. `public.can_manage_club_context(uuid)` kann dadurch für diesen Superadmin ohne ausgewählten Vereinskontext `true` liefern; auch die Zwei-Argument-Variante `is_team_admin(user_id,team_id)` prüft allein die Rollenbelegung.
 
 IMG-SEC härtet die unmittelbar betroffenen Profilbild- und Vereinsasset-Zugriffe mit `public.is_club_admin(...)` bzw. `public.is_team_member(...)`. Die übrigen Club-Management-Funktionen und Policies, die weiterhin `can_manage_club_context` verwenden, sind nicht Teil dieses Release-Pakets.
 
-**IMG-SEC darf nicht in PROD freigegeben werden, bevor die separate AP02-Korrektur umgesetzt und geprüft wurde.** Erforderlich sind eine gehärtete zentrale `can_manage_club_context`-Semantik (Superadmins ausschließlich im ausgewählten Vereinskontext) und eine separat freizugebende Datenbereinigung der direkten Vereinsmitgliedschaft/-rolle des Superadmins. Dafür ist ein eigener Preflight, eine eigene Migration, eine Rollback-/Auswirkungsprüfung und ein DEV-Praxistest erforderlich.
+**IMG-SEC darf nicht in PROD freigegeben werden, bevor die separate AP02-Korrektur umgesetzt und geprüft wurde.** Erforderlich sind eine gehärtete zentrale `can_manage_club_context`-Semantik (Superadmins ausschließlich im ausgewählten Vereinskontext) und eine separat freizugebende Datenbereinigung der direkten Vereinsmitgliedschaft/-rolle sowie einer etwaigen Teamadmin-Zuweisung des Superadmins. Dafür ist ein eigener Preflight, eine eigene Migration, eine Rollback-/Auswirkungsprüfung und ein DEV-Praxistest erforderlich.
 
 Dieser Release-Blocker wurde ausschließlich dokumentiert. Keine Supabase-Daten oder Rollen wurden verändert.
