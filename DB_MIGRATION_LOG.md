@@ -1734,3 +1734,13 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Struktur:** genau ein FK verweist auf `club_members`; `club_member_roles.user_id` hat `ON DELETE CASCADE`; keine benutzerdefinierten Trigger auf den beiden Vereinsmitgliedschaftstabellen.
 - **Paket auf develop:** `supabase/migrations/20261120225600_ap02_superadmin_context_hardening_prod.sql` und `supabase/rollback/20261120225600_ap02_superadmin_context_hardening_rollback_prod.sql`. Das PROD-Rollback schützt zusätzlich vor zwischenzeitlichen Änderungen der Teamrollen/-mitgliedschaften.
 - **Status:** vorbereitet und statisch geprüft, nicht ausgeführt. Keine PROD-Daten, Funktionen oder Migrationseinträge verändert. Separate ausdrückliche PROD-Freigabe bleibt erforderlich.
+
+
+### AP02 PROD – unabhängiger SQL-Review ergänzt (20.11.2026)
+
+- Die PROD-Migration und das Rollback sind vollständig transaktional mit `BEGIN`/`COMMIT` geklammert.
+- Der Preflight prüft zusätzlich den konkreten Check-Constraint `club_member_roles_role_check` (nur `club_admin`) sowie die bereits bestätigten PK-/FK-Annahmen.
+- Read-only Constraint-Abgleich: `club_members(user_id)` ist Primärschlüssel; `club_member_roles(user_id, role)` ist Primärschlüssel; FK `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE`.
+- Die Migration löscht ausschließlich den direkten Datensatz aus `club_members`; Teamrollen und Teammitgliedschaften werden weder gelöscht noch aktualisiert.
+- Die aktuelle PROD-Rollen-/Mitgliedschafts-Stichprobe bleibt unverändert: 1 Superadmin, 1 direkte Vereinsmitgliedschaft, 1 Vereinsadmin-Rolle, 1 Teamrolle `admin`, 1 Teammitgliedschaft `admin`; Backup-Schema existiert nicht.
+- **Keine Ausführung:** Der Review und alle Live-Abfragen waren read-only. PROD bleibt unverändert und gesperrt bis zur separaten ausdrücklichen Freigabe.
