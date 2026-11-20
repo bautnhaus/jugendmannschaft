@@ -162,3 +162,15 @@ Der PROD-Migrationsledger wurde read-only abgefragt. Die vier IMG-SEC-PROD-Migra
 Die Postflight-Prüfung wurde ergänzt, um die vier Migrationsnamen im Ledger nachzuweisen und den neu hochgeladenen Vereinslogo-Pfad erst nach der Logo-Neuanlage als erfolgreich zu erwarten.
 
 Diese Prüfung und Dokumentationsanpassung war read-only bzw. GitHub-Dokumentationsarbeit. Es wurden keine PROD-Daten, Buckets, Policies oder Deployments verändert.
+
+
+## 10. Zusätzliche Preflight-Guards (20.11.2026)
+
+Die PROD-Migrationen wurden um zusätzliche Preflight-/Postflight-Prüfungen ergänzt. Die Prüfungen wurden mit dem installierten DEV-Stand read-only abgeglichen:
+- Bucket-Konfiguration von `player-photos`: privat, 2 MiB, JPEG/PNG/WebP.
+- `private`-Schema-USAGE und Helper-EXECUTE: `authenticated` erlaubt, `anon` nicht erlaubt.
+- IMG-SEC-01b bestätigt, dass die Helper nach dem Schemawechsel nicht mehr in `public` liegen.
+- IMG-SEC-02 verlangt die vorhandene Profilbild-SELECT-Policy mit Verweis auf `private.can_view_profile_avatar`.
+- IMG-SEC-03 verlangt alle privaten Helper, die private Spielerfoto-Bucket-Konfiguration und die tatsächlichen Policy-Ausdrücke für Profilbilder und Vereinsassets; nach dem Update müssen alle drei Bild-Buckets privat sein.
+
+Der installierte DEV-Stand erfüllt die geprüften Bucket- und Rechteerwartungen. Die erwarteten SELECT-Policy-Ausdrücke lauten auf die Funktionen im Schema `private`. Die Ergänzungen wurden ausschließlich in GitHub vorgenommen; PROD blieb unverändert.
