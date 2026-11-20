@@ -1744,3 +1744,14 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - Die Migration löscht ausschließlich den direkten Datensatz aus `club_members`; Teamrollen und Teammitgliedschaften werden weder gelöscht noch aktualisiert.
 - Die aktuelle PROD-Rollen-/Mitgliedschafts-Stichprobe bleibt unverändert: 1 Superadmin, 1 direkte Vereinsmitgliedschaft, 1 Vereinsadmin-Rolle, 1 Teamrolle `admin`, 1 Teammitgliedschaft `admin`; Backup-Schema existiert nicht.
 - **Keine Ausführung:** Der Review und alle Live-Abfragen waren read-only. PROD bleibt unverändert und gesperrt bis zur separaten ausdrücklichen Freigabe.
+
+
+### AP02 PROD – abschließender SQL-/Rollback-Review (20.11.2026)
+
+- Statischer unabhängiger Review der PROD-Migration und des Rollbacks abgeschlossen; kein weiterer statischer Blocker festgestellt.
+- Migration und Rollback vollständig transaktional (`BEGIN`/`COMMIT`).
+- Neun PROD-Hash-Gates, neun dynamische Funktionsersetzungen, Teamrollen-Schutz und Rollback-Drift-Guards geprüft.
+- Nur `club_members` wird gelöscht; keine Änderung an `team_members` oder `team_member_roles`.
+- Primärschlüssel, FK CASCADE, `club_admin`-Check-Constraint, Funktionsowner und EXECUTE-ACLs read-only geprüft.
+- PROD-Migrationsledger zuletzt `20261118105730`; AP02-Version `20261120225600` liegt danach und ist nicht registriert.
+- Keine Ausführungssimulation oder Datenbankänderung auf PROD. Paket ist bereit zur separaten ausdrücklichen PROD-Freigabe.
