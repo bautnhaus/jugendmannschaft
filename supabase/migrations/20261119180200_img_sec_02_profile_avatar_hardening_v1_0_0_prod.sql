@@ -80,7 +80,8 @@ grant execute on function private.is_valid_profile_avatar_path(uuid, text) to au
 -- diese Funktion kann bei einem Superadmin mit zusätzlicher club_admin-Rolle
 -- auch ohne ausgewählten Vereinskontext true liefern.
 -- Mannschaftsadmins: nur für Mitglieder derselben Mannschaft. Superadmins benötigen
--- ausdrücklich den passenden ausgewählten Mannschaftskontext.
+-- ausdrücklich den passenden ausgewählten Mannschaftskontext; die Superadmin-Prüfung
+-- hat Vorrang vor möglichen historischen Teamrollen desselben Kontos.
 create or replace function private.can_manage_profile_avatar(
   p_target_user_id uuid
 )
@@ -104,7 +105,11 @@ as $function$
          select 1
          from public.team_member_roles target
          where target.user_id = p_target_user_id
-           and public.is_team_admin(target.team_id)
+           and case
+             when public.is_super_admin()
+               then public.has_selected_team_context(target.team_id)
+             else public.is_team_admin(target.team_id)
+           end
        )
      );
 $function$;
@@ -160,8 +165,8 @@ declare
   v_name text := trim(coalesce(p_display_name, ''));
 begin
   if auth.uid() is null or not (
-    public.is_team_admin(auth.uid(), p_team_id)
-    or (public.is_super_admin() and public.has_selected_team_context(p_team_id))
+    (public.is_super_admin() and public.has_selected_team_context(p_team_id))
+    or (not public.is_super_admin() and public.is_team_admin(auth.uid(), p_team_id))
   ) then
     raise exception 'Nicht berechtigt' using errcode = '42501';
   end if;
@@ -309,12 +314,63 @@ using (
   end
 );
 
--- 6) Nach Ausführung zwingend:
--- - SELECT-Prüfung von Funktionsdefinitionen, Triggern und Policy-Ausdrücken.
--- - Prüfung der EXECUTE-/USAGE-Rechte; keine PUBLIC-/anon-EXECUTE-Rechte auf neue Helper.
--- - Positiv-/Negativtests aus dem IMG-SEC-02-Plan.
--- - Supabase Security Advisors.
--- - Erst nach erfolgreichem DEV-Test separate PROD-Kompatibilitätsprüfung.
--- Kein Bucket-Cutover Bestandteil dieser Migration.
+-- Postflight: Rechte, Trigger und Policy-Verknüpfungen müssen exakt passen.
+do $postflight$
+begin
+  if not has_schema_privilege('authenticated','private','USAGE')
+     or has_schema_privilege('anon','private','USAGE')
+     or has_schema_privilege('service_role','private','USAGE') then
+    raise exception 'IMG-SEC-02 Postflight: private-Schema-Rechte sind unerwartet.';
+  end if;
+
+  if not has_function_privilege('authenticated','private.can_manage_profile_avatar(uuid)','EXECUTE')
+     or not has_function_privilege('authenticated','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE')
+     or has_function_privilege('anon','private.can_manage_profile_avatar(uuid)','EXECUTE')
+     or has_function_privilege('anon','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE')
+     or has_function_privilege('service_role','private.can_manage_profile_avatar(uuid)','EXECUTE')
+     or has_function_privilege('service_role','private.is_valid_profile_avatar_path(uuid,text)','EXECUTE') then
+    raise exception 'IMG-SEC-02 Postflight: unerwartete Helper-EXECUTE-Rechte.';
+  end if;
+
+  if not exists (
+    select 1 from pg_trigger t
+    join pg_class c on c.oid=t.tgrelid
+    join pg_namespace n on n.oid=c.relnamespace
+    where n.nspname='public' and c.relname='profiles'
+      and t.tgname='profiles_validate_avatar_path' and not t.tgisinternal
+  ) then
+    raise exception 'IMG-SEC-02 Postflight: Profilbild-Validierungstrigger fehlt.';
+  end if;
+
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_insert_self_or_admin'
+      and with_check like '%private.can_manage_profile_avatar%'
+      and with_check like '%private.is_valid_profile_avatar_path%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_update_self_or_admin'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%private.can_manage_profile_avatar%'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%private.is_valid_profile_avatar_path%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_delete_self_or_admin'
+      and qual like '%private.can_manage_profile_avatar%'
+  ) then
+    raise exception 'IMG-SEC-02 Postflight: Profilbild-Schreibpolicies sind unvollständig.';
+  end if;
+
+  if position('public.is_super_admin()' in pg_get_functiondef('public.admin_update_member_profile(uuid,uuid,text,text)'::regprocedure)) = 0
+     or position('public.is_club_admin(p_club_id)' in pg_get_functiondef('public.admin_update_club_member_profile(uuid,uuid,text,text)'::regprocedure)) = 0 then
+    raise exception 'IMG-SEC-02 Postflight: Profil-RPCs enthalten nicht die explizite Kontextpriorität.';
+  end if;
+end;
+$postflight$;
+
+-- Nach Ausführung: Security Advisors sowie Positiv-/Negativtests durchführen.
+-- IMG-SEC-03 (Bucket-Cutover) ist nicht Bestandteil dieser Migration.
 
 commit;
