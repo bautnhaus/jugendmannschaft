@@ -27,7 +27,8 @@ begin
     raise exception 'Preflight fehlgeschlagen: erwartete Berechtigungsfunktionen oder Profil-RPCs fehlen.';
   end if;
   if not has_schema_privilege('authenticated','private','USAGE')
-     or has_schema_privilege('anon','private','USAGE') then
+     or has_schema_privilege('anon','private','USAGE')
+     or has_schema_privilege('service_role','private','USAGE') then
     raise exception 'Preflight fehlgeschlagen: private-Schema-Rechte sind unerwartet.';
   end if;
   if to_regprocedure('private.can_view_profile_avatar(uuid)') is null
