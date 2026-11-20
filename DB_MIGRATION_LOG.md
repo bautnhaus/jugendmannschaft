@@ -1662,7 +1662,7 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 
 
 - **AP02-Prüfvertiefung (20.11.2026):** DEV read-only bestätigt: ein Superadmin, eine direkte Vereinsmitgliedschaft, eine `club_admin`-Rolle, eine Mannschaftsadmin-Rolle und eine Mannschaftsmitgliedschaft. `club_member_roles.user_id` referenziert `club_members.user_id` mit `ON DELETE CASCADE`; keine benutzerdefinierten Trigger auf diesen beiden Tabellen.
-- **Zentrale Teamadmin-Härtung ergänzt:** `public.is_team_admin(uuid)` prüft Superadmins vorrangig über den ausgewählten Mannschaftskontext; die zusätzliche gespeicherte Teamadmin-Rolle ist kein Kontext-Bypass. Die Vereinsadmin-Alternative in `admin_add_team_role` und `admin_remove_team_role` ist für Superadmins ausdrücklich ausgeschlossen. Migration und Rollback enthalten neun gezielte Funktionsersetzungen/-rücksetzungen.
+- **Zentrale Teamadmin-Härtung ergänzt:** `public.is_team_admin(uuid)` prüft Superadmins vorrangig über den ausgewählten Mannschaftskontext; die zusätzliche gespeicherte Teamadmin-Rolle ist kein Kontext-Bypass. Die Vereinsadmin-Alternative in `admin_add_team_role` und `admin_remove_team_role` ist für Superadmins ausdrücklich ausgeschlossen. Migration und Rollback enthalten neun gezielte Berechtigungstext-Ersetzungen/-rücksetzungen innerhalb von sieben RPCs.
 - **Erweiterte Preflight-Gates:** exakte DEV-Ausgangsdefinitionen für `can_manage_club_context(uuid)` und `is_team_admin(uuid)`, erwartete FK-Struktur und Abwesenheit benutzerdefinierter Trigger werden vor jeder Änderung geprüft.
 
 
