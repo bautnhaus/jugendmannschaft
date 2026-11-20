@@ -183,3 +183,44 @@ Dieser Release-Blocker wurde ausschließlich dokumentiert. Keine Supabase-Daten 
 - Rollback 02 stoppt bei neuen relativen Profilbildpfaden/-objekten und verlangt vorheriges IMG-SEC-03-Rollback. Rollback 01 verlangt ebenfalls öffentliche Alt-Bucket-Sichtbarkeit und stoppt bei IMG-SEC-02-Abhängigkeiten oder neuen Spielerfotos.
 
 Diese zusätzlichen Gates sind in den SQL-Dateien enthalten und statisch geprüft. Die korrigierten Migrationen wurden noch nicht in DEV ausgeführt; eine separate DEV-Testfreigabe ist vor jeder PROD-Freigabe erforderlich.
+
+## Abschlussvalidierung der Release-Dateien (20.11.2026)
+
+Die vier Migrationen und drei Rollback-Dateien wurden erneut gemeinsam geprüft. Alle SQL-Dateien haben einen konsistenten BEGIN-/COMMIT-Abschluss und ausgeglichene Dollar-Quote-Delimiter. Die Migrationen enthalten zusätzliche Abbruch- und Postflight-Gates.
+
+### Durchgeführte DEV-Transaktionssimulationen
+
+| Datei / Ablauf | Ergebnis |
+|---|---|
+| IMG-SEC-01b: Helper-Schemawechsel und Postflight | bestanden |
+| IMG-SEC-02: Helper, Trigger, Profil-RPCs, Storage-Policies und Postflight | bestanden |
+| IMG-SEC-03: Preflight, privater Bucket-Cutover und Postflight | bestanden |
+| IMG-SEC-03-Rollback: Buckets wieder öffentlich, ohne Objekt-/Datenlöschung | bestanden |
+| Profilbildpfad-Validierung und Trigger | bestanden |
+| Trainer-/Teamadmin-/Superadmin-Kontextmatrix | bestanden |
+
+Alle DEV-Simulationen wurden in Transaktionen durchgeführt und zurückgerollt. Die IMG-SEC-02- und IMG-SEC-01-Rollbacks wurden nicht gegen den vorhandenen DEV-Datenbestand ausgeführt, weil deren Datenkompatibilitäts-Preflights korrekt blockieren: DEV enthält bereits neue Profilbildpfade, Spielerfotoobjekte und photo_path-Daten. Diese Daten wurden nicht gelöscht, um einen Rollback-Test zu erzwingen.
+
+### Zusätzliche Sicherheitskorrekturen
+
+- IMG-SEC-01a härtet neben der Vereinsasset-SELECT-Policy auch INSERT/UPDATE/DELETE und admin_update_club_crest auf public.is_club_admin(...). Dadurch können Superadmins mit historischen club_admin-Zuweisungen nicht ohne ausgewählten Vereinskontext handeln.
+- IMG-SEC-01b entfernt nicht benötigte service_role-EXECUTE-Rechte auf die verschobenen Bild-Helper.
+- IMG-SEC-02 entfernt service_role-EXECUTE-Rechte auf die Profilbild-Verwaltungs- und Pfadvalidierungs-Helper.
+- IMG-SEC-02 stellt sicher, dass die Superadmin-Kontextprüfung Vorrang vor historischen direkten Teamadmin-Zuweisungen hat.
+- IMG-SEC-01- und IMG-SEC-02-Rollbacks behalten die strikte Superadmin-Kontextprüfung für die betroffenen Vereinsasset-/Profilbildwege bewusst bei.
+
+### PROD-Preflight
+
+Der verschärfte IMG-SEC-01a-Preflight wurde als reine SELECT-Prüfung in PROD abgeglichen. Alle erwarteten Ausgangsbedingungen stimmen: photo_path, private-Schema, player-photos-Bucket und IMG-SEC-Helper fehlen; die vier bisherigen club_assets-Policies und Crest-RPC entsprechen dem erwarteten Ausgangsstand. Es wurde keine Migration ausgeführt.
+
+### Verbindlicher Release-Blocker
+
+Die separate AP02-Prüfung hat einen übergreifenden Superadmin-Kontext-Bypass außerhalb der Bild-/Asset-Funktionen nachgewiesen. In PROD hat der Superadmin zusätzlich eine club_admin-Zuweisung, direkte Vereinsmitgliedschaft und eine team_member_roles-Zuweisung mit role='admin'. Die zentrale Funktion can_manage_club_context und die Zwei-Argument-Funktion is_team_admin(user_id,team_id) können dadurch außerhalb des IMG-SEC-Bereichs weiterhin zu weitreichende Rechte liefern.
+
+IMG-SEC ist daher ein technisch validierter Release-Kandidat, aber **noch nicht PROD-freigabefähig**. Vor der Ausführung ist eine separate AP02-Korrektur mit eigenem Preflight, Funktions-/Policy-Härtung, kontrollierter Rollen-Datenbereinigung, Rollback-/Auswirkungsprüfung und DEV-Praxistest erforderlich. Die Datenbereinigung wird nicht stillschweigend im IMG-SEC-Release vorgenommen.
+
+### Security Advisors
+
+Am 20.11.2026 wurden die Supabase Security Advisors in DEV und PROD read-only abgefragt. Es gab keine gesonderte Advisor-Meldung zu den neuen privaten IMG-SEC-Helpern. Bestehende allgemeine Warnungen zu SECURITY-DEFINER-Funktionen und Leaked-Password-Schutz bleiben dokumentiert und werden nicht durch dieses Release verändert.
+
+**Aktueller Status:** Release-Dateien und Testnachweise vorbereitet; PROD-Ausführung, Bucket-Cutover, Logo-Löschung, Frontend-Deployment und Merge nach main sind nicht freigegeben und nicht erfolgt.
