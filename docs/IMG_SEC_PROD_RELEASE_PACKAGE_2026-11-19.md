@@ -34,7 +34,7 @@ Es ist keine bestehende Spielerfoto-Datei zu migrieren. Das vorhandene Vereinslo
 
 ## Frontend-Abgrenzung
 
-`main` ist 194 Commits hinter `develop`. Kein vollständiges Merge von `develop` nach `main` für dieses Release. Der dedizierte Branch `release/img-sec-prod-2026-11-20` basiert auf `main` und enthält die gezielten Bild-Frontend-Änderungen. Seine `index.html` entspricht dem getesteten DEV-Blob-SHA `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`.
+`main` ist 186 Commits hinter `develop`. Kein vollständiges Merge von `develop` nach `main` für dieses Release. Der dedizierte Branch `release/img-sec-prod-2026-11-20` basiert auf `main` und enthält die gezielten Bild-Frontend-Änderungen. Seine `index.html` entspricht dem getesteten DEV-Blob-SHA `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`.
 
 ## Rollback
 
@@ -224,3 +224,8 @@ IMG-SEC ist daher ein technisch validierter Release-Kandidat, aber **noch nicht 
 Am 20.11.2026 wurden die Supabase Security Advisors in DEV und PROD read-only abgefragt. Es gab keine gesonderte Advisor-Meldung zu den neuen privaten IMG-SEC-Helpern. Bestehende allgemeine Warnungen zu SECURITY-DEFINER-Funktionen und Leaked-Password-Schutz bleiben dokumentiert und werden nicht durch dieses Release verändert.
 
 **Aktueller Status:** Release-Dateien und Testnachweise vorbereitet; PROD-Ausführung, Bucket-Cutover, Logo-Löschung, Frontend-Deployment und Merge nach main sind nicht freigegeben und nicht erfolgt.
+
+
+## Finaler Release-Branch
+
+Der finale, bereinigte Release-Branch lautet release/img-sec-prod-2026-11-20. Er wurde frisch von main erstellt und enthält genau die zwölf vorgesehenen Dateien: vier Migrationen, drei Rollbacks, vier Prüfdokumente und die getestete index.html. Der Branch ist 12 Commits ahead und 0 Commits behind von main; es wurde kein Merge nach main ausgeführt. Die index.html besitzt weiterhin denselben Blob-SHA wie der getestete DEV-Stand (cc2ff9534d3847e9e9c343f3da2b741c865c5b9c).
