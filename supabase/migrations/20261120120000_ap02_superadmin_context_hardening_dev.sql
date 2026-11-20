@@ -19,6 +19,11 @@ BEGIN
      OR to_regprocedure('public.has_selected_team_context(uuid)') IS NULL
      OR to_regprocedure('public.is_team_admin(uuid)') IS NULL
      OR to_regprocedure('public.is_super_admin()') IS NULL THEN
+  IF md5(pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))
+       IS DISTINCT FROM '466701a808244b3fe9a14b91bda17af0' THEN
+    RAISE EXCEPTION 'AP02 Preflight: is_team_admin(uuid) weicht vom geprüften DEV-Ausgangsstand ab';
+  END IF;
+
     RAISE EXCEPTION 'AP02 Preflight: erforderliche Kontextfunktionen fehlen';
   END IF;
 
@@ -93,6 +98,27 @@ $function$;
 -- Zielbenutzerrollen. Verwaltungs-RPCs müssen stattdessen die Ein-Argument-
 -- Funktion auf den handelnden Benutzer anwenden; diese erzwingt für
 -- Superadmins den ausgewählten Teamkontext.
+CREATE OR REPLACE FUNCTION public.is_team_admin(p_team_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path TO 'pg_catalog', 'public'
+AS $function$
+  SELECT auth.uid() IS NOT NULL
+     AND CASE
+       WHEN public.is_super_admin()
+         THEN public.has_selected_team_context(p_team_id)
+       ELSE EXISTS (
+         SELECT 1
+         FROM public.team_member_roles r
+         WHERE r.team_id = p_team_id
+           AND r.user_id = auth.uid()
+           AND r.role = 'admin'
+       )
+     END;
+$function$;
+
 DO $function_hardening$
 DECLARE
   v_sig text;
@@ -114,13 +140,13 @@ BEGIN
        'public.is_team_admin(auth.uid(), p_team_id)',
        'public.is_team_admin(p_team_id)'),
       ('public.admin_set_trainer_label(uuid,text,text)',
-       'public.is_team_admin(auth.uid(), p_team_id)',
+       'public.is_team_admin(auth.uid(),p_team_id)',
        'public.is_team_admin(p_team_id)'),
       ('public.get_team_trainers(uuid)',
        'public.is_team_admin(auth.uid(), p_team_id)',
        'public.is_team_admin(p_team_id)'),
       ('public.get_team_trainers_v2(uuid)',
-       'public.is_team_admin(auth.uid(), p_team_id)',
+       'public.is_team_admin(auth.uid(),p_team_id)',
        'public.is_team_admin(p_team_id)'),
       ('public.get_team_role_change_log(uuid)',
        'public.is_super_admin()',
@@ -236,6 +262,13 @@ BEGIN
   IF v_actual_team_roles IS DISTINCT FROM v_expected_team_roles
      OR v_actual_team_memberships IS DISTINCT FROM v_expected_team_memberships THEN
     RAISE EXCEPTION 'AP02 Postflight: Teamrollen oder Teammitgliedschaften wurden unerwartet verändert';
+  END IF;
+
+  IF position('WHEN public.is_super_admin()' IN
+       pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))=0
+     OR position('public.has_selected_team_context(p_team_id)' IN
+       pg_get_functiondef('public.is_team_admin(uuid)'::regprocedure))=0 THEN
+    RAISE EXCEPTION 'AP02 Postflight: Superadmin-Kontext hat in is_team_admin Vorrang';
   END IF;
 
   IF position('WHEN public.is_super_admin() THEN EXISTS' IN
