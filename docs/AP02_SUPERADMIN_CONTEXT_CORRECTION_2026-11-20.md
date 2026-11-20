@@ -158,3 +158,42 @@ Die Tests verwendeten ausschließlich temporäre Änderungen innerhalb der zurü
 3. Migration und Rollback verlangen jetzt für jeden dynamischen Ersetzungsausdruck genau ein Vorkommen.
 
 **Ergebnis:** Die kontrollierte Transaktionssimulation einschließlich Rollenmatrix und Rollback ist erfolgreich. Dies ist keine dauerhafte DEV-Migration. Eine separate Freigabe zur tatsächlichen DEV-Ausführung bleibt erforderlich.
+
+
+## Dauerhafte DEV-Ausführung – erfolgreich (20.11.2026)
+
+**Freigabe:** Nutzerfreigabe zur tatsächlichen DEV-Migration erteilt.  
+**Supabase-Projekt:** Jugendmannschaft DEV (`pzazqvvoruqnqhcorbwx`), PostgreSQL 17.6.  
+**Supabase-Migrationsversion:** `20261120212557`  
+**Migrationsname:** `ap02_superadmin_context_hardening_dev`  
+**Status:** erfolgreich angewendet und in der Supabase-Migrationshistorie registriert.
+
+### Read-only Postflight
+
+- Superadmins: 1
+- direkte Vereinsmitgliedschaft des Superadmins: 0
+- direkte Vereinsrollen des Superadmins: 0
+- Superadmin-Teamrollen: 1, weiterhin `trainer`
+- Superadmin-Teammitgliedschaften: 1
+- ausgewählter Mannschaftskontext: 0
+- privates Backup-Schema: vorhanden
+- gesicherte Superadmin-Vereinszuweisung: genau 1 Backup-Datensatz
+- zentrale Funktionen: neue Definitionen aktiv
+- Vereinsadmin-Fallback in `admin_add_team_role` und `admin_remove_team_role`: für Nicht-Superadmins weiterhin vorhanden.
+
+### Schutz des Backup-Bestands
+
+- Schema-USAGE für `anon`, `authenticated` und `service_role`: verweigert.
+- SELECT auf Backup-Tabelle für `anon`, `authenticated` und `service_role`: verweigert.
+- RLS auf Backup-Tabelle aktiviert; keine Policies vorhanden. Das ist hier beabsichtigt, da Clientrollen weder Schema-USAGE noch Tabellenrechte besitzen. Zugriff verbleibt beim Datenbank-Owner.
+
+### Supabase Security Advisor
+
+Der Scan meldet für das private Backup eine INFO-Meldung `rls_enabled_no_policy`. Aufgrund der vollständig entzogenen Clientrechte ist das für diese private Sicherung beabsichtigt und kein Zugriffspfad.
+Der Scan meldet außerdem 56 SECURITY-DEFINER-Funktionen, die für `authenticated` ausführbar sind, sowie die deaktivierte Leaked-Password-Protection. Diese übergreifenden Befunde sind nicht Teil der AP02-Migration und werden nicht durch diese Migration bereinigt; sie sind separat zu bewerten.
+
+### GitHub-Migrationsdatei
+
+Supabase hat bei der Registrierung die Version `20261120212557` vergeben. Die auf `develop` liegende Migrationsdatei wurde deshalb auf `supabase/migrations/20261120212557_ap02_superadmin_context_hardening_dev.sql` mit dem tatsächlich angewendeten SQL-Inhalt abgeglichen. Die vorbereitende Datei mit der vorläufigen Versionsnummer wurde entfernt. Rollback-Datei bleibt separat dokumentiert.
+
+**Abgrenzung:** Nur DEV wurde geändert. PROD wurde nicht angefasst. Die kontrollierte Transaktionssimulation war erfolgreich; die dauerhafte DEV-Migration ist jetzt ebenfalls erfolgreich. Der nächste Schritt ist der Anwendungstest im DEV-Frontend mit Superadmin-/Vereins-/Mannschaftskontext, bevor AP02 für PROD vorbereitet wird.
