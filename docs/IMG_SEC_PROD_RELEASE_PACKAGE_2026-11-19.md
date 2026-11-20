@@ -154,7 +154,7 @@ Die IMG-SEC-02-Migration wurde deshalb korrigiert:
 - Avatar-Verwaltung für Vereinsmitglieder verwendet `public.is_club_admin(target.club_id)`.
 - Die Vereinsprofil-RPC verwendet `public.is_club_admin(p_club_id)`.
 - Das Preflight prüft diese Funktion explizit.
-- Das IMG-SEC-02-Rollback behält diese strengere Kontextprüfung bewusst bei und führt den bekannten Bypass nicht wieder ein.
+- Das IMG-SEC-02-Rollback behält diese strengere Kontextprüfung in der Vereinsprofil-RPC und in allen drei Profilbild-Schreibpolicies bewusst bei. Auch das IMG-SEC-01-Rollback verwendet für `club_assets_select_scoped` `public.is_club_admin(...)`. Kein Rollback führt den bekannten Bypass wieder ein.
 
 Die Rollenprüfungen wurden in DEV ausschließlich lesend bzw. in vollständig zurückgerollten Simulationstransaktionen durchgeführt. Bestanden: Superadmin ohne Kontext = kein Fremdzugriff; Superadmin mit ausgewähltem Vereinskontext = Zugriff im ausgewählten Verein; normaler Vereinsadmin = Zugriff im eigenen Verein; Mannschaftsadmin = Zugriff auf Mitglieder der eigenen Mannschaft; Trainer = kein Fremdzugriff, aber Selbstverwaltung bleibt möglich.
 
