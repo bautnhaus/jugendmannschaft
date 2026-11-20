@@ -238,7 +238,7 @@ BEGIN
     RAISE EXCEPTION 'AP02 Postflight: Teamrollen oder Teammitgliedschaften wurden unerwartet verändert';
   END IF;
 
-  IF position('CASE WHEN public.is_super_admin()' IN
+  IF position('WHEN public.is_super_admin() THEN EXISTS' IN
        pg_get_functiondef('public.can_manage_club_context(uuid)'::regprocedure))=0 THEN
     RAISE EXCEPTION 'AP02 Postflight: zentrale Superadmin-Kontextpriorität fehlt';
   END IF;
