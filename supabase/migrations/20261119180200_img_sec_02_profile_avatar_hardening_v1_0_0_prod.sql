@@ -26,9 +26,6 @@ begin
      or to_regprocedure('public.admin_update_club_member_profile(uuid,uuid,text,text)') is null then
     raise exception 'Preflight fehlgeschlagen: erwartete Berechtigungsfunktionen oder Profil-RPCs fehlen.';
   end if;
-  if not has_schema_privilege('authenticated','private','USAGE') then
-    raise exception 'Preflight fehlgeschlagen: authenticated besitzt kein USAGE auf private.';
-  end if;
   if not has_schema_privilege('authenticated','private','USAGE')
      or has_schema_privilege('anon','private','USAGE') then
     raise exception 'Preflight fehlgeschlagen: private-Schema-Rechte sind unerwartet.';
@@ -72,8 +69,8 @@ as $function$
        ('^' || p_user_id::text || '/avatar-[0-9]{13}[.](jpg|png|webp)$');
 $function$;
 
-revoke all on function private.is_valid_profile_avatar_path(uuid, text) from public, anon;
-grant execute on function private.is_valid_profile_avatar_path(uuid, text) to authenticated, service_role;
+revoke all on function private.is_valid_profile_avatar_path(uuid, text) from public, anon, service_role;
+grant execute on function private.is_valid_profile_avatar_path(uuid, text) to authenticated;
 
 -- 2) Zentrale Autorisierung für die Verwaltung fremder Profilbilder.
 -- Vereinsadmins: nur für Mitglieder des eigenen Vereins; public.is_club_admin
@@ -111,8 +108,8 @@ as $function$
      );
 $function$;
 
-revoke all on function private.can_manage_profile_avatar(uuid) from public, anon;
-grant execute on function private.can_manage_profile_avatar(uuid) to authenticated, service_role;
+revoke all on function private.can_manage_profile_avatar(uuid) from public, anon, service_role;
+grant execute on function private.can_manage_profile_avatar(uuid) to authenticated;
 
 -- 3) Schutz für jeden Schreibweg auf profiles.avatar_url.
 -- Unveränderte Legacy-Werte werden bei reinen Namensänderungen nicht neu validiert.
