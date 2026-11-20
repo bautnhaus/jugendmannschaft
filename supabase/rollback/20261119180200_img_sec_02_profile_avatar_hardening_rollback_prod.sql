@@ -21,7 +21,11 @@ $preflight$;
 drop trigger if exists profiles_validate_avatar_path on public.profiles;
 drop function if exists private.enforce_profile_avatar_path();
 
--- 2) Ursprüngliche Profilbild-Admin-RPCs aus dem DEV-Livebestand wiederherstellen.
+-- 2) Profilbild-Admin-RPCs auf den vorherigen Stand zurücksetzen.
+-- Die Vereinsadmin-Prüfung verwendet absichtlich public.is_club_admin statt
+-- public.can_manage_club_context: So bleibt die verbindliche Regel erhalten,
+-- dass Superadmins auch bei zusätzlicher club_admin-Rolle einen ausgewählten
+-- Vereinskontext benötigen.
 create or replace function public.admin_update_member_profile(
   p_team_id uuid,
   p_user_id uuid,
@@ -72,7 +76,7 @@ set search_path to 'pg_catalog', 'public', 'auth'
 as $function$
 declare v_name text := trim(coalesce(p_display_name, ''));
 begin
-  if auth.uid() is null or not public.can_manage_club_context(p_club_id) then
+  if auth.uid() is null or not public.is_club_admin(p_club_id) then
     raise exception 'Nicht berechtigt oder kein ausgewählter Vereinskontext' using errcode = '42501';
   end if;
   if p_user_id is null or not exists (
