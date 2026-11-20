@@ -250,3 +250,6 @@ Die read-only DEV-Prüfung bestätigte denselben relevanten Rollenbestand: ein S
 Die AP02-Korrektur wurde erweitert: Nicht nur die aufrufenden Verwaltungs-RPCs, sondern auch `public.is_team_admin(uuid)` selbst erzwingt für Superadmins den ausgewählten Mannschaftskontext vor jeder Rollenprüfung. Die zusätzliche Teamadmin-Rolle begründet keinen Zugriff ohne Kontext. Die Migration prüft die exakten DEV-Ausgangsdefinitionen beider zentraler Kontextfunktionen sowie die FK-/Trigger-Struktur vor jeder Änderung.
 
 **Status unverändert:** Vorbereitung und Dokumentation auf `develop`; keine SQL-Ausführung in DEV oder PROD. Vor einer Ausführung sind die abschließende statische Validierung und danach eine separate DEV-Ausführungsfreigabe erforderlich.
+
+
+Die AP02-Migration grenzt nun zusätzlich Vereins- und Mannschaftskontext für Teamrollen-Schreibaktionen ausdrücklich ab: `admin_add_team_role` und `admin_remove_team_role` akzeptieren die Vereinsadmin-Alternative nur für Nicht-Superadmins. Superadmins benötigen bei diesen teambezogenen Schreibaktionen den ausgewählten Mannschaftskontext; die Auswahl eines Vereins allein genügt nicht. Migration und Rollback enthalten neun gezielte Funktionsersetzungen/-rücksetzungen.
