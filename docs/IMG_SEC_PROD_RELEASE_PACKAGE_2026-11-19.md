@@ -312,3 +312,27 @@ Auch das IMG-SEC-Frontend wurde noch nicht deployed. Die PROD-Indexdatei in `mai
 **Deployment-Hinweis:** Die neue `index.html` wird vor IMG-SEC-03 deployed, nicht als erster Schritt vor IMG-SEC-01/02. So entspricht die Reihenfolge der vorgesehenen Datenbank-/Frontend-Kompatibilität und erlaubt den Gate-C-Test vor dem privaten Bucket-Cutover sowie Gate-D danach.
 
 **Freigaberegel:** Die frühere AP02-Freigabe autorisiert ausschließlich AP02. Für jede IMG-SEC-PROD-Migration, die kontrollierte Logo-Löschung und das Frontend-Deployment gelten weiterhin die jeweils erforderlichen separaten Freigaben. PROD wurde bislang nur durch AP02 verändert.
+
+
+## Aktueller IMG-SEC-PROD-Preflight nach AP02-Ausführung (20.11.2026)
+
+Erneute ausschließlich lesende Prüfung auf PROD nach erfolgreicher AP02-Migration:
+
+- IMG-SEC-Migrationen im Supabase-Ledger: keine registriert.
+- AP02: 0 direkte Superadmin-Vereinsmitgliedschaften, 0 direkte Vereinsrollen; die dokumentierte Superadmin-Teamrolle `admin` besteht weiterhin (1 Eintrag).
+- `players.photo_path` fehlt; `players.photo_data` ist vorhanden. 39 Spieler; 0 legacy photo_data-Werte.
+- 6 Profile; 0 Avatar-Referenzen und 0 Objekte in `profile-avatars`.
+- `private`-Schema und IMG-SEC-Helper fehlen erwartungsgemäß.
+- `player-photos` fehlt erwartungsgemäß.
+- `profile-avatars` und `club-assets` sind weiterhin öffentlich.
+- Die vier erwarteten bisherigen `club_assets_*`-Policies sind vorhanden und verweisen noch auf `can_manage_club_context`.
+- Ein Verein vorhanden; `clubs.crest_path` ist bereits `NULL`.
+- Im Bucket `club-assets` liegt weiterhin genau ein Objekt `1c4aa2de-6a63-4768-9a46-da6725d7c70b/crest.png` (316036 Bytes), ohne passende `clubs.crest_path`-Referenz. Es ist damit ein verwaistes Logoobjekt. Der historische Releaseplan ging noch von einer passenden Referenz aus; dieser Ausgangswert ist überholt.
+
+### Release-Gates / Sperren
+
+1. **Backup-Gate nicht nachgewiesen:** Über die verfügbaren Supabase-Aktionen konnte kein vollständiges, verifiziertes PROD-Datenbank- und Storage-Backup erstellt oder dessen Wiederherstellbarkeit bestätigt werden. Es wurde daher keine IMG-SEC-Migration ausgeführt.
+2. **Logoobjekt:** Die `crest_path`-Referenz ist bereits leer; nur das verwaiste Storage-Objekt existiert noch. Die geplante kontrollierte Logoentfernung benötigt deshalb keine weitere DB-Änderung, aber eine ausdrückliche separate Freigabe zur Löschung genau dieses Objekts. Bis dahin bleibt es unverändert.
+3. **Frontend:** Nicht deployed. Die geprüfte Release-Branch-Datei bleibt `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`; `main` bleibt unverändert.
+
+**Ergebnis:** Read-only Preflight ausgeführt; PROD-Datenbank und Storage wurden in diesem Prüfschritt nicht verändert. IMG-SEC bleibt bis zur Klärung des Backup-Gates und der separaten Freigabe für das verwaiste Logoobjekt auf HOLD.
