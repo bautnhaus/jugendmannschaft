@@ -144,3 +144,21 @@ Das IMG-SEC-01-Rollback wurde korrigiert:
 - löscht keine Storage-Objekte oder fachlichen Datensätze.
 
 Diese Prüfung war read-only. Keine PROD-Migration, kein Storage-Update, keine Datenänderung und kein Deployment wurden ausgeführt.
+
+
+## 9. Frontend-/Datenkompatibilität bei Rollback (20.11.2026)
+
+Die alte PROD-Frontend-Version auf `main` verwendet `players.photo_data`, öffentliche Storage-URLs und speichert Profilbild-URLs als vollständige öffentliche URL. Die IMG-SEC-Frontend-Version verwendet dagegen `players.photo_path`, Signed URLs und speichert neue Profilbildreferenzen als relative Storage-Pfade.
+
+Daraus folgt:
+- Ein vollständiger Frontend-Rollback ist nicht allein durch das Zurücksetzen der Datenbank möglich.
+- Vor einer Rückkehr zum alten Frontend müssen neue Spielerfoto-Pfade und Objekte ausgeschlossen werden.
+- Neue Profilbildpfade und neu hochgeladene Profilbildobjekte müssen ebenfalls ausgeschlossen sein, weil das alte Frontend relative Pfade nicht als vollständige öffentliche URLs rendert.
+- Wenn neue Bilddaten existieren, bleibt das neue Frontend aktiv; ein Teil-Rollback einzelner Migrationen muss separat auf Datenkompatibilität und Sicherheitsfolgen geprüft werden.
+- Für eine vollständige Rückkehr lautet die Reihenfolge: IMG-SEC-03-Rollback (Buckets wieder public; Sicherheitsdowngrade) → IMG-SEC-02-Rollback → altes Frontend deployen → IMG-SEC-01-Rollback. Jede Stufe benötigt eine separate ausdrückliche Freigabe.
+
+Der PROD-Migrationsledger wurde read-only abgefragt. Die vier IMG-SEC-PROD-Migrationen sind dort noch nicht registriert. Die Release-Dokumentation legt deshalb fest, dass sie über den Supabase-Migrationsmechanismus mit stabilen Migrationsnamen ausgeführt werden; die dabei erzeugten Versions-IDs werden im SQL-Release-Katalog protokolliert. Unprotokollierte SQL-Editor-Ausführung oder manuell geratene Ledger-Einträge sind ausgeschlossen.
+
+Die Postflight-Prüfung wurde ergänzt, um die vier Migrationsnamen im Ledger nachzuweisen und den neu hochgeladenen Vereinslogo-Pfad erst nach der Logo-Neuanlage als erfolgreich zu erwarten.
+
+Diese Prüfung und Dokumentationsanpassung war read-only bzw. GitHub-Dokumentationsarbeit. Es wurden keine PROD-Daten, Buckets, Policies oder Deployments verändert.
