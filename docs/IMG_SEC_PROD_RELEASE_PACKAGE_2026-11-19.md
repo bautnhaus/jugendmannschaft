@@ -366,3 +366,16 @@ Postflight bestätigt: `players.photo_path` vorhanden; 39 Spieler, weiterhin 0 `
 Vor IMG-SEC-03 muss die neue PROD-Oberfläche im tatsächlichen Deployment geprüft werden: Anmeldung, Profilbildanzeige/-bearbeitung, Spielerfoto-Funktion soweit UI-seitig verfügbar, Vereinslogo-Upload (derzeit noch kein Logoobjekt), Kontextwechsel sowie iPhone/Safari. Erst nach bestätigtem Funktionstest wird IMG-SEC-03 freigegeben und ausgeführt. Danach: Bucket-Privatstatus, Signed-URL-Anzeige, direkte öffentliche URL-Negativtests und Logo-Neu-Upload über KADAssist.
 
 IMG-SEC-03 ist ein gesonderter letzter Cutover-Schritt; er wurde nicht automatisch durch die vorherigen Migrationen ausgelöst.
+
+
+## Aktualisierung nach IMG-SEC-03 – PROD-Migration abgeschlossen (20.11.2026)
+
+- Nutzerfreigabe zur Durchführung der letzten IMG-SEC-SQL-Migration erteilt.
+- PROD-Migration `img_sec_03_private_profile_and_club_asset_buckets_prod` erfolgreich über den Supabase-Migrationsmechanismus angewendet.
+- Tatsächliche Ledger-Version: `20261120230220`.
+- Preflight innerhalb der Migration bestanden; Transaktion erfolgreich abgeschlossen.
+- Postflight read-only bestätigt: `player-photos`, `profile-avatars` und `club-assets` sind alle `public=false`. Alle drei Buckets haben die erwartete 2-MiB-Grenze und JPEG/PNG/WebP-Allowlist.
+- Migrationen IMG-SEC-01a, IMG-SEC-01b, IMG-SEC-02 und IMG-SEC-03 sind nun in PROD registriert und abgeschlossen.
+- Bildfunktions-/iPhone-Praxistests werden absichtlich erst nach sauberer Ausführung des vereinbarten PROD-Deploy-Workflows durchgeführt, da die Bildfunktionen gerade geändert wurden.
+- **Frontend-/GitHub-Workflow:** Der bisherige direkte Commit auf `main` (`af27aed00d5776e72ab0234b98882bd155449b30`) erfolgte außerhalb des verbindlichen Deploy-Workflows und war ein Prozessfehler. Keine weiteren direkten Dateiänderungen auf `main`. Nach Abschluss der SQL-Migrationen werden `develop`, `main` und der PROD-Deploy-Workflow abgeglichen; der freigegebene Stand wird ausschließlich über den regulären Workflow veröffentlicht. Kein eigenmächtiger Merge oder Reset.
+- Kein Objekt oder fachlicher Datensatz durch IMG-SEC-03 gelöscht oder verändert; die Migration ändert ausschließlich Bucket-Sichtbarkeit.
