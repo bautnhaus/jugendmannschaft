@@ -1667,3 +1667,7 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 
 
 - **DEV-Kontextstatus (read-only, 20.11.2026):** Superadmin hat aktuell einen ausgewählten Vereinskontext, aber keinen ausgewählten Mannschaftskontext. Die gespeicherte zusätzliche Teamrolle ist in DEV `trainer`; in PROD wurde zuvor `admin` festgestellt. Die Migration erhält beide Umgebungsbestände unverändert. Die teambezogenen Admin-RPCs verlangen für Superadmins ausdrücklich den ausgewählten Mannschaftskontext.
+
+
+- **Statische Paketprüfung (20.11.2026):** Migration und Rollback haben jeweils genau einen BEGIN-/COMMIT-Rahmen und ausgeglichene Dollar-Quote-Delimiter. Alle neun Berechtigungstext-Ersetzungen und ihre Rücksetzungsregeln wurden gegen die aktuellen DEV-Funktionsdefinitionen abgeglichen. Die Migration enthält keine DELETE-Anweisung für `team_members` oder `team_member_roles`; der Snapshot bleibt nach erfolgreicher Migration erhalten. Eine formale PostgreSQL-/PLpgSQL-Parse- bzw. Transaktionssimulation ist noch offen. Keine Migration ausgeführt.
+- **DEV-Migrationsledger:** Die AP02-Korrekturmigration ist nicht eingetragen; der letzte vorhandene Stand bleibt IMG-SEC-03 vom 19.11.2026.
