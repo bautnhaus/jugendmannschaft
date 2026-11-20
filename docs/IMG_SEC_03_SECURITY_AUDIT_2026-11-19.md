@@ -122,3 +122,24 @@ Der Release-Branch `release/img-sec-2026-11-19` enthält 12 geänderte Dateien (
 Am 19.11.2026 bestätigte der Nutzer zusätzlich den direkten öffentlichen URL-Negativtest: Sowohl die Profilbild- als auch die Vereinslogo-URL lieferten in einem privaten Safari-Fenster keinen Bildinhalt. Zusammen mit den bestätigten Upload-/Ändern-/Entfernen-Praxistests und den RLS-Simulationen ist die IMG-SEC-Sicherheitsprüfung in DEV abgeschlossen.
 
 **Status:** IMG-SEC ist technischer PROD-Release-Kandidat. Dieser Status ist ausdrücklich keine Freigabe zur Ausführung in PROD.
+
+
+## 8. Ergänzende PROD-Kompatibilitäts- und Rollback-Prüfung (20.11.2026)
+
+Die PROD-Funktionsdefinitionen wurden read-only geprüft. Dabei wurde insbesondere bestätigt:
+- `public.is_team_admin(uuid)` erlaubt normalen Benutzern die Prüfung ihrer Admin-Rolle in der angegebenen Mannschaft.
+- Bei Superadmins verlangt dieselbe Funktion `public.has_selected_team_context(team_id)`.
+- `public.is_team_member(uuid)` verwendet für Superadmins ebenfalls den ausdrücklich ausgewählten Mannschaftskontext.
+- `public.can_manage_club_context(uuid)` begrenzt Superadmins auf den ausgewählten Verein; Vereinsadmins werden auf ihre eigene Vereinsmitgliedschaft mit Rolle `club_admin` begrenzt.
+- Die verwendeten Funktionen sind `SECURITY DEFINER` mit festgelegtem `search_path`. Für `is_team_admin` wurde zusätzlich geprüft: EXECUTE für `authenticated` vorhanden, für `anon` nicht vorhanden.
+
+Daraus folgt: Die zentrale IMG-SEC-02-Funktion `private.can_manage_profile_avatar(uuid)` passt zu den vorhandenen PROD-Rollen- und Kontextfunktionen. Die Dokumentationskommentare der Migration wurden präzisiert; die Berechtigungslogik selbst wurde nicht verändert.
+
+Das IMG-SEC-01-Rollback wurde korrigiert:
+- unterstützt IMG-SEC-01a allein und den Zustand nach IMG-SEC-01a plus IMG-SEC-01b;
+- entfernt Helper abhängig davon, ob sie in `public` oder `private` liegen;
+- stoppt, wenn IMG-SEC-02 noch installiert ist;
+- stellt die ursprüngliche `club_assets_select_scoped`-Policy mit explizitem `public.can_manage_club_context(...)` wieder her;
+- löscht keine Storage-Objekte oder fachlichen Datensätze.
+
+Diese Prüfung war read-only. Keine PROD-Migration, kein Storage-Update, keine Datenänderung und kein Deployment wurden ausgeführt.
