@@ -16,6 +16,14 @@ begin
   end if;
 
   if exists (
+    select 1 from storage.buckets
+    where id in ('profile-avatars','club-assets')
+      and public is distinct from true
+  ) then
+    raise exception 'IMG-SEC-01 Rollback abgebrochen: IMG-SEC-03 ist noch aktiv. Zuerst IMG-SEC-03 zurückrollen.';
+  end if;
+
+  if exists (
     select 1 from public.players
     where photo_path is not null
   ) then
