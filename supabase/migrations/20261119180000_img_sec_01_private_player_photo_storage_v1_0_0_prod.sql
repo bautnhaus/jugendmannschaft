@@ -2,6 +2,55 @@
 -- Production release copy; apply only after explicit PROD approval. Existing profile-avatars and club-assets buckets remain public.
 -- profiles_select and existing profile-avatar write policies remain unchanged.
 begin;
+
+-- Preflight: PROD muss dem geprüften Ausgangsstand entsprechen.
+do $preflight$
+begin
+  if to_regclass('public.players') is null
+     or to_regclass('storage.objects') is null
+     or to_regclass('storage.buckets') is null then
+    raise exception 'IMG-SEC-01a Preflight: erforderliche Tabellen fehlen.';
+  end if;
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='players' and column_name='photo_path'
+  ) then
+    raise exception 'IMG-SEC-01a Preflight: players.photo_path existiert bereits; Zustand prüfen.';
+  end if;
+  if to_regprocedure('public.is_team_member(uuid)') is null
+     or to_regprocedure('public.is_club_member(uuid)') is null
+     or to_regprocedure('public.is_club_admin(uuid)') is null then
+    raise exception 'IMG-SEC-01a Preflight: benötigte Rollen-/Kontextfunktionen fehlen.';
+  end if;
+  if to_regprocedure('public.can_view_player_photo(uuid)') is not null
+     or to_regprocedure('public.can_manage_player_photo(uuid,uuid)') is not null
+     or to_regprocedure('public.can_view_club_asset(uuid)') is not null
+     or to_regprocedure('public.can_view_profile_avatar(uuid)') is not null then
+    raise exception 'IMG-SEC-01a Preflight: mindestens ein IMG-SEC-Helper existiert bereits; Zustand prüfen.';
+  end if;
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_select_scoped' and cmd='SELECT'
+  ) then
+    raise exception 'IMG-SEC-01a Preflight: bestehende club-assets-SELECT-Policy fehlt.';
+  end if;
+  if exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname in (
+        'profile_avatars_select_authorized',
+        'player_photos_select_team',
+        'player_photos_insert_team',
+        'player_photos_update_team',
+        'player_photos_delete_team'
+      )
+  ) then
+    raise exception 'IMG-SEC-01a Preflight: mindestens eine IMG-SEC-Policy existiert bereits; Zustand prüfen.';
+  end if;
+end;
+$preflight$;
+
 alter table public.players add column if not exists photo_path text;
 comment on column public.players.photo_path is 'Storage path in private player-photos bucket; replaces photo_data after verified migration.';
 insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
