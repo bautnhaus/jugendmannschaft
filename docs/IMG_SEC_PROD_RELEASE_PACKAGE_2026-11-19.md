@@ -1,6 +1,6 @@
 # IMG-SEC – PROD-Freigabe- und Ausführungsplan
 
-**Status:** vorbereitet, nicht ausgeführt; PROD-Freigabe bis zur AP02-Korrektur gesperrt.  
+**Status:** IMG-SEC-Migrationen und regulärer PROD-Deploy abgeschlossen; vom Nutzer bestätigte Bild-Praxistests bestanden (21.11.2026).  
 **PROD-Projekt:** `qdugtpzgefpswnnqbusd`.  
 **Freigabe:** Eine separate ausdrückliche PROD-Ausführungsfreigabe ist zwingend erforderlich.
 
@@ -379,3 +379,13 @@ IMG-SEC-03 ist ein gesonderter letzter Cutover-Schritt; er wurde nicht automatis
 - Bildfunktions-/iPhone-Praxistests werden absichtlich erst nach sauberer Ausführung des vereinbarten PROD-Deploy-Workflows durchgeführt, da die Bildfunktionen gerade geändert wurden.
 - **Frontend-/GitHub-Workflow:** Der bisherige direkte Commit auf `main` (`af27aed00d5776e72ab0234b98882bd155449b30`) erfolgte außerhalb des verbindlichen Deploy-Workflows und war ein Prozessfehler. Keine weiteren direkten Dateiänderungen auf `main`. Nach Abschluss der SQL-Migrationen werden `develop`, `main` und der PROD-Deploy-Workflow abgeglichen; der freigegebene Stand wird ausschließlich über den regulären Workflow veröffentlicht. Kein eigenmächtiger Merge oder Reset.
 - Kein Objekt oder fachlicher Datensatz durch IMG-SEC-03 gelöscht oder verändert; die Migration ändert ausschließlich Bucket-Sichtbarkeit.
+
+
+## IMG-SEC – abschließender PROD-Deploy und Praxistest (21.11.2026)
+
+- Der Nutzer hat bestätigt, dass der reguläre PROD-Deploy-Workflow erfolgreich durchgelaufen ist. Die Veröffentlichung erfolgte damit über den vorgesehenen Workflow; keine weitere direkte Änderung an `main`.
+- Nach dem Deploy wurde das Profilbild in PROD geprüft: Anzeige sowie Bearbeiten/Speichern funktionieren laut Nutzer („Klappt“).
+- Anschließend wurden Spielerfotos und Vereinslogo geprüft. Der Nutzer bestätigte auch diese abschließende Prüfung mit „Passt“.
+- Damit sind die vom Nutzer bestätigten Bild-Funktionstests nach dem PROD-Deploy erfolgreich: Profilbild, Spielerfotos und Vereinslogo.
+- Zusammen mit den erfolgreichen IMG-SEC-01a/01b/02/03-Migrationen und dem Postflight (alle drei Buckets privat) ist IMG-SEC PROD fachlich und funktional abgeschlossen.
+- Keine weiteren SQL-, Storage- oder Frontend-Änderungen im Rahmen dieser Abschlussprüfung vorgenommen.
