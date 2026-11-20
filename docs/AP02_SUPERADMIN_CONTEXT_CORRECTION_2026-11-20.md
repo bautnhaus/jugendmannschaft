@@ -32,6 +32,7 @@
 - Weitere Verwaltungs-/Read-RPCs wechseln auf die Ein-Argument-Prüfung: `admin_update_member_profile`, `admin_set_trainer_label`, `get_team_trainers`, `get_team_trainers_v2`.
 - `is_team_admin(uuid)`: Superadmins werden vor der Rollenprüfung ausschließlich über `has_selected_team_context(team_id)` autorisiert; Nicht-Superadmins behalten die bisherige Rollenprüfung.
 - `get_team_role_change_log(uuid)`: direkter Superadmin-Bypass wird an `has_selected_team_context(team_id)` gebunden.
+- Die Vereinsadmin-Alternative in `admin_add_team_role` und `admin_remove_team_role` gilt ausdrücklich nur für Nicht-Superadmins; Superadmins benötigen für diese teambezogenen Schreibaktionen den ausgewählten Mannschaftskontext.
 - Die Zwei-Argument-Funktion `is_team_admin(user_id, team_id)` bleibt als allgemeine Rollenabfrage für Zielbenutzer unverändert. Sie darf nicht global umgedeutet werden.
 
 ## Reversible Rollenbereinigung
@@ -58,6 +59,7 @@ Die Migration ist absichtlich streng und bricht bei abweichendem Bestand ab. Sie
 
 ## Status / Sicherheitsgrenze
 
+- DEV-Live-Preflight (20.11.2026): genau ein Superadmin, eine direkte Vereinsmitgliedschaft, eine club_admin-Rolle, eine Teamrolle und eine Teammitgliedschaft; FK `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE` bestätigt; keine benutzerdefinierten Trigger auf den beiden Vereinsmitgliedschaftstabellen.
 - DEV-Live-Preflight (20.11.2026): genau ein Superadmin, eine direkte Vereinsmitgliedschaft, eine club_admin-Rolle, eine Teamrolle und eine Teammitgliedschaft; FK `club_member_roles.user_id -> club_members.user_id ON DELETE CASCADE` bestätigt; keine benutzerdefinierten Trigger auf den beiden Vereinsmitgliedschaftstabellen.
 - Keine SQL-Migration ausgeführt.
 - Keine Rollen oder Mitgliedschaften verändert.
