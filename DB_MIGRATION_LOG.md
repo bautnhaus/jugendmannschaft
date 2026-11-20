@@ -1788,3 +1788,13 @@ Postflight erfolgreich: `photo_path` ergänzt; bestehende Spieler-/Legacy-Daten 
 - Keine Storage-Objekte oder fachlichen Datensätze gelöscht/geändert.
 - IMG-SEC SQL-Release 01a/01b/02/03 vollständig in PROD.
 - Bild-Praxistest wartet auf den sauberen regulären PROD-Deploy-Workflow. Direkter Frontend-Commit auf `main` war außerhalb des vereinbarten Prozesses; keine weiteren direkten Änderungen an `main`. Workflow-Abgleich und Veröffentlichung aus `develop` werden als nächster Arbeitsschritt vorbereitet.
+
+
+## IMG-SEC – abschließender PROD-Deploy und Praxistest (21.11.2026)
+
+- Der Nutzer hat bestätigt, dass der reguläre PROD-Deploy-Workflow erfolgreich durchgelaufen ist. Die Veröffentlichung erfolgte damit über den vorgesehenen Workflow; keine weitere direkte Änderung an `main`.
+- Nach dem Deploy wurde das Profilbild in PROD geprüft: Anzeige sowie Bearbeiten/Speichern funktionieren laut Nutzer („Klappt“).
+- Anschließend wurden Spielerfotos und Vereinslogo geprüft. Der Nutzer bestätigte auch diese abschließende Prüfung mit „Passt“.
+- Damit sind die vom Nutzer bestätigten Bild-Funktionstests nach dem PROD-Deploy erfolgreich: Profilbild, Spielerfotos und Vereinslogo.
+- Zusammen mit den erfolgreichen IMG-SEC-01a/01b/02/03-Migrationen und dem Postflight (alle drei Buckets privat) ist IMG-SEC PROD fachlich und funktional abgeschlossen.
+- Keine weiteren SQL-, Storage- oder Frontend-Änderungen im Rahmen dieser Abschlussprüfung vorgenommen.
