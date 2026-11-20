@@ -11,7 +11,7 @@
 | 1 | `supabase/migrations/20261119180000_img_sec_01_private_player_photo_storage_v1_0_0_prod.sql` | `photo_path`, privater Bucket `player-photos`, kontextgebundene Bild-/Vereinsasset-Policies und Crest-RPC |
 | 2 | `supabase/migrations/20261119180100_img_sec_01_harden_private_policy_helpers_prod.sql` | Helper ins private Schema verschieben, Rechte begrenzen |
 | 3 | `supabase/migrations/20261119180200_img_sec_02_profile_avatar_hardening_v1_0_0_prod.sql` | Profilbild-Pfadvalidierung, Trigger, RPC- und Schreibpolicy-Härtung |
-| 4 | Frontend-Deploy aus `release/img-sec-2026-11-19` | Signed URLs, `photo_path`, Retry und Kontext-Cache |
+| 4 | Frontend-Deploy aus `release/img-sec-prod-2026-11-20` | Signed URLs, `photo_path`, Retry und Kontext-Cache |
 | 5 | `supabase/migrations/20261119180300_img_sec_03_private_profile_and_club_asset_buckets_prod.sql` | Profilbilder und Vereinsassets privat stellen |
 
 ## Verbindliche Gates
@@ -34,7 +34,7 @@ Es ist keine bestehende Spielerfoto-Datei zu migrieren. Das vorhandene Vereinslo
 
 ## Frontend-Abgrenzung
 
-`main` ist 194 Commits hinter `develop`. Kein vollständiges Merge von `develop` nach `main` für dieses Release. Der dedizierte Branch `release/img-sec-2026-11-19` basiert auf `main` und enthält die gezielten Bild-Frontend-Änderungen. Seine `index.html` entspricht dem getesteten DEV-Blob-SHA `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`.
+`main` ist 194 Commits hinter `develop`. Kein vollständiges Merge von `develop` nach `main` für dieses Release. Der dedizierte Branch `release/img-sec-prod-2026-11-20` basiert auf `main` und enthält die gezielten Bild-Frontend-Änderungen. Seine `index.html` entspricht dem getesteten DEV-Blob-SHA `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`.
 
 ## Rollback
 
