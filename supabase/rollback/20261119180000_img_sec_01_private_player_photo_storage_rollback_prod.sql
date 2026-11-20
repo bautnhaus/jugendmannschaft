@@ -62,7 +62,7 @@ for select
 to authenticated
 using (
   bucket_id = 'club-assets'
-  and public.can_manage_club_context(
+  and public.is_club_admin(
     case
       when split_part(name, '/', 1) ~*
         '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
