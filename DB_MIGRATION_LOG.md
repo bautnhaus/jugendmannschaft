@@ -1723,3 +1723,14 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - Status: **DEV-Praxistest vorläufig bestanden**; die Rückmeldung ist positiv, aber die einzelnen Testschritte wurden nicht separat protokolliert.
 - Zusammen mit der erfolgreich angewendeten Migration und dem Datenbank-Postflight ist AP02 auf DEV fachlich und technisch vorläufig abgeschlossen.
 - **PROD bleibt unverändert.** Nächster Schritt ist ausschließlich die read-only Bestandsaufnahme in PROD und die Erstellung eines eigenständigen PROD-Migrations-/Rollbackpakets. Separate Freigabe vor jeder PROD-Ausführung erforderlich.
+
+
+### AP02 – PROD-Liveprüfung und PROD-spezifisches Releasepaket vorbereitet (20.11.2026)
+
+- **Umgebung:** Supabase PROD `qdugtpzgefpswnnqbusd`, aktiv, PostgreSQL 17.6. Nur Read-only-Liveabfragen.
+- **Bestand:** ein Superadmin, eine direkte Vereinsmitgliedschaft, eine `club_admin`-Rolle, eine Teamrolle `admin`, eine Teammitgliedschaft `admin`; je ein ausgewählter Vereins- und Mannschaftskontext.
+- **Bereits korrekt:** `is_team_admin(uuid)` ist in PROD bereits CASE-/Teamkontext-gebunden (MD5 `f983aaebc7db5fcbb9284ffacc280b2c`) und wird nicht erneut verändert. `get_super_admin_clubs()` ist bereits vorhanden (Migration `20261115151239`).
+- **Noch offen:** `can_manage_club_context(uuid)` und neun Berechtigungsausdrücke in sieben Verwaltungs-/Lese-RPCs. Alle neun alten Ausdrücke wurden exakt einmal in den Live-Definitionen gefunden; die PROD-spezifischen MD5-Preflight-Werte stimmen.
+- **Struktur:** genau ein FK verweist auf `club_members`; `club_member_roles.user_id` hat `ON DELETE CASCADE`; keine benutzerdefinierten Trigger auf den beiden Vereinsmitgliedschaftstabellen.
+- **Paket auf develop:** `supabase/migrations/20261120230000_ap02_superadmin_context_hardening_prod.sql` und `supabase/rollback/20261120230000_ap02_superadmin_context_hardening_rollback_prod.sql`. Das PROD-Rollback schützt zusätzlich vor zwischenzeitlichen Änderungen der Teamrollen/-mitgliedschaften.
+- **Status:** vorbereitet und statisch geprüft, nicht ausgeführt. Keine PROD-Daten, Funktionen oder Migrationseinträge verändert. Separate ausdrückliche PROD-Freigabe bleibt erforderlich.
