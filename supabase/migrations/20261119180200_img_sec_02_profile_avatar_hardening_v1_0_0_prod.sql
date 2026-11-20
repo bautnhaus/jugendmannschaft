@@ -307,28 +307,18 @@ using (
   bucket_id = 'profile-avatars'
   and case
     when split_part(name, '/', 1) ~*
-      '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
-
--- 6) Nach Ausführung zwingend:
--- - SELECT-Prüfung von Funktionsdefinitionen, Triggern und Policy-Ausdrücken.
--- - Prüfung der EXECUTE-/USAGE-Rechte; keine PUBLIC-/anon-EXECUTE-Rechte auf neue Helper.
--- - Positiv-/Negativtests aus dem IMG-SEC-02-Plan.
--- - Supabase Security Advisors.
--- - Erst nach erfolgreichem DEV-Test separate PROD-Kompatibilitätsprüfung.
--- Kein Bucket-Cutover Bestandteil dieser Migration.
-
-commit;
-
+      '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
     then private.can_manage_profile_avatar(split_part(name, '/', 1)::uuid)
     else false
   end
 );
 
--- 6) Postflight: Rechte, Trigger und Policy-Verknüpfungen müssen exakt passen.
+-- Postflight: Rechte, Trigger und Policy-Verknüpfungen müssen exakt passen.
 do $postflight$
 begin
   if not has_schema_privilege('authenticated','private','USAGE')
-     or has_schema_privilege('anon','private','USAGE') then
+     or has_schema_privilege('anon','private','USAGE')
+     or has_schema_privilege('service_role','private','USAGE') then
     raise exception 'IMG-SEC-02 Postflight: private-Schema-Rechte sind unerwartet.';
   end if;
 
@@ -379,16 +369,7 @@ begin
 end;
 $postflight$;
 
--- 7) Nach Ausführung zwingend:
--- - Supabase Security Advisors und Positiv-/Negativtests aus dem IMG-SEC-02-Plan.
--- - Kein Bucket-Cutover Bestandteil dieser Migration.
-
--- 6) Nach Ausführung zwingend:
--- - SELECT-Prüfung von Funktionsdefinitionen, Triggern und Policy-Ausdrücken.
--- - Prüfung der EXECUTE-/USAGE-Rechte; keine PUBLIC-/anon-EXECUTE-Rechte auf neue Helper.
--- - Positiv-/Negativtests aus dem IMG-SEC-02-Plan.
--- - Supabase Security Advisors.
--- - Erst nach erfolgreichem DEV-Test separate PROD-Kompatibilitätsprüfung.
--- Kein Bucket-Cutover Bestandteil dieser Migration.
+-- Nach Ausführung: Security Advisors sowie Positiv-/Negativtests durchführen.
+-- IMG-SEC-03 (Bucket-Cutover) ist nicht Bestandteil dieser Migration.
 
 commit;
