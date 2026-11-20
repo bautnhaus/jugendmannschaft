@@ -41,6 +41,15 @@ or (n.nspname='public' and p.proname in (
 ))
 order by n.nspname,p.proname;
 
+-- 3b. Kontextschutz: Superadmins dürfen Vereins-/Teamzugriff nur im ausgewählten Kontext erhalten.
+select n.nspname,p.proname,pg_get_function_identity_arguments(p.oid) as arguments,
+       pg_get_functiondef(p.oid) as definition
+from pg_proc p
+join pg_namespace n on n.oid=p.pronamespace
+where (n.nspname='public' and p.proname in ('is_club_admin','is_team_admin','is_team_member','can_manage_club_context','admin_update_club_crest'))
+   or (n.nspname='private' and p.proname in ('can_view_club_asset','can_view_profile_avatar','can_manage_profile_avatar'))
+order by n.nspname,p.proname,arguments;
+
 -- 3a. Schema and function privileges (authenticated must be able to use helpers; anon must not).
 select
   has_schema_privilege('authenticated','private','USAGE') as authenticated_private_usage,
