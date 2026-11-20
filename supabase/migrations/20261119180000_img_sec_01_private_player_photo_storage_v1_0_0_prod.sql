@@ -17,6 +17,12 @@ begin
   ) then
     raise exception 'IMG-SEC-01a Preflight: players.photo_path existiert bereits; Zustand prüfen.';
   end if;
+  if to_regnamespace('private') is not null then
+    raise exception 'IMG-SEC-01a Preflight: Schema private existiert bereits; Ausgangszustand prüfen.';
+  end if;
+  if exists (select 1 from storage.buckets where id='player-photos') then
+    raise exception 'IMG-SEC-01a Preflight: player-photos existiert bereits; Bucket-Zustand prüfen.';
+  end if;
   if to_regprocedure('public.is_team_member(uuid)') is null
      or to_regprocedure('public.is_club_member(uuid)') is null
      or to_regprocedure('public.is_club_admin(uuid)') is null
@@ -36,6 +42,35 @@ begin
       and policyname in ('club_assets_select_scoped','club_assets_insert_scoped','club_assets_update_scoped','club_assets_delete_scoped')
   ) <> 4 then
     raise exception 'IMG-SEC-01a Preflight: bestehende club-assets-Policies sind unvollständig.';
+  end if;
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_select_scoped'
+      and qual like '%can_manage_club_context%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_insert_scoped'
+      and with_check like '%can_manage_club_context%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_update_scoped'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%can_manage_club_context%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_delete_scoped'
+      and qual like '%can_manage_club_context%'
+  ) then
+    raise exception 'IMG-SEC-01a Preflight: club-assets-Policies entsprechen nicht dem erwarteten PROD-Ausgangsstand.';
+  end if;
+  if position(
+       'public.can_manage_club_context(p_club_id)'
+       in pg_get_functiondef('public.admin_update_club_crest(uuid,text)'::regprocedure)
+     ) = 0 then
+    raise exception 'IMG-SEC-01a Preflight: admin_update_club_crest entspricht nicht dem erwarteten PROD-Ausgangsstand.';
   end if;
   if exists (
     select 1 from pg_policies
