@@ -213,3 +213,16 @@ Dieses Dokument ist ein historischer Arbeitskatalog vom 01.11.2026. Für den akt
 - Die einzige aktuell geplante letzte DB-Ergänzung ist `get_super_admin_clubs()`; keine Wiederholung bereits ausgeführter Migrationen und keine pauschale Übernahme aller DEV-Policy-/Funktionsdifferenzen.
 
 Aktueller Ausführungsstatus und verbindliche Reihenfolge: `docs/prod-release/DB_MIG_2026_026_SUPERADMIN_CLUB_PICKER_PROD_2026-11-15.md` sowie `DB_MIGRATION_LOG.md` und `DB_CHANGELOG.md`.
+
+
+## Aktualisierung 20.11.2026 – AP02 PROD-Vorbereitung
+
+AP02 ist auf DEV dauerhaft angewendet und der Anwendungstest wurde vom Nutzer positiv rückgemeldet. Für PROD wurde nach separater Read-only-Bestandsaufnahme ein eigenständiges PROD-Paket erstellt.
+
+- PROD-Migration: `supabase/migrations/20261120230000_ap02_superadmin_context_hardening_prod.sql`
+- PROD-Rollback: `supabase/rollback/20261120230000_ap02_superadmin_context_hardening_rollback_prod.sql`
+- Release-Dokument: `docs/prod-release/AP02_SUPERADMIN_CONTEXT_PROD_2026-11-20.md`
+
+Wesentliche PROD-Abweichungen: Die vorhandene Superadmin-Teamrolle lautet `admin` (DEV: `trainer`). `is_team_admin(uuid)` ist in PROD bereits korrekt teamkontextgebunden und wird nicht erneut geändert. Das PROD-Paket korrigiert nur die noch offenen Funktions-/RPC-Bypässe, sichert die tatsächlichen Rollen und neutralisiert die direkte Vereinszuweisung reversibel.
+
+**Status:** PROD-Paket vorbereitet und statisch gegen den PROD-Livebestand abgeglichen; keine PROD-Ausführung, kein Rollback, kein Frontend-Deploy. Separate ausdrückliche PROD-Freigabe bleibt zwingend.
