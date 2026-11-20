@@ -61,9 +61,11 @@ revoke all on function private.is_valid_profile_avatar_path(uuid, text) from pub
 grant execute on function private.is_valid_profile_avatar_path(uuid, text) to authenticated, service_role;
 
 -- 2) Zentrale Autorisierung für die Verwaltung fremder Profilbilder.
--- Vereinsadmins: nur im ausgewählten Vereinskontext.
--- Mannschaftsadmins: nur für Mitglieder derselben Mannschaft.
--- Superadmins erben diese Prüfungen und benötigen den passenden ausgewählten Kontext.
+-- Vereinsadmins: nur für Mitglieder des eigenen Vereins; public.can_manage_club_context
+-- prüft die Vereinsadmin-Zugehörigkeit. Superadmins benötigen ausdrücklich den
+-- passenden ausgewählten Vereinskontext.
+-- Mannschaftsadmins: nur für Mitglieder derselben Mannschaft. Superadmins benötigen
+-- ausdrücklich den passenden ausgewählten Mannschaftskontext.
 create or replace function private.can_manage_profile_avatar(
   p_target_user_id uuid
 )
