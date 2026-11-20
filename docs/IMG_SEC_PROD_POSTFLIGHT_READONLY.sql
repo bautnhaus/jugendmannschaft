@@ -12,6 +12,22 @@ where name in (
 )
 order by version;
 
+-- 0b. AP02-Freigabegate: muss nach der separaten AP02-Korrektur 0 direkte
+-- Vereins-/Mannschaftszuordnungen für Superadmins ergeben.
+select
+  (select count(*)
+   from public.global_user_roles gur
+   join public.club_members cm on cm.user_id=gur.user_id
+   where gur.role='super_admin') as superadmins_with_club_membership,
+  (select count(*)
+   from public.global_user_roles gur
+   join public.club_member_roles cmr on cmr.user_id=gur.user_id
+   where gur.role='super_admin') as superadmins_with_club_roles,
+  (select count(*)
+   from public.global_user_roles gur
+   join public.team_member_roles tmr on tmr.user_id=gur.user_id
+   where gur.role='super_admin') as superadmins_with_team_roles;
+
 -- 1. Bucket visibility and limits
 select id,public,file_size_limit,allowed_mime_types
 from storage.buckets
@@ -50,7 +66,9 @@ where (n.nspname='public' and p.proname in ('is_club_admin','is_team_admin','is_
    or (n.nspname='private' and p.proname in ('can_view_club_asset','can_view_profile_avatar','can_manage_profile_avatar'))
 order by n.nspname,p.proname,arguments;
 
--- 3a. Schema and function privileges (authenticated must be able to use helpers; anon must not).
+-- 3a. Schema and function privileges:
+-- authenticated must use helpers; anon and service_role must not have helper EXECUTE.
+-- private schema USAGE is intended for authenticated only.
 select
   has_schema_privilege('authenticated','private','USAGE') as authenticated_private_usage,
   has_schema_privilege('anon','private','USAGE') as anon_private_usage,
