@@ -274,3 +274,41 @@ Die älteren AP02-Statusangaben in diesem Dokument sind historisch und werden du
 - PROD weicht von DEV ab: Teamrolle `admin` statt `trainer`; die zentrale `is_team_admin(uuid)`-Funktion ist in PROD bereits gehärtet und bleibt unverändert.
 - Das PROD-Paket ist vorbereitet und statisch mit dem PROD-Livebestand abgeglichen. Es wurde nicht ausgeführt. Separate ausdrückliche PROD-Freigabe erforderlich.
 - AP02 ist ein eigenständiges Rollen-/Kontextrelease und nicht Bestandteil des IMG-SEC-Deployments. Die IMG-SEC-Migrationen, Logo-Löschung, Frontend-Deployment und Bucket-Cutover behalten ihren separat dokumentierten Status.
+
+
+## Verbindliche Statuskorrektur nach AP02-PROD-Ausführung (20.11.2026)
+
+Dieser Abschnitt aktualisiert die älteren historischen Statusangaben weiter oben in diesem Dokument:
+
+### AP02 ist auf PROD erfolgreich ausgeführt
+
+- AP02-Migration `20261120221618_ap02_superadmin_context_hardening_prod` wurde nach ausdrücklicher Nutzerfreigabe erfolgreich auf PROD angewendet.
+- Der Datenbank-Postflight ist bestanden: direkte Vereinsmitgliedschaft und Vereinsrolle des Superadmins entfernt; vorhandene Teamrolle `admin` und Teammitgliedschaft erhalten; privates Backup mit einem Snapshot-Datensatz vorhanden und für Clientrollen gesperrt.
+- Damit ist die frühere AP02-Release-Sperre für die IMG-SEC-PROD-Vorbereitung aufgehoben.
+- Der AP02-Frontend-Praxistest in PROD und die IMG-SEC-Bildfunktionsprüfung sind noch nicht erfolgt.
+
+### IMG-SEC ist weiterhin NICHT auf PROD ausgeführt
+
+Keine der vier IMG-SEC-Migrationen wurde bisher auf PROD angewendet:
+1. `20261119180000_img_sec_01_private_player_photo_storage_v1_0_0_prod`
+2. `20261119180100_img_sec_01_harden_private_policy_helpers_prod`
+3. `20261119180200_img_sec_02_profile_avatar_hardening_v1_0_0_prod`
+4. `20261119180300_img_sec_03_private_profile_and_club_asset_buckets_prod`
+
+Auch das IMG-SEC-Frontend wurde noch nicht deployed. Die PROD-Indexdatei in `main` hat Blob-SHA `9d0fb6582d2dfb12ba31027b000d0829d8853ea7`. Der getestete IMG-SEC-Release-Branch `release/img-sec-prod-2026-11-20` enthält eine gezielt angepasste `index.html` mit Blob-SHA `cc2ff9534d3847e9e9c343f3da2b741c865c5b9c`. Der Release-Branch basiert auf `main`, ist 13 Commits ahead und 0 behind und enthält ausschließlich die vorgesehenen 12 Release-Dateien (plus den 13. Branch-Commit); kein Merge nach `main` wurde ausgeführt.
+
+### Korrekte weitere Ausführungsreihenfolge
+
+1. AP02-Frontend-Praxistest auf PROD mit dem aktuell ausgelieferten Frontend durchführen, soweit die vorhandenen Kontextoberflächen dies erlauben. Dieser Test ist von IMG-SEC unabhängig.
+2. IMG-SEC-01a auf PROD ausführen und Postflight prüfen.
+3. IMG-SEC-01b auf PROD ausführen und Postflight prüfen.
+4. IMG-SEC-02 auf PROD ausführen und Postflight/Rollenprüfungen durchführen.
+5. Erst danach die getestete `index.html` aus `release/img-sec-prod-2026-11-20` auf PROD deployen. Nicht `develop` oder pauschal den gesamten Branch nach `main` mergen; nur den freigegebenen Release-Branch-/Dateistand deployen.
+6. Vor IMG-SEC-03 das vorhandene PROD-Vereinslogo und seine `clubs.crest_path`-Referenz gemäß dem dokumentierten kontrollierten Ablauf entfernen; Objekt und Referenz jeweils separat verifizieren.
+7. IMG-SEC-03 auf PROD ausführen; beide betroffenen Bild-Buckets müssen danach privat sein.
+8. Vereinslogo über die neue KADAssist-Oberfläche neu hochladen.
+9. Signed-URL-Bildanzeige, direkte öffentliche URL-Negativtests, Upload/Ändern/Entfernen, iPhone/Safari, Login/Logout und Team-/Vereinskontextwechsel vollständig testen.
+
+**Deployment-Hinweis:** Die neue `index.html` wird vor IMG-SEC-03 deployed, nicht als erster Schritt vor IMG-SEC-01/02. So entspricht die Reihenfolge der vorgesehenen Datenbank-/Frontend-Kompatibilität und erlaubt den Gate-C-Test vor dem privaten Bucket-Cutover sowie Gate-D danach.
+
+**Freigaberegel:** Die frühere AP02-Freigabe autorisiert ausschließlich AP02. Für jede IMG-SEC-PROD-Migration, die kontrollierte Logo-Löschung und das Frontend-Deployment gelten weiterhin die jeweils erforderlichen separaten Freigaben. PROD wurde bislang nur durch AP02 verändert.
