@@ -27,7 +27,9 @@
 ## Korrekturumfang
 
 - `can_manage_club_context(uuid)`: CASE-Priorität. Wenn der aufrufende Benutzer Superadmin ist, zählt ausschließlich `user_club_context`; die zusätzliche club_admin-Rolle darf keinen OR-Fallback eröffnen.
-- Verwaltungs-RPCs, die bisher `is_team_admin(auth.uid(), team_id)` als Berechtigungsprüfung des Aufrufers verwenden, wechseln auf `is_team_admin(team_id)`. Betroffen: `admin_add_team_role`, `admin_remove_team_role`, `admin_update_member_profile`, `admin_set_trainer_label`, `get_team_trainers`, `get_team_trainers_v2`.
+- Die Ein-Argument-Funktion `is_team_admin(team_id)` erzwingt für Superadmins ausschließlich den ausgewählten Mannschaftskontext; die Zwei-Argument-Funktion bleibt eine allgemeine Zielrollenabfrage.
+- `admin_add_team_role` und `admin_remove_team_role` wechseln für die Aufruferprüfung auf `is_team_admin(team_id)`. Die alternative Vereinsadmin-Berechtigung über `can_manage_club_context` bleibt für Nicht-Superadmins erhalten, wird für Superadmins aber ausdrücklich ausgeschlossen. Ein ausgewählter Vereinskontext allein verleiht dem Superadmin somit keine Mannschaftsadmin-Rechte.
+- Weitere Verwaltungs-/Read-RPCs wechseln auf die Ein-Argument-Prüfung: `admin_update_member_profile`, `admin_set_trainer_label`, `get_team_trainers`, `get_team_trainers_v2`.
 - `is_team_admin(uuid)`: Superadmins werden vor der Rollenprüfung ausschließlich über `has_selected_team_context(team_id)` autorisiert; Nicht-Superadmins behalten die bisherige Rollenprüfung.
 - `get_team_role_change_log(uuid)`: direkter Superadmin-Bypass wird an `has_selected_team_context(team_id)` gebunden.
 - Die Zwei-Argument-Funktion `is_team_admin(user_id, team_id)` bleibt als allgemeine Rollenabfrage für Zielbenutzer unverändert. Sie darf nicht global umgedeutet werden.
