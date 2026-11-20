@@ -209,3 +209,15 @@ Mit simuliertem Superadmin-JWT-Claim (read-only):
 - `is_team_admin(<Mannschaft>)` ohne ausgewählten Mannschaftskontext: false
 
 Damit ist auch datenbankseitig bestätigt, dass der Superadmin den Verein weiterhin explizit auswählen und dort arbeiten kann, ohne automatisch Mannschaftsrechte zu erhalten.
+
+
+## DEV-Anwendungstest – Nutzerbestätigung (20.11.2026)
+
+Der Nutzer hat den Praxistest in der DEV-Anwendung durchgeführt und zurückgemeldet: **„Ja scheint zu klappen“**.
+
+Bewertung: Der Anwendungstest ist damit vorläufig positiv. Die Superadmin-Kontextsteuerung scheint in der Oberfläche wie vorgesehen zu funktionieren. Eine detaillierte Einzelbestätigung aller sechs Testschritte liegt nicht vor; deshalb wird der Status als **DEV-Praxistest: bestanden (Nutzer-Rückmeldung, nicht einzeln protokolliert)** geführt.
+
+**AP02 DEV-Status:** Migration dauerhaft angewendet, Datenbank-Postflight erfolgreich, Anwendungstest positiv rückgemeldet.  
+**PROD:** unverändert; keine Freigabe oder Ausführung für PROD erfolgt.
+
+Nächster Schritt: PROD-Übertragung vorbereiten. Vor einer PROD-Migration sind PROD-Ausgangsschema, Funktionsdefinitionen, Datenbestand, Rollen-/Kontextbeziehungen und die dortige FK-/Triggerstruktur separat read-only zu prüfen. Anschließend ist ein eigenständiges, PROD-spezifisches SQL-Paket samt Rollback- und Postflight-Prüfungen vorzulegen. Keine PROD-Ausführung ohne separate ausdrückliche Freigabe.
