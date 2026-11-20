@@ -105,7 +105,7 @@ with check (
       or exists (
         select 1 from public.club_members target
         where target.user_id = split_part(name, '/', 1)::uuid
-          and public.can_manage_club_context(target.club_id)
+          and public.is_club_admin(target.club_id)
       )
     )
     else false
@@ -127,7 +127,7 @@ using (
       or exists (
         select 1 from public.club_members target
         where target.user_id = split_part(name, '/', 1)::uuid
-          and public.can_manage_club_context(target.club_id)
+          and public.is_club_admin(target.club_id)
       )
     )
     else false
@@ -143,7 +143,7 @@ with check (
       or exists (
         select 1 from public.club_members target
         where target.user_id = split_part(name, '/', 1)::uuid
-          and public.can_manage_club_context(target.club_id)
+          and public.is_club_admin(target.club_id)
       )
     )
     else false
@@ -165,7 +165,7 @@ using (
       or exists (
         select 1 from public.club_members target
         where target.user_id = split_part(name, '/', 1)::uuid
-          and public.can_manage_club_context(target.club_id)
+          and public.is_club_admin(target.club_id)
       )
     )
     else false
