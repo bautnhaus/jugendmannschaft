@@ -88,6 +88,50 @@ begin
     raise exception 'IMG-SEC-03 Preflight: Vereinsasset-SELECT-Policy fehlt oder verwendet nicht den privaten Helper.';
   end if;
 
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_insert_self_or_admin'
+      and with_check like '%private.can_manage_profile_avatar%'
+      and with_check like '%private.is_valid_profile_avatar_path%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_update_self_or_admin'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%private.can_manage_profile_avatar%'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%private.is_valid_profile_avatar_path%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_delete_self_or_admin'
+      and qual like '%private.can_manage_profile_avatar%'
+  ) then
+    raise exception 'IMG-SEC-03 Preflight: Profilbild-Schreibpolicies verwenden nicht die geprüften privaten Helper.';
+  end if;
+
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_insert_scoped'
+      and with_check like '%public.is_club_admin%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_update_scoped'
+      and coalesce(qual,'') || coalesce(with_check,'') like '%public.is_club_admin%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_delete_scoped'
+      and qual like '%public.is_club_admin%'
+  ) then
+    raise exception 'IMG-SEC-03 Preflight: Vereinsasset-Schreibpolicies verwenden nicht den expliziten Vereinskontext.';
+  end if;
+
+  if position('public.is_club_admin(p_club_id)' in pg_get_functiondef('public.admin_update_club_crest(uuid,text)'::regprocedure)) = 0 then
+    raise exception 'IMG-SEC-03 Preflight: Crest-RPC erzwingt nicht den ausgewählten Vereinskontext.';
+  end if;
+
   if exists (
     select 1 from storage.objects
     where bucket_id='club-assets'
@@ -102,13 +146,51 @@ begin
     where bucket_id='profile-avatars'
       and (
         split_part(name,'/',1) !~*
-          '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+          '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+end;
+$preflight$;
+
+-- Ausschließlich die Bucket-Sichtbarkeit ändern.
+-- Vorhandene SELECT-/INSERT-/UPDATE-/DELETE-Policies bleiben unverändert.
+update storage.buckets
+set public=false
+where id in ('profile-avatars','club-assets');
+
+-- Guard: beide Buckets müssen nach dem Update privat sein.
+do $postflight$
+begin
+  if exists (
+    select 1 from storage.buckets
+    where id in ('player-photos','profile-avatars','club-assets') and public is distinct from false
+  ) then
+    raise exception 'IMG-SEC-03 Postflight fehlgeschlagen: mindestens ein Bild-Bucket ist weiterhin öffentlich.';
+  end if;
+end;
+$postflight$;
+
+commit;
+
         or not private.is_valid_profile_avatar_path(
           split_part(name,'/',1)::uuid, name
         )
       )
   ) then
     raise exception 'IMG-SEC-03 Preflight: mindestens ein Profilbildobjekt hat einen ungültigen Pfad.';
+  end if;
+
+  if exists (
+    select 1
+    from public.clubs c
+    where c.crest_path is not null
+      and (
+        split_part(c.crest_path,'/',1) <> c.id::text
+        or not exists (
+          select 1 from storage.objects o
+          where o.bucket_id='club-assets' and o.name=c.crest_path
+        )
+      )
+  ) then
+    raise exception 'IMG-SEC-03 Preflight: mindestens eine crest_path-Referenz ist nicht konsistent mit dem Storage-Objekt.';
   end if;
 end;
 $preflight$;
