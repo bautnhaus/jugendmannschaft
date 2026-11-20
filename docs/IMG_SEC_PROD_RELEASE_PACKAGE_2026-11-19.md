@@ -133,3 +133,14 @@ Wenn diese Bedingungen erfüllt sind, ist die Rückwärtsreihenfolge:
 
 Bei neuen Profilbild- oder Spielerfotodaten ist die vollständige Rückkehr blockiert, bis ein gesonderter Datenkompatibilitäts-/Migrationsplan erstellt und freigegeben wurde. Rollbacks erfolgen nie automatisch.
 
+
+
+## Ergänzung: verschärfte Migrations-Preflights
+
+Die vier PROD-Migrationsdateien wurden am 20.11.2026 nochmals gegen den installierten DEV-Stand geprüft und mit zusätzlichen Abbruchbedingungen versehen:
+- IMG-SEC-01a prüft nach Bucket-Anlage neben `public=false` auch die erwartete Dateigrößenbegrenzung von 2 MiB und die exakte MIME-Allowlist.
+- IMG-SEC-01b prüft nach dem Verschieben, dass die drei Policy-Helper ausschließlich in `private` liegen, `authenticated` Schema-/EXECUTE-Rechte hat und `anon` weder Schema-USAGE noch EXECUTE erhält.
+- IMG-SEC-02 prüft vor Ausführung, dass der private IMG-SEC-01-Helper existiert, die erwarteten Rechte gelten und die bestehende Profilbild-SELECT-Policy tatsächlich den privaten Helper verwendet.
+- IMG-SEC-03 prüft zusätzlich den privaten Spielerfoto-Bucket, die `photo_path`-Spalte, alle benötigten privaten Helper, die Auth-/Anon-Rechte und die tatsächlichen SELECT-Policy-Ausdrücke. Nach dem Cutover müssen alle drei Bild-Buckets privat sein.
+
+Die erwarteten Rechte und Policy-Ausdrücke wurden read-only mit dem installierten DEV-Stand abgeglichen. Die PROD-Dateien sind dadurch strenger abgesichert; es wurde keine Migration ausgeführt.
