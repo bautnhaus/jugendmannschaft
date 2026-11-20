@@ -162,9 +162,17 @@ BEGIN
       ('public.admin_add_team_role(uuid,uuid,text)',
        'public.is_team_admin(auth.uid(), p_team_id)',
        'public.is_team_admin(p_team_id)'),
+      ('public.admin_add_team_role(uuid,uuid,text)',
+       'OR (v_club_id IS NOT NULL
+               AND public.can_manage_club_context(v_club_id))',
+       'OR (NOT public.is_super_admin() AND v_club_id IS NOT NULL
+               AND public.can_manage_club_context(v_club_id))'),
       ('public.admin_remove_team_role(uuid,uuid,text)',
        'public.is_team_admin(auth.uid(),p_team_id)',
        'public.is_team_admin(p_team_id)'),
+      ('public.admin_remove_team_role(uuid,uuid,text)',
+       'or (v_club_id is not null and public.can_manage_club_context(v_club_id))',
+       'or (NOT public.is_super_admin() AND v_club_id is not null and public.can_manage_club_context(v_club_id))'),
       ('public.admin_update_member_profile(uuid,uuid,text,text)',
        'public.is_team_admin(auth.uid(), p_team_id)',
        'public.is_team_admin(p_team_id)'),
@@ -197,8 +205,8 @@ BEGIN
     v_count := v_count + 1;
   END LOOP;
 
-  IF v_count <> 7 THEN
-    RAISE EXCEPTION 'AP02: erwartet sieben Funktionskorrekturen, ausgeführt %',v_count;
+  IF v_count <> 9 THEN
+    RAISE EXCEPTION 'AP02: erwartet neun gezielte Berechtigungsersetzungen, ausgeführt %',v_count;
   END IF;
 END;
 $function_hardening$;
@@ -307,6 +315,13 @@ BEGIN
 
   IF position('OR EXISTS' IN pg_get_functiondef('public.can_manage_club_context(uuid)'::regprocedure))>0 THEN
     RAISE EXCEPTION 'AP02 Postflight: alter paralleler Rollen-Bypass ist noch vorhanden';
+  END IF;
+
+  IF position('NOT public.is_super_admin()' IN
+       pg_get_functiondef('public.admin_add_team_role(uuid,uuid,text)'::regprocedure))=0
+     OR position('NOT public.is_super_admin()' IN
+       pg_get_functiondef('public.admin_remove_team_role(uuid,uuid,text)'::regprocedure))=0 THEN
+    RAISE EXCEPTION 'AP02 Postflight: Vereinskontext darf Superadmin-Teamrolle nicht umgehen';
   END IF;
 
   IF position('public.is_super_admin() AND public.has_selected_team_context(p_team_id)'
