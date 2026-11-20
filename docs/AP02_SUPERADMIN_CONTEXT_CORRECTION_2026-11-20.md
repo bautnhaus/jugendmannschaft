@@ -66,3 +66,18 @@ Die Migration ist absichtlich streng und bricht bei abweichendem Bestand ab. Sie
 - Keine PROD-Änderung.
 - Kein Frontend-Deploy.
 - IMG-SEC-PROD bleibt bis zur AP02-Abnahme gesperrt.
+
+
+## Vorgesehene DEV-Abnahmematrix (nach separater Ausführungsfreigabe)
+
+| Rolle / Kontext | Vereinsverwaltung | Teamverwaltung / Teamrollen |
+|---|---|---|
+| Superadmin ohne Vereins- und Teamkontext | verweigert | verweigert |
+| Superadmin mit Vereinskontext, ohne Teamkontext | im ausgewählten Verein zulässig | teambezogene Admin-RPCs verweigert |
+| Superadmin mit passendem Vereins- und Teamkontext | im ausgewählten Verein zulässig | im ausgewählten Team zulässig |
+| Superadmin mit Teamrolle, aber ohne Teamkontext | abhängig vom ausgewählten Vereinskontext; keine teambezogene Freigabe allein durch Teamrolle | verweigert |
+| Normaler Vereinsadmin im eigenen Vereinskontext | zulässig | bisherige Vereinsadmin-Rechte bleiben erhalten |
+| Mannschaftsadmin im eigenen Team | keine zusätzlichen Vereinsrechte | zulässig |
+| Trainer | keine Adminrechte | keine Teamadmin-Rechte |
+
+Zusätzlich werden Negativtests mit einem falschen bzw. fremden Teamkontext durchgeführt. Die Tests umfassen `can_manage_club_context`, `is_team_admin`, `admin_add_team_role`, `admin_remove_team_role`, `admin_update_member_profile`, `admin_set_trainer_label`, `get_team_trainers_v2` und `get_team_role_change_log`. Der Trainerzugriff auf die normale App-Funktionalität wird separat regressionsgeprüft.
