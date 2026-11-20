@@ -52,7 +52,8 @@ begin
     raise exception 'IMG-SEC-03 Preflight: mindestens ein erforderlicher privater IMG-SEC-Helper fehlt.';
   end if;
   if not has_schema_privilege('authenticated','private','USAGE')
-     or has_schema_privilege('anon','private','USAGE') then
+     or has_schema_privilege('anon','private','USAGE')
+     or has_schema_privilege('service_role','private','USAGE') then
     raise exception 'IMG-SEC-03 Preflight: private-Schema-Rechte sind unerwartet.';
   end if;
   if not has_function_privilege('authenticated','private.can_manage_player_photo(uuid,uuid)','EXECUTE')
