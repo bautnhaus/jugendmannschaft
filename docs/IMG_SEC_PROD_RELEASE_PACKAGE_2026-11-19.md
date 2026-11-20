@@ -144,3 +144,18 @@ Die vier PROD-Migrationsdateien wurden am 20.11.2026 nochmals gegen den installi
 - IMG-SEC-03 prüft zusätzlich den privaten Spielerfoto-Bucket, die `photo_path`-Spalte, alle benötigten privaten Helper, die Auth-/Anon-Rechte und die tatsächlichen SELECT-Policy-Ausdrücke. Nach dem Cutover müssen alle drei Bild-Buckets privat sein.
 
 Die erwarteten Rechte und Policy-Ausdrücke wurden read-only mit dem installierten DEV-Stand abgeglichen. Die PROD-Dateien sind dadurch strenger abgesichert; es wurde keine Migration ausgeführt.
+
+
+## Ergänzung: strikte Superadmin-Kontextprüfung in IMG-SEC-02 (20.11.2026)
+
+Bei der DEV-Rollenprüfung wurde festgestellt, dass `public.can_manage_club_context(uuid)` bei einem Superadmin mit zusätzlicher `club_admin`-Rolle auch ohne ausgewählten Vereinskontext `true` liefern kann. Das verletzt die verbindliche Regel, dass Superadmins nur im ausdrücklich ausgewählten Kontext handeln.
+
+Die IMG-SEC-02-Migration wurde deshalb korrigiert:
+- Avatar-Verwaltung für Vereinsmitglieder verwendet `public.is_club_admin(target.club_id)`.
+- Die Vereinsprofil-RPC verwendet `public.is_club_admin(p_club_id)`.
+- Das Preflight prüft diese Funktion explizit.
+- Das IMG-SEC-02-Rollback behält diese strengere Kontextprüfung bewusst bei und führt den bekannten Bypass nicht wieder ein.
+
+Die Rollenprüfungen wurden in DEV ausschließlich lesend bzw. in vollständig zurückgerollten Simulationstransaktionen durchgeführt. Bestanden: Superadmin ohne Kontext = kein Fremdzugriff; Superadmin mit ausgewähltem Vereinskontext = Zugriff im ausgewählten Verein; normaler Vereinsadmin = Zugriff im eigenen Verein; Mannschaftsadmin = Zugriff auf Mitglieder der eigenen Mannschaft; Trainer = kein Fremdzugriff, aber Selbstverwaltung bleibt möglich.
+
+**Hinweis:** Die Änderung ist bislang nur in den GitHub-SQL-Dateien enthalten. Keine DEV- oder PROD-Migration wurde ausgeführt.
