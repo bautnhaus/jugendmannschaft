@@ -1715,3 +1715,11 @@ Keine Supabase-Schreiboperation und keine PROD-Änderung im Rahmen dieser Korrek
 - **Dateiabgleich:** GitHub-Migrationsdatei auf tatsächliche Supabase-Version `20261120212557` umgestellt; vorbereitende Datei mit vorläufiger Versionsnummer entfernt.
 - **PROD:** unverändert.
 - **Nächster Schritt:** DEV-Frontend-Praxistest mit Superadmin-, Vereins- und Mannschaftskontext; noch keine PROD-Freigabe.
+
+
+### AP02 DEV-Anwendungstest – positive Rückmeldung (20.11.2026)
+
+- Nutzer hat den Praxistest in der DEV-Anwendung durchgeführt und bestätigt: „Ja scheint zu klappen“.
+- Status: **DEV-Praxistest vorläufig bestanden**; die Rückmeldung ist positiv, aber die einzelnen Testschritte wurden nicht separat protokolliert.
+- Zusammen mit der erfolgreich angewendeten Migration und dem Datenbank-Postflight ist AP02 auf DEV fachlich und technisch vorläufig abgeschlossen.
+- **PROD bleibt unverändert.** Nächster Schritt ist ausschließlich die read-only Bestandsaufnahme in PROD und die Erstellung eines eigenständigen PROD-Migrations-/Rollbackpakets. Separate Freigabe vor jeder PROD-Ausführung erforderlich.
