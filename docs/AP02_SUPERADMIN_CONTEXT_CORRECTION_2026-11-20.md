@@ -197,3 +197,15 @@ Der Scan meldet außerdem 56 SECURITY-DEFINER-Funktionen, die für `authenticate
 Supabase hat bei der Registrierung die Version `20261120212557` vergeben. Die auf `develop` liegende Migrationsdatei wurde deshalb auf `supabase/migrations/20261120212557_ap02_superadmin_context_hardening_dev.sql` mit dem tatsächlich angewendeten SQL-Inhalt abgeglichen. Die vorbereitende Datei mit der vorläufigen Versionsnummer wurde entfernt. Rollback-Datei bleibt separat dokumentiert.
 
 **Abgrenzung:** Nur DEV wurde geändert. PROD wurde nicht angefasst. Die kontrollierte Transaktionssimulation war erfolgreich; die dauerhafte DEV-Migration ist jetzt ebenfalls erfolgreich. Der nächste Schritt ist der Anwendungstest im DEV-Frontend mit Superadmin-/Vereins-/Mannschaftskontext, bevor AP02 für PROD vorbereitet wird.
+
+
+### Ergänzender Funktionspostflight nach der Migration
+
+Mit simuliertem Superadmin-JWT-Claim (read-only):
+
+- `is_super_admin()`: true
+- `get_super_admin_clubs()`: 1 Verein wird weiterhin im Superadmin-Vereinswähler angeboten
+- `can_manage_club_context(<ausgewählter Verein>)`: true
+- `is_team_admin(<Mannschaft>)` ohne ausgewählten Mannschaftskontext: false
+
+Damit ist auch datenbankseitig bestätigt, dass der Superadmin den Verein weiterhin explizit auswählen und dort arbeiten kann, ohne automatisch Mannschaftsrechte zu erhalten.
