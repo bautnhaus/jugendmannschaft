@@ -15,7 +15,10 @@ begin
     raise exception 'IMG-SEC-01 Rollback abgebrochen: public.is_club_admin(uuid) fehlt.';
   end if;
 
-  if exists (
+  if (
+    select count(*) from storage.buckets
+    where id in ('profile-avatars','club-assets')
+  ) <> 2 or exists (
     select 1 from storage.buckets
     where id in ('profile-avatars','club-assets')
       and public is distinct from true
