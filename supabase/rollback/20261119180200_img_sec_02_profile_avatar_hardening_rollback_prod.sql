@@ -15,6 +15,32 @@ begin
      or to_regprocedure('private.enforce_profile_avatar_path()') is null then
     raise exception 'Rollback abgebrochen: IMG-SEC-02 Helper fehlen; Migration möglicherweise nicht installiert.';
   end if;
+
+  if not exists (
+    select 1 from pg_trigger t
+    join pg_class c on c.oid=t.tgrelid
+    join pg_namespace n on n.oid=c.relnamespace
+    where n.nspname='public' and c.relname='profiles'
+      and t.tgname='profiles_validate_avatar_path' and not t.tgisinternal
+  ) then
+    raise exception 'Rollback abgebrochen: IMG-SEC-02-Trigger fehlt.';
+  end if;
+
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_insert_self_or_admin'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_update_self_or_admin'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='profile_avatars_delete_self_or_admin'
+  ) then
+    raise exception 'Rollback abgebrochen: IMG-SEC-02-Profilbild-Schreibpolicies fehlen.';
+  end if;
 end;
 $preflight$;
 
