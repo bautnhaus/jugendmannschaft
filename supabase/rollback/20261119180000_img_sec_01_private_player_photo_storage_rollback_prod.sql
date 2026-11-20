@@ -14,6 +14,39 @@ begin
   if to_regprocedure('public.is_club_admin(uuid)') is null then
     raise exception 'IMG-SEC-01 Rollback abgebrochen: public.is_club_admin(uuid) fehlt.';
   end if;
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='players' and column_name='photo_path'
+  ) or not exists (
+    select 1 from storage.buckets where id='player-photos'
+  ) then
+    raise exception 'IMG-SEC-01 Rollback abgebrochen: IMG-SEC-01a-Struktur ist nicht installiert.';
+  end if;
+
+  if (
+    to_regprocedure('public.can_manage_player_photo(uuid,uuid)') is null
+    and to_regprocedure('private.can_manage_player_photo(uuid,uuid)') is null
+  ) or (
+    to_regprocedure('public.can_view_club_asset(uuid)') is null
+    and to_regprocedure('private.can_view_club_asset(uuid)') is null
+  ) or (
+    to_regprocedure('public.can_view_profile_avatar(uuid)') is null
+    and to_regprocedure('private.can_view_profile_avatar(uuid)') is null
+  ) then
+    raise exception 'IMG-SEC-01 Rollback abgebrochen: IMG-SEC-01-Helper fehlen; Installationsstand prüfen.';
+  end if;
+
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='player_photos_select_team'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname='storage' and tablename='objects'
+      and policyname='club_assets_select_scoped'
+  ) then
+    raise exception 'IMG-SEC-01 Rollback abgebrochen: erwartete IMG-SEC-01-Policies fehlen.';
+  end if;
 
   if exists (
     select 1 from public.players
@@ -60,11 +93,12 @@ drop policy if exists club_assets_insert_scoped on storage.objects;
 drop policy if exists club_assets_update_scoped on storage.objects;
 drop policy if exists club_assets_delete_scoped on storage.objects;
 
--- 3) Ursprüngliche club-assets-Policies und Crest-RPC wiederherstellen.
--- Die Admin-Prüfung verwendet public.is_club_admin statt can_manage_club_context,
--- damit Superadmins auch bei zusätzlicher club_admin-Rolle den ausgewählten
--- Vereinskontext benötigen. Die IMG-SEC-01-Lesepolicy für profile-avatars war
--- vorher nicht vorhanden und wird deshalb entfernt.
+-- 3) IMG-SEC-01-spezifische Policies und Helper zurücknehmen.
+-- Die strengere Superadmin-Kontextprüfung der club-assets-Policies und Crest-RPC
+-- bleibt bewusst bestehen. Sie korrigiert eine bereits im PROD-Ausgangsstand
+-- vorhandene Kontextlücke und wird durch einen Feature-Rollback nicht zurückgenommen.
+-- Die IMG-SEC-01-Lesepolicy für profile-avatars war vorher nicht vorhanden und
+-- wird deshalb entfernt.
 
 create policy club_assets_select_scoped
 on storage.objects for select to authenticated
