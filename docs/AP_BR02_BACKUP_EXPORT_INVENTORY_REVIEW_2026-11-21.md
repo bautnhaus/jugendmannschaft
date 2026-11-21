@@ -386,3 +386,17 @@ Commit: \`67fbbc1\` – \`fix: paginate scoped snapshot and filter recommendatio
 - [ ] UI-Anbindung und nutzerseitige Umfangsauswahl.
 
 Der Schemaabgleich war read-only. Es wurden keine Daten oder DB-Strukturen geändert. Edge Function weiterhin nur Quellcode auf \`develop\`, nicht deployed; PROD und Restore bleiben unverändert.
+
+
+## 14. Supabase-Client-Key-Korrektur (21.11.2026)
+
+Beim Abgleich der aktuellen Supabase-Dokumentation zur neuen API-Key-Generation wurde ein wichtiger Laufzeitfehler im Prototyp erkannt: Neue \`sb_secret_...\`-Keys sind keine JWTs und dürfen mit dem verwendeten \`supabase-js\`-v2-Client nicht als dessen Bearer-Authorization verwendet werden.
+
+Korrektur auf \`develop\`:
+- Der privilegierte Snapshot-Client verwendet vorerst \`SUPABASE_SERVICE_ROLE_KEY\` (Legacy-Service-Role-JWT), der in Edge Functions weiterhin als Umgebungsvariable bereitgestellt wird.
+- Der neue Secret-Key-Mechanismus wird nicht fälschlich als JWT behandelt.
+- Die spätere Umstellung auf \`@supabase/server\` mit explizitem Secret-Key-Auth bleibt ein separater technischer Schritt.
+
+Commit: \`bf2a770\` – \`fix: initialize admin client with service role JWT\`
+
+Dies ist eine Quellcodekorrektur auf develop. Keine Edge-Function-Bereitstellung, keine DB-Ausführung und keine PROD-Änderung.
