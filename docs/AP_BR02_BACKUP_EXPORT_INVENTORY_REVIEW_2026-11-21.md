@@ -488,3 +488,46 @@ Befund:
 - [ ] Positiver Snapshot-Test mit ausdrücklich gewähltem Scope und anschließend Inhalts-/Vollständigkeitskontrolle.
 
 Die Edge Function bleibt Version 2 in DEV. Die aktuelle Runde war read-only hinsichtlich Datenbank und keine weitere Bereitstellung. PROD, UI und Restore bleiben unverändert.
+
+
+## 19. Storage-Datei-Inventur aktuell in DEV (21.11.2026, read-only)
+
+Projekt: Supabase DEV \`pzazqvvoruqnqhcorbwx\`. Geprüft wurden Bucket-Metadaten, Objektmetadaten (Pfad, Owner-ID, MIME, Größe, Zeitstempel) und exakte Referenzmatches gegen DB-Felder. Keine Datei wurde heruntergeladen, geschrieben, verschoben oder gelöscht.
+
+### 19.1 Bucket-/Objektbestand
+
+| Bucket | Privat | Limit / MIME | Objekte aktuell |
+|---|---:|---|---:|
+| \`player-photos\` | ja | 2 MiB; JPEG/PNG/WebP | 2 |
+| \`profile-avatars\` | ja | 2 MiB; JPEG/PNG/WebP | 4 |
+| \`club-assets\` | ja | 2 MiB; JPEG/PNG/WebP | 1 |
+
+Aktuelle Referenzprüfung:
+- \`players.photo_path\`: 2 nicht-null Referenzen, **2 exakte Storage-Matches**.
+- \`profiles.avatar_url\`: 2 nicht-null Referenzen, **2 exakte Storage-Matches**. Zusätzlich sind 2 der 4 Avatar-Objekte nicht referenziert.
+- \`clubs.crest_path\`: 1 nicht-null Referenz, **1 exaktes Storage-Match**.
+
+Damit ist der aktuelle DEV-Bestand nicht identisch mit der historischen Inventur vom 19.11.: inzwischen sind zwei Profilbildreferenzen in \`profiles.avatar_url\` vorhanden. Die alte Zahl „0 Referenzen“ bleibt als damaliger Zeitstempel bestehen und wird nicht als aktueller Status weiterverwendet.
+
+### 19.2 Export-Sicherheitsgrenzen für Storage
+
+- Der Backup-Edge-Function-Code exportiert derzeit **nur DB-Snapshotdaten und Storage-Pfadfelder**, keine tatsächlichen Objektbytes.
+- Der Service-Role-Client umgeht Storage-RLS; deshalb muss jeder künftige Datei-Download durch serverseitige Allowlist, exakte DB-Referenz und Prefix-/Owner-Prüfung begrenzt werden. Nie einen vom Client frei gelieferten Bucket-/Objektpfad ungeprüft downloaden.
+- Referenzierte Objekte werden für die Zuordnung als grundsätzlich backup-relevant erkannt; unreferenzierte Avatar-Objekte werden nicht automatisch aufgenommen. Sie bleiben im Storage erhalten und werden nicht gelöscht.
+- Team-Scope darf nur Spielerfotos und Profilbilder enthalten, deren DB-Referenz/Person zum autorisierten Teamkontext gehört. Vereinslogo/-assets sind nur bei ausdrücklich ausgewähltem Vereins-/Assetumfang einzubeziehen; Teamexport darf nicht unbemerkt alle Vereinsdateien mitnehmen.
+- Die aktuelle API-Kategorien-Allowlist enthält noch keine Storage-Dateikategorie. Eine Datei-/Asset-Auswahl und deren manifestierte Vollständigkeit ist vor der UI-Anbindung zu ergänzen.
+
+### 19.3 Paket- und Verschlüsselungsentscheidung noch offen
+
+Bereits verbindlich: Backup muss tatsächliche Storage-Dateien enthalten (nicht nur URLs/Pfade), role-/scope-gebunden sein und Integritätsinformationen führen. ZIP-/Archivformat, clientseitige vs. serverseitige Verschlüsselung, Passwort-/Schlüsselübergabe, Hashverfahren und Restore-Dateiverhalten sind **noch nicht fachlich final beschlossen**. Keine Verschlüsselung darf nur behauptet werden, solange sie nicht implementiert und getestet ist.
+
+### 19.4 Nächster technischer Arbeitsschritt
+
+Erst eine konkrete Datei-Paket-Spezifikation mit:
+1. ausgewählten Datenkategorien und expliziter Asset-Auswahl,
+2. serverseitiger Objekt-Allowlist aus DB-Referenzen,
+3. stabiler Manifest-Dateiliste (Bucket, relativer Pfad, MIME, Größe, SHA-256),
+4. sicherem Archiv-/Verschlüsselungsverfahren und Fehlerverhalten,
+5. kontrolliertem DEV-Test und Download-Verifikation.
+
+Keine Änderung an Storage-Objekten, Datenbank oder PROD in dieser Inventurrunde.
