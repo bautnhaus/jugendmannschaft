@@ -9,7 +9,8 @@ function headers(req: Request) {
     "Vary": "Origin",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Content-Type": "application/json",\n    "Cache-Control": "no-store",
+    "Content-Type": "application/json",
+    "Cache-Control": "no-store",
   };
 }
 function reply(req: Request, body: unknown, status = 200) {
