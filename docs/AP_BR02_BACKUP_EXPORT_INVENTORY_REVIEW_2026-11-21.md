@@ -290,3 +290,35 @@ Read-only Abgleich der auf develop dokumentierten und in DEV angewendeten AP02/A
 **Prüfgrenze:** Dieser Abgleich erfolgte anhand der versionierten Migrationsdokumente auf develop; es wurde in dieser Runde keine Live-Datenbankabfrage ausgeführt. Vor einer Implementierung oder Migration ist der tatsächliche DEV-Funktionsstand erneut read-only mit den dokumentierten Definitionen abzugleichen.
 
 **Statusfortschritt:** Die offene Dokumentationsprüfung des Superadmin-Kontexthelpers ist abgeschlossen. Nächster technischer Arbeitspunkt ist die Edge-Function-Implementierung auf develop, anschließend gezielte DEV-Prüfung. Keine SQL-Ausführung, kein Deployment und keine PROD-Änderung.
+
+
+## 12. Erste serverseitige Exportfunktion – Code auf develop (21.11.2026)
+
+Neu angelegt: \`supabase/functions/create-backup/index.ts\`
+
+Commits:
+- \`32aa3e9\` – erster serverautorisierter Snapshot-Prototyp
+- \`c9e98c2\` – paginierte Datenabfrage und Empfehlungseinträge ergänzt
+- \`474201f\` – Empfehlungsdetails korrekt auf Recommendation-Run-IDs begrenzt
+
+### Implementiert im DEV-Quellcode (noch nicht deployed)
+
+- Bearer-JWT und Benutzerprüfung mit Auth.
+- Ausschließliche serverseitige Rollen-/Kontextprüfung über die vorhandenen \`is_team_admin(team_id)\`- und \`can_manage_club_context(club_id)\`-RPCs.
+- Expliziter Team- oder Vereins-Scope; Club-Teams werden nach erfolgreicher Vereinsautorisierung serverseitig ermittelt.
+- Feste Kategorie-Allowlist und Ablehnung unbekannter, leerer oder doppelter Kategorien.
+- Tabellenfelder als explizite Select-Allowlist; keine Berechtigungsdaten oder Membership-Tabellen im Snapshot.
+- Teamfilter sowie Parent-ID-basierte Filter für abhängige Tabellen; \`player_positions\` wird anhand autorisierter Spieler-IDs abgefragt.
+- Paginierung in 500er-Blöcken, damit der übliche API-Zeilenlimit nicht unbemerkt den Snapshot abschneidet.
+- Manifest enthält serverbestätigte Benutzer-/Scope-Informationen und kennzeichnet das Ergebnis ausdrücklich als Prototyp ohne Storage und verschlüsseltes Archiv.
+
+### Noch nicht freigabefähig / bewusst offen
+
+- Die Funktion wurde nur in GitHub \`develop\` erstellt und angepasst. Sie wurde nicht in Supabase deployed oder ausgeführt.
+- Die UI ruft sie noch nicht auf; der bestehende Export bleibt unangetastet.
+- Storage-Dateien, Foto-/Asset-Bytes, ZIP-Bildung, Verschlüsselung und Integritäts-Hash sind nicht enthalten.
+- Die Kategorie-IDs und Auswahloberfläche müssen noch an die bereits dokumentierte Umfangsauswahl gekoppelt werden; der Request allein stellt keine UI-Freigabe dar.
+- Laufzeit-/Deno-Validierung und vollständige positive/negative Scope-Tests stehen aus.
+- Die Feldlisten sind aus dem dokumentierten Snapshot übernommen; ein automatischer schema-basierter Test auf fehlende/ungültige Spalten ist vor DEV-Ausführung erforderlich.
+
+**Nächster Schritt:** Quellcode statisch auf Reihenfolge und Relationstypen prüfen, dann DEV-Schema-Kompatibilität und Edge-Function-Deployment separat vorbereiten. Vor dem Deployment erfolgt eine ausdrückliche Freigabe; PROD bleibt unangetastet.
