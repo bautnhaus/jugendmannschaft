@@ -210,3 +210,28 @@ Der vorherige Abschnitt 9 nannte 2.24.0 als aktuelle Paketversion. npm-Suchergeb
 
 ### Ergebnis / nächste konkrete Aktion
 Projektstruktur ist für einen **isolierten DEV-Test ohne Build-System** geeignet. Nächster Schritt: offizielle zip.js-Distribution und deren Worker-/WASM-Dateien/License prüfen, danach einen separaten Testscreen bzw. Test-HTML mit lokal gepinnten Assets erstellen. Erst nach erfolgreichem ZIP-AES-Interoperabilitäts- und iPhone-Test in die Backup-UI integrieren.
+
+
+## 11. Distribution-/API-Prüfung und Prototyp-Integrationsentscheidung
+
+Read-only anhand der offiziellen zip.js-Dokumentation und Paket-/Releaseinformationen geprüft (21.11.2026):
+
+- Exakte npm-Version zum aktuellen Recherchezeitpunkt: **2.25.0** (nicht 2.24.0). Diese Versionsnummer ist nur Recherchestand, noch nicht als Dependency im Code installiert.
+- zip.js bietet AES-verschlüsselte ZIP-Einträge im WinZIP-AES-Verfahren; mit Passwort wird AES AE-2 verwendet. Der Authentifizierungscode schützt die Einträge; CRC-Feld wird bei AE-2 auf 0 gesetzt, um keinen Klartext-Hash-/Guessing-Hinweis preiszugeben.
+- Die API unterstützt \`ZipWriter\`, Reader/Writer und \`createTempStream\`; für große Daten gibt es OPFS-Temp-Streams sowie einen SyncAccessHandle-Temp-Stream, der nur im Dedicated Worker funktioniert.
+- Der Blob-Temp-Stream ist für Safari ausdrücklich ungeeignet: laut API-Dokumentation kann er ungefähr das Vierfache der Entry-Größe als Spitzenbedarf halten. Für Safari daher nicht einsetzen.
+- Die offizielle Doku beschreibt manuelle Einbindung eines \`dist\`-Bundles, jedoch müssen beim gewählten Bundle die zugehörigen Worker-/WASM-Dateien und relativen URLs mitgeführt werden. Die konkrete distributable Datei samt SHA-256 ist noch nicht in das Repository übernommen/verifiziert.
+
+### Konkrete DEV-Prototyp-Entscheidung (Arbeitsvorschlag)
+- Keine npm-/Bundler-Einführung.
+- Vendor der exakt gepinnten offiziellen Distribution unter \`vendor/zipjs/2.25.0/\` mit Lizenz, Upstream-/Release-URL und Prüfsummen.
+- Eine separate, nicht in der App-Navigation verlinkte Testseite im develop-Repository; ausschließlich synthetische Inhalte (kleine Textdatei und erzeugtes Testbild), keine Supabase-Anmeldung oder App-Daten.
+- Testseite prüft ZIP-Erstellung mit Passwort, Öffnen/Entschlüsseln mit derselben Bibliothek, falsches Passwort, beschädigtes Paket und Download einer Testdatei. Anschließend unabhängiger Test mit Desktop-Archivprogramm.
+- Erst nach erfolgreicher ZIP-/Crypto-Prüfung ein Worker-/OPFS-Prototyp für RAM-/Laufzeitmessung. Der normale App-Start darf nicht von Vendor-Assets abhängen.
+- Diese Testseite ist noch nicht angelegt; bisher nur Dokumentation und Recherche.
+
+Offizielle Quellen:
+- ZIP.js Features, AES, Browser-Kompatibilität und manuelle Distribution: https://gildas-lormeau.github.io/zip.js/
+- Version 2.25.0 Release: https://newreleases.io/project/npm/%40zip.js/zip.js/release/2.25.0
+- ZIP-AES AE-2 / Passwortoption: https://gildas-lormeau.github.io/zip.js/api/interfaces/ZipWriterConstructorOptions.html
+- OPFS-/Blob-Temp-Stream- und Safari-Speicherhinweise: https://github.com/gildas-lormeau/zip.js/blob/master/index.d.ts
