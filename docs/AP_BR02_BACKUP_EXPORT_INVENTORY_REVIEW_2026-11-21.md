@@ -400,3 +400,29 @@ Korrektur auf \`develop\`:
 Commit: \`bf2a770\` – \`fix: initialize admin client with service role JWT\`
 
 Dies ist eine Quellcodekorrektur auf develop. Keine Edge-Function-Bereitstellung, keine DB-Ausführung und keine PROD-Änderung.
+
+
+## 15. Supabase-DEV-Status verifiziert: create-backup ist bereits aktiv (21.11.2026)
+
+Bei der direkten Prüfung der Supabase-DEV-Edge-Functions wurde festgestellt:
+- Function-Slug: \`create-backup\`
+- Status: \`ACTIVE\`
+- aktive Version: \`1\`
+- \`verify_jwt=true\`
+- Der in Supabase gespeicherte Quellcode entspricht **nicht** dem aktuellen \`develop\`-Stand: Er enthält noch \`SUPABASE_SECRET_KEYS\`-JSON-Auswertung, keine 500er-Paginierung und den alten Parent-Filter für Recommendation-Players.
+
+Damit war die bisherige Dokumentationsaussage „nicht deployed“ für den tatsächlichen DEV-Stand nicht korrekt. Dieser Abschnitt berichtigt den Status. Es wurde in dieser Runde kein Deployment ausgeführt und keine aktive Version ersetzt.
+
+### Aufrufprüfung
+
+Die read-only Logabfrage nach \`/functions/v1/create-backup\` ergab in den verfügbaren Edge-Logs keine Treffer. Das belegt nur, dass im abgefragten Logbestand kein Aufruf sichtbar war; es ist kein umfassender Nachweis über die gesamte Laufzeit seit Aktivierung.
+
+### Sicherheits-/Freigabegrenze
+
+Die aktive Version ist ein früher Prototyp und nicht als akzeptierter Backup-Export freigegeben. Sie besitzt JWT-Gateway-Prüfung und führt zusätzlich die im Code enthaltene Rollenprüfung aus; gleichwohl sind die bekannten technischen Abweichungen zu korrigieren. Bis zur abgestimmten Aktualisierung:
+- keine UI-Anbindung,
+- keine Nutzungsfreigabe,
+- kein PROD-Deployment,
+- kein Restore.
+
+**Nächster kontrollierter Schritt:** Aktive DEV-Version und aktueller \`develop\`-Code gezielt vergleichen, deploybare Fassung technisch prüfen und erst danach – mit gesonderter Zustimmung – die DEV-Edge-Function aktualisieren. Diese Statuskorrektur ist Dokumentation; kein Code-/DB-Write und keine Function-Aktualisierung.
