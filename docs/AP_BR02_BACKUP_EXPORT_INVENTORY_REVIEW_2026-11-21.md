@@ -178,3 +178,35 @@ Quelle: Supabase DEV-Projekt `pzazqvvoruqnqhcorbwx`, read-only `information_sche
 - [ ] Storage-Objektinventur und Exportpaketentscheidung abschließen.
 - [ ] Serverseitige Exportautorisierung umsetzen und testen.
 - [ ] Backup-Freigabe; Restore bleibt bis dahin gesperrt.
+
+
+## 9. Fortsetzung aus dem vorherigen Arbeitschat – Statuskorrektur und nächster Umsetzungsschritt (21.11.2026)
+
+**Verbindlicher Hinweis des Nutzers:** Der regelmäßig dokumentierte Zwischenstand aus dem vorherigen AP-BR02-Chat ist maßgeblich. Die fachliche Feld-für-Feld-Abstimmung wurde dort bereits durchgeführt. Sie wird nicht erneut als offene Inventur oder Entscheidungsrunde gestartet. Die in Abschnitt 8 notierten Schemaabweichungen sind beim technischen Mapping gegen die verabschiedete Feldliste zu prüfen; sie eröffnen keine erneute fachliche Feldentscheidung.
+
+### Bereits beschlossene Leitplanken, hier nicht erneut zu entscheiden
+
+- Exportmodell B: maximal rollenberechtigter, ausdrücklich ausgewählter Kontext und Umfang.
+- Superadmin: Verein oder Mannschaft nur im ausdrücklich gewählten Kontext; Umfang explizit auswählen.
+- Vereinsadmin: eigener Verein, mit expliziter Umfangsauswahl.
+- Mannschaftsadmin: eigene Mannschaft, mit expliziter Umfangsauswahl.
+- Autorisierung und Scope müssen serverseitig vor dem Lesen/Exportieren der Daten erzwungen werden.
+- Restore-Regeln (nur als spätere Zielvorgabe): fehlende Backup-Datensätze mergen/wiederherstellen; vorhandene Datensätze, die im Backup fehlen, niemals löschen; Konfliktregel „newer“ anhand des Änderungszeitpunkts. Restore bleibt gesperrt, bis Backup abgeschlossen und abgenommen ist.
+- Private Bild-/Storage-Zugriffsregeln sind in IMG-SEC dokumentiert; sie ersetzen nicht die gesonderte Backup-Autorisierung.
+
+### Aktueller technischer Einstieg – verifiziert am develop-Stand
+
+Die Funktion `buildBackupSnapshot()` in `index.html` lädt die Teamdaten direkt über den Supabase-Client. `player_positions` wird zunächst teamübergreifend abgefragt und erst im Browser anhand der Spieler-IDs gefiltert. Das Manifest enthält zwar Rollen-/Kontextinformationen, aber diese werden nicht serverseitig als Exportberechtigung durchgesetzt.
+
+Der Export wird als unverschlüsseltes JSON im Browser heruntergeladen und in der UI ausdrücklich als „Prototyp; kein vollständiges Backup“ bezeichnet. Die Storage-Dateien werden nicht in das Paket aufgenommen; bei Spielern werden nur Datenbankfelder wie `photo_path`/`photo_data` transportiert. Der aktuelle Export ist daher noch kein freigabefähiges Backup.
+
+### Nächster Umsetzungsschritt – ohne Wiederholung der fachlichen Feldrunde
+
+1. Die bereits beschlossene Rollen-/Scope-Matrix in einen serverseitigen Exportvertrag übersetzen (zulässiger Kontext, explizit ausgewählte Kategorien, keine clientseitige Autorisierungsentscheidung).
+2. Export-Backend in DEV vorbereiten: Berechtigung prüfen, Scope auflösen, ausschließlich die freigegebenen Datensätze und Relationen serverseitig lesen.
+3. Storage-Dateien und Referenzen gemäß den bereits dokumentierten IMG-SEC-Pfad-/Bucket-Regeln kontrolliert einbeziehen; verwaiste Objekte nicht automatisch aufnehmen oder löschen.
+4. Manifest, Schema-/Formatversion, Integrität und verschlüsseltes Paket verbindlich umsetzen.
+5. Negativtests für fremden Verein/Team und nicht ausgewählte Kategorien sowie positive Tests für die erlaubten Rollen durchführen.
+6. Erst nach erfolgreicher DEV-Abnahme Backup als abgeschlossen markieren; Restore danach als separaten Umsetzungsschritt beginnen.
+
+**Arbeitsgrenze:** Diese Statuskorrektur und Planung ist Dokumentation auf `develop`. Keine Änderung an `index.html`, keine Supabase-Schreiboperation, keine Migration und keine PROD-Aktion wurde durch diesen Eintrag ausgelöst.
