@@ -126,3 +126,55 @@ Das E05-Zieldatenmodell unterscheidet fachlich aufzubewahrende Historie von tech
 - Nicht erledigt bleibt die **backup-spezifische** Autorisierung und explizite Umfangsauswahl sowie der vollständige Feld-/Relationsabgleich.
 - Nicht erledigt bleibt die Einbeziehung tatsächlicher Storage-Dateien bzw. ein nachvollziehbarer, sicherer Datei-Export.
 - Restore bleibt ausdrücklich nachgelagert.
+
+
+## 8. Read-only DEV-Schemaabgleich – tatsächlicher Tabellenkatalog (21.11.2026)
+
+Quelle: Supabase DEV-Projekt `pzazqvvoruqnqhcorbwx`, read-only `information_schema.columns` und FK-Metadaten. Keine Datenzeilen wurden gelesen oder verändert. Alle unten genannten Tabellen liegen im Schema `public`; die Abfrage lieferte für alle RLS aktiviert.
+
+### 8.1 Tabellen nach Backup-Relevanz
+
+**Fachliche Teamdaten – gehören in den zugehörigen Team-Backup-Katalog:**
+`teams`, `positions`, `players`, `player_positions`, `seasons`, `training_series`, `trainings`, `attendance`, `training_players`, `training_responses`, `training_trainers`, `matchdays`, `matchday_players`, `matchday_attendance`, `matchday_trainers`, `matchday_recommendation_runs`, `matchday_recommendation_players`, `training_behavior_events`, `training_suspensions`, `training_suspension_exceptions`, `matchday_early_suspension_resets`, `matchday_nomination_reminders`, `team_suspension_game_type_settings`, `team_suspension_game_types`, `team_season_closure_audit`.
+
+**Vereinsdaten/-konfiguration – nur bei explizitem Club-Scope und eigener Rollenfreigabe:**
+`clubs`, `club_suspension_settings`. Der Clubdatensatz enthält auch Vereins- und Trainingsstättenfelder sowie `crest_path`; diese Felder und das Vereinsasset dürfen nicht unbesehen in einen Teamexport gelangen.
+
+**Identitäts-, Mitgliedschafts- und Berechtigungsdaten – nicht als gewöhnliche Backup-Nutzdaten exportieren oder zurückspielen:**
+`profiles`, `club_members`, `club_member_roles`, `global_user_roles`, `team_members`, `team_member_roles`, `team_role_change_log`, `user_club_context`, `user_team_context`. Diese Tabellen können personenbezogene Daten, Rollen und aktive Kontextauswahl enthalten. Sie dürfen keine Möglichkeit schaffen, Rollen/Mitgliedschaften oder den ausgewählten Kontext durch Import zu vergeben. Falls ein späteres Admin-Backup einzelne dieser Informationen benötigt, muss es separat autorisiert, minimiert und als nicht automatisch restaurierbare Information definiert werden.
+
+**Technische Audit-Historie – standardmäßig ausgeschlossen aus Team-Backup:**
+`training_behavior_event_audit`, `training_suspension_audit`, `matchday_early_suspension_reset_audit`, `matchday_nomination_reminder_audit`. Die zugehörigen fachlichen Datensätze und deren Snapshot-Felder sind dagegen im Team-Backup-Katalog enthalten. `team_season_closure_audit` bleibt gemäß der bereits getroffenen fachlichen Entscheidung enthalten.
+
+### 8.2 Schemafelder, die der Export bislang nicht oder nicht vollständig auswählt
+
+- `trainings`: tatsächliches Schema enthält `season_id`, `created_at`, `updated_at`; der aktuelle Export-Select lässt diese drei Spalten aus.
+- `matchdays`: tatsächliches Schema enthält `season_id`, `created_at`, `updated_at`; der aktuelle Export-Select lässt diese drei Spalten aus.
+- `matchday_attendance`: tatsächliches Schema enthält `updated_at`; der aktuelle Export-Select exportiert nur `matchday_id,player_id,present`.
+- `training_responses`: tatsächliches Schema enthält `created_at`; der aktuelle Export-Select exportiert nur `training_id,player_id,status`.
+- `training_trainers` und `matchday_trainers`: beide enthalten `created_at`; die aktuellen Export-Selects lassen es aus.
+- `teams`: tatsächliches Schema enthält `updated_at`, `club_id`, `active`, `birth_cohorts`, `abbreviation`, `recommended_squad_size`; Export enthält diese Spalten bereits, jedoch ist für Club-Backup zusätzlich ein eigener, kontrollierter Clubdatensatz-/Teamscope erforderlich.
+- `players`: aktuelles Schema bestätigt `photo_data` und `photo_path` gleichzeitig. Der Export enthält beide. Die Backup-Regel muss künftig festlegen, ob `photo_data` nur als Legacy-/Übergangsfeld mitgenommen wird oder bei privater Storage-Nutzung ausgeschlossen bleibt.
+- `training_series`: Schema enthält `created_at` und `updated_at`; der Export enthält beide.
+- `seasons`: Schema enthält `created_at` und `updated_at`; der Export enthält beide.
+- `positions`: Schema enthält `created_at`; der Export-Select lässt es aus. Fachlich ist zu entscheiden, ob das Erstellungsdatum für Wiederherstellung/Conflict-Resolution benötigt wird oder bewusst nicht Teil des Datenpakets ist.
+
+### 8.3 Relations- und Sicherheitsbefunde aus dem tatsächlichen FK-Katalog
+
+- `player_positions` ist über `player_id → players.id` und `position_id → positions.id` verbunden. Export darf diese Relation nur aus den bereits autorisierten Spieler-/Positions-IDs ableiten; keine globale Clientabfrage mit anschließendem Filter.
+- Teilnahme-/Kader-/Rückmelde-Tabellen sind über Training bzw. Spieltag und Spieler verknüpft. Eine reine Parent-ID-Auswahl reicht nicht als serverseitiger Berechtigungsnachweis; jeder Parent muss zuvor im genehmigten Team-/Clubscope liegen.
+- `teams.club_id → clubs.id` bestätigt die Club-Team-Beziehung. Für Club-Backup muss die autorisierte Teamliste serverseitig aus dem ausgewählten Club ermittelt werden.
+- `team_suspension_game_types.team_id → team_suspension_game_type_settings.team_id`: die Settings-Kopfzeile repräsentiert das Override; die Kindzeilen sind nicht unabhängig ohne Kopfkontext zu exportieren.
+- FK-Beziehungen der Business-Historie verweisen auf Spieler, Events, Sperren oder Spieltage. Weil Snapshotfelder historische Identität erhalten sollen, muss der Export gelöschte/NULL referenzierte Parent-IDs erhalten und darf historische Datensätze nicht anhand aktueller Parent-Verfügbarkeit verlieren.
+- `club_members`, `team_members` und Rollen-Tabellen sind keine Bestandteil-Relationen, die beim Restore als Berechtigungsquelle übernommen werden dürfen.
+
+### 8.4 Status nach diesem Abgleich
+
+- [x] DEV-Public-Schema und Spaltenkatalog read-only ausgelesen.
+- [x] FK-Beziehungen read-only ausgelesen.
+- [x] Fachliche, Club-, Identitäts-/Berechtigungs- und technische Audit-Tabellen klassifiziert.
+- [ ] Abgleich jeder fachlichen Tabellen-/Spaltenliste mit den verabschiedeten Backup-Kategorien und Export-Selects abschließen.
+- [ ] Rollen-/Scope-Matrix für Team-, Club- und Superadmin-Export finalisieren.
+- [ ] Storage-Objektinventur und Exportpaketentscheidung abschließen.
+- [ ] Serverseitige Exportautorisierung umsetzen und testen.
+- [ ] Backup-Freigabe; Restore bleibt bis dahin gesperrt.
