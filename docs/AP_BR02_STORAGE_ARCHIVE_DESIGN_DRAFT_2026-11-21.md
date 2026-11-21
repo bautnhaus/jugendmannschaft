@@ -235,3 +235,21 @@ Offizielle Quellen:
 - Version 2.25.0 Release: https://newreleases.io/project/npm/%40zip.js/zip.js/release/2.25.0
 - ZIP-AES AE-2 / Passwortoption: https://gildas-lormeau.github.io/zip.js/api/interfaces/ZipWriterConstructorOptions.html
 - OPFS-/Blob-Temp-Stream- und Safari-Speicherhinweise: https://github.com/gildas-lormeau/zip.js/blob/master/index.d.ts
+
+
+## 12. ZIP.js vendored und isolierter Test bereitgestellt (21.11.2026)
+
+### DEV-Artefakt
+- Exakte Upstream-Tag-Version v2.25.0, Datei `dist/zip.min.js` lokal ins Repository übernommen: `vendor/zipjs/2.25.0/zip.min.js`.
+- Upstream BSD-3-Clause-Lizenz beigefügt: `vendor/zipjs/2.25.0/LICENSE`.
+- Provenienz dokumentiert: `vendor/zipjs/2.25.0/PROVENANCE.md`.
+- GitHub-Upstream-Git-Blob-SHA-1 des exakt übernommenen Bundle-Inhalts: `3eb3136ea6e6699188f89f8c431b10b6b435756f`. Das ist ausdrücklich SHA-1/Git-Objektidentität, **kein SHA-256**. Ein SHA-256 wurde in dieser Laufzeit nicht unabhängig berechnet; keine falsche Prüfsumme behaupten.
+- Laut offizieller `dist/README.md` ist `zip.min.js` ein Standalone-Bundle mit eingebettetem Worker und WASM. Daher sind für diesen Bundletyp keine separaten Worker-/WASM-Dateien erforderlich; externe Varianten hätten diese Begleitdateien gebraucht.
+
+### Isolierte Testseite
+- `docs/dev-tests/ap-br02-zipjs-test.html` angelegt. Nicht in die App-Navigation eingebunden.
+- Nur synthetische Testdateien, keine Supabase-Verbindung, kein Nutzer-/Spieler-/Profilinhalt.
+- Prüft Passwort-ZIP-AES-256, lokalen Entschlüsselungsrundlauf und Datei-Download. Die Seite zeigt Browserinformationen und Paketgröße für die manuelle iPhone-Prüfung.
+- Unabhängige Desktop-Archivprüfung, iPhone/Safari-RAM-/Laufzeittest und falsches Passwort/Manipulationsprüfung sind noch auszuführen; noch keine Testabnahme.
+
+Commit: `9189d10538386bfdf350a08c6e02add8d94a6023`. Der Commit liegt auf `develop`; der vorhandene DEV-Sync-Workflow wird dadurch ausgelöst. PROD/main wurde nicht geändert. Keine Datenbank-/Storage-Operation.
