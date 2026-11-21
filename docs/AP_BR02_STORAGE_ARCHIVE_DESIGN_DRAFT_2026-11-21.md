@@ -133,3 +133,53 @@ Ein konkreter Startgrenzwert (z. B. 50 MiB) ist vor Implementierung mit einem re
 - Welche maximale Exportgröße soll die erste iPhone-fähige Version zulassen? Empfehlung: zuerst messen und danach begrenzen, nicht vorab willkürlich festsetzen.
 
 Bis diese Punkte bestätigt und die Bibliotheken geprüft sind, keine Verschlüsselungsimplementierung und keine UI-Freigabe.
+
+
+## 9. Bibliotheksprüfung – ZIP/AES/iOS (21.11.2026)
+
+### 9.1 Ergebnis der Recherche
+
+- **zip.js (@zip.js/zip.js)** ist der derzeit passendste Kandidat für einen kontrollierten Prototyp: Browser-/Deno-Unterstützung, Web-Streams, ZIP64, AES-128/192/256 sowie AES-verschlüsselte ZIP-Einträge. Aktuelle Paketmetadaten zeigen Version 2.24.0; vor Integration muss die konkrete Version geprüft und im Projekt fest gepinnt werden.
+- zip.js dokumentiert AES-256 im ZIP-AE-2-Verfahren. Der Bibliothek wird die Passwortverschlüsselung übergeben; keine eigene AES-/PBKDF2-Kryptografie implementieren.
+- ZIP-AES ist nicht dasselbe wie ein eigenes AES-GCM-Containerformat. Für die erste Nutzerdatei ist das interoperable ZIP-AES-256 vorzuziehen, sofern Entschlüsselung in den üblichen Desktop-Archivprogrammen und iOS-Workflow praktisch getestet wird.
+- **fflate** ist ein guter schneller ZIP-/DEFLATE-Kandidat, unterstützt laut Paketvergleich aber keine ZIP-Verschlüsselung. Deshalb nicht allein für das finale verschlüsselte Backup einsetzen.
+- Web Crypto ist breit verfügbar und läuft nur in sicheren Kontexten (HTTPS); es bleibt für zufällige Werte und ggf. Hash-/Integritätsoperationen geeignet. Die ZIP-AES-Schlüsselableitung sollte jedoch ausschließlich von der etablierten ZIP-Bibliothek übernommen werden, um doppelte/inkompatible Verschlüsselungsschichten zu vermeiden.
+- zip.js basiert auf Web Streams/TransformStream. Die Projektseite nennt Safari-Unterstützung ab Safari 14.1 für die relevanten Web-Streams, weist aber auf mögliche Geräte-/Runtime-Abweichungen hin. Deshalb bleibt der reale iPhone-/Safari-Test ein Freigabekriterium.
+- Besonderer Speicherhinweis aus zip.js: der Blob-Temp-Stream-Helper hält unter Safari beim Erstellen eines Blobs mehrere Kopien (in der Dokumentation etwa vierfacher Spitzenbedarf) und soll dort nicht verwendet werden. Für Safari ist eine OPFS-/dateibasierte Temp-Stream-Strategie oder ein streng begrenzter Prototyp nötig; OPFS-Zugriff mit SyncAccessHandle benötigt einen Dedicated Worker. Diese Architektur muss praktisch getestet werden, bevor wir einen Größenwert festlegen.
+
+### 9.2 Vorläufige technische Empfehlung
+
+**Prototyp-Option A – ZIP-AES-256 (bevorzugt zur Validierung):**
+- gepinnte Version von \`@zip.js/zip.js\`;
+- AES-256 ZIP-AE-2; Passwort nur lokal im Browser, nicht an Supabase senden;
+- Daten und Asset-Bytes zunächst in einen kontrollierten Stream/Temp-Speicher führen;
+- keine zweite AES-GCM-Verschlüsselung des gesamten ZIP (vermeidet doppelte Kryptoschicht und erschwerte Dateikompatibilität);
+- Hashmanifest im ZIP-Inhalt, Hashwerte der finalen Assets vor dem Einpacken;
+- vor Ausgabe mit unabhängiger ZIP-Implementierung/Archiv-App entschlüsseln und prüfen.
+
+**Option B – eigener AES-GCM-Container:** nicht für erste Stufe empfohlen. Erfordert eigene Format-/Recovery-/Tooling-Unterstützung und erhöht Wartungsrisiko; nur wählen, falls ZIP-AES-Interoperabilität oder nachweisbare Sicherheitsanforderungen es erzwingen.
+
+### 9.3 Noch nicht als Nutzerentscheidung festgelegt
+
+Diese Recherche ist keine fachliche Freigabe. Vor Implementierung weiterhin zu bestätigen:
+1. ZIP-AES-256 als Backup-Format akzeptieren (gegenüber eigenem GCM-Container).
+2. Passwort bleibt ausschließlich beim Nutzer; Verlust macht Backup unlesbar.
+3. Maximalgröße und maximale Objektzahl erst nach iPhone-Test festlegen.
+
+### 9.4 Prototyp-Testkriterien
+
+- aktuelle und älteste unterstützte iOS-/Safari-Version prüfen;
+- Export in Worker, sofern Temp-/OPFS-Verfahren es erfordert;
+- Speicherbedarf und Laufzeit bei Testpaketen verschiedener Größen messen;
+- AES-256-ZIP in einer unabhängigen Desktop-Archiv-App und auf iPhone entschlüsseln;
+- falsches Passwort und manipuliertes Archiv müssen Fehler liefern, kein Teil-Backup als Erfolg;
+- keine Passwort-/Tokenwerte in Logs oder Netzwerkrequests;
+- Paketheader, Manifest und Formatversion so gestalten, dass spätere Bibliothekswechsel kontrolliert migrierbar sind.
+
+Quellen:
+- zip.js Paket-/Feature-Metadaten und AES-/Web-Streams-Funktionen: https://github.com/gildas-lormeau/zip.js
+- zip.js ZIP-AES-Optionen und AE-2: https://github.com/gildas-lormeau/zip.js/blob/master/docs/interfaces/ZipWriterConstructorOptions.md
+- zip.js Browser-/Web-Streams-/Safari-Temp-Stream-Hinweise: https://github.com/gildas-lormeau/zip.js
+- fflate ZIP-Funktionen und fehlende Verschlüsselung: https://www.npmjs.com/package/fflate
+- Web Crypto secure-context availability: https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API
+- OWASP Cryptographic Storage Guidance: https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html
