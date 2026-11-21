@@ -56,7 +56,11 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return reply(req, { error: "Nur POST ist zulässig." }, 405);
   try {
     const url = Deno.env.get("SUPABASE_URL") || "";
-    const anon = Deno.env.get("SUPABASE_ANON_KEY") || "";
+    let anon = Deno.env.get("SUPABASE_ANON_KEY") || "";
+    const publishableRaw = Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "";
+    if (!anon && publishableRaw) {
+      try { anon = JSON.parse(publishableRaw).default || ""; } catch { /* validated below */ }
+    }
     const secretRaw = Deno.env.get("SUPABASE_SECRET_KEYS") || "";
     if (!url || !anon || !secretRaw) return reply(req, { error: "Backup-Backend ist nicht konfiguriert." }, 500);
     const auth = req.headers.get("Authorization");
@@ -69,7 +73,8 @@ Deno.serve(async (req: Request) => {
     if (!body || !["team", "club"].includes(body.scope_type) || !UUID.test(String(body.scope_id || "")) || !Array.isArray(body.categories) || !body.categories.length || body.categories.some((c: unknown) => typeof c !== "string" || !CATEGORIES.has(c)) || new Set(body.categories).size !== body.categories.length) {
       return reply(req, { error: "Scope oder Kategorien ungültig. Bitte ausschließlich erlaubte Kategorien ausdrücklich auswählen." }, 400);
     }
-    const secretKeys = JSON.parse(secretRaw);
+    let secretKeys: Record<string, string>;
+    try { secretKeys = JSON.parse(secretRaw); } catch { return reply(req, { error: "Der Supabase Secret Key hat kein gültiges Format." }, 500); }
     const secret = secretKeys.default;
     if (!secret) return reply(req, { error: "Serverberechtigung fehlt." }, 500);
     const admin = createClient(url, secret, { auth: { persistSession: false, autoRefreshToken: false } });
