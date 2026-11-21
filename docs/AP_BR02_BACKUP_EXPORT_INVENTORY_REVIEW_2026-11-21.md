@@ -363,3 +363,26 @@ Die finale Korrektur der Response-Header/Zeilenumbrüche ist in Commit \`bfe3c20
 - Keine PROD-Funktion wurde deployed oder geändert.
 
 **Nächster Schritt:** Deployment-Version und Laufzeitprotokolle in Supabase DEV prüfen, danach gezielte Auth-/Scope-Negativtests und erst anschließend die UI-Anbindung vorbereiten. Das Ergebnis bleibt ein Snapshot-Prototyp, kein vollständiges verschlüsseltes Backup.
+
+
+## 13. DEV-Schemaabgleich und Korrektur der Snapshot-Abfragen (21.11.2026)
+
+Der Snapshot-Prototyp wurde gegen \`information_schema.columns\` im verbundenen Supabase-DEV-Projekt geprüft. Für sämtliche aktuell im Exportcode aufgeführten Tabellen und ausgewählten Spalten ergab die Missing-Column-Prüfung **keine Abweichung**.
+
+Beim erneuten Codeabgleich wurden zwei Implementierungsdetails korrigiert:
+
+1. **Paginierung:** Die scoped Tabellenabfragen werden jetzt in 500er-Seiten gelesen. Damit wird ein API-Standardlimit nicht als scheinbar vollständiger Backup-Inhalt übernommen.
+2. **Empfehlungshistorie:** \`matchday_recommendation_players\` wird anhand der IDs aus \`matchday_recommendation_runs\` gefiltert (nicht anhand der Matchday-IDs).
+
+Commit: \`67fbbc1\` – \`fix: paginate scoped snapshot and filter recommendation rows\`
+
+### Prüfergebnis / Grenze
+
+- [x] Export-Select-Felder gegen aktuelles DEV-Schema geprüft; keine fehlenden Tabellen/Spalten im geprüften Set.
+- [x] Empfehlungseinträge auf die korrekten Recommendation-Run-IDs begrenzt.
+- [x] Abfragen paginiert.
+- [ ] Deno-/Edge-Laufzeitprüfung und Auth-/Scope-Negativtests.
+- [ ] Storage-Dateien und verschlüsseltes, integritätsgeprüftes Archiv.
+- [ ] UI-Anbindung und nutzerseitige Umfangsauswahl.
+
+Der Schemaabgleich war read-only. Es wurden keine Daten oder DB-Strukturen geändert. Edge Function weiterhin nur Quellcode auf \`develop\`, nicht deployed; PROD und Restore bleiben unverändert.
