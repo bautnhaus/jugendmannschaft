@@ -339,3 +339,27 @@ Commits:
 - \`0ea609f\` – Key-Konfiguration und Cache-Schutz
 
 **Noch kein Deployment oder Funktionstest:** Der Schemaabgleich bestätigt die Select-Felder, nicht sämtliche Laufzeit- oder Berechtigungsfälle. Vor dem DEV-Deployment ist noch der statische Review der Scope-Verzweigungen und die Testmatrix abzuschließen. Keine SQL-Schreiboperation und keine PROD-Änderung.
+
+
+## 14. DEV-Deployment der Exportfunktion (21.11.2026)
+
+Die Edge Function wurde nach dem Schemaabgleich und den Codekorrekturen in das Supabase-Projekt **Jugendmannschaft DEV** deployed:
+
+- Funktion: \`create-backup\`
+- Deployment-ID: \`3ffa5a09-d385-456a-8f2b-cdc1a7c13e29\`
+- Version: 1
+- Status laut Supabase: ACTIVE
+- JWT-Verifikation am Gateway: aktiviert (\`verify_jwt=true\))
+- Projekt: \`pzazqvvoruqnqhcorbwx\`
+
+Die finale Korrektur der Response-Header/Zeilenumbrüche ist in Commit \`bfe3c20\` enthalten und war Bestandteil des Deployments.
+
+### Verifikation und Grenzen
+
+- Supabase bestätigte die erfolgreiche Bereitstellung und den aktiven Status.
+- Ein externer HTTP-Aufruf zur Negativprüfung (ohne JWT → erwartete 401) konnte aus der Arbeitsumgebung nicht ausgeführt werden, da die externe DNS-Auflösung nicht verfügbar war.
+- Es wurde kein authentifizierter Export mit echten Team-/Vereinsdaten ausgelöst.
+- Die UI ist noch nicht angebunden; bestehender JSON-Export bleibt unverändert.
+- Keine PROD-Funktion wurde deployed oder geändert.
+
+**Nächster Schritt:** Deployment-Version und Laufzeitprotokolle in Supabase DEV prüfen, danach gezielte Auth-/Scope-Negativtests und erst anschließend die UI-Anbindung vorbereiten. Das Ergebnis bleibt ein Snapshot-Prototyp, kein vollständiges verschlüsseltes Backup.
