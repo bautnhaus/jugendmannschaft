@@ -210,3 +210,66 @@ Der Export wird als unverschlüsseltes JSON im Browser heruntergeladen und in de
 6. Erst nach erfolgreicher DEV-Abnahme Backup als abgeschlossen markieren; Restore danach als separaten Umsetzungsschritt beginnen.
 
 **Arbeitsgrenze:** Diese Statuskorrektur und Planung ist Dokumentation auf `develop`. Keine Änderung an `index.html`, keine Supabase-Schreiboperation, keine Migration und keine PROD-Aktion wurde durch diesen Eintrag ausgelöst.
+
+
+## 10. Technischer Exportvertrag – Backend-Grenze und Request-Validierung (21.11.2026)
+
+Dieser Abschnitt konkretisiert den nächsten Entwicklungsschritt aus den bereits verbindlichen Rollen-/Scope-Entscheidungen. Er führt keine neue fachliche Entscheidung ein.
+
+### 10.1 Backend-Ansatz
+
+- Der vorhandene Edge-Function-Ordner und die Einladungsfunktion zeigen das Projektmuster: Edge Function, Benutzeridentität über Bearer-Token und auth.getUser(), getrennte Benutzer- und privilegierte Clients.
+- Dieses Muster ist nur technische Referenz. Die Einladungsfunktion ist keine Exportberechtigung und wird nicht wiederverwendet.
+- Geplante Funktion: dedizierte Backup-Edge-Function (Arbeitsname create-backup).
+- Der Benutzer-Client mit JWT dient zur Identitätsbestätigung und Berechtigungsprüfung. Ein privilegierter Client darf erst nach erfolgreicher Autorisierung und nur für den exakt freigegebenen Scope eingesetzt werden.
+- Keine privilegierte Datenabfrage vor der Berechtigungsentscheidung; keine Berechtigung allein aus Request-Body, UI, Manifest oder gespeicherten Client-Kontexten ableiten.
+
+### 10.2 Request-Vertrag (Implementierungsentwurf)
+
+Der Request enthält ausdrücklich:
+- scope_type: team oder club
+- scope_id: UUID des ausgewählten Teams bzw. Vereins
+- categories: nichtleere Liste ausdrücklich ausgewählter, unterstützter Backup-Kategorien
+
+Serverseitige Validierung:
+1. JWT authentifizieren; fehlender/ungültiger Benutzer führt zu 401.
+2. Scope, UUID und Kategorien validieren; ungültige Eingaben führen zu 400.
+3. Rolle und Zugehörigkeit für genau diesen Kontext prüfen; unberechtigt führt zu 403.
+4. Bei Club-Scope die zugehörigen Teams serverseitig bestimmen und ausschließlich diese IDs zulassen.
+5. Kategorien gegen feste Allowlist prüfen; unbekannte oder nicht freigegebene Kategorien ablehnen.
+6. Daten und Relationen anhand des autorisierten Scope laden; clientseitige Nachfilterung ist keine Sicherheitsgrenze.
+7. Manifest aus serverseitig bestätigten Werten erstellen; keine clientseitig behaupteten Rollen-/Kontextdaten übernehmen.
+
+### 10.3 Berechtigungsprüfung je Kontext
+
+- Mannschaftsadmin: bestehende Teamadmin-Prüfung für genau die angeforderte Mannschaft; keine andere Mannschaft.
+- Vereinsadmin: bestehende Vereins-Kontextberechtigung für genau den Verein; nur Teams mit passender club_id.
+- Superadmin: globale Superadmin-Rolle serverseitig bestätigen und den ausdrücklich angeforderten Vereins-/Mannschaftskontext validieren. Die neutrale Superadmin-Rolle erweitert nicht automatisch den Umfang.
+- Rollenpriorität oder Mehrfachmitgliedschaften dürfen nicht aus einer vom Client übermittelten Rollenliste abgeleitet werden.
+
+Vor Codefreigabe ist der konkrete bestehende Superadmin-Kontexthelfer (Team-/Vereinskontext) im DEV-Schema zu verifizieren. Falls er keinen sicheren expliziten Kontextnachweis liefert, braucht es einen eng begrenzten Export-Berechtigungsvertrag; keine improvisierte Clientprüfung.
+
+### 10.4 Daten- und Relationsgrenze
+
+- Die verabschiedete Fachfeldliste bleibt Quelle für Select-Felder. Schemaabweichungen sind technisches Mapping, keine erneute Fachentscheidung.
+- Teamdaten werden über die serverseitig ermittelte Team-ID begrenzt.
+- Clubdaten dürfen nur im Club-Scope und nach entsprechender Rollenfreigabe ausgegeben werden.
+- player_positions und abhängige Anwesenheits-, Rückmelde-, Trainer-, Kader- und Historienrelationen werden erst nach Ermittlung autorisierter Parent-IDs geladen.
+- Identitäts-, Rollen-, Mitgliedschafts- und technische Audit-Tabellen bleiben gemäß Abschnitt 8 ausgeschlossen.
+- Historische Snapshot-Datensätze werden nicht allein wegen fehlender aktueller Parent-Zeilen oder NULL-FKs verworfen.
+
+### 10.5 Ergebnis und Paketgrenze
+
+Die Edge Function soll zunächst einen validierten serverseitigen Snapshot und ein nachvollziehbares Manifest liefern. Verschlüsselte ZIP-/Dateipaketbildung und tatsächliche Storage-Dateiübernahme bleiben getrennte Umsetzungspunkte, bis Format, Verschlüsselung und Größenlimits umgesetzt und geprüft sind. Ein JSON-Snapshot allein darf nicht als vollständiges Backup bezeichnet oder freigegeben werden.
+
+### 10.6 Status
+
+- [x] Edge-Function-Muster und Berechtigungs-RPCs als technische Referenz read-only geprüft.
+- [x] Backend-Grenze, Request-Validierung und Scope-Filter dokumentiert.
+- [ ] Bestehende Superadmin-Kontextprüfung im DEV-Schema gegen diesen Vertrag abgleichen.
+- [ ] Export-Edge-Function implementieren (DEV-Code; vor Bereitstellung gesondert prüfen).
+- [ ] Feldmapping aus der bereits verabschiedeten Feldliste serverseitig übernehmen.
+- [ ] Storage-Dateien und sichere Paketbildung ergänzen.
+- [ ] Autorisierungs- und Scope-Negativtests in DEV durchführen.
+
+**Änderungsumfang:** Dokumentation auf develop. Kein Frontend-/Edge-Code, keine SQL-Migration, keine Datenbankausführung, kein Deployment und keine PROD-Änderung.
