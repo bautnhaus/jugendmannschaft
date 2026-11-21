@@ -108,7 +108,7 @@ Deno.serve(async (req: Request) => {
         else if (spec.select.includes("team_id")) query = query.in("team_id", authorizedTeamIds);
         else {
           // Child relations are resolved from already authorized parent IDs, never queried unscoped.
-          const parent = name.startsWith("training_") || name === "attendance" ? "trainings" : "matchdays";
+          const parent = name === "matchday_recommendation_players" ? "matchday_recommendation_runs" : (name.startsWith("training_") || name === "attendance" ? "trainings" : "matchdays");
           const parentIds = (snapshot[parent] || []).map((row: any) => row.id).filter(Boolean);
           if (name === "player_positions") {
             const playerIds = (snapshot.players || []).map((row: any) => row.id).filter(Boolean);
@@ -122,9 +122,17 @@ Deno.serve(async (req: Request) => {
             continue;
           }
         }
-        const { data, error } = await query;
-        if (error) return reply(req, { error: "Exportabfrage fehlgeschlagen: " + spec.table }, 500);
-        snapshot[name] = data || [];
+        // Page every scoped query so the API default row cap cannot silently truncate data.
+        const rows: any[] = [];
+        const pageSize = 500;
+        for (let offset = 0; ; offset += pageSize) {
+          const { data, error } = await query.range(offset, offset + pageSize - 1);
+          if (error) return reply(req, { error: "Exportabfrage fehlgeschlagen: " + spec.table }, 500);
+          const page = data || [];
+          rows.push(...page);
+          if (page.length < pageSize) break;
+        }
+        snapshot[name] = rows;
       }
     }
     return reply(req, {
