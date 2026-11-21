@@ -468,3 +468,23 @@ Deployment-Ergebnis:
 Der nachfolgende Live-Abruf bestätigte, dass die aktive Version nun die korrigierte Fassung enthält: \`Cache-Control: no-store\`, 500er-Paginierung, Recommendation-Run-ID-Filter und \`SUPABASE_SERVICE_ROLE_KEY\`-Adminclient.
 
 **Grenze:** Deployment bestätigt nur die Bereitstellung, nicht die erfolgreiche fachliche Ausführung oder Berechtigungs-Negativtests. Noch keine UI-Anbindung und keine Nutzerfreigabe. PROD nicht deployed; Restore weiterhin ausgesetzt.
+
+
+## 18. Rollen-RPCs und Scope-Prüfung read-only validiert (21.11.2026)
+
+Die aktuellen DEV-Definitionen von \`public.is_team_admin(uuid)\` und \`public.can_manage_club_context(uuid)\` wurden direkt aus \`pg_get_functiondef\` gelesen; keine SQL-Schreiboperation.
+
+Befund:
+- \`is_team_admin\`: Superadmin nur bei \`has_selected_team_context(team_id)\`; sonst nur tatsächliche Teamrolle \`admin\`.
+- \`can_manage_club_context\`: Superadmin nur bei explizitem \`user_club_context\` für den Verein; sonst nur tatsächliche Vereinsrolle \`club_admin\`.
+- Der Export ruft diese Funktionen mit dem angefragten Zielkontext über den authentifizierten User-Client auf und akzeptiert nur den exakten Rückgabewert \`true\`. Fehler führen zu fail-closed 500, fehlende Berechtigung zu 403.
+- Scope-IDs werden als UUID validiert; Kategorien sind Allowlist-basiert und doppelte/ungültige Kategorien werden vor dem Export abgelehnt.
+
+### Teststatus – präzise Abgrenzung
+
+- [x] Berechtigungs-RPC-Definitionen in DEV read-only geprüft.
+- [x] Statischer Codepfad: fehlender Bearer → 401; ungültiger Benutzer → 401; nicht berechtigter Kontext → 403; RPC-Fehler → kein Export.
+- [ ] Echte HTTP-Requests mit gültigen und ungültigen JWTs sowie Rollen-Testkonten ausführen. Dafür ist ein autorisierter Test-Login/Token nötig; kein Token wurde ausgelesen, erzeugt oder protokolliert.
+- [ ] Positiver Snapshot-Test mit ausdrücklich gewähltem Scope und anschließend Inhalts-/Vollständigkeitskontrolle.
+
+Die Edge Function bleibt Version 2 in DEV. Die aktuelle Runde war read-only hinsichtlich Datenbank und keine weitere Bereitstellung. PROD, UI und Restore bleiben unverändert.
