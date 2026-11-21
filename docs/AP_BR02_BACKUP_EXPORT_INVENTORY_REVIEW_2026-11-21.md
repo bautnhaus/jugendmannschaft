@@ -322,3 +322,20 @@ Commits:
 - Die Feldlisten sind aus dem dokumentierten Snapshot übernommen; ein automatischer schema-basierter Test auf fehlende/ungültige Spalten ist vor DEV-Ausführung erforderlich.
 
 **Nächster Schritt:** Quellcode statisch auf Reihenfolge und Relationstypen prüfen, dann DEV-Schema-Kompatibilität und Edge-Function-Deployment separat vorbereiten. Vor dem Deployment erfolgt eine ausdrückliche Freigabe; PROD bleibt unangetastet.
+
+
+## 13. Read-only DEV-Schemaabgleich und technische Korrektur (21.11.2026)
+
+Das aktuelle DEV-Projekt \`pzazqvvoruqnqhcorbwx\` wurde ausschließlich lesend über \`information_schema.columns\` geprüft. Für alle 25 im Exportprototyp definierten Tabellen wurden sämtliche expliziten Select-Spalten gegen das reale Schema abgeglichen: **keine fehlenden Tabellen-/Spaltennamen im geprüften Feldmapping**.
+
+Dabei wurde außerdem das relationale Mapping der Empfehlungsdetails geprüft: \`matchday_recommendation_players.recommendation_id\` referenziert die im Snapshot geladenen Recommendation-Run-IDs, nicht die Matchday-IDs. Die Codefassung begrenzt diese Tabelle entsprechend.
+
+Weitere technische Korrektur:
+- Publishable-Key-Fallback und JSON-Fehlerbehandlung für Secret Keys an das bestehende Edge-Function-Projektmuster angepasst.
+- Response mit \`Cache-Control: no-store\` versehen, da der Export personenbezogene Spieler- und Historieninformationen enthält.
+
+Commits:
+- \`7cc3104\` – DEV-Schema-/Relationskorrekturen
+- \`0ea609f\` – Key-Konfiguration und Cache-Schutz
+
+**Noch kein Deployment oder Funktionstest:** Der Schemaabgleich bestätigt die Select-Felder, nicht sämtliche Laufzeit- oder Berechtigungsfälle. Vor dem DEV-Deployment ist noch der statische Review der Scope-Verzweigungen und die Testmatrix abzuschließen. Keine SQL-Schreiboperation und keine PROD-Änderung.
