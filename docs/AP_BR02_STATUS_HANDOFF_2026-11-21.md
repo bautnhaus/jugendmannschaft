@@ -115,3 +115,12 @@ Die historische IMG-SEC-Inventur vom 19.11. meldete 0 Avatarreferenzen; das war 
 - Noch NICHT ausgeführt/abgenommen: Test auf tatsächlichem iPhone Safari/DEV-URL, Öffnen in unabhängiger Archiv-App, falsches Passwort/korruptes Archiv, Speicher-/Laufzeitmessung. Die Testseite ist ein Prüfartefakt, noch keine Backup-Funktion.
 - DEV deploy/sync ist durch develop-Commit ausgelöst; PROD/main unverändert. Keine DB-/Storage-Operation, kein Restore.
 - Nächster Schritt: DEV-Deploy prüfen und Nutzer auf iPhone die isolierte Testseite öffnen lassen; konkrete Ergebnisse in diesem Checkpoint ergänzen. Danach Fehler beheben und Größen-/RAM-Grenze anhand realer Messung festlegen.
+
+
+## Deployment-Verifikation – isolierter ZIP.js-Test (21.11.2026)
+
+- GitHub Actions Run `44950194219` (Deploy DEV) für Commit `f341124121ddd67ae48ceea7413677dcf161b853`: completed / success.
+- Im Zielrepository `bautnhaus/jugendmannschaft-dev`, Branch `main`, read-only verifiziert: Testseite vorhanden und Vendor-Datei vorhanden. Vendor Git blob SHA entspricht exakt Upstream v2.25.0 Distribution (`3eb3136ea6e6699188f89f8c431b10b6b435756f`).
+- Test URL: `https://dev.kadassist.de/docs/dev-tests/ap-br02-zipjs-test.html`.
+- Die Seite muss vom Nutzer auf einem echten iPhone in Safari aufgerufen werden. Beim Klick den Testpasswortwert nur lokal eingeben, ZIP-Rundlauf ausführen und Datei herunterladen; Testpasswort nicht an Chat/Server schicken. Anschließend ZIP mit einer unabhängigen Archiv-App öffnen und die falsches-Passwort-Prüfung manuell ergänzen.
+- Deployment bestätigt, aber **Browser-/iPhone-Test noch nicht bestätigt**. Bitte Testergebnis erst nach tatsächlicher Ausführung als bestanden markieren.
