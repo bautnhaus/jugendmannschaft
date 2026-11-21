@@ -62,8 +62,10 @@ Deno.serve(async (req: Request) => {
     if (!anon && publishableRaw) {
       try { anon = JSON.parse(publishableRaw).default || ""; } catch { /* validated below */ }
     }
-    const secretRaw = Deno.env.get("SUPABASE_SECRET_KEYS") || "";
-    if (!url || !anon || !secretRaw) return reply(req, { error: "Backup-Backend ist nicht konfiguriert." }, 500);
+    // Supabase-js v2 expects a JWT in Authorization; a newer sb_secret key is not a JWT.
+    // Use the legacy service-role JWT until admin access is migrated to @supabase/server.
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    if (!url || !anon || !serviceRoleKey) return reply(req, { error: "Backup-Backend ist nicht konfiguriert (Service-Role-Key fehlt)." }, 500);
     const auth = req.headers.get("Authorization");
     if (!auth?.startsWith("Bearer ")) return reply(req, { error: "Anmeldung erforderlich." }, 401);
     const user = createClient(url, anon, { global: { headers: { Authorization: auth } }, auth: { persistSession: false, autoRefreshToken: false } });
@@ -74,11 +76,7 @@ Deno.serve(async (req: Request) => {
     if (!body || !["team", "club"].includes(body.scope_type) || !UUID.test(String(body.scope_id || "")) || !Array.isArray(body.categories) || !body.categories.length || body.categories.some((c: unknown) => typeof c !== "string" || !CATEGORIES.has(c)) || new Set(body.categories).size !== body.categories.length) {
       return reply(req, { error: "Scope oder Kategorien ungültig. Bitte ausschließlich erlaubte Kategorien ausdrücklich auswählen." }, 400);
     }
-    let secretKeys: Record<string, string>;
-    try { secretKeys = JSON.parse(secretRaw); } catch { return reply(req, { error: "Der Supabase Secret Key hat kein gültiges Format." }, 500); }
-    const secret = secretKeys.default;
-    if (!secret) return reply(req, { error: "Serverberechtigung fehlt." }, 500);
-    const admin = createClient(url, secret, { auth: { persistSession: false, autoRefreshToken: false } });
+    const admin = createClient(url, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const scopeId = String(body.scope_id);
     const authorizedTeamIds: string[] = [];
     let clubId: string | null = null;
