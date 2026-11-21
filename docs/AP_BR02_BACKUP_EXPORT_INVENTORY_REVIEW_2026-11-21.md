@@ -92,3 +92,37 @@ Zusätzliche abhängige Datensätze werden anhand der Team-Trainings- und Spielt
 ## 6. Freigabegrenze
 
 Dieses Dokument ist ein read-only Code-Review und eine Umsetzungsvorbereitung. Es enthält keine Migration und keine SQL-Ausführung. Es ändert weder DEV noch PROD. Restore-Implementierung wird erst nach Abschluss und Abnahme der Backup-Funktion begonnen.
+
+
+## 7. Ergänzender Abgleich mit vorhandenen Sicherheits- und Fachentscheidungen (21.11.2026)
+
+Die erneute Dokumentenprüfung bestätigt folgende bereits verabschiedete Grundlagen. Sie werden nicht erneut als offene Entscheidungen geführt:
+
+### 7.1 Rollen- und Kontextgrenzen
+
+IMG-SEC-01/03 dokumentiert bereits die fachlichen Bildzugriffsgrenzen:
+- Spielerfotos: Mannschaftsmitglieder der zugehörigen Mannschaft; Superadmin nur im ausdrücklich ausgewählten Mannschaftskontext.
+- Profilbilder: eigener Nutzer; Trainer/Mannschaftsadmins im gemeinsamen Mannschaftskontext; Vereinsadmins im eigenen Verein; Superadmin nur im ausdrücklich ausgewählten Mannschafts- oder Vereinskontext.
+- Vereinsassets: Vereinsmitglieder und berechtigte Vereinsadmins; Superadmin nur im ausdrücklich ausgewählten Kontext.
+
+Diese Berechtigungen gelten für den laufenden Bildzugriff. **Sie sind keine fertige Backup-Autorisierung** und dürfen nicht ungeprüft als Export-Policy übernommen werden. Der Backup-Service muss zusätzlich festlegen, welche Datenkategorien die jeweilige Rolle ausdrücklich exportieren darf.
+
+### 7.2 Storage-Bestand und Status aus IMG-SEC-03
+
+Die dokumentierte Bestandsaufnahme vom 19.11.2026 nennt:
+- DEV: player-photos 2 Objekte; profile-avatars 4 Objekte (2 referenziert, 2 nicht referenziert); club-assets 1 referenziertes Objekt.
+- PROD: player-photos-Bucket damals noch nicht vorhanden; players.photo_path fehlte; photo_data war leer; profile-avatars ohne Objekte/Referenzen; ein Vereinsasset war vorhanden und passend referenziert.
+
+Diese Werte sind ein datierter Prüfstand und kein aktueller Live-Bestand. Vor Export-Freigabe muss der aktuelle DEV-Bestand erneut read-only geprüft werden. Nicht referenzierte Profilbildobjekte dürfen nicht stillschweigend aufgenommen oder gelöscht werden; Auswahl und Berechtigung sind zu klären.
+
+### 7.3 Historische Daten und Audit-Trennung
+
+Das E05-Zieldatenmodell unterscheidet fachlich aufzubewahrende Historie von technischen Audit-Tabellen. Die fachlichen Snapshot-Felder (z. B. damaliger Spieler-/Team-/Saisonname, Ereigniszeitpunkt, Status und Grund) sind bei den verabschiedeten Business-Datensätzen relevant. Die technischen append-only Audit-Tabellen wie `training_behavior_event_audit`, `training_suspension_audit` und `matchday_early_suspension_reset_audit` sind nicht automatisch Teil eines Mannschafts-Backups; ihre Einbeziehung würde ein separates, rollen- und datenschutzbezogenes Konzept erfordern.
+
+### 7.4 Korrigierte Statusbewertung
+
+- Die bisherigen AP-BR02-Exportfelder und Datenbereiche bleiben als bereits implementierter Exportstand dokumentiert.
+- Die obigen IMG-SEC-Rollenregeln und Storage-Prüfungen sind bereits dokumentierte Sicherheitsgrundlagen.
+- Nicht erledigt bleibt die **backup-spezifische** Autorisierung und explizite Umfangsauswahl sowie der vollständige Feld-/Relationsabgleich.
+- Nicht erledigt bleibt die Einbeziehung tatsächlicher Storage-Dateien bzw. ein nachvollziehbarer, sicherer Datei-Export.
+- Restore bleibt ausdrücklich nachgelagert.
