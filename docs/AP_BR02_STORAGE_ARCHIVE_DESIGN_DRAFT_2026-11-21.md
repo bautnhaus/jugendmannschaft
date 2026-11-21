@@ -98,3 +98,38 @@ Diese Entwurfsoptionen sind keine bereits bestätigte Nutzerentscheidung. Vor Um
 - IMG-SEC-01/02/03 enthält die bereits beschlossenen Storage-Berechtigungen und privaten Bucket-Grundlagen.
 
 Keine Datenbank-, Storage- oder Edge-Function-Änderung in diesem Entwurf. Restore bleibt ausgesetzt.
+
+
+## 8. Paketierungs- und Verschlüsselungsvorschlag (technische Empfehlung, 21.11.2026)
+
+Nach Abwägung von Edge-Function-Laufzeit/Memory und dem iPhone-Browser wird für die erste sichere Ausbaustufe folgender Ablauf empfohlen. Das ist eine technische Empfehlung, keine bereits vom Nutzer bestätigte fachliche Festlegung.
+
+### 8.1 Verantwortlichkeiten
+
+1. **Edge Function:** Authentifiziert den Nutzer, prüft Rolle und expliziten Scope, erstellt DB-Snapshot und eine serverseitig validierte Liste der exakt referenzierten Storage-Objekte. Sie liefert keine fremden Pfade und keinen privilegierten Schlüssel an den Client.
+2. **Dateiübertragung:** Dateien werden aus dem privaten Storage nur über eine serverseitig erzeugte, eng begrenzte Auswahl übertragen. Bevorzugt werden kurzlebige, objektspezifische Download-URLs oder ein kontrollierter Download-Endpunkt. URLs sind Bearer-Geheimnisse, dürfen nicht in Logs/Manifest persistiert werden und müssen kurz ablaufen.
+3. **Browser auf dem iPhone:** ZIP-Paketierung und Verschlüsselung erfolgen lokal für einen begrenzten Exportumfang. Der Schlüssel bleibt beim Nutzer; Server und Datenbank speichern das Backup-Passwort nicht.
+4. **Manifest:** enthält Format-/Schema-Version, Scope, Kategorieumfang, Erstellzeit, Tabellen-/Dateizahlen, Dateipfade innerhalb des Archivs, Größen und SHA-256-Hashes. Keine Signed URLs, JWTs oder Credentials.
+5. **Abschluss:** Der Export wird nur als erfolgreich angezeigt, wenn alle erwarteten Dateien geladen, geprüft, gepackt und verschlüsselt wurden. Teilpakete werden verworfen und nicht als Backup angeboten.
+
+### 8.2 Verschlüsselungs- und Schlüsselmodell (Empfehlung)
+
+- Für den ersten Prototyp: clientseitige Passwortverschlüsselung mit Web Crypto, PBKDF2-HMAC-SHA-256 zur Schlüsselableitung, zufälligem Salt und AES-256-GCM mit eindeutigem zufälligem IV pro Verschlüsselung.
+- Salt, IV, KDF-Parameter und Formatversion werden im unverschlüsselten Paketheader abgelegt; Snapshot, Dateien und Manifest bleiben innerhalb des verschlüsselten Payloads.
+- Passwort wird weder an die Edge Function gesendet noch serverseitig gespeichert oder protokolliert. Nutzer muss es außerhalb des Backups sicher aufbewahren; Verlust bedeutet keine Wiederherstellung.
+- Die Implementierung muss KDF-Parameter versionieren, Zufallswerte über Web Crypto erzeugen und eine lokale Entschlüsselungs-/Integritätsprüfung anbieten.
+- Keine selbstentwickelte Kryptografie; etablierte, auditierte ZIP-/Crypto-Bibliotheken mit gepinnten Versionen verwenden und vor Freigabe auf iOS Safari testen.
+
+### 8.3 Größen- und Mobilgrenze
+
+Clientseitiges ZIP und AES können mehrere Kopien im RAM halten. Deshalb muss die erste Stufe einen konfigurierten Gesamtgrößen- und Objektzahl-Grenzwert haben. Wird dieser überschritten, muss der Export vor dem Download klar abbrechen und den Umfang anzeigen; keine automatische unverschlüsselte Ausweichdatei.
+
+Ein konkreter Startgrenzwert (z. B. 50 MiB) ist vor Implementierung mit einem realistischen DEV-Datensatz auf iPhone/Safari zu messen und zu bestätigen. Der Wert ist noch nicht festgelegt.
+
+### 8.4 Offene Entscheidungen vor Code
+
+- Akzeptierst du das vorgeschlagene clientseitige Passwortmodell (Passwort wird nicht serverseitig gespeichert; Verlust = Backup nicht entschlüsselbar)?
+- Soll das erste Paket ein verschlüsseltes ZIP mit etabliertem AES-Format sein, oder ein eigenes versioniertes Containerformat mit AES-GCM? ZIP ist einfacher zu öffnen; GCM-Container bietet eine klarere Authentifizierung, braucht aber eine eigene lokale Tooling-/Recovery-Unterstützung.
+- Welche maximale Exportgröße soll die erste iPhone-fähige Version zulassen? Empfehlung: zuerst messen und danach begrenzen, nicht vorab willkürlich festsetzen.
+
+Bis diese Punkte bestätigt und die Bibliotheken geprüft sind, keine Verschlüsselungsimplementierung und keine UI-Freigabe.
