@@ -266,10 +266,27 @@ Die Edge Function soll zunächst einen validierten serverseitigen Snapshot und e
 
 - [x] Edge-Function-Muster und Berechtigungs-RPCs als technische Referenz read-only geprüft.
 - [x] Backend-Grenze, Request-Validierung und Scope-Filter dokumentiert.
-- [ ] Bestehende Superadmin-Kontextprüfung im DEV-Schema gegen diesen Vertrag abgleichen.
+- [x] Bestehende Superadmin-Kontextprüfung anhand dokumentierter AP02/AP03-DEV-Migrationen gegen diesen Vertrag abgeglichen.
 - [ ] Export-Edge-Function implementieren (DEV-Code; vor Bereitstellung gesondert prüfen).
 - [ ] Feldmapping aus der bereits verabschiedeten Feldliste serverseitig übernehmen.
 - [ ] Storage-Dateien und sichere Paketbildung ergänzen.
 - [ ] Autorisierungs- und Scope-Negativtests in DEV durchführen.
 
 **Änderungsumfang:** Dokumentation auf develop. Kein Frontend-/Edge-Code, keine SQL-Migration, keine Datenbankausführung, kein Deployment und keine PROD-Änderung.
+
+
+## 11. Superadmin-Kontextprüfung – dokumentierte DEV-Funktionen abgeglichen (21.11.2026)
+
+Read-only Abgleich der auf develop dokumentierten und in DEV angewendeten AP02/AP03-Migrationen:
+
+- public.can_manage_club_context(club_id) prüft bei Superadmins auf einen passenden Datensatz in user_club_context des angemeldeten Benutzers. Der Superadmin ist damit nicht pauschal Vereinsadmin; der ausgewählte Verein ist erforderlich.
+- public.is_team_admin(team_id) prüft bei Superadmins über public.has_selected_team_context(team_id). Für normale Nutzer wird die Teamrolle geprüft.
+- Die AP03-RLS-Härtung bindet Vereins- und Teamzugriffe an den gewählten Kontext.
+- Die Club-Picker-RPC get_super_admin_clubs() ist als gesonderter, authentifizierter Superadmin-Read dokumentiert; sie erteilt keinen pauschalen Zugriff auf sämtliche Vereinsdaten.
+- Die AP02-Migration unterscheidet ausdrücklich die rollenbezogene Verwaltungsprüfung vom Superadmin-Kontext und hält den Superadmin vereinsneutral.
+
+**Konsequenz für AP-BR02:** Die bestehenden Kontextfunktionen sind geeignete Autorisierungsbausteine für den Exportvertrag. Die Edge Function muss sie mit dem angemeldeten JWT für exakt die angeforderte Scope-ID aufrufen. Club-Scope muss die zugehörigen Team-IDs anschließend serverseitig aus dem autorisierten Verein ableiten. Team-Scope darf nur die geprüfte Team-ID verwenden. Die Funktionen ersetzen weder Kategorie-Allowlist noch Umfangsauswahl.
+
+**Prüfgrenze:** Dieser Abgleich erfolgte anhand der versionierten Migrationsdokumente auf develop; es wurde in dieser Runde keine Live-Datenbankabfrage ausgeführt. Vor einer Implementierung oder Migration ist der tatsächliche DEV-Funktionsstand erneut read-only mit den dokumentierten Definitionen abzugleichen.
+
+**Statusfortschritt:** Die offene Dokumentationsprüfung des Superadmin-Kontexthelpers ist abgeschlossen. Nächster technischer Arbeitspunkt ist die Edge-Function-Implementierung auf develop, anschließend gezielte DEV-Prüfung. Keine SQL-Ausführung, kein Deployment und keine PROD-Änderung.
