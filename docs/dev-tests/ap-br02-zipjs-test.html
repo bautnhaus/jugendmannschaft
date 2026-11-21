@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KADAssist – AP-BR02 ZIP-AES Test (DEV)</title>
+<style>
+body{font:16px system-ui,-apple-system,sans-serif;max-width:760px;margin:24px auto;padding:0 16px;color:#172033}
+h1{font-size:1.35rem}label{display:block;margin:14px 0 6px}input,button{font:inherit;padding:10px;width:100%;box-sizing:border-box}button{margin-top:14px;cursor:pointer}pre{white-space:pre-wrap;background:#f2f4f8;padding:12px;border-radius:8px}small{color:#566}
+</style>
+</head>
+<body>
+<h1>AP-BR02 · ZIP-AES-Prototyp (DEV)</h1>
+<p>Isolierter Bibliothekstest. Es werden ausschließlich synthetische Testdaten verwendet – keine Supabase-Verbindung, keine echten Spieler-/Profilbilder und keine Zugangsdaten.</p>
+<p><strong>Hinweis:</strong> Diese Seite prüft einen kleinen ZIP-AES-256-Rundlauf. Sie ist noch kein KADAssist-Backup und darf nicht für echte Daten genutzt werden.</p>
+<label for="pw">Testpasswort (wird nur lokal in dieser Seite verwendet)</label>
+<input id="pw" type="password" autocomplete="new-password" minlength="8" placeholder="Testpasswort eingeben">
+<button id="run">ZIP erstellen, lokal entschlüsseln und prüfen</button>
+<button id="download" disabled>Verschlüsseltes Test-ZIP herunterladen</button>
+<pre id="result">Bereit. Bibliothek wird geladen …</pre>
+<script src="../../vendor/zipjs/2.25.0/zip.min.js"></script>
+<script>
+(async()=>{
+ const out=document.getElementById("result"),run=document.getElementById("run"),dl=document.getElementById("download"),pw=document.getElementById("pw");
+ let packageBlob=null;
+ const log=(s)=>out.textContent=s;
+ if(!window.zip){log("FEHLER: zip.js wurde nicht geladen. Bitte DEV-Deployment und Vendor-Pfad prüfen.");run.disabled=true;return;}
+ log("zip.js geladen. API-Version 2.25.0 laut gepinnter Distribution.\nBereit für synthetischen Rundlauf.");
+ run.addEventListener("click",async()=>{
+  run.disabled=true;dl.disabled=true;packageBlob=null;
+  try{
+   const password=pw.value;
+   if(password.length<8)throw new Error("Für den Test bitte mindestens 8 Zeichen verwenden.");
+   zip.configure({useWebWorkers:true});
+   const expected="KADAssist AP-BR02 synthetic test · "+new Date().toISOString()+"\nNo user data.";
+   const writer=new zip.BlobWriter("application/zip");
+   const zw=new zip.ZipWriter(writer,{password,encryptionStrength:3});
+   await zw.add("synthetic-test.txt",new zip.TextReader(expected));
+   await zw.add("manifest-test.json",new zip.TextReader(JSON.stringify({testOnly:true,format:"zip-aes-256",library:"zip.js",version:"2.25.0"},null,2)));
+   await zw.close();
+   packageBlob=await writer.getData();
+   const reader=new zip.ZipReader(new zip.BlobReader(packageBlob));
+   const entries=await reader.getEntries();
+   if(entries.length!==2||entries.some(e=>!e.encrypted))throw new Error("Eintrag fehlt oder ist nicht verschlüsselt.");
+   const entry=entries.find(e=>e.filename==="synthetic-test.txt");
+   const decrypted=await entry.getData(new zip.TextWriter(),{password});
+   await reader.close();
+   if(decrypted!==expected)throw new Error("Klartext-Rundlauf stimmt nicht überein.");
+   dl.disabled=false;
+   log("ERFOLG: ZIP-AES-256 erstellt und mit demselben Passwort entschlüsselt.\nEinträge: "+entries.length+"\nPaketgröße: "+packageBlob.size+" Bytes\nBrowser: "+navigator.userAgent+"\nNächster manueller Test: ZIP in einer unabhängigen Archiv-App öffnen.");
+  }catch(e){log("TEST FEHLGESCHLAGEN\n"+(e&&e.stack||e));}
+  finally{run.disabled=false;}
+ });
+ dl.addEventListener("click",()=>{
+  if(!packageBlob)return;
+  const url=URL.createObjectURL(packageBlob),a=document.createElement("a");
+  a.href=url;a.download="kadassist-ap-br02-synthetic-aes-test.zip";a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),10000);
+ });
+})();
+</script>
+</body></html>
