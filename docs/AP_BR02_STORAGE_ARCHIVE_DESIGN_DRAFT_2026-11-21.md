@@ -183,3 +183,30 @@ Quellen:
 - fflate ZIP-Funktionen und fehlende Verschlüsselung: https://www.npmjs.com/package/fflate
 - Web Crypto secure-context availability: https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API
 - OWASP Cryptographic Storage Guidance: https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html
+
+
+## 10. Projektintegration – read-only Prüfung develop (21.11.2026)
+
+### Ist-Aufbau
+- Haupt-App ist eine einzelne statische \`index.html\` mit einem großen \`<script type="module">\`-Block.
+- Bereits vorhandener ESM-Import: Supabase JS über eine CDN-URL; kein lokales npm-Projekt.
+- Im Root gibt es keine \`package.json\`, \`package-lock.json\`, Vite-/Webpack-/Rollup-Konfiguration oder Build-Skript.
+- GitHub Pages wird aus Branch/Repository-Inhalt bereitgestellt. \`.github/workflows/deploy-dev.yml\` pusht bei Änderungen an \`develop\` automatisch den Branch in das separate DEV-Repository \`bautnhaus/jugendmannschaft-dev\`; keine Bundling-Stufe.
+- Service Worker cached derzeit nur \`./\`, \`./index.html\` und \`./manifest.json\`; eine neue lokale Vendor-Datei würde ohne Cache-Update nicht offline verfügbar sein. Der Backup-Prototyp darf den normalen App-Start dennoch nicht blockieren.
+
+### Konsequenz für zip.js
+Ein npm-Install mit Build-/Bundler-Einführung wäre ein größerer Architekturwechsel und ist für diesen Prototyp nicht erforderlich.
+
+Empfohlener Weg zur kontrollierten DEV-Probe:
+1. Eine exakt gepinnte zip.js-Version (aktuelle npm-Suche am 21.11.2026 meldet 2.25.0; Versionsstand unmittelbar vor Aufnahme erneut verifizieren) als lokal versionierte Vendor-Assets im Repo bereitstellen, nicht als unversioniertes CDN-\`@2\`.
+2. Lizenz-/NOTICE-Datei, Upstream-URL, Paketversion und SHA-256 der übernommenen Distributionsdateien dokumentieren.
+3. Erst nach Prüfung der offiziellen Distribution festlegen, ob einzelne minifizierte Datei oder zugehörige Worker-/WASM-Dateien benötigt werden. Worker-/WASM-Pfade müssen relativ zur ausgelieferten Datei korrekt funktionieren; keine Blob-Worker-Annahme ohne iOS-/CSP-Test.
+4. Backup-Code als separate lazy-load Funktion/Modul ausführen; keine statische Import-Abhängigkeit am App-Start. Wenn Vendor-Asset fehlt oder nicht lädt, reguläre App bleibt nutzbar und Export zeigt verständlichen Fehler.
+5. Der erste Test ist ein isolierter ZIP-AES-Passwort-/Entschlüsselungstest mit ausschließlich synthetischen Text-/Bilddaten. Keine Supabase-Daten, Tokens oder echten Nutzerfotos.
+6. Service Worker Cache-Liste nur dann erweitern, wenn die offline Nutzung des Backup-Prototyps ausdrücklich geprüft wird; Backup-Export soll zunächst online-only bleiben.
+
+### Versionshinweis
+Der vorherige Abschnitt 9 nannte 2.24.0 als aktuelle Paketversion. npm-Suchergebnis am 21.11.2026 meldet inzwischen 2.25.0. Das ist eine Rechercheaktualisierung, keine Abhängigkeit im Code: Noch wurde kein Paket in das Repo übernommen oder importiert.
+
+### Ergebnis / nächste konkrete Aktion
+Projektstruktur ist für einen **isolierten DEV-Test ohne Build-System** geeignet. Nächster Schritt: offizielle zip.js-Distribution und deren Worker-/WASM-Dateien/License prüfen, danach einen separaten Testscreen bzw. Test-HTML mit lokal gepinnten Assets erstellen. Erst nach erfolgreichem ZIP-AES-Interoperabilitäts- und iPhone-Test in die Backup-UI integrieren.
