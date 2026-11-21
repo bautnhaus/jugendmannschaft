@@ -34,6 +34,7 @@ const TEAM_TABLES: Record<string, { table: string; select: string; key?: string 
   matchday_attendance: { table: "matchday_attendance", select: "matchday_id,player_id,present", key: "matchday_id" },
   matchday_trainers: { table: "matchday_trainers", select: "matchday_id,user_id,present", key: "matchday_id" },
   matchday_recommendation_runs: { table: "matchday_recommendation_runs", select: "id,matchday_id,created_at,created_by", key: "matchday_id" },
+  matchday_recommendation_players: { table: "matchday_recommendation_players", select: "recommendation_id,player_id,rank", key: "recommendation_id" },
   training_behavior_events: { table: "training_behavior_events", select: "id,team_id,season_id,training_id,training_date_snapshot,training_name_snapshot,player_id,player_name_snapshot,event_type,reason,status,awarded_by,awarded_at,voided_by,voided_at,void_reason,created_at,updated_at" },
   training_suspensions: { table: "training_suspensions", select: "id,team_id,season_id,player_id,player_name_snapshot,source_event_id,suspension_type,status,intended_matchday_id,intended_matchday_date_snapshot,intended_matchday_opponent_snapshot,served_matchday_id,served_matchday_date_snapshot,served_matchday_opponent_snapshot,created_by,created_at,served_at,expired_at,voided_by,voided_at,void_reason,manual_target_locked" },
   training_suspension_exceptions: { table: "training_suspension_exceptions", select: "id,suspension_id,team_id,team_name_snapshot,player_id,player_name_snapshot,matchday_id,matchday_date_snapshot,matchday_opponent_snapshot,reason,granted_by,granted_by_snapshot,granted_at,revoked_by,revoked_by_snapshot,revoked_at,revoke_reason" },
@@ -46,7 +47,7 @@ const TEAM_TABLES: Record<string, { table: string; select: string; key?: string 
 const CATEGORY_TABLES: Record<string, string[]> = {
   team_core: ["positions", "players", "player_positions", "teams"],
   training: ["training_series", "trainings", "attendance", "training_players", "training_trainers", "training_responses"],
-  matchday: ["matchdays", "matchday_players", "matchday_attendance", "matchday_trainers", "matchday_recommendation_runs"],
+  matchday: ["matchdays", "matchday_players", "matchday_attendance", "matchday_trainers", "matchday_recommendation_runs", "matchday_recommendation_players"],
   season_history: ["seasons", "team_season_closure_audit"],
   discipline_history: ["training_behavior_events", "training_suspensions", "training_suspension_exceptions", "matchday_early_suspension_resets", "matchday_nomination_reminders", "team_suspension_game_type_settings", "team_suspension_game_types"],
 };
