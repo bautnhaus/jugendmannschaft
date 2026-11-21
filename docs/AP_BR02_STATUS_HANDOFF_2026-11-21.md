@@ -102,3 +102,16 @@ Die historische IMG-SEC-Inventur vom 19.11. meldete 0 Avatarreferenzen; das war 
 - Distribution benötigt Prüfung der zugehörigen Worker-/WASM-Dateien und relativen URL-Pfade; kein Bundle bisher ins Repo übernommen.
 - Design-Abschnitt 11 mit Prototypentscheidung ergänzt; Commit dd10dd62c9a160a480f40e9e9d144565e29e6101.
 - Nächster konkreter Arbeitsschritt: exakte zip.js Distribution und Lizenzdatei lokal vendorn, SHA-256 festhalten und separate Testseite mit synthetischen Daten anlegen. Noch nicht ausgeführt; keine Produktions-/App-Codeänderung.
+
+
+## Aktueller Chatcheckpoint – ZIP.js-Testartefakt angelegt
+
+- Upstream release/tag geprüft: zip.js v2.25.0; offizielle standalone `dist/zip.min.js` und BSD-3-Clause-Lizenz aus exakt diesem Tag übernommen.
+- Dateien auf develop: `vendor/zipjs/2.25.0/zip.min.js`, `LICENSE`, `PROVENANCE.md`.
+- Provenienz enthält Upstream-Git-Blob-SHA-1 `3eb3136ea6e6699188f89f8c431b10b6b435756f`; SHA-1 nicht mit SHA-256 verwechseln. SHA-256 wurde nicht berechnet.
+- Standalone zip.min.js enthält Worker und WASM laut Upstream dist README; separate Ressourcen nicht nötig für diese Variante.
+- Synthetische Testseite: `docs/dev-tests/ap-br02-zipjs-test.html`, nicht in App-Menü; keine Supabase-/Userdaten. Browser-Test erzeugt AES-256 ZIP, entschlüsselt den synthetischen Inhalt lokal und ermöglicht Download.
+- Code-/Asset-Commit: `9189d10538386bfdf350a08c6e02add8d94a6023`. Dokumentation folgt mit eigenem Commit.
+- Noch NICHT ausgeführt/abgenommen: Test auf tatsächlichem iPhone Safari/DEV-URL, Öffnen in unabhängiger Archiv-App, falsches Passwort/korruptes Archiv, Speicher-/Laufzeitmessung. Die Testseite ist ein Prüfartefakt, noch keine Backup-Funktion.
+- DEV deploy/sync ist durch develop-Commit ausgelöst; PROD/main unverändert. Keine DB-/Storage-Operation, kein Restore.
+- Nächster Schritt: DEV-Deploy prüfen und Nutzer auf iPhone die isolierte Testseite öffnen lassen; konkrete Ergebnisse in diesem Checkpoint ergänzen. Danach Fehler beheben und Größen-/RAM-Grenze anhand realer Messung festlegen.
