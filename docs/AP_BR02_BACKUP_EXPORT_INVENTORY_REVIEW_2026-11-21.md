@@ -452,3 +452,19 @@ Die aktive Version ist daher nicht nur älter, sondern erfüllt wichtige aktuell
 - [ ] Erst nach bestandenen Tests UI-Anbindung vorbereiten.
 
 Keine aktive Function-Version wurde in dieser Prüfung geändert; kein PROD-Deployment.
+
+
+## 17. Kontrolliertes DEV-Deployment durchgeführt (21.11.2026)
+
+Nach dem Versionsvergleich wurde die aktuelle Datei aus \`develop\` (\`index.ts\`, Commit/Blob SHA \`255fec7fa0c720573a38324e74f64463200e260c\`) als Supabase-Edge-Function \`create-backup\` in das DEV-Projekt übertragen.
+
+Deployment-Ergebnis:
+- Function-ID: \`3ffa5a09-d385-456a-8f2b-cdc1a7c13e29\`
+- Status: \`ACTIVE\`
+- Version: \`2\`
+- \`verify_jwt=true\`
+- Deployment-Hash: \`c1f13c513242dddfea4dd935f4fc313a56f4898de15ce36bc18806d0f51a385d\`
+
+Der nachfolgende Live-Abruf bestätigte, dass die aktive Version nun die korrigierte Fassung enthält: \`Cache-Control: no-store\`, 500er-Paginierung, Recommendation-Run-ID-Filter und \`SUPABASE_SERVICE_ROLE_KEY\`-Adminclient.
+
+**Grenze:** Deployment bestätigt nur die Bereitstellung, nicht die erfolgreiche fachliche Ausführung oder Berechtigungs-Negativtests. Noch keine UI-Anbindung und keine Nutzerfreigabe. PROD nicht deployed; Restore weiterhin ausgesetzt.
