@@ -426,3 +426,29 @@ Die aktive Version ist ein früher Prototyp und nicht als akzeptierter Backup-Ex
 - kein Restore.
 
 **Nächster kontrollierter Schritt:** Aktive DEV-Version und aktueller \`develop\`-Code gezielt vergleichen, deploybare Fassung technisch prüfen und erst danach – mit gesonderter Zustimmung – die DEV-Edge-Function aktualisieren. Diese Statuskorrektur ist Dokumentation; kein Code-/DB-Write und keine Function-Aktualisierung.
+
+
+## 16. Versionsvergleich: aktive DEV-Funktion gegen develop (21.11.2026)
+
+Der Versionsvergleich wurde erneut direkt durchgeführt.
+
+| Prüfpunkt | Aktive Supabase-DEV-Version 1 | develop-Quellcode |
+|---|---|---|
+| Status | ACTIVE | aktueller Git-Stand |
+| Cache-Control \`no-store\` | fehlt | vorhanden |
+| 500er-Paginierung | fehlt | vorhanden |
+| Recommendation-Players anhand Run-ID | fehlt | vorhanden |
+| Request-Authentifizierung | Gateway \`verify_jwt=true\`; zusätzlich \`auth.getUser()\` | gleiches Muster vorgesehen |
+| privilegierter Client | alte Secret-Key-Verarbeitung | \`SUPABASE_SERVICE_ROLE_KEY\`-JWT |
+
+Die aktive Version ist daher nicht nur älter, sondern erfüllt wichtige aktuelle Korrekturen des Quellcodes nicht. Das ist ein weiterer Grund, sie nicht mit der Backup-UI zu verbinden oder als freigegebenen Export zu verwenden.
+
+### Ergebnis und nächster kontrollierter Schritt
+
+- [x] Live-Version und develop-Version erneut verglichen.
+- [x] Unterschiede im Versionsstatus bestätigt.
+- [ ] DEV-Deployment der geprüften develop-Fassung – **wartet auf separate Freigabe**.
+- [ ] Nach Deployment kontrollierte negative Requests (ungültiger JWT, nicht erlaubter Scope, ungültige Kategorie) und berechtigter Test mit begrenztem Testumfang.
+- [ ] Erst nach bestandenen Tests UI-Anbindung vorbereiten.
+
+Keine aktive Function-Version wurde in dieser Prüfung geändert; kein PROD-Deployment.
