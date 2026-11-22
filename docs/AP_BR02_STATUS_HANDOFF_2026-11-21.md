@@ -135,10 +135,13 @@ Die historische IMG-SEC-Inventur vom 19.11. meldete 0 Avatarreferenzen; das war 
 - Kein weiterer Code-/DB-/Storage-/PROD-Eingriff durch diese Statusaktualisierung.
 
 
-## Nächste Teststufe – synthetische iPhone-Größenmessung (22.11.2026)
+## Ergebnis – synthetischer iPhone-Größen-/ZIP-Rundlauftest (22.11.2026)
 
-- DEV-Testseite `docs/dev-tests/ap-br02-zipjs-test.html` erweitert: stufenweise 1, 5, 10 und 20 MiB synthetische pseudozufällige Datei, ZIP-AES-256, lokale Entschlüsselung, Größen-/Stichprobenprüfung, gemessene Rundlaufzeit und Download.
-- Keine App-/Supabase-/DB-Verbindung, ausschließlich synthetische Daten. RAM wird von der Seite nicht direkt gemessen; Nutzerbeobachtung (Safari stabil/ruckeln/Reload) ist nötig.
-- Test nach jedem Größenlauf neu laden, zuerst 1 MiB; nur bei stabilem Verhalten auf nächste Stufe. Bei Browserproblemen abbrechen, nicht steigern. Keine maximale Backupgröße aus diesen Stufen vorwegnehmen.
-- Code-Commit: `7f3a077f92bdc7ac3d72af1bf55f725ad084fcce` (develop; DEV deploy wird automatisch angestoßen).
-- Ausstehend: Deployment prüfen; Nutzer führt die Messstufen auf iPhone aus und teilt je Größe Laufzeit, ZIP-Bytes und Safari-Verhalten mit. Daraus dokumentieren wir einen konservativen Export-Grenzwert.
+- Nutzer bestätigt: alle vier Stufen (1, 5, 10 und 20 MiB) liefen erfolgreich; Safari blieb stabil; Downloads funktionierten.
+- Damit ist der einfache Praxistest auf dem verwendeten iPhone bis einschließlich 20 MiB bestanden.
+- Es wurden keine Laufzeit-, ZIP-Größen- oder RAM-Messwerte festgehalten; diese werden nicht nachträglich geschätzt oder behauptet.
+- Aussagegrenze: Der Test ist ein erfolgreicher synthetischer Browser-Smoke-Test mit Blob-basierter Verarbeitung. Er misst weder den realen RAM-Verbrauch noch validiert er bereits eine streaming-/OPFS-basierte Produktionsarchitektur. Aus 20 MiB wird deshalb kein endgültiges Backupgrößenlimit abgeleitet.
+- Nächster technischer Schritt: Architekturprüfung/Prototyp für speicherschonenden Export (Safari/iOS, ZIP.js, OPFS/Worker) durchführen; Nutzer muss keine technischen Messwerte dokumentieren.
+- DEV-Testseite: `docs/dev-tests/ap-br02-zipjs-test.html`; letzter Testcode-Commit: `7f3a077f92bdc7ac3d72af1bf55f725ad084fcce`.
+- Keine DB-/Storage-/PROD-Änderung im Rahmen dieses Tests.
+
