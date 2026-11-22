@@ -213,3 +213,26 @@ Vor dem Export transparent und explizit festlegen, welcher zulässige Kontext un
 
 ### Nächster Schritt
 Nach fachlicher Freigabe dieses Schemas folgt Low-Fidelity als grober Bildschirm-/Interaktionsentwurf. Erst nach dessen Freigabe wird High-Fidelity im bestehenden KADAssist-Designsystem ausgearbeitet.
+
+
+## Low-Fidelity-Design – Backup-Erstellung (22.11.2026)
+
+Status: Wireframe-Entwurf; keine produktive UI, keine interaktiven Funktionen implementiert.
+
+### Bildschirmfolge / Inhalte
+- Überschrift „Backup erstellen“ mit kurzer Erklärung.
+- Schritt 1: Kontextauswahl (Verein/Mannschaft; rollenabhängig und nur zulässige Kontexte).
+- Schritt 2: fünf unabhängige, zunächst nicht vorausgewählte Kategorien: Mannschaft & Spieler (`team_core`), Training & Anwesenheit (`training`), Spieltage & Kader (`matchday`), Saisonhistorie (`season_history`), Sperren & Disziplinhistorie (`discipline_history`).
+- Schritt 3: eigener Abschnitt „Dateien und Bilder“ für referenzierte Spielerfotos, Profilbilder und zulässige Vereinsdateien. Er wird im Wireframe transparent als noch nicht technisch verfügbar gekennzeichnet; nicht als bereits exportierbare Kategorie aktivieren.
+- Schritt 4: Zusammenfassung mit Scope, gewählten Kategorien und Dateiumfang.
+- Primäre Aktion „Backup erstellen“ bleibt deaktiviert, bis ein Scope und mindestens eine Datenkategorie ausgewählt sind und die Funktion ein vollständiges Backup erzeugen kann.
+- Während des Exports: eindeutiger Fortschritts-/Statusbereich; Erfolg erst nach bereitgestelltem vollständigem Archiv. Bei Fehler: klare Fehlermeldung, kein „Backup erfolgreich“ und kein unvollständiges Archiv als fertig ausgeben.
+
+### UX-Leitlinien
+- iPhone-first, vertikaler Ablauf, klare Abschnittsüberschriften, Auswahlzeilen mit großer Touch-Fläche.
+- Keine implizite „alles ausgewählt“-Voreinstellung.
+- Restore nicht auf diesem Bildschirm.
+- Passwort-/Verschlüsselungsdialog ist ein separater späterer Schritt, sobald das Archivformat verbindlich freigegeben wurde.
+
+### Nächster Schritt
+High-Fidelity auf Basis des bestehenden KADAssist-Designsystems (neutrales Blau, vorhandene Typografie/Abstände/Material-Symbole) erst nach Freigabe dieses Wireframes. Keine Codeänderung oder Deployment.
