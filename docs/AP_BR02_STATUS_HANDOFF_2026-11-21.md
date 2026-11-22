@@ -434,3 +434,16 @@ Die Matrix `e2fc802` wurde als begrenzte Korrektur in der DEV-Edge-Function `cre
 
 ### Abnahmegrenze
 Deployment-/Runtime-Version bestätigt. Der vollständige fachliche Positiv-/Negativtest mit authentifizierten DEV-Datensätzen steht noch aus; dafür sind geeignete isolierte Cross-Team-Testfixtures erforderlich. Bis diese Abnahme erfolgt, bleibt die Function ausdrücklich Snapshot-Prototyp. Keine Asset-Funktion, keine vollständige Archivierung oder Passwortverschlüsselung in dieser Version.
+
+
+## Follow-up implementation – independent category ID checks (DEV, 22.11.2026)
+
+Scope-validation implementation received a follow-up fix for independent category selections:
+- When `player_positions` is selected without `positions`, allowed position IDs are loaded internally, team-scoped and paginated (not added to payload).
+- Season validation IDs are paginated when `seasons` is not selected.
+- A source formatting issue from the first patch (literal escaped newline sequences) was corrected before successful deployment; no malformed code is serving.
+
+Git commits: `c4d031a` (position IDs), `2edf1d5` (season pagination), `2befc94` (source syntax cleanup).
+DEV Edge Function `create-backup`: ACTIVE version 4, verify_jwt=true, deployment SHA-256 `8b8c5fdd37b58f5ace5e645844cc56dbba4c3550c6f80d3ca6d4d36698ba012a`.
+
+Status remains: backend scope guard deployment is in place, but no frontend test requested yet. Full functional validation with authorized DEV fixtures remains required before the next feature phase is treated as accepted.
