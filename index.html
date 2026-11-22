@@ -4084,7 +4084,9 @@ async function exportJSON(){
       a.href=url;a.download='KADAssist-Backup-'+todayISO()+'.kadbackup';document.body.appendChild(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),30000);
       progress.textContent='Backup erstellt und verschlüsselt. Passwort bitte sicher aufbewahren.';
+      $('apbr02Password').value='';$('apbr02PasswordConfirm').value='';
       showStatus('Verschlüsseltes Backup wurde erstellt.','ok');
+      closeModal();
     }catch(e){progress.textContent='Backup fehlgeschlagen: '+(e?.message||String(e));}
     finally{create.disabled=false;}
   });
