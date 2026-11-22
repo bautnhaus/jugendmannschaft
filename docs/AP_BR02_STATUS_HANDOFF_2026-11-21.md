@@ -334,3 +334,15 @@ Dieser Plan ist die nächste Arbeitsgrundlage; es wurde noch kein Code geändert
 - Keine Storage-Schreib-/Löschoperation.
 - Keine PROD/main-Änderung.
 - Deployment oder Aktivierung des neuen Exportbuttons erst nach expliziter Freigabe und DEV-Abnahme.
+
+
+## Asset-Quellenabgleich aus develop (read-only, 22.11.2026)
+
+Code-/Inventurabgleich identifizierte die derzeitigen privaten Asset-Bezüge:
+- Spielerfotos: Bucket `player-photos`, Referenz `players.photo_path`; Legacy-Feld `players.photo_data` kann zusätzlich data-URI/Base64 enthalten und muss separat als Datenfeld behandelt werden, nicht als Storage-Datei.
+- Profilavatars: Bucket `profile-avatars`, Referenz `profiles.avatar_url`; auch in Mitgliedsdarstellungen wird Profilreferenz verwendet. Backup muss den zugehörigen Profil-/Mitgliedschaftsdatensatz im gewählten Scope berechtigen und darf nicht pauschal alle Benutzerprofile exportieren.
+- Vereinswappen: Bucket `club-assets`, Referenz `clubs.crest_path`; nur für den explizit gewählten Verein bzw. die zugehörige Mannschaft mit berechtigtem Vereinsscope.
+- Buckets sind in der App als private Bildressourcen geführt. Gespeicherte Signed URLs gehören nicht ins Backup; stattdessen Originalobjektbytes und sichere, interne Restore-Metadaten.
+- Aktuelle Referenzen und Objektbestand sind vor Implementation read-only in DEV abzugleichen; historische Objektzahlen aus der Inventur sind nicht als aktueller Bestand zu verwenden.
+
+Asset-Implementierung darf nur anhand dieser DB-Referenzen und des serverseitig autorisierten Scope erfolgen. Der Request darf keine frei wählbaren Storage-Pfade legitimieren. Kein Objekt wird im Export geändert oder gelöscht. Fehlende Referenzdateien müssen als nachvollziehbarer Exportfehler erscheinen (kein stiller Teilbackup-Erfolg).
