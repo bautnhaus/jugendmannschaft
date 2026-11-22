@@ -616,3 +616,20 @@ Die STATUS_HANDOFF ist ein **fortlaufendes Arbeitsprotokoll**, nicht nur eine Ab
 - Wenn eine Sitzung unerwartet endet, muss die Dokumentation bereits den letzten bekannten Stand enthalten; eine separate nachträgliche Übergabedokumentation darf nicht vorausgesetzt werden.
 
 Diese Regel gilt für die gesamte weitere AP-BR02-Arbeit und nach Möglichkeit für alle laufenden KADAssist-Arbeitspakete. Die jeweils maßgebliche STATUS_HANDOFF auf `develop` ist die zentrale Quelle für die Fortsetzung in einem neuen Chat.
+
+
+## Umsetzung begonnen – Backup-Einstieg und Scope-Dialog (22.11.2026)
+
+Vor dem Codeeingriff aktuelle develop-Dateien erneut gelesen:
+- `index.html` Blob `3bdfbd73f00f035dbd93b36bd00982f7434770ad`
+- `supabase/functions/create-backup-package/index.ts` Blob `a9da8ed88082f9903cc43c59d3e7cf251575afee`
+
+### Gesicherter Ausgangsbefund
+- Backup-Dialog/Export sind bereits integriert und der Nutzer hat Export kleiner Auswahl sowie „Alles“ erfolgreich bestätigt.
+- Dialog verlangt derzeit `team` oder `currentClubId`, Optionen werden automatisch aus vorhandenem Kontext gebildet; Superadmin im Plattformstart kann den Dialog nicht öffnen.
+- Mehr-Menü blendet den Datenbereich aktuell für Vereinsadmin/Superadmin aus; Seitenrestriktion lässt `data` nur für Teamadmin zu.
+- `adminGuard()` ist Mannschaftsadmin-orientiert und blockiert Vereinsadmin/Superadmin außerhalb Mannschaftskontext. Backup-Zugang benötigt daher eine eigene rollen-/kontextgerechte UI-Freigabe, ohne den allgemeinen AdminGuard zu lockern.
+- Edge Function `create-backup-package` validiert ausschließlich `team`/`club`; serverseitiger Plattform-Scope fehlt. Plattform-Export darf erst nach expliziter Authentifizierung gegen `global_user_roles.role='super_admin'` und scoped Team-/Club-/Asset-Ermittlung ergänzt werden.
+
+### Umsetzungsgrenze
+Die Implementierung wird in kleinen, nachvollziehbaren Änderungen vorgenommen. Vor UI-Anbindung des Plattform-Scope muss der Edge-Function-Backendpfad mit vollständigem Plattform-Scope, Role-deny-Tests und Scope-Integrität ergänzt werden. Keine bloße Client-Option darf als Plattformautorisierung gelten. Keine SQL-/DB-/Storage-Schreiboperation und kein PROD.
