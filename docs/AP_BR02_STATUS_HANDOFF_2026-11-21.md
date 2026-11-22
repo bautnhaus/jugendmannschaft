@@ -658,3 +658,28 @@ Die Implementierung wird in kleinen, nachvollziehbaren Änderungen vorgenommen. 
 - Danach DEV-Testmatrix: Teamadmin nur eigenes Team; Vereinsadmin nur eigener Verein; Superadmin Plattform/Club/Team; Nicht-Superadmin Plattformscope muss 403 erhalten; ungültige/fehlende Scope-ID muss kontrolliert scheitern; Paketmanifest und Assets auf Vollständigkeit prüfen.
 - Die vorhandenen Crypto-/ZIP-/früheren Exporttests sind kein Ersatz für diese neue Rollen-/Scope-Abnahme und werden nur gezielt für Regression wiederholt.
 - Keine SQL-/DB-/Storage-Schreiboperation und kein PROD.
+
+
+## DEV Deployment und technische Grenzen – 22.11.2026
+
+### Deployment
+- Nach dem Frontend-/Edge-Function-Commit wurde `create-backup-package` aus `develop` nach Supabase DEV deployed.
+- Supabase meldet: ACTIVE, Version 3, `verify_jwt=true`, Deployment SHA-256 `9a1f628a64b97393e2d1beec6b45ebfa7b9c80e2f7620460223f2debb9c4dbf6`.
+- Kein PROD-Deployment, keine SQL-/DB-/Storage-Schreiboperation. Die Edge Function führt nur ihre vorgesehenen scoped Reads und referenzbasierten Storage-Downloads bei einem späteren Export aus.
+
+### Kritische Abnahmegrenzen – noch nicht als vollständig freigeben
+- Deploymentstatus ist bestätigt, aber authentifizierte Rollentests und tatsächlicher Paketinhalt wurden nach der Scope-Erweiterung noch nicht ausgeführt.
+- Die neue UI bietet Plattform/Verein/Mannschaft für Superadmin; konkrete Datenbank-/RLS-Verfügbarkeit der Auswahlfelder muss im DEV-Browser geprüft werden.
+- Plattformscope aggregiert derzeit die in den definierten AP-BR02-Kategorien enthaltenen Team-/Vereinsdaten über alle ermittelten Mannschaften und referenzierten Assets. Er ist **kein vollständiger System-/Administrationsbackup**: globale Rollen, Vereinsmitgliedschafts-/Teammitgliedschaftsverwaltung und weitere nicht in der Kategorie-/Tabellen-Allowlist enthaltene Plattformkonfiguration sind nicht automatisch Teil des Pakets. Der UI-Text „Gesamte Plattform“ ist daher vor fachlicher Freigabe zu präzisieren oder der Datenvertrag muss diese Daten ausdrücklich ergänzen.
+- Plattformabfragen haben Sicherheitsgrenzen (bis 5.000 Mannschaften/Vereine); Asset-Endpoint-Limits bleiben 250 Objekte, 8 MiB je Objekt und 25 MiB Gesamtbytes. Das sind implementierte Abbruchgrenzen, keine Zusicherung eines unbegrenzt vollständigen Plattformbackups.
+- `club_members`-Mitgliedschaften werden bei Plattformscope mit einer großen `IN`-Liste aller Club-IDs abgefragt; bei sehr vielen Vereinen kann dies API-/URL-Grenzen erreichen. Vor breiter Freigabe in paginierte/Batch-Abfrage umstellen oder mit repräsentativer Größe verifizieren.
+- Legacy Restore wurde in der UI blockiert; der destruktive Restore-Code bleibt im Quelltext vorhanden, ist über den UI-Handler aber nicht ausführbar. Keine Restore-Freigabe.
+
+### Nächste Schritte
+1. DEV-Frontend-Deploy/Sync für Commit `a5abd652` read-only verifizieren.
+2. iPhone-/DEV-UI prüfen: Vereinsadmin sieht Backup-Einstieg und ausschließlich eigenen Verein; Superadmin sieht Dialog direkt in Plattformverwaltung und kann die Scope-Auswahl bedienen.
+3. Authentifizierte End-to-End-Tests für Team/Club/Platform durchführen; Plattform-Negativtest mit Nicht-Superadmin (403) nur über sicheren autorisierten Testaccount, keine Tokens im Chat.
+4. Paket entpacken/Manifest offline prüfen, Kategorien/Assets und Vollständigkeitsangaben gegen gewählten Scope prüfen; kein Restore.
+5. Plattformscope fachlich vollständigkeitsklarstellen (nur AP-BR02-Kategorien oder zusätzlich Plattformrollen/Mitgliedschaften/Club-Stammdaten) und gegebenenfalls Vertrag/Code nach Freigabe ergänzen.
+6. Status nach jedem Test sofort in diese Handoff schreiben; keine Wiederholung bereits bestätigter ZIP-/Crypto-Grundtests.
+
