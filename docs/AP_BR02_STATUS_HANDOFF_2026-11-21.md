@@ -274,3 +274,15 @@ Umsetzung im Design:
 - Das genaue Format und die Bibliothek sind noch nicht als Implementierungsentscheidung freigegeben; zunächst aktualisierte Schema-/Low-/High-Fidelity-Artefakte, danach DEV-Plan.
 
 Quelle für KDF-Leitplanken: OWASP Password Storage Cheat Sheet (Argon2id 19 MiB / 2 / p=1 als Mindestprofil; PBKDF2-HMAC-SHA256 600.000 Iterationen bei FIPS-Anforderung) und Chrome Web Crypto Guidance zu AES-GCM mit frischer 12-byte IV und authentifiziertem Additional Data. Die Empfehlungen werden als Designhinweis, nicht als automatische Zertifizierung des Backupformats verstanden.
+
+
+## Designstand Backup-Auswahl v2 abgeschlossen (22.11.2026)
+
+Schema, Low-Fidelity und High-Fidelity wurden konsolidiert und aktualisiert:
+- Master-Auswahl „Alle“ inklusive Tri-State/indeterminate und synchroner Einzelauswahl.
+- Dateien & Bilder sind gleichwertige, direkt auswählbare Kategorie; ausschließlich referenzierte, scope-autorisierte Objekte, keine Orphans und keine Löschungen.
+- Passwort wird nach Zusammenfassung und direkt vor Exportstart eingegeben/bestätigt; ausschließlich lokal, nicht backendseitig gespeichert/geloggt; Passwortverlust ist nicht rücksetzbar.
+- Ablauf: Kontext → Umfang → Review → Passwort → Exportstatus → Download.
+- Verschlüsselungsformat weiterhin Designkandidat, nicht final freigegeben: versionierter Container, AEAD/AES-GCM, Argon2id bevorzugt, etablierte Bibliothek und Prüfungen erforderlich; ZIP.js nur Kompressionskandidat.
+
+Designrevision dokumentiert in `docs/AP_BR02_STORAGE_ARCHIVE_DESIGN_DRAFT_2026-11-21.md`, Commit `efacec7`. Noch keine App-/Edge-Function-Codeänderung und kein Deployment. Nächster Schritt: technische DEV-Umsetzungsplanung mit expliziter Reihenfolge (Assets serverseitig scoped, vollständiges Payload, lokale Verschlüsselung, Download und Fehler-/Sicherheitsprüfungen), anschließend Umsetzung nach Freigabeprozess.
