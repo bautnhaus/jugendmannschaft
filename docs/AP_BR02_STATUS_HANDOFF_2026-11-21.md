@@ -133,3 +133,12 @@ Die historische IMG-SEC-Inventur vom 19.11. meldete 0 Avatarreferenzen; das war 
 - Diese Bestätigung deckt den Grundtest ab. Sie belegt noch keine belastbare Speicher-/Laufzeitmessung für größere Archive, keine Maximalgröße und keinen produktiven Backup-Export.
 - Weiter offen: kontrollierter iPhone-/Safari-Speicher- und Laufzeittest mit stufenweise größeren synthetischen Testpaketen; falsches Passwort/defektes Archiv separat validieren, sofern dies nicht bereits Teil des vom Nutzer bestätigten Testablaufs war; danach die getestete Größen-/Objektgrenze festlegen.
 - Kein weiterer Code-/DB-/Storage-/PROD-Eingriff durch diese Statusaktualisierung.
+
+
+## Nächste Teststufe – synthetische iPhone-Größenmessung (22.11.2026)
+
+- DEV-Testseite `docs/dev-tests/ap-br02-zipjs-test.html` erweitert: stufenweise 1, 5, 10 und 20 MiB synthetische pseudozufällige Datei, ZIP-AES-256, lokale Entschlüsselung, Größen-/Stichprobenprüfung, gemessene Rundlaufzeit und Download.
+- Keine App-/Supabase-/DB-Verbindung, ausschließlich synthetische Daten. RAM wird von der Seite nicht direkt gemessen; Nutzerbeobachtung (Safari stabil/ruckeln/Reload) ist nötig.
+- Test nach jedem Größenlauf neu laden, zuerst 1 MiB; nur bei stabilem Verhalten auf nächste Stufe. Bei Browserproblemen abbrechen, nicht steigern. Keine maximale Backupgröße aus diesen Stufen vorwegnehmen.
+- Code-Commit: `7f3a077f92bdc7ac3d72af1bf55f725ad084fcce` (develop; DEV deploy wird automatisch angestoßen).
+- Ausstehend: Deployment prüfen; Nutzer führt die Messstufen auf iPhone aus und teilt je Größe Laufzeit, ZIP-Bytes und Safari-Verhalten mit. Daraus dokumentieren wir einen konservativen Export-Grenzwert.
