@@ -236,3 +236,24 @@ Status: Wireframe-Entwurf; keine produktive UI, keine interaktiven Funktionen im
 
 ### Nächster Schritt
 High-Fidelity auf Basis des bestehenden KADAssist-Designsystems (neutrales Blau, vorhandene Typografie/Abstände/Material-Symbole) erst nach Freigabe dieses Wireframes. Keine Codeänderung oder Deployment.
+
+
+## High-Fidelity-Design – Backup-Erstellung (22.11.2026)
+
+Status: visueller Konzeptstand; nicht implementiert und nicht deployed.
+
+### Designrichtung
+- Bestehendes KADAssist-Design fortführen: neutrales Blau, helle Kartenflächen, zurückhaltende Umrandungen, klare Typografie und konsistente Material-Symbolsprache.
+- Mobile-first, insbesondere iPhone; vertikale Karten-/Abschnittsstruktur mit gut erreichbaren Auswahlflächen.
+- Keine grüne, fußballspezifische oder maritime Gestaltung.
+
+### Ausgearbeitete Bildschirmbereiche
+1. Kopfbereich mit Zurücknavigation, Kontextpfad „Mehr / Daten“, Backup-Symbol, Titel und kurzer Erklärung.
+2. Bereichsauswahl als prominentes Dropdown-/Auswahlfeld.
+3. Datenumfang als fünf klar getrennte Auswahlzeilen mit Checkbox-Platz rechts und feinen Trennlinien; zunächst keine Vorauswahl.
+4. Dateien & Bilder als separater, sichtbar noch nicht verfügbarer Abschnitt („In Vorbereitung“), damit der Umfang nicht falsch dargestellt wird.
+5. Zusammenfassung mit Bereich, Anzahl/Bezeichnung gewählter Kategorien und Dateistatus.
+6. Primäre Aktion unten, im Konzept deaktiviert, solange Auswahl oder vollständiger Export nicht bereit ist.
+
+### Statusgrenze
+Dieses High-Fidelity-Konzept ist keine fertige Implementierung. Die vorhandene App bleibt unverändert. Vor Codearbeit sind Schema, Low-Fidelity und High-Fidelity fachlich als Gestaltungsvorgabe zu übernehmen; anschließend Umsetzung ausschließlich in DEV nach dem bestehenden Freigabeprozess.
