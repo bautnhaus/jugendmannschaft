@@ -491,3 +491,13 @@ Neue, getrennte Edge Function `create-backup-package` erstellt und in DEV deploy
 - Browserseitige Verschlüsselung des empfangenen ZIP-Payloads mit versioniertem, authentifiziertem Container; Passwort darf nie an Function übertragen werden.
 - Auswahl-/Review-/Passwort-/Progress-/Download-UI und Integration des neuen Endpoints.
 - Erst danach wird der neue Ablauf auf DEV zur iPhone-Prüfung freigegeben. Der Endpoint allein ist noch kein vollständiger Backup-Workflow.
+
+
+## Browser-Kryptomodul und synthetischer Envelope-Test (22.11.2026)
+
+- Neues Modul auf `src/backup/backup-crypto.js`, Commit `ed24ff7`: Passwortbasierte Dateiverschlüsselung ausschließlich im Browser.
+- Container `KADB` v1 mit PBKDF2-HMAC-SHA-256 (600.000 Iterationen, 16-Byte-Salt) und AES-256-GCM (12-Byte-IV, 128-Bit-Tag). Header ist als GCM-AAD authentifiziert; Version/KDF/Iterationsbereich werden beim Öffnen geprüft.
+- Passwortprüfung: mindestens 12 Zeichen, maximal 1.024 UTF-8-Bytes; kein Speichern/Übertragen des Passworts durch das Modul.
+- Synthetische Testseite `docs/dev-tests/ap-br02-crypto-envelope-test.html`, Commit `f9941ed`: 64-KiB Zufallsdaten, Roundtrip/Bytevergleich, Falschpasswort- und Manipulationserkennung, Zeitmessung und Testdatei-Download.
+- Noch nicht mit der Export-UI verbunden; keine realen Backup-Daten verarbeitet. Test muss auf DEV bereitgestellt und auf iPhone ausgeführt werden, bevor wir die Kryptostufe als praktisch bestätigt betrachten.
+- Bewusste Sicherheits-/Architekturgrenze: Passwort wird niemals an Edge Function gesendet. Das Modul verschlüsselt die ZIP-Antwort im Browser nach Erhalt; daher muss die spätere Frontintegration Größen-/Speicherverhalten berücksichtigen und darf vor erfolgreicher Verschlüsselung keine unverschlüsselte ZIP-Datei speichern.
