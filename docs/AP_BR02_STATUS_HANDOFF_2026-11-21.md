@@ -465,3 +465,29 @@ Read-only Abgleich der aktuellen `index.html` mit Edge Function `create-backup`:
 4. Erst danach Browserintegration, lokales Verschlüsselungsformat und finaler Exportablauf; Restore bleibt unberührt.
 
 Keine Codeänderung in `index.html`, kein Restore-/DB-/Storage-Schreibzugriff, kein PROD-Deployment in dieser Prüfung.
+
+
+## Scoped Backup-Package-Endpoint – DEV Umsetzung (22.11.2026)
+
+Neue, getrennte Edge Function `create-backup-package` erstellt und in DEV deployed. Der bisherige `create-backup`-Snapshot-Endpoint und der Legacy-Frontend-Button wurden nicht ersetzt oder verändert.
+
+### Funktionalität der neuen Stufe
+- Serverauthentifizierung und Rollen-/Scope-Prüfung aus dem bestehenden Endpoint übernommen; `verify_jwt=true`.
+- Unterstützt zusätzlich die Kategorie `files_images` als eigenständige Auswahl, auch ohne Datenkategorien.
+- Daten-Snapshot und Assetmanifest werden in ein versioniertes ZIP-Paket (`manifest.json` plus referenzierte Assets) gepackt.
+- Assets werden nur anhand DB-Referenzen aus autorisiertem Scope gesammelt: Spielerfoto Storagepfad, Legacy `players.photo_data` Data-URI, Profilavatar aus scoped Team-/Vereinsmitgliedschaften und Wappen des autorisierten Clubs.
+- Storage-URLs werden nur für bekannte Bucket-URL-Muster normalisiert; freie externe URLs, Traversal, falscher Bucket und Pfad außerhalb der erwarteten Team/Player-, User- oder Club-Präfixe werden abgelehnt.
+- Export ist read-only. Keine Storage-Mutation.
+- Limits: maximal 250 Asset-Einträge, 8 MiB pro Datei, 25 MiB Gesamtbytes. Fehlende referenzierte Datei oder Limitüberschreitung bricht den Export ab; keine stillen Teilerfolge.
+- ZIP-Archivierung mit fest gepinnter `fflate@0.8.2`; ZIP ist derzeit noch **nicht verschlüsselt**. Passwort und AEAD-Container werden im nächsten Client-Integrationsschritt umgesetzt.
+
+### Deployment / Abgrenzung
+- Source commits: `8879a41` (neuer Package-Endpoint), `5a0f777` (bereinigter Responsepfad).
+- Supabase DEV: `create-backup-package` ACTIVE, Version 2, `verify_jwt=true`, deployment SHA-256 `c1082c0f01f390daec3738c293f2a86f58b363301af510fa48216320758b13e1`.
+- Bestehende `create-backup` bleibt Version 4; Legacy-Frontend bleibt unverändert; kein Restore, keine SQL-Migration, kein PROD.
+
+### Noch offen vor Frontend-Prüfung
+- Authentifizierter DEV-End-to-End-Test für alle Rollen/Scopearten, Kategorie `files_images` solo, Cross-Scope-Negativfälle und tatsächliche Storage-Objekte.
+- Browserseitige Verschlüsselung des empfangenen ZIP-Payloads mit versioniertem, authentifiziertem Container; Passwort darf nie an Function übertragen werden.
+- Auswahl-/Review-/Passwort-/Progress-/Download-UI und Integration des neuen Endpoints.
+- Erst danach wird der neue Ablauf auf DEV zur iPhone-Prüfung freigegeben. Der Endpoint allein ist noch kein vollständiger Backup-Workflow.
