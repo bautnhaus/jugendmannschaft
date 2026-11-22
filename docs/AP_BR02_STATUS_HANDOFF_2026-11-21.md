@@ -385,3 +385,30 @@ Function-Version 2 / Status ACTIVE wurde nur ausgelesen; kein Deploy und keine �
 - Erst nach diesen Scope-Korrekturen Asset-Bytes integrieren; keine beliebigen Storage-Pfade vom Client akzeptieren.
 
 Status: Review-Befund, noch keine Codeänderung. Die Function ist ein serverautorisierter Snapshot-Prototyp, aber noch nicht vollständig scope-integritätsgeprüft und daher nicht als fertiger Backup-Export freizugeben.
+
+
+## Scope-Korrektur- und Abnahmematrix – create-backup (22.11.2026)
+
+Arbeitsmatrix für die nächste DEV-Codeänderung. Matrix ist aus dem read-only Review der aktiven Function Version 2 abgeleitet. Die Function selbst wurde nicht geändert oder deployed.
+
+| ID | Relation / Daten | Korrekturregel | Negativ-/Positivtest |
+|---|---|---|---|
+| SC-01 | attendance | training_id muss autorisiert sein UND player_id in ausgewählter players-ID-Menge liegen | gültiger Spieler/Training enthalten; fremder Spieler bei gültigem Training ausgeschlossen bzw. Integritätsfehler |
+| SC-02 | training_players | training_id autorisiert UND player_id scope-eigen | Cross-team player nicht exportieren |
+| SC-03 | training_responses | training_id autorisiert UND player_id scope-eigen | Fremdspieler-Response blockieren |
+| SC-04 | matchday_players | matchday_id autorisiert UND player_id scope-eigen | Fremdspieler im Spieltag blockieren |
+| SC-05 | matchday_attendance | matchday_id autorisiert UND player_id scope-eigen | Fremdspieler-Anwesenheit blockieren |
+| SC-06 | matchday_recommendation_players | recommendation_id muss zu autorisiertem Run gehören UND player_id scope-eigen | Fremdspieler-Ranking blockieren |
+| SC-07 | player_positions | player_id scope-eigen UND position_id in autorisierter positions-ID-Menge | fremde Position bei eigenem Spieler blockieren |
+| SC-08 | trainings.season_id / matchdays.season_id | null zulässig; andernfalls Season-ID muss in autorisierter season-ID-Menge liegen und Teamzugehörigkeit übereinstimmen | gültige Saison enthalten; Fremdsaisonbezug als Integritätsfehler behandeln |
+| SC-09 | training_trainers / matchday_trainers | Eltern-ID scope-eigen; nur bereits fachlich freigegebene Trainerteilnahmefelder; keine globale profile/member/role-Datenableitung | Export enthält nur zulässige trainer participation rows, keine Benutzerprofile/Rollen |
+| SC-10 | Vereinsscope | alle Team-, Player-, Position-, Season- und Parent-ID-Mengen stammen ausschließlich aus autorisierten Teams des Clubscopes | fremder Verein / manipulierte Team-ID liefert 403 oder keine Daten |
+| SC-11 | Asset-Referenzen | erst nach Scope-Korrektur: DB-referenzierte Pfade, Bucket-Allowlist, autorisierte IDs; keine vom Client gelieferten Pfade | gültiges Referenzobjekt enthalten; fremder Bucket/Pfad und orphan ausgeschlossen |
+| SC-12 | Vollständigkeit | paginierte Parent- und Child-Queries; Fehler nie in leere erfolgreiche Kategorie umwandeln | Query-/Storage-Fehler endet mit Fehlerantwort, nicht mit scheinbar vollständigem Backup |
+
+### Implementierungsnotizen
+- Query-/Helper-Ansatz: alle Team-scoped Elternmengen zuerst laden; IDs für players, positions, seasons, trainings, matchdays und recommendation runs separat aufbauen.
+- Child-Tabellen werden paginiert und anschließend serverseitig zusätzlich gegen die relevanten ID-Sets validiert; niemals eine fehlende Parent-ID-Menge durch ungefilterte Query ersetzen.
+- Für Beziehungen mit mehreren FKs nicht nur query-filter setzen, sondern Ergebnisse zusätzlich validieren. Inkonsistenz führt zu einem definierten Integritätsfehler (vorzugsweise Export abbrechen, damit kein still unvollständiges Backup entsteht).
+- Die Funktion behält Status/Prototyp-Markierung, bis Scope-Korrekturen, Asset-Bytes, vollständiges Archiv und Verschlüsselung fertig sowie DEV-abgenommen sind.
+- Tests sollen anhand isolierter DEV-Testdatensätze ausgeführt werden; bestehende produktive Nutzerdaten nicht manipulieren. Keine SQL-Schreiboperation ohne separaten Approval; wenn Testfixture benötigt, erst sichere read-only Prüfung und Nutzerfreigabe.
