@@ -153,7 +153,18 @@ Deno.serve(async (req: Request) => {
       }
       playerIds = internalPlayerIds;
     }
-    if (snapshot.player_positions && !snapshot.positions) {\n      const scopedPositionIds = new Set<string>();\n      for (let offset = 0; ; offset += 500) {\n        const { data, error } = await admin.from("positions").select("id").in("team_id", authorizedTeamIds).range(offset, offset + 499);\n        if (error) return reply(req, { error: "Positionsbezüge konnten nicht geprüft werden." }, 500);\n        const page = data || [];\n        page.forEach((row: any) => scopedPositionIds.add(String(row.id)));\n        if (page.length < 500) break;\n      }\n      positionIds = scopedPositionIds;\n    }\n    const assertRefs = (table: string, rows: any[], refs: Array<[string, Set<string>]>) => {
+    if (snapshot.player_positions && !snapshot.positions) {
+      const scopedPositionIds = new Set<string>();
+      for (let offset = 0; ; offset += 500) {
+        const { data, error } = await admin.from("positions").select("id").in("team_id", authorizedTeamIds).range(offset, offset + 499);
+        if (error) return reply(req, { error: "Positionsbezüge konnten nicht geprüft werden." }, 500);
+        const page = data || [];
+        page.forEach((row: any) => scopedPositionIds.add(String(row.id)));
+        if (page.length < 500) break;
+      }
+      positionIds = scopedPositionIds;
+    }
+    const assertRefs = (table: string, rows: any[], refs: Array<[string, Set<string>]>) => {
       for (const row of rows) {
         for (const [field, allowed] of refs) {
           const value = row[field];
@@ -175,7 +186,15 @@ Deno.serve(async (req: Request) => {
     if (snapshot.trainings || snapshot.matchdays) {
       let scopedSeasonIds = idsOf("seasons");
       if (!snapshot.seasons) {
-        const scopedSeasons = new Set<string>();\n        for (let offset = 0; ; offset += 500) {\n          const { data, error: seasonError } = await admin.from("seasons").select("id,team_id").in("team_id", authorizedTeamIds).range(offset, offset + 499);\n          if (seasonError) return reply(req, { error: "Saisonbezüge konnten nicht geprüft werden." }, 500);\n          const page = data || [];\n          page.forEach((row: any) => scopedSeasons.add(String(row.id)));\n          if (page.length < 500) break;\n        }\n        scopedSeasonIds = scopedSeasons;
+        const scopedSeasons = new Set<string>();
+        for (let offset = 0; ; offset += 500) {
+          const { data, error: seasonError } = await admin.from("seasons").select("id,team_id").in("team_id", authorizedTeamIds).range(offset, offset + 499);
+          if (seasonError) return reply(req, { error: "Saisonbezüge konnten nicht geprüft werden." }, 500);
+          const page = data || [];
+          page.forEach((row: any) => scopedSeasons.add(String(row.id)));
+          if (page.length < 500) break;
+        }
+        scopedSeasonIds = scopedSeasons;
       }
       if (snapshot.trainings) assertRefs("trainings", snapshot.trainings, [["season_id", scopedSeasonIds]]);
       if (snapshot.matchdays) assertRefs("matchdays", snapshot.matchdays, [["season_id", scopedSeasonIds]]);
