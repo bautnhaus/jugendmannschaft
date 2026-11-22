@@ -124,3 +124,12 @@ Die historische IMG-SEC-Inventur vom 19.11. meldete 0 Avatarreferenzen; das war 
 - Test URL: `https://dev.kadassist.de/docs/dev-tests/ap-br02-zipjs-test.html`.
 - Die Seite muss vom Nutzer auf einem echten iPhone in Safari aufgerufen werden. Beim Klick den Testpasswortwert nur lokal eingeben, ZIP-Rundlauf ausführen und Datei herunterladen; Testpasswort nicht an Chat/Server schicken. Anschließend ZIP mit einer unabhängigen Archiv-App öffnen und die falsches-Passwort-Prüfung manuell ergänzen.
 - Deployment bestätigt, aber **Browser-/iPhone-Test noch nicht bestätigt**. Bitte Testergebnis erst nach tatsächlicher Ausführung als bestanden markieren.
+
+
+## Nutzerbestätigung – ZIP-AES-Grundtest erfolgreich (22.11.2026)
+
+- Nutzer hat bestätigt: „Hat alles geklappt.“ Damit gilt der auf der DEV-Testseite ausgeführte ZIP-AES-Grundrundlauf samt Download als erfolgreich.
+- Status: ZIP.js 2.25.0 Distribution erfolgreich bereitgestellt; synthetischer ZIP-AES-Test auf DEV vom Nutzer erfolgreich bestätigt.
+- Diese Bestätigung deckt den Grundtest ab. Sie belegt noch keine belastbare Speicher-/Laufzeitmessung für größere Archive, keine Maximalgröße und keinen produktiven Backup-Export.
+- Weiter offen: kontrollierter iPhone-/Safari-Speicher- und Laufzeittest mit stufenweise größeren synthetischen Testpaketen; falsches Passwort/defektes Archiv separat validieren, sofern dies nicht bereits Teil des vom Nutzer bestätigten Testablaufs war; danach die getestete Größen-/Objektgrenze festlegen.
+- Kein weiterer Code-/DB-/Storage-/PROD-Eingriff durch diese Statusaktualisierung.
