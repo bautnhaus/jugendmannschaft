@@ -501,3 +501,18 @@ Neue, getrennte Edge Function `create-backup-package` erstellt und in DEV deploy
 - Synthetische Testseite `docs/dev-tests/ap-br02-crypto-envelope-test.html`, Commit `f9941ed`: 64-KiB Zufallsdaten, Roundtrip/Bytevergleich, Falschpasswort- und Manipulationserkennung, Zeitmessung und Testdatei-Download.
 - Noch nicht mit der Export-UI verbunden; keine realen Backup-Daten verarbeitet. Test muss auf DEV bereitgestellt und auf iPhone ausgeführt werden, bevor wir die Kryptostufe als praktisch bestätigt betrachten.
 - Bewusste Sicherheits-/Architekturgrenze: Passwort wird niemals an Edge Function gesendet. Das Modul verschlüsselt die ZIP-Antwort im Browser nach Erhalt; daher muss die spätere Frontintegration Größen-/Speicherverhalten berücksichtigen und darf vor erfolgreicher Verschlüsselung keine unverschlüsselte ZIP-Datei speichern.
+
+
+## iPhone Safari – KADB Crypto Envelope Test bestätigt (22.11.2026)
+
+User bestätigte den synthetischen DEV-Test vollständig bestanden:
+- Verschlüsselung: BESTANDEN
+- Entschlüsselung + Bytevergleich: BESTANDEN
+- Falsches Passwort wird abgewiesen: BESTANDEN
+- Manipulierte Datei wird abgewiesen: BESTANDEN
+- Format: KADB v1; PBKDF2-SHA-256, 600.000 Iterationen; AES-256-GCM, 128-Bit-Tag
+- Eingabe: 64 KiB synthetische Daten; verschlüsselte Ausgabe: 65.590 Bytes
+- Laufzeit auf iPhone Safari: encrypt 135 ms, decrypt 96 ms
+- Keine echten Daten und kein Passwort an Server übertragen.
+
+Damit ist das Kryptomodul für den nächsten Integrationsschritt praktisch auf dem getesteten Gerät bestätigt. Die Laufzeit gilt nur für 64 KiB; daraus wird keine Aussage über größere Archive oder maximale iPhone-Dateigrößen abgeleitet.
