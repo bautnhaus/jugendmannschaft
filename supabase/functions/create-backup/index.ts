@@ -175,9 +175,7 @@ Deno.serve(async (req: Request) => {
     if (snapshot.trainings || snapshot.matchdays) {
       let scopedSeasonIds = idsOf("seasons");
       if (!snapshot.seasons) {
-        const { data: scopedSeasons, error: seasonError } = await admin.from("seasons").select("id,team_id").in("team_id", authorizedTeamIds);
-        if (seasonError) return reply(req, { error: "Saisonbezüge konnten nicht geprüft werden." }, 500);
-        scopedSeasonIds = new Set((scopedSeasons || []).map((row: any) => String(row.id)));
+        const scopedSeasons = new Set<string>();\n        for (let offset = 0; ; offset += 500) {\n          const { data, error: seasonError } = await admin.from("seasons").select("id,team_id").in("team_id", authorizedTeamIds).range(offset, offset + 499);\n          if (seasonError) return reply(req, { error: "Saisonbezüge konnten nicht geprüft werden." }, 500);\n          const page = data || [];\n          page.forEach((row: any) => scopedSeasons.add(String(row.id)));\n          if (page.length < 500) break;\n        }\n        scopedSeasonIds = scopedSeasons;
       }
       if (snapshot.trainings) assertRefs("trainings", snapshot.trainings, [["season_id", scopedSeasonIds]]);
       if (snapshot.matchdays) assertRefs("matchdays", snapshot.matchdays, [["season_id", scopedSeasonIds]]);
