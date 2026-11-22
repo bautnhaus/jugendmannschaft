@@ -364,3 +364,24 @@ Supabase DEV-Schema wurde über Metadaten (Tabellen, Spalten, FK-Beziehungen) ge
 Die Grundstruktur der Scope-Kette ist im Schema vorhanden. Die sichere Umsetzung muss jedoch eine explizite Tabellen-/Kategorie-Allowlist mit jeweiliger Scope-Ableitung verwenden und die Mehrfach-FK-Konsistenz prüfen. Nicht jede historische oder auditartige Tabelle darf automatisch aufgrund eines einzelnen FK eingeschlossen werden; sie bleibt gemäß bereits abgeschlossenem fachlichem Inventar zugeordnet.
 
 Diese Prüfung bestätigt noch nicht, dass die aktuelle Edge Function alle Regeln implementiert. Sie ist ein Datenmodellbefund und eine Vorgabe für den nächsten Code-Review. Keine Function-/DB-/Storage-Änderung, kein Deployment.
+
+
+## Read-only Review der aktiven DEV-Edge-Function create-backup (22.11.2026)
+
+Function-Version 2 / Status ACTIVE wurde nur ausgelesen; kein Deploy und keine Änderung. Review bestätigt: Authentifizierung via `auth.getUser()`, Scope-Prüfung über `is_team_admin` bzw. `can_manage_club_context`, serverseitige Ermittlung der Team-IDs für Clubscope, Kategorie-Allowlist, paginierte Abfragen (500), keine Storage-Bytes und ausdrücklicher Prototypstatus in der Antwort.
+
+### Konkrete Scope-Lücken vor Asset-Erweiterung
+1. **Child-Datensätze prüfen nicht beide Beziehungen**: z. B. `attendance`, `training_players`, `training_responses`, `matchday_players`, `matchday_attendance` und Empfehlungseinträge werden aktuell überwiegend nur über Training/Matchday/Run-ID begrenzt. Ihre `player_id` wird nicht zusätzlich gegen die autorisierten Spieler-IDs geprüft. Schema-FKs erzwingen keine gemeinsame Teamzugehörigkeit der beiden verknüpften Datensätze.
+2. **player_positions** wird über `player_id` aus dem Snapshot gefiltert, aber `position_id` wird nicht gegen die autorisierten Team-Positions-IDs verifiziert. Eine inkonsistente Kreuz-Team-Zuordnung könnte daher in den Snapshot gelangen.
+3. **season_id-Konsistenz**: Trainings und Spieltage werden primär über `team_id` abgefragt; optionale `season_id` wird im Function-Code nicht gegen die zugehörige Team-Saison geprüft.
+4. **Trainer-/Benutzerbezüge**: `training_trainers` und `matchday_trainers` enthalten `user_id`. Der Export darf daraus nicht unbeabsichtigt Profil-/Mitgliedschafts-/Rolleninformationen ableiten oder globale Profile aufnehmen; Umfang muss gemäß bestehender fachlicher Klassifikation begrenzt sein.
+5. **Assetpfade**: kein Storage-Manifest oder Bucket-/Pfad-Allowlist vorhanden. Die zuvor dokumentierten DB-Referenzen dürfen erst nach serverseitiger Prüfung pro Objekt abgerufen werden.
+
+### Vor Asset-Implementierung erforderliche Korrektur
+- Snapshot zuerst auf alle zulässigen Parent-IDs aufbauen, danach Child-Tabellen filtern und zusätzliche Fremdbeziehungen gegen autorisierte ID-Sets validieren.
+- Bei inkonsistenten Cross-Team-Referenzen Export mit kontrolliertem Datenintegritätsfehler abbrechen oder nach verbindlicher Regel ausschließen und transparent melden; nicht stillschweigend vollständigen Erfolg behaupten.
+- `player_positions`: sowohl player_id als auch position_id innerhalb des ausgewählten Teams prüfen.
+- Trainings/Matchdays: season_id null zulassen, andernfalls Season-Team-Zuordnung prüfen.
+- Erst nach diesen Scope-Korrekturen Asset-Bytes integrieren; keine beliebigen Storage-Pfade vom Client akzeptieren.
+
+Status: Review-Befund, noch keine Codeänderung. Die Function ist ein serverautorisierter Snapshot-Prototyp, aber noch nicht vollständig scope-integritätsgeprüft und daher nicht als fertiger Backup-Export freizugeben.
