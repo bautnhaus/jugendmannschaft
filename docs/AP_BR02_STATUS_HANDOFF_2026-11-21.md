@@ -516,3 +516,14 @@ User bestätigte den synthetischen DEV-Test vollständig bestanden:
 - Keine echten Daten und kein Passwort an Server übertragen.
 
 Damit ist das Kryptomodul für den nächsten Integrationsschritt praktisch auf dem getesteten Gerät bestätigt. Die Laufzeit gilt nur für 64 KiB; daraus wird keine Aussage über größere Archive oder maximale iPhone-Dateigrößen abgeleitet.
+
+
+## Frontend-Integration DEV – Export UI verbunden (22.11.2026)
+
+- `index.html` Commit `94113c1`: Legacy-Exportbutton öffnet nun den neuen Backup-Dialog. Der destruktive Restorepfad und die Importfunktion wurden nicht geändert.
+- Dialog enthält ausdrücklich wählbaren Scope (aktuelle Mannschaft oder aktueller Verein, soweit vorhanden), sechs Kategorien, Checkbox **Alle Datenbereiche und Dateien/Bilder**, Passwort + Bestätigung, Status-/Fortschrittsanzeige.
+- Authentifizierter POST an `create-backup-package` mit aktuellem Session-Access-Token. Passwort bleibt im Browser und wird nicht Teil des Requests.
+- Server-ZIP wird im Browser als Blob empfangen und über `encryptBackupBlob` als KADB v1 verschlüsselt. Nur `.kadbackup` wird als Download erzeugt; unverschlüsselte ZIP wird nicht separat heruntergeladen.
+- DEV Deploy run `45053559264` completed success. Mirror `bautnhaus/jugendmannschaft-dev` main bestätigt: integrierte UI, Crypto-Modul und import vorhanden.
+- Noch keine echte, authentifizierte End-to-End-Ausführung im Team-/Vereinskontext durchgeführt. Funktion ist noch nicht als fachlich abgenommen zu betrachten. Nächster iPhone-Test: in DEV unter Backup-Dialog zunächst eine kleine Kategorie auswählen, ein neues Testpasswort (mind. 12 Zeichen) setzen, Export erstellen; prüfen, dass Download `.kadbackup` erfolgt und keine Fehlermeldung erscheint. Datei nicht in Restore einspielen. Danach erst Scope/Kategorien „Alle“ testen, sofern Safari stabil bleibt.
+- Browser muss ZIP-Inhalt vor der Verschlüsselung vorübergehend im Arbeitsspeicher halten. Kein Passwort-/Klartextdownload, aber Geräte-Speicherbelastung für größere reale Archive bleibt zu beobachten; derzeit ist keine Maximalgröße für den kompletten Snapshot zugesichert.
