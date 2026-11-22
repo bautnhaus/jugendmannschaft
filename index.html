@@ -2032,7 +2032,7 @@ html[data-theme="dark"] .playerListRow.matchdaySquadTile .matchdayStatusChip.nom
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-import { encryptBackupBlob, validateBackupPassword } from './src/backup/backup-crypto.js';
+
 
 const CONFIG_KEY='jugendmannschaft_supabase_config_v1';
 const DEFAULT_POSITIONS=['Torwart','Abwehr','Mittelfeld','Sturm','Trainer'];
@@ -4060,7 +4060,8 @@ async function exportJSON(){
     const categories=checks.filter(x=>x.checked).map(x=>x.value);
     const password=$('apbr02Password').value,confirmation=$('apbr02PasswordConfirm').value;
     if(!categories.length){progress.textContent='Bitte mindestens einen Datenbereich auswählen.';return;}
-    const validation=validateBackupPassword(password);
+    const cryptoModule=await import('./src/backup/backup-crypto.js');
+    const validation=cryptoModule.validateBackupPassword(password);
     if(!validation.valid){progress.textContent='Passwort nicht gültig: mindestens 12 Zeichen, maximal 1.024 UTF-8-Bytes.';return;}
     if(password!==confirmation){progress.textContent='Die Passwörter stimmen nicht überein.';return;}
     if(!confirm('Backup für den ausgewählten Kontext erstellen? Das Passwort wird nicht wiederhergestellt oder gespeichert.'))return;
@@ -4077,7 +4078,7 @@ async function exportJSON(){
       const archiveBlob=await response.blob();
       if(!archiveBlob.size)throw new Error('Der Server hat ein leeres Paket zurückgegeben.');
       progress.textContent='2/3 – Backup wird auf diesem Gerät verschlüsselt. Bitte Safari geöffnet lassen…';
-      const encryptedBlob=await encryptBackupBlob(archiveBlob,password);
+      const encryptedBlob=await cryptoModule.encryptBackupBlob(archiveBlob,password);
       progress.textContent='3/3 – Verschlüsseltes Backup wird heruntergeladen…';
       const url=URL.createObjectURL(encryptedBlob),a=document.createElement('a');
       a.href=url;a.download='KADAssist-Backup-'+todayISO()+'.kadbackup';document.body.appendChild(a);a.click();a.remove();
