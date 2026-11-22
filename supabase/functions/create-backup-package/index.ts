@@ -95,9 +95,13 @@ Deno.serve(async (req: Request) => {
       }
       authorizedTeamIds.push(...allTeams.map(t => String(t.id)));
       authorizedClubIds.push(...new Set(allTeams.map(t => t.club_id).filter(Boolean).map(String)));
-      const { data: clubs, error: clubsError } = await admin.from("clubs").select("id");
-      if (clubsError) return reply(req, { error: "Plattformvereine konnten nicht ermittelt werden." }, 500);
-      for (const c of clubs || []) if (!authorizedClubIds.includes(String(c.id))) authorizedClubIds.push(String(c.id));
+      for (let offset = 0; ; offset += 500) {
+        const { data: clubs, error: clubsError } = await admin.from("clubs").select("id").range(offset, offset + 499);
+        if (clubsError) return reply(req, { error: "Plattformvereine konnten nicht ermittelt werden." }, 500);
+        for (const c of clubs || []) if (!authorizedClubIds.includes(String(c.id))) authorizedClubIds.push(String(c.id));
+        if ((clubs || []).length < 500) break;
+        if (offset >= 5000) return reply(req, { error: "Plattformumfang überschreitet die sichere Vereinsgrenze." }, 413);
+      }
     } else if (body.scope_type === "team") {
       const { data: allowed, error } = await user.rpc("is_team_admin", { p_team_id: scopeId });
       if (error) return reply(req, { error: "Mannschaftsberechtigung konnte nicht geprüft werden." }, 500);
@@ -111,9 +115,14 @@ Deno.serve(async (req: Request) => {
       if (error) return reply(req, { error: "Vereinsberechtigung konnte nicht geprüft werden." }, 500);
       if (allowed !== true) return reply(req, { error: "Kein Zugriff auf diesen Vereinskontext." }, 403);
       clubId = scopeId; authorizedClubIds.push(scopeId);
-      const { data: teams, error: teamError } = await admin.from("teams").select("id").eq("club_id", scopeId);
-      if (teamError) return reply(req, { error: "Mannschaften des Vereins konnten nicht ermittelt werden." }, 500);
-      authorizedTeamIds.push(...(teams || []).map((t: any) => String(t.id)));
+      for (let offset = 0; ; offset += 500) {
+        const { data: teams, error: teamError } = await admin.from("teams").select("id").eq("club_id", scopeId).range(offset, offset + 499);
+        if (teamError) return reply(req, { error: "Mannschaften des Vereins konnten nicht ermittelt werden." }, 500);
+        authorizedTeamIds.push(...(teams || []).map((t: any) => String(t.id)));
+        if ((teams || []).length < 500) break;
+        if (authorizedTeamIds.length > 5000) return reply(req, { error: "Vereinsumfang überschreitet die sichere Grenze (5.000 Mannschaften)." }, 413);
+      }
+      authorizedClubIds.push(scopeId);
     }
     const snapshot: Record<string, unknown[]> = {};
     for (const category of body.categories as string[]) {
@@ -247,9 +256,14 @@ Deno.serve(async (req: Request) => {
     };
     if ((body.categories as string[]).includes("files_images")) {
       // Team/club-scoped player photo references. Query only IDs belonging to authorized teams.
-      const { data: scopedPlayers, error: playersErr } = await admin.from("players").select("id,team_id,photo_path,photo_data").in("team_id", authorizedTeamIds);
-      if (playersErr) return reply(req, { error: "Spielerbilder konnten nicht ermittelt werden." }, 500);
-      for (const p of scopedPlayers || []) {
+      const scopedPlayers: any[] = [];
+      for (let offset = 0; ; offset += 500) {
+        const { data: playerPage, error: playersErr } = await admin.from("players").select("id,team_id,photo_path,photo_data").in("team_id", authorizedTeamIds).range(offset, offset + 499);
+        if (playersErr) return reply(req, { error: "Spielerbilder konnten nicht ermittelt werden." }, 500);
+        scopedPlayers.push(...(playerPage || [])); if ((playerPage || []).length < 500) break;
+        if (scopedPlayers.length > 50000) return reply(req, { error: "Datei-Backup überschreitet die sichere Spielergrenze." }, 413);
+      }
+      for (const p of scopedPlayers) {
         if (p.photo_path) await addAsset("player-photos", String(p.photo_path), "assets/player-photos/" + String(p.id) + "/" + String(p.photo_path).split("/").pop(), "player-photo", String(p.team_id) + "/" + String(p.id) + "/");
         if (p.photo_data && /^data:image\/(png|jpeg|webp);base64,/i.test(String(p.photo_data))) {
           const match = String(p.photo_data).match(/^data:image\/(png|jpeg|webp);base64,(.+)$/i);
@@ -270,13 +284,21 @@ Deno.serve(async (req: Request) => {
         if (memberErr) return reply(req, { error: "Profilbild-Berechtigungen konnten nicht ermittelt werden." }, 500);
         scopedUserIds = new Set((memberships || []).map((m: any) => String(m.user_id)));
       } else {
-        const clubMembershipQuery = body.scope_type === "platform" ? admin.from("club_members").select("user_id").in("club_id", authorizedClubIds) : admin.from("club_members").select("user_id").eq("club_id", clubId);
-        const { data: memberships, error: memberErr } = await clubMembershipQuery;
-        if (memberErr) return reply(req, { error: "Profilbild-Berechtigungen konnten nicht ermittelt werden." }, 500);
-        scopedUserIds = new Set((memberships || []).map((m: any) => String(m.user_id)));
-        const { data: teamMemberships, error: tmErr } = await admin.from("team_members").select("user_id").in("team_id", authorizedTeamIds);
-        if (tmErr) return reply(req, { error: "Profilbild-Berechtigungen konnten nicht ermittelt werden." }, 500);
-        (teamMemberships || []).forEach((m: any) => scopedUserIds.add(String(m.user_id)));
+        const clubMembershipRows: any[] = [];
+        for (let offset = 0; ; offset += 500) {
+          let query = admin.from("club_members").select("user_id");
+          query = body.scope_type === "platform" ? query.in("club_id", authorizedClubIds) : query.eq("club_id", clubId);
+          const { data: memberships, error: memberErr } = await query.range(offset, offset + 499);
+          if (memberErr) return reply(req, { error: "Profilbild-Berechtigungen konnten nicht ermittelt werden." }, 500);
+          clubMembershipRows.push(...(memberships || [])); if ((memberships || []).length < 500) break;
+        }
+        scopedUserIds = new Set(clubMembershipRows.map((m: any) => String(m.user_id)));
+        for (let offset = 0; ; offset += 500) {
+          const { data: teamMemberships, error: tmErr } = await admin.from("team_members").select("user_id").in("team_id", authorizedTeamIds).range(offset, offset + 499);
+          if (tmErr) return reply(req, { error: "Profilbild-Berechtigungen konnten nicht ermittelt werden." }, 500);
+          (teamMemberships || []).forEach((m: any) => scopedUserIds.add(String(m.user_id)));
+          if ((teamMemberships || []).length < 500) break;
+        }
       }
       const users = [...scopedUserIds];
       for (let start = 0; start < users.length; start += 200) {
