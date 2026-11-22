@@ -145,3 +145,27 @@ Die historische IMG-SEC-Inventur vom 19.11. meldete 0 Avatarreferenzen; das war 
 - DEV-Testseite: `docs/dev-tests/ap-br02-zipjs-test.html`; letzter Testcode-Commit: `7f3a077f92bdc7ac3d72af1bf55f725ad084fcce`.
 - Keine DB-/Storage-/PROD-Änderung im Rahmen dieses Tests.
 
+
+
+## Bestandsabgleich – vorhandener Prototyp statt Neuaufbau (22.11.2026)
+
+Read-only-Abgleich von develop `index.html`, Dokumentation und aktiver DEV-Edge-Function `create-backup`:
+
+### Bereits vorhanden / wird nicht neu gebaut
+- Der clientseitige JSON-Snapshot `buildBackupSnapshot()` und Download `exportJSON()` bestehen weiterhin; dieser ist ein historischer Prototyp und greift direkt über den Supabase-Client auf Tabellen zu.
+- Eine serverseitige Edge Function `create-backup` ist in Supabase DEV aktiv (Version 2, `verify_jwt=true`). Sie authentifiziert den Nutzer, validiert Scope/Kategorien, ruft bestehende Rollen-RPCs auf und liest die ausgewählten Tabellen mit serverseitig begrenzten Team-/Parent-IDs sowie Pagination.
+- Tabellen-/Feldinventur und Rollen-RPC-Prüfung sind bereits abgeschlossen; nicht wiederholen.
+- ZIP.js 2.25.0 liegt lokal im Repo, isolierte Testseite und Nutzer-bestätigter iPhone-Test (1/5/10/20 MiB) sind erledigt.
+
+### Tatsächliche Lücke, die den nächsten Schritt begründet
+- Die sichtbare App-Funktion `exportJSON()` ruft noch `buildBackupSnapshot()` auf und nicht die Edge Function. Der neue serverseitige Snapshot ist daher Backend-Baustein, aber noch nicht der normale Exportablauf.
+- Die aktive Edge Function gibt derzeit einen JSON-Snapshot zurück und markiert ausdrücklich `storage_and_encrypted_archive_not_included`. Storage-Bytes, verschlüsseltes Archiv und vollständiger Downloadablauf sind noch nicht verbunden.
+- Der Restore `replaceTeamDataWithBackup()` löscht vor dem Einfügen vorhandene Teamdaten und ist damit nicht kompatibel mit den vereinbarten Regeln Merge / Never-delete / Newer-wins. Restore bleibt unverändert deaktiviert/aufgeschoben und darf nicht als Ziel des nächsten Schritts behandelt werden.
+
+### Minimaler nächster Arbeitsumfang
+1. Bestehende Edge Function und UI-Aufruf read-only technisch abgleichen; dann den App-Export auf den serverseitig autorisierten Snapshot umstellen – ohne erneute Inventur.
+2. Storage-Objekte ausschließlich anhand der bereits ermittelten DB-Referenzen und Scope-Allowlist hinzufügen; Orphans ausschließen und nicht löschen.
+3. ZIP.js als bereits getestete Paketierungsbasis verwenden; keine weitere allgemeine ZIP-/iPhone-Testschleife. Nur gezielte DEV-Verifikation des integrierten End-to-End-Exports.
+4. Restore erst in einem separaten späteren Schritt nach Export-Abnahme nach Merge/Never-delete/Newer-wins neu konzipieren.
+
+Keine Codeänderung, kein SQL, kein Storage-Schreibzugriff, keine erneute Deployment- oder PROD-Änderung durch diesen Bestandsabgleich.
