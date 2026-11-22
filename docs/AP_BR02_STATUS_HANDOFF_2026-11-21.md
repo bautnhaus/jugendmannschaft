@@ -346,3 +346,21 @@ Code-/Inventurabgleich identifizierte die derzeitigen privaten Asset-Bezüge:
 - Aktuelle Referenzen und Objektbestand sind vor Implementation read-only in DEV abzugleichen; historische Objektzahlen aus der Inventur sind nicht als aktueller Bestand zu verwenden.
 
 Asset-Implementierung darf nur anhand dieser DB-Referenzen und des serverseitig autorisierten Scope erfolgen. Der Request darf keine frei wählbaren Storage-Pfade legitimieren. Kein Objekt wird im Export geändert oder gelöscht. Fehlende Referenzdateien müssen als nachvollziehbarer Exportfehler erscheinen (kein stiller Teilbackup-Erfolg).
+
+
+## Read-only Scope-/FK-Prüfung DEV – Ergebnis (22.11.2026)
+
+Supabase DEV-Schema wurde über Metadaten (Tabellen, Spalten, FK-Beziehungen) geprüft; keine SQL-Schreiboperation.
+
+### Sichere Ableitung der Datensatz-Scope
+- **Direkte Teamzuordnung**: Tabellen mit `team_id` (z. B. teams, players, positions, seasons, trainings, training_series, matchdays, team-scoped Historie) werden ausschließlich über die vom serverseitigen Rollencheck bestätigte `team_id` eingeschränkt. Für Vereinsscope wird zuerst die autorisierte Menge der Team-IDs aus `teams.club_id` ermittelt.
+- **Child-/Join-Tabellen**: Tabellen ohne eigenes `team_id` müssen über ihren fachlichen Eltern-Datensatz eingeschränkt werden (z. B. attendance/training_players/training_responses über trainings; matchday_players/matchday_attendance über matchdays; player_positions über players und zusätzlich positions). Bei Tabellen mit zwei Beziehungen müssen beide Seiten konsistent zum ausgewählten Team gehören; ein FK allein darf nicht als Scope-Nachweis gelten.
+- **Saisonverknüpfung**: trainings und matchdays besitzen sowohl `team_id` als auch optionale `season_id`. Der Export muss bei vorhandener season_id deren Teamzugehörigkeit ebenfalls verifizieren; widersprüchliche oder verwaiste Beziehungen sind als Datenintegritätsfehler zu behandeln, nicht durch breite Abfrage einzuschließen.
+- **Profilavatars**: `profiles` ist über `auth.users` identifiziert und nicht direkt team-scoped. Profil-/Avatarobjekte dürfen daher nur anhand von User-IDs abgeleitet werden, die in der ausdrücklich ausgewählten Team-/Vereinsmitgliedschaft vorkommen und durch die gewählte Backup-Kategorie gedeckt sind. Kein globaler Profile-Export; Rollen-/Mitgliedschaftsdatensätze bleiben gemäß fachlicher Klassifikation aus dem normalen Backup ausgeschlossen.
+- **Vereinsassets**: `clubs.crest_path` nur für exakt den ausgewählten und serverseitig autorisierten Club. Beim Mannschaftsscope nur für den Club der ausgewählten Mannschaft und nur, wenn Vereinsasset in diesem Scope fachlich enthalten ist.
+- **Storage-Objekte**: Referenzpfad aus DB-Feldern serverseitig auf den erwarteten Bucket und erlaubten Pfad begrenzen; keine clientseitigen Pfade. Signed URL nicht persistieren. Die Funktion liest nur Bytes; keinerlei Storage-Mutation.
+
+### Ergebnis / Konsequenz
+Die Grundstruktur der Scope-Kette ist im Schema vorhanden. Die sichere Umsetzung muss jedoch eine explizite Tabellen-/Kategorie-Allowlist mit jeweiliger Scope-Ableitung verwenden und die Mehrfach-FK-Konsistenz prüfen. Nicht jede historische oder auditartige Tabelle darf automatisch aufgrund eines einzelnen FK eingeschlossen werden; sie bleibt gemäß bereits abgeschlossenem fachlichem Inventar zugeordnet.
+
+Diese Prüfung bestätigt noch nicht, dass die aktuelle Edge Function alle Regeln implementiert. Sie ist ein Datenmodellbefund und eine Vorgabe für den nächsten Code-Review. Keine Function-/DB-/Storage-Änderung, kein Deployment.
