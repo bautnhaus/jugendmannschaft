@@ -4031,14 +4031,18 @@ function downloadBackup(backup,prefix='jugendmannschaft-backup'){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=prefix+'-'+todayISO()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 async function exportJSON(){
-  if(!adminGuard())return;
-  if(!currentUser||(!team&&!currentClubId)){showStatus('Bitte zuerst einen gültigen Verein- oder Mannschaftskontext auswählen.','error');return;}
+  const backupAllowed=!!currentUser&&((role==='admin'&&!!team&&!contextReadOnly)||(canManageClub&&!!currentClubId)||(isSuperAdmin&&clubOnlyMode));
+  if(!backupAllowed){showStatus('Für diesen Backup-Umfang fehlt die erforderliche Rolle oder der Kontext.','error');return;}
   const modal=$('modal'),content=$('modalContent');
-  const scopeOptions=(team?'<option value="team">Aktuell ausgewählte Mannschaft</option>':'')+(currentClubId?'<option value="club">Aktuell ausgewählter Verein (alle zugehörigen Mannschaften)</option>':'');
-  if(!scopeOptions){showStatus('Kein Backup-Kontext verfügbar.','error');return;}
+  let scopeOptions='';
+  if(isSuperAdmin&&clubOnlyMode){scopeOptions='<option value="platform">Gesamte Plattform</option><option value="club">Ausgewählter Verein</option><option value="team">Ausgewählte Mannschaft</option>';}
+  else if(canManageClub&&currentClubId){scopeOptions='<option value="club">Eigener Verein (alle zugehörigen Mannschaften)</option>';}
+  else if(role==='admin'&&team&&!contextReadOnly){scopeOptions='<option value="team">Eigene Mannschaft</option>';}
+  if(!scopeOptions){showStatus('Für diese Rolle ist kein zulässiger Backup-Umfang verfügbar.','error');return;}
   content.innerHTML='<div class="modalHeader"><h2>Backup erstellen</h2><button type="button" onclick="closeModal()" aria-label="Schließen">×</button></div>'+
     '<p class="muted">Das Backup wird im Browser verschlüsselt. Das Passwort wird nicht an den Server übertragen.</p>'+
     '<label>Backup-Umfang<select id="apbr02Scope">'+scopeOptions+'</select></label>'+
+    (isSuperAdmin&&clubOnlyMode?'<div id="apbr02ScopeDetail" style="display:grid;gap:8px;margin-top:8px"><label>Verein<select id="apbr02Club" disabled><option value="">Wird geladen …</option></select></label><label>Mannschaft<select id="apbr02Team" disabled><option value="">Mannschaft auswählen</option></select></label><p class="muted small">Für Verein oder Mannschaft den konkreten Datensatz auswählen. Das Plattformbackup benötigt keinen einzelnen Kontext.</p></div>':'')+
     '<div class="card" style="margin:12px 0"><label><input id="apbr02All" type="checkbox"> <strong>Alle Datenbereiche und Dateien/Bilder</strong></label>'+
     '<div id="apbr02Categories" style="display:grid;gap:8px;margin-top:10px">'+
     '<label><input type="checkbox" value="team_core"> Mannschaft &amp; Stammdaten</label>'+
@@ -4053,6 +4057,12 @@ async function exportJSON(){
     '<div id="apbr02Progress" class="notice small" role="status">Bereit.</div>'+
     '<div class="toolbar"><button type="button" id="apbr02Create">Verschlüsseltes Backup erstellen</button><button type="button" class="secondary" onclick="closeModal()">Abbrechen</button></div>';
   modal.classList.add('show');
+  const scopeSelect=$('apbr02Scope'),clubSelect=$('apbr02Club'),teamSelect=$('apbr02Team');
+  if(clubSelect&&teamSelect){
+    const fillTeams=async(clubId)=>{teamSelect.innerHTML='<option value="">Mannschaft auswählen</option>';teamSelect.disabled=true;if(!clubId)return;try{const {data,error}=await getClient().from('teams').select('id,name').eq('club_id',clubId).order('name');if(error)throw error;teamSelect.innerHTML='<option value="">Mannschaft auswählen</option>'+(data||[]).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||'Mannschaft')+'</option>').join('');teamSelect.disabled=false;}catch(e){teamSelect.innerHTML='<option value="">Mannschaften konnten nicht geladen werden</option>';console.error(e);}};
+    try{const {data,error}=await getClient().rpc('get_super_admin_clubs');if(error)throw error;clubSelect.innerHTML='<option value="">Verein auswählen</option>'+(data||[]).map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name||'Verein')+'</option>').join('');clubSelect.disabled=false;}catch(e){clubSelect.innerHTML='<option value="">Vereine konnten nicht geladen werden</option>';console.error(e);}
+    clubSelect.addEventListener('change',()=>fillTeams(clubSelect.value));
+  }
   const all=$('apbr02All'),checks=[...content.querySelectorAll('#apbr02Categories input[type=checkbox]')],create=$('apbr02Create'),progress=$('apbr02Progress');
   all.addEventListener('change',()=>checks.forEach(x=>x.checked=all.checked));
   checks.forEach(x=>x.addEventListener('change',()=>all.checked=checks.every(y=>y.checked)));
@@ -4069,7 +4079,10 @@ async function exportJSON(){
     try{
       const client=getClient(),{data:sessionData,error:sessionError}=await client.auth.getSession();
       if(sessionError||!sessionData?.session?.access_token)throw new Error('Deine Anmeldung ist nicht mehr gültig. Bitte erneut anmelden.');
-      const scopeType=$('apbr02Scope').value,scopeId=scopeType==='team'?team:currentClubId;
+      const scopeType=$('apbr02Scope').value;
+      let scopeId=scopeType==='team'?team:currentClubId;
+      if(isSuperAdmin&&clubOnlyMode){if(scopeType==='platform')scopeId='platform';else if(scopeType==='club')scopeId=clubSelect?.value||'';else if(scopeType==='team')scopeId=teamSelect?.value||'';}
+      if(!scopeId){progress.textContent='Bitte den ausgewählten Verein oder die Mannschaft festlegen.';create.disabled=false;return;}
       const response=await fetch(SUPABASE_URL+'/functions/v1/create-backup-package',{
         method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+sessionData.session.access_token},
         body:JSON.stringify({scope_type:scopeType,scope_id:scopeId,categories})
@@ -4188,6 +4201,7 @@ function validateBackup(parsed){
 }
 
 window.importJSON=async event=>{
+  showStatus('Restore bleibt gesperrt, bis Merge / Never-delete / Newer-wins sicher umgesetzt und freigegeben ist.','error');if(event?.target)event.target.value='';return;
   if(!adminGuard())return;
   const file=event.target.files?.[0];if(!file)return;
   const r=new FileReader();
@@ -4734,9 +4748,10 @@ window.openMehrPage=(page)=>{
   // Die Mehr-Startseite zeigt nur Bereiche, die zur aktuellen Rolle passen.
   const homeRows=[...home.querySelectorAll('.mehrMenu > .playerListRow')];
   if(homeRows[2])homeRows[2].style.display=(isTeamAdmin||hasClubOrPlatformAdmin)?'':'none';
-  if(homeRows[3])homeRows[3].style.display=isTeamAdmin?'':'none';
-  const restrictedTeamPages=['management','members','teams','squad','positions','trainers','data'];
+  if(homeRows[3])homeRows[3].style.display=(isTeamAdmin||canManageClub||isSuperAdmin)?'':'none';
+  const restrictedTeamPages=['management','members','teams','squad','positions','trainers'];
   if(restrictedTeamPages.includes(page)&&!isTeamAdmin&&!hasClubOrPlatformAdmin){page='home';}
+  if(page==='data'&&!(isTeamAdmin||canManageClub||isSuperAdmin)){page='home';}
   const sections=[...legacy.querySelectorAll(':scope > .settingsSection')];
   const personal=sections[0],club=sections[1],admin=sections[2];
   const adminCards=admin?[...admin.querySelectorAll(':scope > .card')]:[];
