@@ -136,7 +136,7 @@ Deno.serve(async (req: Request) => {
     // AP-BR02 integrity gate: never emit a successful snapshot with cross-scope child references.
     const idsOf = (table: string, field = "id") => new Set((snapshot[table] || []).map((row: any) => String(row[field])).filter(Boolean));
     let playerIds = idsOf("players");
-    const positionIds = idsOf("positions");
+    let positionIds = idsOf("positions");
     const trainingIds = idsOf("trainings");
     const matchdayIds = idsOf("matchdays");
     const recommendationIds = idsOf("matchday_recommendation_runs");
@@ -153,7 +153,7 @@ Deno.serve(async (req: Request) => {
       }
       playerIds = internalPlayerIds;
     }
-    const assertRefs = (table: string, rows: any[], refs: Array<[string, Set<string>]>) => {
+    if (snapshot.player_positions && !snapshot.positions) {\n      const scopedPositionIds = new Set<string>();\n      for (let offset = 0; ; offset += 500) {\n        const { data, error } = await admin.from("positions").select("id").in("team_id", authorizedTeamIds).range(offset, offset + 499);\n        if (error) return reply(req, { error: "Positionsbezüge konnten nicht geprüft werden." }, 500);\n        const page = data || [];\n        page.forEach((row: any) => scopedPositionIds.add(String(row.id)));\n        if (page.length < 500) break;\n      }\n      positionIds = scopedPositionIds;\n    }\n    const assertRefs = (table: string, rows: any[], refs: Array<[string, Set<string>]>) => {
       for (const row of rows) {
         for (const [field, allowed] of refs) {
           const value = row[field];
