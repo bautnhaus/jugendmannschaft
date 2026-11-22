@@ -169,3 +169,18 @@ Read-only-Abgleich von develop `index.html`, Dokumentation und aktiver DEV-Edge-
 4. Restore erst in einem separaten späteren Schritt nach Export-Abnahme nach Merge/Never-delete/Newer-wins neu konzipieren.
 
 Keine Codeänderung, kein SQL, kein Storage-Schreibzugriff, keine erneute Deployment- oder PROD-Änderung durch diesen Bestandsabgleich.
+
+
+## Aktueller UI-/Funktionsabgleich (22.11.2026)
+
+Read-only-Prüfung von `develop/index.html` und der aktiven DEV-Edge-Function `create-backup`:
+
+- Die vorhandene App-Backupkarte bietet aktuell nur den Button `JSON sichern` im Mannschafts-Adminbereich; keine explizite Auswahl der Backup-Kategorien und keine Auswahl zwischen Vereins- und Mannschaftsscope.
+- Der App-Button ruft weiterhin `buildBackupSnapshot()` auf (clientseitiger JSON-Prototyp).
+- Die Edge Function erwartet `scope_type`, `scope_id` und eine ausdrücklich übergebene Liste erlaubter Kategorien. Sie kann serverseitig Team- oder Clubberechtigung prüfen und liefert derzeit einen JSON-Snapshot, aber noch kein Archiv.
+- Der bisherige Button darf nicht einfach auf diese Function umgestellt werden: Ein stillschweigend festgelegter Kategorienumfang würde der verbindlichen Umfangsauswahl widersprechen; zudem wäre der JSON-Snapshot ohne Storage-Dateien und Verschlüsselungsarchiv kein vollständiges Backup.
+
+### Konsequenz / nächste konkrete Arbeit
+Vor dem Umschalten des produktiven UI-Exportbuttons ist eine Auswahloberfläche erforderlich, die den gewählten Scope (Verein/Mannschaft, soweit für Rolle zulässig) und den Kategorienumfang explizit anzeigt und vom Nutzer auswählen lässt. Danach wird die bestehende DEV-Function an diese Auswahl angeschlossen. Bis das vollständige Paket bereitsteht, bleibt die vorhandene UI als Prototyp kenntlich und wird nicht als vollständiges Backup ausgegeben.
+
+Keine App-Codeänderung oder Supabase-Deployment in dieser Prüfrunde; ausschließlich Abgleich und Dokumentation.
