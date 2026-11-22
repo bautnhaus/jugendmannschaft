@@ -412,3 +412,25 @@ Arbeitsmatrix für die nächste DEV-Codeänderung. Matrix ist aus dem read-only 
 - Für Beziehungen mit mehreren FKs nicht nur query-filter setzen, sondern Ergebnisse zusätzlich validieren. Inkonsistenz führt zu einem definierten Integritätsfehler (vorzugsweise Export abbrechen, damit kein still unvollständiges Backup entsteht).
 - Die Funktion behält Status/Prototyp-Markierung, bis Scope-Korrekturen, Asset-Bytes, vollständiges Archiv und Verschlüsselung fertig sowie DEV-abgenommen sind.
 - Tests sollen anhand isolierter DEV-Testdatensätze ausgeführt werden; bestehende produktive Nutzerdaten nicht manipulieren. Keine SQL-Schreiboperation ohne separaten Approval; wenn Testfixture benötigt, erst sichere read-only Prüfung und Nutzerfreigabe.
+
+
+## Scope-Integritätskorrektur DEV – deployed (22.11.2026)
+
+Die Matrix `e2fc802` wurde als begrenzte Korrektur in der DEV-Edge-Function `create-backup` umgesetzt und deployed. Keine PROD-Änderung, keine SQL-Migration, keine Storage-Mutation.
+
+### Änderungen
+- Nach dem Snapshot wird ein Integritäts-Gate ausgeführt: `player_positions` muss sowohl auf Scope-Spieler als auch Scope-Positionen verweisen.
+- `attendance`, `training_players`, `training_responses` müssen auf autorisierte Trainings und Scope-Spieler verweisen.
+- `matchday_players`, `matchday_attendance` müssen auf autorisierte Spieltage und Scope-Spieler verweisen.
+- `matchday_recommendation_players` muss auf autorisierte Recommendation-Runs und Scope-Spieler verweisen.
+- Trainings-/Spieltags-Saisonreferenzen werden gegen Saison-IDs des ausgewählten Teams/Vereins validiert; null bleibt zulässig.
+- Für unabhängig ausgewählte Kategorien werden erforderliche Spieler-IDs intern scope-gefiltert und paginiert geladen, ohne sie ungefragt ins Backup-Payload aufzunehmen.
+- Jede unerlaubte Cross-Scope-Referenz bricht den Export kontrolliert ab (kein erfolgreicher, scheinbar vollständiger Snapshot).
+
+### Deploystatus
+- GitHub source commits: `037aa5d` (integrity gate), `25d27ca` (independent category player ID handling).
+- Supabase DEV Edge Function `create-backup`: deployed, ACTIVE, version 3, verify_jwt=true.
+- Deployment SHA-256: `47fce174f28f0dbf27da306f91f256a90e8dab13595796226e398af5a5f27399`.
+
+### Abnahmegrenze
+Deployment-/Runtime-Version bestätigt. Der vollständige fachliche Positiv-/Negativtest mit authentifizierten DEV-Datensätzen steht noch aus; dafür sind geeignete isolierte Cross-Team-Testfixtures erforderlich. Bis diese Abnahme erfolgt, bleibt die Function ausdrücklich Snapshot-Prototyp. Keine Asset-Funktion, keine vollständige Archivierung oder Passwortverschlüsselung in dieser Version.
