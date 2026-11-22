@@ -286,3 +286,51 @@ Schema, Low-Fidelity und High-Fidelity wurden konsolidiert und aktualisiert:
 - Verschlüsselungsformat weiterhin Designkandidat, nicht final freigegeben: versionierter Container, AEAD/AES-GCM, Argon2id bevorzugt, etablierte Bibliothek und Prüfungen erforderlich; ZIP.js nur Kompressionskandidat.
 
 Designrevision dokumentiert in `docs/AP_BR02_STORAGE_ARCHIVE_DESIGN_DRAFT_2026-11-21.md`, Commit `efacec7`. Noch keine App-/Edge-Function-Codeänderung und kein Deployment. Nächster Schritt: technische DEV-Umsetzungsplanung mit expliziter Reihenfolge (Assets serverseitig scoped, vollständiges Payload, lokale Verschlüsselung, Download und Fehler-/Sicherheitsprüfungen), anschließend Umsetzung nach Freigabeprozess.
+
+
+
+## DEV-Umsetzungsplan v1 – Backup-Export (22.11.2026)
+
+Dieser Plan ist die nächste Arbeitsgrundlage; es wurde noch kein Code geändert und keine Function deployed.
+
+### Arbeitspakete und Reihenfolge
+
+**P0 – Vertrags-/Antwortformat festlegen (nur DEV-Code/Plan)**
+- Request: ausgewählter `scope_type`, `scope_id`, eindeutige Kategorien inkl. Asset-Kategorie.
+- Server prüft Auth, Rollen-/Scope-RPC und jede Auswahl; unbekannte/duplizierte Kategorien und ungültige Scopewerte ablehnen.
+- Antwort als versionierter Snapshot mit Daten, Assetmanifest und klarer Vollständigkeits-/Fehlerinformation; keine Erfolgsantwort, die „Storage/Archiv nicht enthalten“ verschweigt.
+- Client zeigt nur einen vollständigen Export an; bestehender JSON-Button bleibt unangetastet, bis Ende-zu-Ende bereit und getestet.
+
+**P1 – Asset-Manifest und serverseitiger Storage-Abruf**
+- Storage-Objektpfade aus den tatsächlich referenzierten DB-Feldern und bestätigter Asset-Inventur bestimmen; keine beliebigen clientseitig gelieferten Pfade als vertrauenswürdig behandeln.
+- Server baut Pfad-Allowlist anhand ausgewählter Tabellen/Datensätze und Rollen-Scope; pro Objekt Eigentümer-/Bucket-/Scope-Bezug prüfen.
+- Erlaubte Buckets entsprechend vorhandener KADAssist-Nutzung: Spielerfotos, Profilavatars, Vereinsassets – nur wenn zum gewählten Scope gehörig und referenziert.
+- Orphans und fremde/unreferenzierte Objekte nicht einschließen. Dateien lesen/downloaden, niemals löschen oder überschreiben.
+- Manifest je Datei: stabiler Backup-Pfad, ursprünglicher Bucket/Objektbezug als Restore-Metadaten, MIME-Typ soweit verfügbar, Größe, Prüfsumme; keine öffentlich zugänglichen Signed URLs im Backup.
+- Begrenzungen: Anzahl, Einzelgröße und Gesamtgröße; paginierter DB-Zugriff und kontrollierte Fehler bei fehlenden/unerreichbaren Dateien. Keine stillen Auslassungen.
+
+**P2 – vollständiges Archiv-Payload**
+- JSON-Snapshot und Asset-Bytes in einen nachvollziehbaren Paketaufbau bringen; Referenzstruktur dokumentieren, keine externen URL-Abhängigkeiten.
+- ZIP.js als Kompression/Archivierung prüfen, aber nicht mit der Verschlüsselung des Gesamtcontainers verwechseln.
+- Keine clientseitige unscoped Storage-Abfrage; Backend gibt nur bereits autorisierte Manifest-/Bytes zurück.
+
+**P3 – clientseitige Passwortverschlüsselung**
+- Bibliotheks-/Containerentscheidung nach gezieltem Review, nicht automatisch aus dem bisherigen ZIP-AES-Test ableiten.
+- Passwort bleibt lokal; KDF/AEAD/Nonce/Salt/format version und Headerauthentifizierung nach freigegebenem Format.
+- Verschlüsselung erst nach vollständigem Payload; Abbruch und Bereinigung temporärer Blob-/OPFS-Dateien bei Fehlern.
+
+**P4 – App-UI und Download**
+- Auswahlzustände: „Alle“ tri-state; sechs Kategorien; ausgewählter Kontext; Review; Passwort/Bestätigung; Fortschritt; Download/Fehler.
+- Erst den bisherigen JSON-Button ersetzen, wenn P0–P3 umgesetzt und der Export in DEV end-to-end bestanden ist. Vorher Prototyp kenntlich halten.
+
+**P5 – gezielte Abnahme (nicht Wiederholung der erledigten Tests)**
+- Rollen-/Scope-Negativtests (fremde Mannschaft/Verein, manipulierte IDs/Kategorien).
+- Asset-Referenztests: legitime Referenz enthalten, Orphan/fremde Referenz ausgeschlossen, fehlende Datei führt zu Fehler statt unvollständigem Erfolg.
+- Vollständigkeit/Pagination; beschädigtes Archiv, falsches Passwort und Manipulation; Passwort wird nicht an Backend gesendet/logged.
+- Ein einzelner End-to-End-DEV-Test mit synthetischen Daten/Assets; keine erneute allgemeine 1/5/10/20-MiB-Runde.
+
+### Freigabegrenzen
+- Keine SQL-Migration vorgesehen, sofern Schema nicht nachweislich eine Änderung benötigt; Schema-/RLS-Prüfung zuerst.
+- Keine Storage-Schreib-/Löschoperation.
+- Keine PROD/main-Änderung.
+- Deployment oder Aktivierung des neuen Exportbuttons erst nach expliziter Freigabe und DEV-Abnahme.
