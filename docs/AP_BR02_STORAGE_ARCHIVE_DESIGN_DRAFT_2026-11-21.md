@@ -295,3 +295,37 @@ Die Testseite verarbeitet Daten aktuell Blob-basiert. Das Ergebnis bestätigt di
 
 ### Designworkflow
 Diese Revision ersetzt die frühere „Dateien in Vorbereitung“-Darstellung. Schema, Low- und High-Fidelity werden vor DEV-Codearbeit mit diesen drei Punkten aktualisiert; noch keine App-Code-, Edge-Function- oder Deployment-Änderung.
+
+## Verbindliche Designrevision v2 – Backup erstellen (22.11.2026)
+
+Diese Revision ersetzt die frühere Wireframe-Darstellung mit „Dateien in Vorbereitung“ und führt Schema, Low- und High-Fidelity fachlich zusammen. Sie bleibt ein Designartefakt, noch keine Implementierung.
+
+### Schema v2
+1. Kontext: rollenabhängige, explizite Auswahl Verein oder Mannschaft und konkreter Kontext.
+2. Umfang: Master-Auswahl **„Alle“** plus Einzelauswahl. „Alle“ umfasst alle fünf Datenkategorien sowie „Dateien & Bilder“. Kein Bereich ist beim Öffnen vorausgewählt.
+3. Master-Checkbox-Verhalten: Zustand „alle“ = alle auswählbaren Kategorien angehakt; „teilweise“ = indeterminate; „keine“ = leer. Aktivieren von „Alle“ markiert alle, Deaktivieren entfernt alle. Einzeländerungen aktualisieren den Masterzustand unmittelbar.
+4. Dateien & Bilder: reguläre Kategorie, nicht nachgelagert. Sie umfasst ausschließlich referenzierte und serverseitig scope-autorisierte Storage-Objekte. Orphan-Dateien werden ausgeschlossen; Export löscht/verändert keine Storage-Inhalte.
+5. Review: Kontext, Kategorien und Assets werden zusammengefasst.
+6. Passwort: eigener Schritt nach Review und unmittelbar vor Exportstart. Eingabe + Bestätigung, Show/Hide, Passphrase-Hinweis und Verlustwarnung. Kein Versand/Speichern/Logging des Passworts; keine Recovery-Hintertür.
+7. Export: erst nach Validierung der Auswahl und Passwortbestätigung starten; Abschluss nur melden, wenn vollständiges Archiv gepackt, verschlüsselt und downloadbereit ist.
+
+### Low-Fidelity v2 – Ablauf
+Kontextauswahl → Datenumfang mit „Alle“ und sechs Kategorien (fünf fachliche Kategorien + Dateien/Bilder) → Zusammenfassung → Passwort festlegen/bestätigen → Fortschritt → Download/Ergebnis.
+Fehler oder fehlende referenzierte Dateien zeigen einen klaren Fehlerzustand; unvollständiges Archiv wird nicht als Erfolg ausgegeben. Die Passwortseite erklärt knapp, dass ohne Passwort keine Entschlüsselung möglich ist und verlorene Passwörter nicht zurückgesetzt werden können.
+
+### High-Fidelity v2 – visuelle Leitlinie
+- KADAssist-Designsystem, neutrales Blau, vorhandene Material-Symbolbibliothek, klare Karten und kompakte Abschnittstitel; mobile/iPhone-first.
+- „Alle Datenbereiche“ als hervorgehobene erste Auswahlzeile mit tri-state Checkbox; darunter sechs einzelne Kategorien mit konsistenten Touch-Zielen.
+- „Dateien & Bilder“ visuell gleichwertig mit den übrigen Kategorien, nicht als deaktivierte „In Vorbereitung“-Karte.
+- Review-Karte zeigt Scope, Datenkategorien und Asset-Umfang.
+- Passwortschritt als eigenständige sichere Eingabekarte mit Bestätigung, Sichtbarkeitsschalter, Hinweis zur Passphrase und klarer Verlustwarnung.
+- Primäre Aktion „Backup erstellen“ erst im Passwortschritt; während des Vorgangs Status/Progress, danach Download.
+
+### Sicherheitsformat – Status
+Designziel: komprimiertes Datenpaket vollständig in einen versionierten verschlüsselten Container einbetten. AEAD (AES-256-GCM) und eine memory-hard Passwort-KDF (Argon2id bevorzugt) sind Kandidaten, keine bereits freigegebene Bibliotheks-/Implementierungsentscheidung. Frischer zufälliger Salt und Nonce, authentifizierter Header/Parameter, geprüfte KDF-Konfiguration, keine eigene Kryptografie. Fallback PBKDF2-HMAC-SHA256 nur bei dokumentierter technischer Notwendigkeit und geeigneter Parametrisierung. Passwort bleibt ausschließlich lokal im Browser.
+
+### Technische Abhängigkeiten vor Umsetzung
+- Edge Function erweitert um Asset-Kategorie, Storage-Referenzen und kontrollierten Abruf der Bytes im ausgewählten Scope.
+- Serverseitige Autorisierung für jede referenzierte Datei und begrenzte Dateimengen/-größen; kein Zugriff auf beliebige Storage-Pfade.
+- Browserseitige Verschlüsselung mit überprüfter Bibliothek; ZIP.js allein ist nicht als vollständiger Sicherheitscontainer beschlossen.
+- Keine Änderung an App, Edge Function oder Deployment durch diese Designrevision.
