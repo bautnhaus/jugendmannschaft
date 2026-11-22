@@ -447,3 +447,21 @@ Git commits: `c4d031a` (position IDs), `2edf1d5` (season pagination), `2befc94` 
 DEV Edge Function `create-backup`: ACTIVE version 4, verify_jwt=true, deployment SHA-256 `8b8c5fdd37b58f5ace5e645844cc56dbba4c3550c6f80d3ca6d4d36698ba012a`.
 
 Status remains: backend scope guard deployment is in place, but no frontend test requested yet. Full functional validation with authorized DEV fixtures remains required before the next feature phase is treated as accepted.
+
+
+## Frontend-/Backend-Integrationsabgleich (DEV develop, 22.11.2026)
+
+Read-only Abgleich der aktuellen `index.html` mit Edge Function `create-backup`:
+- Der bestehende App-Button `JSON sichern` ruft weiterhin `buildBackupSnapshot()` und `downloadBackup()` auf (clientseitige direkte Datenabfragen und unverschlüsseltes JSON).
+- Die neue serverautorisierte Edge Function wird aus diesem Button derzeit **nicht** aufgerufen. Backend-Änderungen allein verändern den bestehenden Exportbutton also nicht.
+- Bestehender Restore-Code verwendet destruktives Replace; gemäß verbindlicher Entscheidung bleibt Restore zurückgestellt und darf nicht über die neue Backup-Datei aktiviert/angepasst werden.
+- Edge-Function-Payload ist tabellenorientiert (`data` mit DB-Tabellennamen), während das Legacy-JSON ein flaches, camelCase-Objekt ist. Die künftige Integration braucht einen expliziten versionierten Adapter/Archivvertrag; nicht direkt an Restore weiterreichen.
+- Designv2 fordert sechs Bereiche: fünf fachliche Kategorien plus `files_images`. Aktive Function akzeptiert bislang nur die fünf Datenkategorien und hat keine Asset-Bytes. Das muss im Backend-Vertrag vollständig ergänzt werden, bevor die UI den neuen Export als vollständig anbietet.
+
+### Nächster Umsetzungsschritt (ohne Frontend-Test)
+1. Einen versionierten Exportvertrag definieren: Snapshot, Assetmanifest und Datei-Bytes mit vollständigen Erfolgs-/Fehlerstatus, Größenlimits und eindeutigen Archivpfaden.
+2. Assetquellen anhand Schema verifizieren: `players.photo_path` und Legacy `photo_data`; `profiles.avatar_url` mit Profilzugriff ausschließlich über im ausgewählten Scope ermittelte User-IDs; `clubs.crest_path` nur für autorisierten Clubkontext.
+3. Serverseitige Datei-Allowlist/URL-Pfadnormalisierung und Storage-Download implementieren; niemals freie Client-Pfade oder fremde Signed URLs vertrauen.
+4. Erst danach Browserintegration, lokales Verschlüsselungsformat und finaler Exportablauf; Restore bleibt unberührt.
+
+Keine Codeänderung in `index.html`, kein Restore-/DB-/Storage-Schreibzugriff, kein PROD-Deployment in dieser Prüfung.
