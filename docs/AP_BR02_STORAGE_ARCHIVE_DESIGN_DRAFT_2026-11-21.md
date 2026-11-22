@@ -253,3 +253,11 @@ Offizielle Quellen:
 - Unabhängige Desktop-Archivprüfung, iPhone/Safari-RAM-/Laufzeittest und falsches Passwort/Manipulationsprüfung sind noch auszuführen; noch keine Testabnahme.
 
 Commit: `9189d10538386bfdf350a08c6e02add8d94a6023`. Der Commit liegt auf `develop`; der vorhandene DEV-Sync-Workflow wird dadurch ausgelöst. PROD/main wurde nicht geändert. Keine Datenbank-/Storage-Operation.
+
+
+## Nachtrag: iPhone-Synthetiktest abgeschlossen (22.11.2026)
+
+Der zuvor als offen aufgeführte iPhone-Größen-/Rundlauftest wurde vom Nutzer durchgeführt und bestätigt: 1, 5, 10 und 20 MiB jeweils erfolgreich; Safari stabil; Downloads erfolgreich. Es liegen keine präzisen Laufzeit- oder RAM-Messwerte vor.
+
+Die Testseite verarbeitet Daten aktuell Blob-basiert. Das Ergebnis bestätigt die Funktion und Stabilität dieses Testablaufs auf dem verwendeten Gerät, jedoch keine Produktionsgrenze und keine RAM-Effizienz einer künftigen Streaming-/OPFS-Lösung. Ein Größenlimit wird daraus nicht festgelegt. Als nächstes wird die speicherschonende Exportarchitektur technisch geprüft; weitere Messprotokollierung durch den Nutzer ist nicht erforderlich.
+
