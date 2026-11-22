@@ -257,3 +257,20 @@ Status: visueller Konzeptstand; nicht implementiert und nicht deployed.
 
 ### Statusgrenze
 Dieses High-Fidelity-Konzept ist keine fertige Implementierung. Die vorhandene App bleibt unverändert. Vor Codearbeit sind Schema, Low-Fidelity und High-Fidelity fachlich als Gestaltungsvorgabe zu übernehmen; anschließend Umsetzung ausschließlich in DEV nach dem bestehenden Freigabeprozess.
+
+
+## Nutzerfeedback zur Backup-UX und Passwortschutz (22.11.2026)
+
+Nutzerwünsche, verbindlich in die nächste Designrevision aufzunehmen:
+- Neben Einzelauswahl eine Option **„Alle“** anbieten.
+- Dateien und Bilder direkt im Backupumfang berücksichtigen, nicht als spätere Ausbaustufe.
+- Klar festlegen, an welcher Stelle das Backup-Passwort vergeben wird und welche Sicherheitsregeln das Format einhalten muss.
+
+Umsetzung im Design:
+- Master-Checkbox „Alle Datenbereiche“ mit korrekt synchronisiertem Zustand (alle / teilweise / keine); „Alle“ umfasst auch die Asset-Kategorie.
+- „Dateien & Bilder“ als eigenständige auswählbare Kategorie. Technisch noch offen: DEV-Edge-Function enthält bisher keine Asset-Kategorie und exportiert keine Storage-Bytes; sie muss vor vollständigem Backup ergänzt werden. Nur referenzierte und scope-authorisierte Objekte; Orphans nicht einschließen.
+- Passwortschritt nach Kontext-/Umfangsauswahl und unmittelbar vor Archivierung; Passwort + Bestätigung, sichtbar/verborgen, Passphrase-Hinweis und Warnung, dass Verlust nicht rückgängig gemacht werden kann. Passwort clientseitig, niemals an Backend senden/speichern/loggen.
+- Sicherheitsformat als vorläufige Architekturleitplanke dokumentiert: ZIP-Kompression, anschließend vollständiger Outer-Container mit AEAD (AES-256-GCM Kandidat), frischem Nonce und Salt, versioniertem Header und authentifizierten Metadaten. Argon2id bevorzugt, Parameter gemäß geprüfter Empfehlung und iOS-Test; PBKDF2-HMAC-SHA256 >= 600k nur als dokumentierte Fallbackoption. Keine Kryptoprimitiven selbst implementieren; etablierte Bibliothek, Testvektoren und falsches Passwort/Manipulationsprüfungen erforderlich.
+- Das genaue Format und die Bibliothek sind noch nicht als Implementierungsentscheidung freigegeben; zunächst aktualisierte Schema-/Low-/High-Fidelity-Artefakte, danach DEV-Plan.
+
+Quelle für KDF-Leitplanken: OWASP Password Storage Cheat Sheet (Argon2id 19 MiB / 2 / p=1 als Mindestprofil; PBKDF2-HMAC-SHA256 600.000 Iterationen bei FIPS-Anforderung) und Chrome Web Crypto Guidance zu AES-GCM mit frischer 12-byte IV und authentifiziertem Additional Data. Die Empfehlungen werden als Designhinweis, nicht als automatische Zertifizierung des Backupformats verstanden.
