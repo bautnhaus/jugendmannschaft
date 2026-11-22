@@ -527,3 +527,13 @@ Damit ist das Kryptomodul für den nächsten Integrationsschritt praktisch auf d
 - DEV Deploy run `45053559264` completed success. Mirror `bautnhaus/jugendmannschaft-dev` main bestätigt: integrierte UI, Crypto-Modul und import vorhanden.
 - Noch keine echte, authentifizierte End-to-End-Ausführung im Team-/Vereinskontext durchgeführt. Funktion ist noch nicht als fachlich abgenommen zu betrachten. Nächster iPhone-Test: in DEV unter Backup-Dialog zunächst eine kleine Kategorie auswählen, ein neues Testpasswort (mind. 12 Zeichen) setzen, Export erstellen; prüfen, dass Download `.kadbackup` erfolgt und keine Fehlermeldung erscheint. Datei nicht in Restore einspielen. Danach erst Scope/Kategorien „Alle“ testen, sofern Safari stabil bleibt.
 - Browser muss ZIP-Inhalt vor der Verschlüsselung vorübergehend im Arbeitsspeicher halten. Kein Passwort-/Klartextdownload, aber Geräte-Speicherbelastung für größere reale Archive bleibt zu beobachten; derzeit ist keine Maximalgröße für den kompletten Snapshot zugesichert.
+
+
+## Login-Reaktionsproblem nach Export-UI-Deploy – Präventivfix (22.11.2026)
+
+- Nutzer meldete: Login reagiert im DEV nach Export-UI-Integration nicht.
+- `index.html` aus `develop` und DEV-Repo `main` waren bytegleich (Commit `94113c1`); kein fehlgeschlagener/abweichender Sync.
+- Der Export-UI-Commit hatte einen zusätzlichen statischen Import des Kryptomoduls in den zentralen App-Modulscript eingeführt. Dieser Import kann bei einem Modul-Ladefehler die gesamte App-Initialisierung blockieren; eine bestätigte Browser-Console-Ursache lag nicht vor.
+- Präventiv geändert: Kryptomodul wird jetzt dynamisch erst beim Start des Backupvorgangs geladen. Login und übrige App hängen damit nicht mehr vom zusätzlichen Modulimport ab.
+- Fix commit `9da28db7cf9e7f3f3d4fc1098c612ffa8909e0e2`; DEV workflow run `45054961377` success. DEV-Mirror `index.html` SHA bestätigt `49b4fd09cc81bb2f413e0bf67e2c9b8318f8a087`, statischer Crypto-Import fehlt, Lazy-Import vorhanden.
+- Login muss vom Nutzer nach Laden der aktualisierten DEV-Seite erneut geprüft werden. Falls es weiter nicht reagiert, nächster Schritt: Safari-Cache/Tab neu laden und tatsächliche Meldung/Fehlerursache erfassen; keine weitere Vermutung als gesicherte Ursache ausgeben.
