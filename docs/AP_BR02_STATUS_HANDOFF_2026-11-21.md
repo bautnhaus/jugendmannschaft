@@ -599,3 +599,20 @@ Dieser Abschnitt ergänzt den bisherigen Checkpoint als fortlaufende Übergabe. 
 - Keine SQL-/DB-/Storage-Schreiboperation, Migration, Deployment oder PROD-Änderung ohne separate ausdrückliche Freigabe, soweit die bestehende Projektregel dies verlangt.
 - Keine Secrets, Tokens oder Passwörter in Dokumentation oder Chat.
 - Bei nächstem Chat zuerst dieses Dokument und die referenzierten AP-BR02-Inventar-/Design-Dokumente lesen; nur die oben offenen Punkte fortsetzen, keine abgeschlossenen Prüfungen wiederholen.
+
+
+## Verbindliche Dokumentationsregel – laufende Fortschreibung (22.11.2026)
+
+Die STATUS_HANDOFF ist ein **fortlaufendes Arbeitsprotokoll**, nicht nur eine Abschluss- oder Chatwechsel-Übergabe. Da ein Chatwechsel jederzeit plötzlich notwendig werden kann, darf die Dokumentation nicht auf einen angekündigten Wechsel oder das Ende einer Arbeitssitzung warten.
+
+### Arbeitsweise ab sofort
+- Nach jedem relevanten abgeschlossenen Prüfungs-, Analyse-, Entscheidungs- oder Umsetzungsschritt wird dieser Checkpoint zeitnah ergänzt.
+- Vor einem größeren nächsten Arbeitsschritt wird der aktuelle Zwischenstand festgehalten, damit auch bei abruptem Abbruch der letzte sichere Stand erkennbar bleibt.
+- Festhalten: konkreter Schritt, Ergebnis, Aussagegrenze, offene Punkte und nächster konkreter Schritt.
+- Bei Codeänderungen: betroffene Dateien, Commit, Branch und durchgeführte Verifikation.
+- Bei Deployments: Zielumgebung, Deploymentstatus und getrennt davon die tatsächliche Nutzer-/End-to-End-Abnahme.
+- Klar zwischen geplant, geprüft, umgesetzt, committed, deployed und vom Nutzer bestätigt unterscheiden.
+- Keine erledigten Prüfungen erneut ansetzen, sofern kein konkreter Regression-/Fehlerhinweis besteht.
+- Wenn eine Sitzung unerwartet endet, muss die Dokumentation bereits den letzten bekannten Stand enthalten; eine separate nachträgliche Übergabedokumentation darf nicht vorausgesetzt werden.
+
+Diese Regel gilt für die gesamte weitere AP-BR02-Arbeit und nach Möglichkeit für alle laufenden KADAssist-Arbeitspakete. Die jeweils maßgebliche STATUS_HANDOFF auf `develop` ist die zentrale Quelle für die Fortsetzung in einem neuen Chat.
