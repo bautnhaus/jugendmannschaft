@@ -261,3 +261,37 @@ Der zuvor als offen aufgeführte iPhone-Größen-/Rundlauftest wurde vom Nutzer 
 
 Die Testseite verarbeitet Daten aktuell Blob-basiert. Das Ergebnis bestätigt die Funktion und Stabilität dieses Testablaufs auf dem verwendeten Gerät, jedoch keine Produktionsgrenze und keine RAM-Effizienz einer künftigen Streaming-/OPFS-Lösung. Ein Größenlimit wird daraus nicht festgelegt. Als nächstes wird die speicherschonende Exportarchitektur technisch geprüft; weitere Messprotokollierung durch den Nutzer ist nicht erforderlich.
 
+
+
+## Designrevision nach Nutzerfeedback (22.11.2026) – Alle-Auswahl, Assets und Passwort
+
+### Auswahl „Alle“
+- Neben der individuellen Kategorieauswahl wird eine sichtbare Master-Auswahl **„Alle Datenbereiche“** angeboten.
+- Aktivieren wählt alle Kategorien inklusive „Dateien & Bilder“; deaktivieren hebt alle ab.
+- Bei individueller Änderung wird der Masterstatus korrekt als vollständig / teilweise / nicht ausgewählt dargestellt (Tri-State/indeterminate).
+- Es gibt weiterhin keine automatische Vorauswahl beim Öffnen. Mindestens ein Bereich ist erforderlich.
+
+### Dateien & Bilder direkt einbeziehen
+- „Dateien & Bilder“ wird als regulärer, auswählbarer Umfang direkt in Schema und UI aufgenommen – nicht als spätere „in Vorbereitung“-Karte.
+- Inhaltlich: nur Storage-Objekte, die von Datensätzen innerhalb des ausdrücklich gewählten Scope referenziert und durch eine serverseitige Allowlist autorisiert sind (Spielerfotos, Profilavatars und zulässige Vereinsassets entsprechend Kontext/Rolle).
+- Nicht referenzierte/orphaned Dateien werden nicht automatisch aufgenommen; nichts wird im Backup-Prozess gelöscht oder verändert.
+- Technischer Ist-Stand bleibt transparent: der aktuelle DEV-Endpoint hat noch keine Asset-Kategorie und keine Datei-Bytes. Die Implementierung muss diese Fähigkeit ergänzen, bevor ein vollständiges Backup angeboten wird.
+
+### Passwortschritt und Ablauf
+- Passwort wird **nach Bereichs- und Umfangsauswahl, unmittelbar vor dem Erstellen/Packen des Backups** gesetzt.
+- Dialog/Abschnitt: Passwort, Passwort bestätigen, Sichtbarkeit umschalten, Hinweis zur sicheren Passphrase und Hinweis „Bei Verlust kann das Backup nicht wiederhergestellt werden“.
+- Passwort wird nicht an Supabase/Edge Function gesendet, nicht gespeichert und nicht in Logs geschrieben. Es dient ausschließlich lokal im Browser zur Verschlüsselung des fertigen Backup-Payloads.
+- Erst nach erfolgreicher Passwortbestätigung startet die Archivierung. Das Backup gilt erst als fertig, wenn alle gewählten Daten und Dateien enthalten, verschlüsselt und als Download bereitgestellt wurden.
+- Kein Passwort-Recovery oder Hintertür vorgesehen.
+
+### Sicherheitsformat – vorläufige Leitplanke, kein finaler Implementierungsentscheid
+- ZIP.js bleibt zunächst Pack-/Kompressionskandidat; ZIP-AES-256 allein wird nicht als endgültiger Schutz des Gesamtbackups festgelegt.
+- Vorgesehen ist ein versionierter äußerer verschlüsselter Container, der das komplette komprimierte Archiv schützt.
+- Zielalgorithmus: AEAD (z. B. AES-256-GCM) mit frischem kryptografisch zufälligem 96-bit IV/Nonce pro Backup, 128-bit Authentifizierungstag und separatem zufälligem Salt für die Schlüsselableitung.
+- Passwort-KDF bevorzugt Argon2id nach RFC 9106/OWASP als memory-hard Option; Parameter nicht unter einem geprüften Mindestprofil (OWASP nennt 19 MiB, 2 Iterationen, Parallelität 1) und soweit iPhone/Safari stabil praktikabel höher. Alternativ PBKDF2-HMAC-SHA-256 mit mindestens 600.000 Iterationen, falls eine geeignete, überprüfte Argon2id-Implementierung für die Zielbrowser nicht tragfähig ist; dann ist die Wahl explizit zu dokumentieren.
+- KDF, Parameter, Salt, Nonce und Formatversion werden im Containerkopf gespeichert; keine geheimen Schlüssel/Passwörter. Header-Metadaten werden authentifiziert (AAD) und Manipulation/falsches Passwort führt zu hartem Abbruch.
+- Passwort als lange Passphrase empfehlen (mindestens 14 Zeichen oder mehrere zufällige Wörter), keine stillen Kürzungen; clientseitige Qualitäts-/Bestätigungsprüfung.
+- Kryptografische Bibliothek/Implementierung muss etabliert, versioniert, lizenziert und auf Testvektoren, falsches Passwort, Bit-Manipulation, beschädigte Archive und Browser-Speicherverhalten geprüft werden. Keine Eigenimplementierung von Kryptoprimitiven.
+
+### Designworkflow
+Diese Revision ersetzt die frühere „Dateien in Vorbereitung“-Darstellung. Schema, Low- und High-Fidelity werden vor DEV-Codearbeit mit diesen drei Punkten aktualisiert; noch keine App-Code-, Edge-Function- oder Deployment-Änderung.
