@@ -184,3 +184,32 @@ Read-only-Prüfung von `develop/index.html` und der aktiven DEV-Edge-Function `c
 Vor dem Umschalten des produktiven UI-Exportbuttons ist eine Auswahloberfläche erforderlich, die den gewählten Scope (Verein/Mannschaft, soweit für Rolle zulässig) und den Kategorienumfang explizit anzeigt und vom Nutzer auswählen lässt. Danach wird die bestehende DEV-Function an diese Auswahl angeschlossen. Bis das vollständige Paket bereitsteht, bleibt die vorhandene UI als Prototyp kenntlich und wird nicht als vollständiges Backup ausgegeben.
 
 Keine App-Codeänderung oder Supabase-Deployment in dieser Prüfrunde; ausschließlich Abgleich und Dokumentation.
+
+
+## Design-Workflow: Backup-Auswahloberfläche – Schema (22.11.2026)
+
+Status: Schema zur fachlichen Prüfung; Low-Fidelity und High-Fidelity folgen erst nach Schema-Freigabe. Keine UI-/Codeänderung.
+
+### Zweck
+Vor dem Export transparent und explizit festlegen, welcher zulässige Kontext und welche Datenkategorien gesichert werden. Keine voreingestellte, unbemerkte Komplettauswahl.
+
+### Struktur / Reihenfolge
+1. **Sicherungsbereich** – Verein oder Mannschaft; nur Kontexte anzeigen/auswählen, die der aktuellen Rolle zugänglich sind. Superadmin wählt ausdrücklich Verein oder Mannschaft und den konkreten Kontext. Vereinsadmin: eigener Verein. Mannschaftsadmin: eigene Mannschaft.
+2. **Datenumfang** – Kategorien als unabhängige Auswahl:
+   - Mannschaft & Spieler (`team_core`)
+   - Training & Anwesenheit (`training`)
+   - Spieltage & Kader (`matchday`)
+   - Saisonhistorie (`season_history`)
+   - Sperren & Disziplinhistorie (`discipline_history`)
+   Mindestens eine Kategorie muss ausgewählt sein; Auswahl wird an den bestehenden DEV-Endpoint als `categories` übergeben. Identitäts-/Rollen-/Mitgliedschaftstabellen bleiben außerhalb des normalen Backups.
+3. **Dateien / Bilder** – tatsächliche Storage-Dateien sind noch nicht im Endpoint enthalten. Im Schema daher als transparenter, separat gekennzeichneter Umfangspunkt zu behandeln, nicht so darstellen, als wären sie bereits Bestandteil der Datenkategorien. Fachlich festzulegen ist im nächsten Designschritt, ob sie eine eigene Auswahl oder eine klar beschriebene Option bilden.
+4. **Prüfen & Starten** – vor Start Zusammenfassung von Kontext und ausgewähltem Umfang; Start nur bei gültiger Auswahl. Während der Erstellung Status; Erfolg erst melden, wenn das vollständige Archiv bereitsteht. Fehler/fehlende referenzierte Dateien dürfen kein scheinbar vollständiges Backup erzeugen.
+
+### Noch nicht Teil dieses Schemas
+- Restore-Auswahl oder Restore-Aktion (Restore bleibt zurückgestellt).
+- Passwortdialog und konkrete Verschlüsselungsdetails (separat zu gestalten, sobald Archivformat freigegeben).
+- High-Fidelity-Farben, Icons, Abstände oder endgültige Komponentenauswahl.
+- App-Code, Edge-Function-Änderung oder Deployment.
+
+### Nächster Schritt
+Nach fachlicher Freigabe dieses Schemas folgt Low-Fidelity als grober Bildschirm-/Interaktionsentwurf. Erst nach dessen Freigabe wird High-Fidelity im bestehenden KADAssist-Designsystem ausgearbeitet.
