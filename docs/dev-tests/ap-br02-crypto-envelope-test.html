@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KADAssist – Backup-Verschlüsselungstest DEV</title>
+<style>
+body{font:16px system-ui,-apple-system,sans-serif;max-width:720px;margin:24px auto;padding:0 16px;color:#172033}
+h1{font-size:1.35rem}label{display:block;margin:14px 0 6px}input,button{font:inherit;padding:10px;width:100%;box-sizing:border-box}button{margin-top:10px}pre{white-space:pre-wrap;background:#f2f4f8;padding:12px;border-radius:8px}
+</style>
+</head>
+<body>
+<h1>AP-BR02 · Browser-Verschlüsselungstest</h1>
+<p><strong>Nur synthetische Testdaten.</strong> Keine Supabase-Verbindung und kein echter Backup-Inhalt. Das Passwort wird nur in dieser Testseite verwendet und nicht gespeichert oder übertragen.</p>
+<label for="pw">Testpasswort (mindestens 12 Zeichen)</label>
+<input id="pw" type="password" autocomplete="new-password" placeholder="Nur für diesen lokalen Test">
+<button id="run">Verschlüsselung und Prüftests starten</button>
+<button id="download" disabled>Verschlüsseltes Testpaket herunterladen</button>
+<pre id="result">Bereit, sobald diese Seite auf DEV geladen wurde.</pre>
+<script type="module">
+import { encryptBackupBlob, decryptBackupBlob, validateBackupPassword } from "../../src/backup/backup-crypto.js";
+const out=document.getElementById("result"),pw=document.getElementById("pw"),run=document.getElementById("run"),dl=document.getElementById("download");
+let encrypted=null;
+const log=x=>out.textContent=x;
+run.addEventListener("click",async()=>{
+  run.disabled=true;dl.disabled=true;encrypted=null;
+  const password=pw.value;
+  const valid=validateBackupPassword(password);
+  if(!valid.valid){log("PASSWORT NICHT GÜLTIG: "+valid.reason+" (12 Zeichen Mindestlänge).");run.disabled=false;return;}
+  try{
+    const sample=new Uint8Array(64*1024);
+    crypto.getRandomValues(sample);
+    const original=new Blob([sample],{type:"application/zip"});
+    const start=performance.now();
+    encrypted=await encryptBackupBlob(original,password);
+    const encryptMs=Math.round(performance.now()-start);
+    const decryptStart=performance.now();
+    const restored=await decryptBackupBlob(encrypted,password);
+    const decryptMs=Math.round(performance.now()-decryptStart);
+    const a=new Uint8Array(await original.arrayBuffer()),b=new Uint8Array(await restored.arrayBuffer());
+    let same=a.length===b.length;
+    for(let i=0;same&&i<a.length;i++)same=a[i]===b[i];
+    if(!same)throw new Error("Roundtrip-Inhalt stimmt nicht überein");
+    let wrongPasswordRejected=false;
+    try{await decryptBackupBlob(encrypted,password+"-wrong");}catch{wrongPasswordRejected=true;}
+    const tamperedBytes=new Uint8Array(await encrypted.arrayBuffer());
+    tamperedBytes[tamperedBytes.length-1]^=1;
+    let tamperRejected=false;
+    try{await decryptBackupBlob(new Blob([tamperedBytes]),password);}catch{tamperRejected=true;}
+    const results=[
+      "Verschlüsselung: BESTANDEN",
+      "Entschlüsselung + Bytevergleich: "+(same?"BESTANDEN":"FEHLER"),
+      "Falsches Passwort wird abgewiesen: "+(wrongPasswordRejected?"BESTANDEN":"FEHLER"),
+      "Manipulierte Datei wird abgewiesen: "+(tamperRejected?"BESTANDEN":"FEHLER"),
+      "Kopf-/Versionsformat: KADB v1",
+      "KDF: PBKDF2-SHA-256, 600.000 Iterationen",
+      "Verschlüsselung: AES-256-GCM, Authentifizierungstag 128 Bit",
+      "Testgröße: 64 KiB synthetisch",
+      "Laufzeit Verschlüsselung: "+encryptMs+" ms",
+      "Laufzeit Entschlüsselung: "+decryptMs+" ms",
+      "Dateigröße: "+encrypted.size+" Bytes",
+      "",
+      "Keine echten Daten und kein Passwort an Server übertragen."
+    ];
+    log(results.join("\n"));
+    dl.disabled=false;
+  }catch(e){log("TEST FEHLGESCHLAGEN: "+(e?.message||String(e)));}
+  finally{run.disabled=false;}
+});
+dl.addEventListener("click",()=>{
+  if(!encrypted)return;
+  const url=URL.createObjectURL(encrypted),a=document.createElement("a");
+  a.href=url;a.download="kadassist-crypto-test.kadbackup";a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+});
+</script>
+</body>
+</html>
