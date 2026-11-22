@@ -286,17 +286,6 @@ Deno.serve(async (req: Request) => {
     archiveEntries["manifest.json"] = strToU8(JSON.stringify(packageManifest));
     const archive = zipSync(archiveEntries, { level: 0 });
     return new Response(archive, { status: 200, headers: { ...headers(req), "Content-Type": "application/zip", "Content-Disposition": 'attachment; filename="kadassist-backup.zip"', "X-KADAssist-Backup-Format": "1", "X-KADAssist-Asset-Count": String(assetManifest.length), "X-KADAssist-Asset-Bytes": String(totalAssetBytes) } });
-    // Package response returned above; retained unreachable prototype response for source compatibility.
-    return reply(req, {
-      format: "KADAssist-Teamdaten-JSON",
-      version: 16,
-      generated_at: new Date().toISOString(),
-      scope: { type: body.scope_type, id: scopeId, club_id: clubId, team_ids: authorizedTeamIds },
-      authorization: { user_id: authData.user.id, verified_server_side: true },
-      categories: body.categories,
-      data: snapshot,
-      status: "server_snapshot_prototype_storage_and_encrypted_archive_not_included",
-    });
   } catch (e) {
     console.error("AP-BR02 backup error", e);
     return reply(req, { error: "Backup-Snapshot konnte nicht erstellt werden." }, 500);
