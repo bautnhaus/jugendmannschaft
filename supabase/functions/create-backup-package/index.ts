@@ -74,26 +74,43 @@ Deno.serve(async (req: Request) => {
     if (authError || !authData.user) return reply(req, { error: "Benutzer konnte nicht authentifiziert werden." }, 401);
     let body: any;
     try { body = await req.json(); } catch { return reply(req, { error: "Ungültiger JSON-Request." }, 400); }
-    if (!body || !["team", "club"].includes(body.scope_type) || !UUID.test(String(body.scope_id || "")) || !Array.isArray(body.categories) || !body.categories.length || body.categories.some((c: unknown) => typeof c !== "string" || !CATEGORIES.has(c)) || new Set(body.categories).size !== body.categories.length) {
+    if (!body || !["team", "club", "platform"].includes(body.scope_type) || (body.scope_type === "platform" ? String(body.scope_id || "") !== "platform" : !UUID.test(String(body.scope_id || ""))) || !Array.isArray(body.categories) || !body.categories.length || body.categories.some((c: unknown) => typeof c !== "string" || !CATEGORIES.has(c)) || new Set(body.categories).size !== body.categories.length) {
       return reply(req, { error: "Scope oder Kategorien ungültig. Bitte ausschließlich erlaubte Kategorien ausdrücklich auswählen." }, 400);
     }
     const admin = createClient(url, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const scopeId = String(body.scope_id);
     const authorizedTeamIds: string[] = [];
+    const authorizedClubIds: string[] = [];
     let clubId: string | null = null;
-    if (body.scope_type === "team") {
+    if (body.scope_type === "platform") {
+      const { data: platformRole, error: roleError } = await admin.from("global_user_roles").select("role").eq("user_id", authData.user.id).eq("role", "super_admin").maybeSingle();
+      if (roleError) return reply(req, { error: "Plattformberechtigung konnte nicht geprüft werden." }, 500);
+      if (platformRole?.role !== "super_admin") return reply(req, { error: "Plattformbackup ist ausschließlich Superadmins erlaubt." }, 403);
+      const allTeams: any[] = [];
+      for (let offset = 0; ; offset += 500) {
+        const { data, error } = await admin.from("teams").select("id,club_id").range(offset, offset + 499);
+        if (error) return reply(req, { error: "Plattformmannschaften konnten nicht sicher ermittelt werden." }, 500);
+        allTeams.push(...(data || [])); if ((data || []).length < 500) break;
+        if (allTeams.length > 5000) return reply(req, { error: "Plattformumfang überschreitet die sichere Scope-Grenze (5.000 Mannschaften)." }, 413);
+      }
+      authorizedTeamIds.push(...allTeams.map(t => String(t.id)));
+      authorizedClubIds.push(...new Set(allTeams.map(t => t.club_id).filter(Boolean).map(String)));
+      const { data: clubs, error: clubsError } = await admin.from("clubs").select("id");
+      if (clubsError) return reply(req, { error: "Plattformvereine konnten nicht ermittelt werden." }, 500);
+      for (const c of clubs || []) if (!authorizedClubIds.includes(String(c.id))) authorizedClubIds.push(String(c.id));
+    } else if (body.scope_type === "team") {
       const { data: allowed, error } = await user.rpc("is_team_admin", { p_team_id: scopeId });
       if (error) return reply(req, { error: "Mannschaftsberechtigung konnte nicht geprüft werden." }, 500);
       if (allowed !== true) return reply(req, { error: "Kein Zugriff auf diesen Mannschaftskontext." }, 403);
       authorizedTeamIds.push(scopeId);
       const { data: team, error: teamError } = await admin.from("teams").select("id,club_id").eq("id", scopeId).maybeSingle();
       if (teamError || !team) return reply(req, { error: "Mannschaftskontext nicht gefunden." }, 404);
-      clubId = team.club_id;
+      clubId = team.club_id; if (clubId) authorizedClubIds.push(String(clubId));
     } else {
       const { data: allowed, error } = await user.rpc("can_manage_club_context", { p_club_id: scopeId });
       if (error) return reply(req, { error: "Vereinsberechtigung konnte nicht geprüft werden." }, 500);
       if (allowed !== true) return reply(req, { error: "Kein Zugriff auf diesen Vereinskontext." }, 403);
-      clubId = scopeId;
+      clubId = scopeId; authorizedClubIds.push(scopeId);
       const { data: teams, error: teamError } = await admin.from("teams").select("id").eq("club_id", scopeId);
       if (teamError) return reply(req, { error: "Mannschaften des Vereins konnten nicht ermittelt werden." }, 500);
       authorizedTeamIds.push(...(teams || []).map((t: any) => String(t.id)));
@@ -253,7 +270,8 @@ Deno.serve(async (req: Request) => {
         if (memberErr) return reply(req, { error: "Profilbild-Berechtigungen konnten nicht ermittelt werden." }, 500);
         scopedUserIds = new Set((memberships || []).map((m: any) => String(m.user_id)));
       } else {
-        const { data: memberships, error: memberErr } = await admin.from("club_members").select("user_id").eq("club_id", clubId);
+        const clubMembershipQuery = body.scope_type === "platform" ? admin.from("club_members").select("user_id").in("club_id", authorizedClubIds) : admin.from("club_members").select("user_id").eq("club_id", clubId);
+        const { data: memberships, error: memberErr } = await clubMembershipQuery;
         if (memberErr) return reply(req, { error: "Profilbild-Berechtigungen konnten nicht ermittelt werden." }, 500);
         scopedUserIds = new Set((memberships || []).map((m: any) => String(m.user_id)));
         const { data: teamMemberships, error: tmErr } = await admin.from("team_members").select("user_id").in("team_id", authorizedTeamIds);
@@ -267,17 +285,19 @@ Deno.serve(async (req: Request) => {
         for (const profile of profiles || []) if (profile.avatar_url) await addAsset("profile-avatars", String(profile.avatar_url), "assets/profile-avatars/" + String(profile.id) + "/" + String(profile.avatar_url).split("/").pop(), "profile-avatar", String(profile.id) + "/");
       }
       // The crest is allowed only for the verified club that belongs to the requested context.
-      if (clubId) {
-        const { data: club, error: clubErr } = await admin.from("clubs").select("id,crest_path").eq("id", clubId).maybeSingle();
-        if (clubErr) return reply(req, { error: "Vereinswappen konnte nicht ermittelt werden." }, 500);
-        if (club?.crest_path) await addAsset("club-assets", String(club.crest_path), "assets/club-crest/" + String(club.id) + "/" + String(club.crest_path).split("/").pop(), "club-crest", String(club.id) + "/");
+      if (authorizedClubIds.length) {
+        for (let start = 0; start < authorizedClubIds.length; start += 200) {
+          const { data: clubs, error: clubErr } = await admin.from("clubs").select("id,crest_path").in("id", authorizedClubIds.slice(start, start + 200));
+          if (clubErr) return reply(req, { error: "Vereinswappen konnten nicht ermittelt werden." }, 500);
+          for (const club of clubs || []) if (club.crest_path) await addAsset("club-assets", String(club.crest_path), "assets/club-crest/" + String(club.id) + "/" + String(club.crest_path).split("/").pop(), "club-crest", String(club.id) + "/");
+        }
       }
     }
     const packageManifest = {
       format: "KADAssist-Backup-Package",
       format_version: 1,
       created_at: new Date().toISOString(),
-      scope: { type: body.scope_type, id: scopeId, club_id: clubId, team_ids: authorizedTeamIds },
+      scope: { type: body.scope_type, id: scopeId, club_id: clubId, club_ids: authorizedClubIds, team_ids: authorizedTeamIds },
       categories: body.categories,
       snapshot: { format: "KADAssist-Teamdaten-JSON", version: 16, data: snapshot },
       assets: assetManifest,
