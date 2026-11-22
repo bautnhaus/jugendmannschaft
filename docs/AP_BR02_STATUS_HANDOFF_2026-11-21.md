@@ -537,3 +537,13 @@ Damit ist das Kryptomodul für den nächsten Integrationsschritt praktisch auf d
 - Präventiv geändert: Kryptomodul wird jetzt dynamisch erst beim Start des Backupvorgangs geladen. Login und übrige App hängen damit nicht mehr vom zusätzlichen Modulimport ab.
 - Fix commit `9da28db7cf9e7f3f3d4fc1098c612ffa8909e0e2`; DEV workflow run `45054961377` success. DEV-Mirror `index.html` SHA bestätigt `49b4fd09cc81bb2f413e0bf67e2c9b8318f8a087`, statischer Crypto-Import fehlt, Lazy-Import vorhanden.
 - Login muss vom Nutzer nach Laden der aktualisierten DEV-Seite erneut geprüft werden. Falls es weiter nicht reagiert, nächster Schritt: Safari-Cache/Tab neu laden und tatsächliche Meldung/Fehlerursache erfassen; keine weitere Vermutung als gesicherte Ursache ausgeben.
+
+
+## AP-BR02 Export-E2E-Test und Dateierkennung (22.11.2026)
+
+- Nutzer bestätigt DEV-Anmeldung nach Syntaxkorrektur wieder funktionierend.
+- Syntaxursache im Backup-Export: überzähliges Quote in `let detail='Serverexport fehlgeschlagen ('+response.status+').';';`, korrigiert in Commit `058f239cb633b2544dafd5601aa2383221dd0c2c`. Gesamter zentraler JavaScript-Hauptscript und isolierte Exportfunktion syntaktisch erfolgreich geprüft. DEV workflow success.
+- Nutzer bestätigt Export einer kleinen Auswahl: Download erfolgreich; Dialog schloss zunächst nicht. Abschlussverhalten ergänzt in Commit `ddee3df44ff558df54abc2ddeee5e1e3de8172d9`; nach erfolgreichem Download Passwortfelder leeren, Erfolgsmeldung setzen, Dialog schließen. DEV workflow `45059084181` completed success.
+- Nutzer bestätigt anschließend Export mit Umfang „Alles“: Download erfolgreich, Dialog automatisch geschlossen. Dies ist ein erfolgreicher End-to-End-Export im aktuellen Kontext/Rolle; Rollenmatrix und Dateninhalt fachlich noch nicht komplett validiert.
+- Datei-Endung `.kadbackup`: erwartete proprietäre Endung, MIME `application/vnd.kadassist.backup`; Datei ist KADB v1 AES-GCM-verschlüsselte Hülle, nicht direkt durch iOS Dateien/ZIP-Vorschau lesbar. Ein erfolgreicher Export ist nicht gleich erfolgreiches Wiederöffnen/Decrypt/Restore.
+- Stand: Import-/Entschlüsselungs-UI und Restore sind noch nicht abgenommen bzw. dürfen nicht aktiviert werden. Nächster technischer Arbeitspunkt: sichere lokale Datei-Auswahl und Passwort-Entschlüsselung mit Integritätsprüfung, danach ZIP-Inhalt/Manifest lesbar machen, ohne Restore auszuführen. Benutzer hat aktuell noch keine Rückmeldung zur Prüfung von Dateigröße/Dateikennung; kein Restore und kein PROD.
