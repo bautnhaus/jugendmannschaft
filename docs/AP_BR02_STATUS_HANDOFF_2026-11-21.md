@@ -160,7 +160,7 @@ Read-only-Abgleich von develop `index.html`, Dokumentation und aktiver DEV-Edge-
 ### Tatsächliche Lücke, die den nächsten Schritt begründet
 - Die sichtbare App-Funktion `exportJSON()` ruft noch `buildBackupSnapshot()` auf und nicht die Edge Function. Der neue serverseitige Snapshot ist daher Backend-Baustein, aber noch nicht der normale Exportablauf.
 - Die aktive Edge Function gibt derzeit einen JSON-Snapshot zurück und markiert ausdrücklich `storage_and_encrypted_archive_not_included`. Storage-Bytes, verschlüsseltes Archiv und vollständiger Downloadablauf sind noch nicht verbunden.
-- Der Restore `replaceTeamDataWithBackup()` löscht vor dem Einfügen vorhandene Teamdaten und ist damit nicht kompatibel mit den vereinbarten Regeln Merge / Never-delete / Newer-wins. Restore bleibt unverändert deaktiviert/aufgeschoben und darf nicht als Ziel des nächsten Schritts behandelt werden.
+- Der Restore `replaceTeamDataWithBackup()` löscht vor dem Einfügen vorhandene Teamdaten und ist damit nicht kompatibel mit den vereinbarten Regeln Merge / Never-delete / Newer-wins. Restore ist im Code noch vorhanden und destruktiv; er ist fachlich nicht als sichere Wiederherstellung freigegeben und darf bis zur späteren Überarbeitung nicht verwendet werden.
 
 ### Minimaler nächster Arbeitsumfang
 1. Bestehende Edge Function und UI-Aufruf read-only technisch abgleichen; dann den App-Export auf den serverseitig autorisierten Snapshot umstellen – ohne erneute Inventur.
