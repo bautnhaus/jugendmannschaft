@@ -633,3 +633,28 @@ Vor dem Codeeingriff aktuelle develop-Dateien erneut gelesen:
 
 ### Umsetzungsgrenze
 Die Implementierung wird in kleinen, nachvollziehbaren Änderungen vorgenommen. Vor UI-Anbindung des Plattform-Scope muss der Edge-Function-Backendpfad mit vollständigem Plattform-Scope, Role-deny-Tests und Scope-Integrität ergänzt werden. Keine bloße Client-Option darf als Plattformautorisierung gelten. Keine SQL-/DB-/Storage-Schreiboperation und kein PROD.
+
+
+## Umsetzung – erster Codeabschnitt committed (22.11.2026)
+
+### GitHub develop
+- Frontend Commit `a5abd652eb8cd452a9ec324b24bbae749426117b`:
+  - Daten & Sicherung im Mehr-Menü für Vereinsadmin/Superadmin freigeben.
+  - Daten-Seite rollenbezogen zugänglich machen.
+  - Backup-Dialogrolle vom allgemeinen Mannschafts-`adminGuard()` entkoppelt, aber nur für Teamadmin im eigenen Team, Vereinsadmin im eigenen Club oder Superadmin im Plattformstart.
+  - Superadmin kann Scope `platform`, `club`, `team` im Dialog wählen; für Verein/Mannschaft werden konkrete Auswahlfelder angeboten.
+  - Restore-Handler zeigt nun explizit Sperre und führt keinen Import aus.
+- Edge Function Commit `7095d8ec0a367a47e372df76adedc3e8f72a759b`:
+  - Request-Scope `platform` ergänzt.
+  - Server prüft Plattform-Scope über Service-Role-Abfrage `global_user_roles` des authentifizierten Users und `role='super_admin'`; unberechtigte Nutzer erhalten 403.
+  - Plattform-Team- und Vereins-IDs werden ermittelt; Manifest enthält `club_ids`.
+  - Vereinswappen werden für die autorisierten Plattformvereine referenzbasiert aufgenommen.
+- Edge Function Follow-up Commit `4b23b08a5bbb9f5ed07850275dfadf5ac2b4b875`:
+  - Plattform-/Vereins-Team-, Club-, Player- und Mitgliedschafts-Referenzabfragen paginiert; definierte Scope-Sicherheitsgrenzen ergänzen.
+
+### Status / noch nicht abgenommen
+- Quelländerungen committed auf `develop`; **kein Edge-Function-Deployment bestätigt**, kein Browser-/DEV-End-to-End-Test nach diesen Änderungen.
+- Vor Deployment: statische Syntax-/Diffprüfung und sicherstellen, dass Plattformumfang bei großen Datenbeständen nicht still abgeschnitten wird; insbesondere Club-/Membership-/Asset-Abfragen und RLS-/RPC-Interaktion.
+- Danach DEV-Testmatrix: Teamadmin nur eigenes Team; Vereinsadmin nur eigener Verein; Superadmin Plattform/Club/Team; Nicht-Superadmin Plattformscope muss 403 erhalten; ungültige/fehlende Scope-ID muss kontrolliert scheitern; Paketmanifest und Assets auf Vollständigkeit prüfen.
+- Die vorhandenen Crypto-/ZIP-/früheren Exporttests sind kein Ersatz für diese neue Rollen-/Scope-Abnahme und werden nur gezielt für Regression wiederholt.
+- Keine SQL-/DB-/Storage-Schreiboperation und kein PROD.
