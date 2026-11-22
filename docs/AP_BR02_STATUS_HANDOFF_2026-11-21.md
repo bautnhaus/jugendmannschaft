@@ -683,3 +683,10 @@ Die Implementierung wird in kleinen, nachvollziehbaren Änderungen vorgenommen. 
 5. Plattformscope fachlich vollständigkeitsklarstellen (nur AP-BR02-Kategorien oder zusätzlich Plattformrollen/Mitgliedschaften/Club-Stammdaten) und gegebenenfalls Vertrag/Code nach Freigabe ergänzen.
 6. Status nach jedem Test sofort in diese Handoff schreiben; keine Wiederholung bereits bestätigter ZIP-/Crypto-Grundtests.
 
+
+
+### Frontend-Deploy-Verifikation (22.11.2026)
+- GitHub Actions `Deploy DEV` run `45073176783` für Commit `1267b1e0`: completed / success.
+- DEV-Mirror `bautnhaus/jugendmannschaft-dev`, Branch `main`, Datei `index.html` read-only abgerufen. Blob SHA `67c5860e539bf74bad13368a6483c5cbe3977f38` stimmt mit dem Frontend-Commit überein.
+- Mirror-Inhalt bestätigt: Plattformoption im Dialog, Rollenfreigabe im Mehr-Menü und Restore-Sperrhinweis sind enthalten.
+- Damit sind Quellcommit und DEV-Sync technisch verifiziert. Noch nicht verifiziert ist das reale iPhone-/Browserverhalten bzw. die authentifizierte Rollen-/Scope-Funktionalität.
