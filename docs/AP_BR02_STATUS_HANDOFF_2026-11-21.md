@@ -570,3 +570,32 @@ Damit ist das Kryptomodul für den nächsten Integrationsschritt praktisch auf d
 - Restore: Die Scope-Auswahl gilt als fachliche Zielrichtung für Backup/Restore-Dialoge; sie erteilt keine Freigabe, Restore zu aktivieren oder die bestehende destruktive Legacy-Importfunktion zu verwenden. Restore bleibt bis zur Umsetzung von Merge / Never-delete / Newer-wins und ausdrücklicher Freigabe gesperrt.
 - Status: fachliche Konzeptentscheidung dokumentiert. Noch keine App-Codeänderung, kein SQL, keine Supabase-/Storage-Schreiboperation und kein PROD.
 - Nächster Umsetzungsschritt: auf develop einen konkreten DEV-UI-/Scope-Plan ausarbeiten und die bestehende Edge-Function-Autorisierung read-only gegen die Zielrollen und Scope-Arten abgleichen, bevor Code geändert wird.
+
+
+## Chatwechsel-/Arbeitscheckpoint – Fortsetzung Backup-Rollenfreigabe (22.11.2026)
+
+Dieser Abschnitt ergänzt den bisherigen Checkpoint als fortlaufende Übergabe. Die vorangehenden Inventuren, Kryptotests, ZIP-Tests und bestätigten Export-E2E-Schritte bleiben gültig und sind nicht erneut auszuführen, sofern ein konkreter Regression- oder Fehlerhinweis entsteht.
+
+### In dieser Chatfortsetzung geprüft (read-only, develop)
+
+- Nutzer verwies auf Commit `35a96af`; maßgebliche Übergabedokumentation ist `docs/AP_BR02_STATUS_HANDOFF_2026-11-21.md`.
+- Aktuelle `index.html` in develop geprüft: `window.openMehrPage()` zeigt, dass „Daten & Sicherung“ (`data`) derzeit in den team-admin- bzw. Vereins-/Plattform-Admin-Pfad eingeschränkt ist. Im reinen Vereinsadmin-/Plattformstart fehlt der passende, direkte Backup-Einstieg wie im Checkpoint beschrieben.
+- `exportJSON()` read-only geprüft: Dialog baut seine Optionen derzeit aus `team` und `currentClubId`; ohne einen dieser aktuellen App-Kontexte wird kein Scope angeboten. Das widerspricht der fachlichen Entscheidung, dass der Dialog den Backup-Scope bestimmt und der aktuelle Kontext ihn nicht automatisch begrenzt.
+- `create-backup-package` Edge-Function-Quelltext read-only geprüft: Request-Validierung akzeptiert `team` und `club`; entsprechende serverseitige Rollen-RPC-Prüfungen sind vorhanden. Ein eigenständiger `platform`-Scope ist in der geprüften Implementierung nicht enthalten/nachgewiesen.
+- Kein Code, keine Dokumentationsdatei und kein SQL in dieser Prüfrunde geändert; kein Commit oder Deployment erstellt. Keine DB-/Storage-Schreiboperation und kein PROD-Zugriff.
+
+### Ergebnis / offene Umsetzung
+
+1. Backup-Einstieg für Vereinsadmin und Superadmin in „Mehr“ bzw. den geeigneten Vereins-/Plattformverwaltungsbereich integrieren.
+2. Superadmin muss Backup direkt aus der Plattformverwaltung starten können, ohne vorher einen Vereins-/Mannschaftskontext zu setzen.
+3. Scope-Dialog ausdrücklich um Plattform, Verein und Mannschaft erweitern; Optionen rollenbezogen darstellen.
+4. Backend-Scope-Vertrag und Autorisierung für Plattform-Scope eigenständig sicher entwerfen und implementieren. UI-Auswahl allein ist keine Berechtigung. Bestehende Team-/Clubprüfungen nicht abschwächen.
+5. Anschließend gezielte DEV-Rollen-/Scope-Tests durchführen; bereits bestandene Crypto-/ZIP-/kleine-Auswahl-/„Alles“-Exporttests nicht pauschal wiederholen.
+6. Restore bleibt gesperrt/zurückgestellt. Die Legacy-Funktion `replaceTeamDataWithBackup()` ist destruktiv und darf nicht verwendet werden, bevor Merge / Never-delete / Newer-wins sicher umgesetzt, geprüft und separat freigegeben sind.
+
+### Verbindliche Arbeitsgrenzen
+
+- Nur Branch `develop` und Supabase DEV.
+- Keine SQL-/DB-/Storage-Schreiboperation, Migration, Deployment oder PROD-Änderung ohne separate ausdrückliche Freigabe, soweit die bestehende Projektregel dies verlangt.
+- Keine Secrets, Tokens oder Passwörter in Dokumentation oder Chat.
+- Bei nächstem Chat zuerst dieses Dokument und die referenzierten AP-BR02-Inventar-/Design-Dokumente lesen; nur die oben offenen Punkte fortsetzen, keine abgeschlossenen Prüfungen wiederholen.
