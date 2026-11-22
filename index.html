@@ -4074,7 +4074,7 @@ async function exportJSON(){
         method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+sessionData.session.access_token},
         body:JSON.stringify({scope_type:scopeType,scope_id:scopeId,categories})
       });
-      if(!response.ok){let detail='Serverexport fehlgeschlagen ('+response.status+').';';try{const err=await response.json();if(err?.error)detail=err.error;}catch{}throw new Error(detail);}
+      if(!response.ok){let detail='Serverexport fehlgeschlagen ('+response.status+').';try{const err=await response.json();if(err?.error)detail=err.error;}catch{}throw new Error(detail);}
       const archiveBlob=await response.blob();
       if(!archiveBlob.size)throw new Error('Der Server hat ein leeres Paket zurückgegeben.');
       progress.textContent='2/3 – Backup wird auf diesem Gerät verschlüsselt. Bitte Safari geöffnet lassen…';
