@@ -133,6 +133,42 @@ Deno.serve(async (req: Request) => {
         snapshot[name] = rows;
       }
     }
+    // AP-BR02 integrity gate: never emit a successful snapshot with cross-scope child references.
+    const idsOf = (table: string, field = "id") => new Set((snapshot[table] || []).map((row: any) => String(row[field])).filter(Boolean));
+    const playerIds = idsOf("players");
+    const positionIds = idsOf("positions");
+    const trainingIds = idsOf("trainings");
+    const matchdayIds = idsOf("matchdays");
+    const recommendationIds = idsOf("matchday_recommendation_runs");
+    const assertRefs = (table: string, rows: any[], refs: Array<[string, Set<string>]>) => {
+      for (const row of rows) {
+        for (const [field, allowed] of refs) {
+          const value = row[field];
+          if (value !== null && value !== undefined && !allowed.has(String(value))) {
+            throw new Error(`AP-BR02 integrity violation in ${table}.`);
+          }
+        }
+      }
+    };
+    if (snapshot.player_positions) assertRefs("player_positions", snapshot.player_positions, [["player_id", playerIds], ["position_id", positionIds]]);
+    for (const table of ["attendance", "training_players", "training_responses"]) {
+      if (snapshot[table]) assertRefs(table, snapshot[table], [["training_id", trainingIds], ["player_id", playerIds]]);
+    }
+    for (const table of ["matchday_players", "matchday_attendance"]) {
+      if (snapshot[table]) assertRefs(table, snapshot[table], [["matchday_id", matchdayIds], ["player_id", playerIds]]);
+    }
+    if (snapshot.matchday_recommendation_players) assertRefs("matchday_recommendation_players", snapshot.matchday_recommendation_players, [["recommendation_id", recommendationIds], ["player_id", playerIds]]);
+    // A selected training/matchday category must validate season references against the authorized team scope.
+    if (snapshot.trainings || snapshot.matchdays) {
+      let scopedSeasonIds = idsOf("seasons");
+      if (!snapshot.seasons) {
+        const { data: scopedSeasons, error: seasonError } = await admin.from("seasons").select("id,team_id").in("team_id", authorizedTeamIds);
+        if (seasonError) return reply(req, { error: "Saisonbezüge konnten nicht geprüft werden." }, 500);
+        scopedSeasonIds = new Set((scopedSeasons || []).map((row: any) => String(row.id)));
+      }
+      if (snapshot.trainings) assertRefs("trainings", snapshot.trainings, [["season_id", scopedSeasonIds]]);
+      if (snapshot.matchdays) assertRefs("matchdays", snapshot.matchdays, [["season_id", scopedSeasonIds]]);
+    }
     return reply(req, {
       format: "KADAssist-Teamdaten-JSON",
       version: 16,
