@@ -703,3 +703,25 @@ Nutzer hat zu Recht darauf hingewiesen: Vor dem Chatwechsel war der **Backup-Tes
 4. Danach Superadmin-Scope-Export und serverseitige Negativ-/Berechtigungstests gezielt durchführen.
 
 Der Vereinsadmin-Test ist der priorisierte offene Test und geht dem neuen Superadmin-Test vor. Keine bereits abgeschlossenen Crypto-/ZIP-Grundtests wiederholen, außer ein neuer Befund begründet eine Regression.
+
+
+## Vereinsadmin-UI-Test – Befund und Änderungsbedarf (23.11.2026)
+
+### Nutzerprüfung auf DEV (iPhone, Screenshots im Chat)
+- Vereinsadmin kann Mehr → Daten & Sicherung öffnen; der Backup-Dialog ist sichtbar. Der zuvor fehlende UI-Zugang ist damit für diesen Test behoben.
+- Im Backup-Umfang wird im praktischen Dialog derzeit nur „Eigener Verein (alle zugehörigen Mannschaften)“ angezeigt/angeboten. Die gewünschte Auswahl einzelner Mannschaften ist damit noch nicht praktisch testbar.
+- Auswahl eines vorherigen Mannschaftskontexts verändert den angebotenen Backup-Umfang laut Nutzer nicht.
+- Nutzeranforderung: Im Vereinsadmin-Dialog neben dem kompletten Vereinsbackup eine **Multiselect-Auswahl konkreter Mannschaften** anbieten. Der Vereinsadmin soll eine oder mehrere Mannschaften seines eigenen Vereins auswählen können; serverseitig muss jede ID auf die Vereinszugehörigkeit geprüft werden. Fremde Mannschaften dürfen weder UI-seitig angeboten noch über manipulierte Requests exportiert werden.
+- Teststatus: Vereinsadmin-Einstieg bestanden; Scope-/Exporttest **noch offen und vor Export pausiert**, bis der Multi-Team-Scope implementiert und deployed ist. Nicht als Export bestanden markieren.
+
+### Rollenübergreifende Überschrift in „Mehr“
+- Screenshot-Vergleich: gleicher Bereich zeigt für Vereinsadmin „Vereinsverwaltung“, für Mannschaftsadmin „Einstellungen“.
+- Nutzerwunsch: gleiche, rollenunabhängige Überschrift für diesen Bereich.
+- Vorschlag für Umsetzung: neutraler Titel **„Verwaltung“**; den konkret ausgewählten Kontext/Rollenbereich nicht als wechselnde Hauptüberschrift verwenden. Vor Codeänderung ggf. bestehende Heading-Quelle in index.html prüfen und einheitlich setzen.
+
+### Nächster Umsetzungsschritt (DEV only)
+1. Backup-Dialog: Vereinsadmin kann zwischen „Eigener Verein – alle Mannschaften“ und „Ausgewählte Mannschaften“ wechseln; zweite Option zeigt eine mobil bedienbare Mehrfachauswahl (Checkbox-Liste statt iOS-Select mit Einzelwahl).
+2. Requestvertrag um explizite Liste team_ids ergänzen; Edge Function prüft Vereinsadmin-Berechtigung für den eigenen Club und verifiziert **jede** ausgewählte Mannschaft, dass sie exakt zu diesem Club gehört. Keine Client-only-Autorisierung.
+3. Manifest weist Scope-Typ und ausgewählte Team-IDs klar aus; vorhandene Vereinsbackup-Semantik unverändert.
+4. Mehr-Bereichsüberschrift für Vereinsadmin und Mannschaftsadmin einheitlich „Verwaltung“ (bzw. final abgestimmte neutrale Bezeichnung).
+5. Erst nach Commit, DEV-Deploy und Sichtprüfung den Vereinsadmin-Exporttest fortsetzen. Superadmin-Test bleibt danach.
