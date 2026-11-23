@@ -4036,13 +4036,13 @@ async function exportJSON(){
   const modal=$('modal'),content=$('modalContent');
   let scopeOptions='';
   if(isSuperAdmin&&clubOnlyMode){scopeOptions='<option value="platform">Gesamte Plattform</option><option value="club">Ausgewählter Verein</option><option value="team">Ausgewählte Mannschaft</option>';}
-  else if(canManageClub&&currentClubId){scopeOptions='<option value="club">Eigener Verein (alle zugehörigen Mannschaften)</option><option value="team">Einzelne Mannschaft des eigenen Vereins</option>';}
+  else if(canManageClub&&currentClubId){scopeOptions='<option value="club">Eigener Verein – alle Mannschaften</option><option value="teams">Ausgewählte Mannschaften</option>';}
   else if(role==='admin'&&team&&!contextReadOnly){scopeOptions='<option value="team">Eigene Mannschaft</option>';}
   if(!scopeOptions){showStatus('Für diese Rolle ist kein zulässiger Backup-Umfang verfügbar.','error');return;}
   content.innerHTML='<div class="modalHeader"><h2>Backup erstellen</h2><button type="button" onclick="closeModal()" aria-label="Schließen">×</button></div>'+
     '<p class="muted">Das Backup wird im Browser verschlüsselt. Das Passwort wird nicht an den Server übertragen.</p>'+
     '<label>Backup-Umfang<select id="apbr02Scope">'+scopeOptions+'</select></label>'+
-    (isSuperAdmin&&clubOnlyMode?'<div id="apbr02ScopeDetail" style="display:grid;gap:8px;margin-top:8px"><label>Verein<select id="apbr02Club" disabled><option value="">Wird geladen …</option></select></label><label>Mannschaft<select id="apbr02Team" disabled><option value="">Mannschaft auswählen</option></select></label><p class="muted small">Für Verein oder Mannschaft den konkreten Datensatz auswählen. Das Plattformbackup benötigt keinen einzelnen Kontext.</p></div>':(canManageClub&&currentClubId?'<div id="apbr02ScopeDetail" style="display:grid;gap:8px;margin-top:8px"><label>Einzelne Mannschaft (optional, nur bei Mannschaftsbackup)<select id="apbr02ClubTeam"><option value="">Mannschaft auswählen …</option></select></label><p class="muted small">Vereinsbackup enthält alle Mannschaften. Mannschaftsbackup enthält nur die ausgewählte Mannschaft.</p></div>':''))+
+    (isSuperAdmin&&clubOnlyMode?'<div id="apbr02ScopeDetail" style="display:grid;gap:8px;margin-top:8px"><label>Verein<select id="apbr02Club" disabled><option value="">Wird geladen …</option></select></label><label>Mannschaft<select id="apbr02Team" disabled><option value="">Mannschaft auswählen</option></select></label><p class="muted small">Für Verein oder Mannschaft den konkreten Datensatz auswählen. Das Plattformbackup benötigt keinen einzelnen Kontext.</p></div>':(canManageClub&&currentClubId?'<div id="apbr02ScopeDetail" style="display:grid;gap:8px;margin-top:8px"><div id="apbr02ClubTeams" class="card" style="display:none;max-height:260px;overflow:auto"><p class="muted small">Wähle mindestens eine Mannschaft aus deinem Verein.</p><div id="apbr02ClubTeamChecks" style="display:grid;gap:10px"></div></div><p class="muted small">„Eigener Verein“ umfasst alle Mannschaften. Bei „Ausgewählte Mannschaften“ kannst du mehrere Mannschaften markieren.</p></div>':''))+
     '<div class="card" style="margin:12px 0"><label><input id="apbr02All" type="checkbox"> <strong>Alle Datenbereiche und Dateien/Bilder</strong></label>'+
     '<div id="apbr02Categories" style="display:grid;gap:8px;margin-top:10px">'+
     '<label><input type="checkbox" value="team_core"> Mannschaft &amp; Stammdaten</label>'+
@@ -4057,8 +4057,9 @@ async function exportJSON(){
     '<div id="apbr02Progress" class="notice small" role="status">Bereit.</div>'+
     '<div class="toolbar"><button type="button" id="apbr02Create">Verschlüsseltes Backup erstellen</button><button type="button" class="secondary" onclick="closeModal()">Abbrechen</button></div>';
   modal.classList.add('show');
-  const scopeSelect=$('apbr02Scope'),clubSelect=$('apbr02Club'),teamSelect=$('apbr02Team'),clubTeamSelect=$('apbr02ClubTeam');
-  if(clubTeamSelect&&canManageClub&&currentClubId){try{const {data,error}=await getClient().from('teams').select('id,name').eq('club_id',currentClubId).order('name');if(error)throw error;clubTeamSelect.innerHTML='<option value="">Mannschaft auswählen …</option>'+(data||[]).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||'Mannschaft')+'</option>').join('');const activeTeam=team&&((data||[]).some(t=>String(t.id)===String(team)))?String(team):'';if(activeTeam)clubTeamSelect.value=activeTeam;}catch(e){clubTeamSelect.innerHTML='<option value="">Mannschaften konnten nicht geladen werden</option>';console.error(e);}}
+  const scopeSelect=$('apbr02Scope'),clubSelect=$('apbr02Club'),teamSelect=$('apbr02Team'),clubTeamsBox=$('apbr02ClubTeams'),clubTeamChecks=$('apbr02ClubTeamChecks');
+  if(clubTeamsBox&&canManageClub&&currentClubId){try{const {data,error}=await getClient().from('teams').select('id,name').eq('club_id',currentClubId).order('name');if(error)throw error;clubTeamChecks.innerHTML=(data||[]).map(t=>'<label style="display:flex;align-items:center;gap:10px;padding:5px 0"><input type="checkbox" class="apbr02SelectedTeam" value="'+esc(t.id)+'" style="width:auto"><span>'+esc(t.name||'Mannschaft')+'</span></label>').join('');if(!(data||[]).length)clubTeamChecks.innerHTML='<p class="muted small">Keine Mannschaften gefunden.</p>';}catch(e){clubTeamChecks.innerHTML='<p class="muted small">Mannschaften konnten nicht geladen werden.</p>';console.error(e);}}
+  const updateClubTeamSelection=()=>{if(clubTeamsBox)clubTeamsBox.style.display=scopeSelect?.value==='teams'?'':'none';};scopeSelect?.addEventListener('change',updateClubTeamSelection);updateClubTeamSelection();
   if(clubSelect&&teamSelect){
     const fillTeams=async(clubId)=>{teamSelect.innerHTML='<option value="">Mannschaft auswählen</option>';teamSelect.disabled=true;if(!clubId)return;try{const {data,error}=await getClient().from('teams').select('id,name').eq('club_id',clubId).order('name');if(error)throw error;teamSelect.innerHTML='<option value="">Mannschaft auswählen</option>'+(data||[]).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||'Mannschaft')+'</option>').join('');teamSelect.disabled=false;}catch(e){teamSelect.innerHTML='<option value="">Mannschaften konnten nicht geladen werden</option>';console.error(e);}};
     try{const {data,error}=await getClient().rpc('get_super_admin_clubs');if(error)throw error;clubSelect.innerHTML='<option value="">Verein auswählen</option>'+(data||[]).map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name||'Verein')+'</option>').join('');clubSelect.disabled=false;}catch(e){clubSelect.innerHTML='<option value="">Vereine konnten nicht geladen werden</option>';console.error(e);}
@@ -4081,13 +4082,13 @@ async function exportJSON(){
       const client=getClient(),{data:sessionData,error:sessionError}=await client.auth.getSession();
       if(sessionError||!sessionData?.session?.access_token)throw new Error('Deine Anmeldung ist nicht mehr gültig. Bitte erneut anmelden.');
       const scopeType=$('apbr02Scope').value;
-      let scopeId=scopeType==='team'?team:currentClubId;
-      if(canManageClub&&!isSuperAdmin&&scopeType==='team')scopeId=clubTeamSelect?.value||'';
+      let scopeId=scopeType==='team'?team:currentClubId,requestScopeType=scopeType,selectedTeamIds=[];
+      if(canManageClub&&!isSuperAdmin&&scopeType==='teams'){requestScopeType='club';selectedTeamIds=[...content.querySelectorAll('.apbr02SelectedTeam:checked')].map(x=>x.value);if(!selectedTeamIds.length){progress.textContent='Bitte mindestens eine Mannschaft auswählen.';create.disabled=false;return;}}
       if(isSuperAdmin&&clubOnlyMode){if(scopeType==='platform')scopeId='platform';else if(scopeType==='club')scopeId=clubSelect?.value||'';else if(scopeType==='team')scopeId=teamSelect?.value||'';}
       if(!scopeId){progress.textContent=scopeType==='team'?'Bitte eine Mannschaft auswählen.':'Bitte den ausgewählten Verein oder die Mannschaft festlegen.';create.disabled=false;return;}
       const response=await fetch(SUPABASE_URL+'/functions/v1/create-backup-package',{
         method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+sessionData.session.access_token},
-        body:JSON.stringify({scope_type:scopeType,scope_id:scopeId,categories})
+        body:JSON.stringify({scope_type:requestScopeType,scope_id:scopeId,categories,...(selectedTeamIds.length?{team_ids:selectedTeamIds}:{})})
       });
       if(!response.ok){let detail='Serverexport fehlgeschlagen ('+response.status+').';try{const err=await response.json();if(err?.error)detail=err.error;}catch{}throw new Error(detail);}
       const archiveBlob=await response.blob();
@@ -4298,7 +4299,7 @@ function renderDashboardWelcomeContext(){
   if(currentWelcomeSeasonName)contextParts.push('Saison '+currentWelcomeSeasonName);
   if(!contextParts.length){
     if(clubMemberOnlyMode)contextParts.push('Vereinsmitgliedschaft');
-    else if(clubOnlyMode&&canManageClub)contextParts.push('Vereinsverwaltung');
+    else if(clubOnlyMode&&canManageClub)contextParts.push('Verwaltung');
     else if(isSuperAdmin&&!currentClubId)contextParts.push('Plattformverwaltung');
     else if(currentClubId)contextParts.push('Vereinskontext');
     else contextParts.push('Kein Arbeitskontext ausgewählt');
