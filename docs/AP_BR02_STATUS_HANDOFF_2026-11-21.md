@@ -735,3 +735,21 @@ Der Vereinsadmin-Test ist der priorisierte offene Test und geht dem neuen Supera
 - Edge Function `create-backup-package` deployed in Supabase DEV: ACTIVE, Version 4, `verify_jwt=true`, Deployment SHA-256 `640ff0963103c7487cc879b7ee9f5e8cb9e42ec024cb2fc1cff5cfc9dd9199ba`. Kein PROD-Deployment.
 - Neutraler Rollen-Kontexttitel „Verwaltung“ statt „Vereinsverwaltung“ ist in Frontend-Commit `a4bca429` enthalten. Der dynamische Mehr-Unterseiten-Titel `management` war bereits „Verwaltung“.
 - Status: Code und Edge Function deployed; Browser-/E2E-Test mit Vereinsadmin nach diesem Update steht noch aus. Vereinsadmin-Backup noch nicht fachlich bestanden; erst im DEV erneut Dialog prüfen und danach Export mit ausgewählten Mannschaften, Manifest-Team-IDs und Negativprüfung (fremde Team-ID) abnehmen. Superadmin-Test bleibt anschließend.
+
+
+## Vereinsadmin-Multiselect bestätigt / Überschrift rollenübergreifend korrigiert (23.11.2026)
+
+### Nutzer-Test DEV
+- Nutzer bestätigt auf iPhone: Multiselect für Backup-Mannschaften wurde korrekt angezeigt und der Backup-Download konnte gestartet werden.
+- Damit ist die UI-/Download-Stufe für den ausgewählten Vereinsadmin-Scope praktisch bestanden. **Inhalts-/Manifestprüfung** (enthaltene Team-IDs, Kategorien, Scope-Integrität) ist noch offen; bitte den Download bzw. das Manifest gezielt kontrollieren, bevor Export insgesamt als vollständig abgenommen gilt.
+- Nutzer meldet weiterhin unterschiedliche Überschriften auf der Seite „Daten & Sicherung“: Vereinsadmin „Mehr“, Mannschaftsadmin „Einstellungen“, Superadmin „Plattformverwaltung“. Die vorangegangene Änderung hatte nur den Kontexttext getroffen, nicht die tatsächliche gemeinsame Überschrift `#settingsMainHeading`.
+
+### Korrektur tatsächliche gemeinsame Überschrift
+- Frontend commit `42b0e5462aa995d71e582b878e38da9ef573c21b` in develop: `#settingsMainHeading` wird in allen Start-/Rollenpfaden (Teamadmin, Vereinsadmin, Superadmin und read-only Kontext) auf **„Verwaltung“** gesetzt; HTML-Fallback ebenfalls vereinheitlicht.
+- Änderung ist auf develop committed. DEV-Frontend-Deploy/Synchronisierung und erneute Sichtprüfung auf den drei Rollen stehen noch aus.
+- Keine Edge Function, SQL, DB oder PROD-Änderung für diese Überschriftenkorrektur.
+
+### Nächster Ablauf
+1. DEV-Frontend-Deploy prüfen und dann Seite „Daten & Sicherung“ mit Vereinsadmin, Mannschaftsadmin und Superadmin auf identische Überschrift „Verwaltung“ kontrollieren.
+2. Vereinsadmin-Backup: Manifest-/Paketinhalt der erfolgreich gestarteten Multi-Team-Auswahl prüfen und festhalten; anschließend gezielter Fremdteam-ID-Negativtest nur mit sicherem Testrequest.
+3. Danach Superadmin-Scope-Test fortsetzen. Restore bleibt gesperrt.
