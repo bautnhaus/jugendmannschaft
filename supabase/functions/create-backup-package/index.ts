@@ -74,7 +74,7 @@ Deno.serve(async (req: Request) => {
     if (authError || !authData.user) return reply(req, { error: "Benutzer konnte nicht authentifiziert werden." }, 401);
     let body: any;
     try { body = await req.json(); } catch { return reply(req, { error: "Ungültiger JSON-Request." }, 400); }
-    if (!body || !["team", "club", "platform"].includes(body.scope_type) || (body.scope_type === "platform" ? String(body.scope_id || "") !== "platform" : !UUID.test(String(body.scope_id || ""))) || !Array.isArray(body.categories) || !body.categories.length || body.categories.some((c: unknown) => typeof c !== "string" || !CATEGORIES.has(c)) || new Set(body.categories).size !== body.categories.length) {
+    if (!body || !["team", "club", "platform"].includes(body.scope_type) || (body.scope_type === "platform" ? String(body.scope_id || "") !== "platform" : !UUID.test(String(body.scope_id || ""))) || (body.team_ids !== undefined && (body.scope_type !== "club" || !Array.isArray(body.team_ids) || !body.team_ids.length || body.team_ids.some((id: unknown) => typeof id !== "string" || !UUID.test(id)) || new Set(body.team_ids).size !== body.team_ids.length)) || !Array.isArray(body.categories) || !body.categories.length || body.categories.some((c: unknown) => typeof c !== "string" || !CATEGORIES.has(c)) || new Set(body.categories).size !== body.categories.length) {
       return reply(req, { error: "Scope oder Kategorien ungültig. Bitte ausschließlich erlaubte Kategorien ausdrücklich auswählen." }, 400);
     }
     const admin = createClient(url, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -123,6 +123,15 @@ Deno.serve(async (req: Request) => {
         if (authorizedTeamIds.length > 5000) return reply(req, { error: "Vereinsumfang überschreitet die sichere Grenze (5.000 Mannschaften)." }, 413);
       }
       authorizedClubIds.push(scopeId);
+      if (body.team_ids !== undefined) {
+        const requestedTeamIds = body.team_ids as string[];
+        const { data: selectedTeams, error: selectedTeamsError } = await admin.from("teams").select("id,club_id").in("id", requestedTeamIds);
+        if (selectedTeamsError) return reply(req, { error: "Ausgewählte Mannschaften konnten nicht sicher geprüft werden." }, 500);
+        if ((selectedTeams || []).length !== requestedTeamIds.length || selectedTeams!.some((t: any) => String(t.club_id) !== String(scopeId))) {
+          return reply(req, { error: "Mindestens eine ausgewählte Mannschaft gehört nicht zu deinem Verein." }, 403);
+        }
+        authorizedTeamIds.splice(0, authorizedTeamIds.length, ...requestedTeamIds);
+      }
     }
     const snapshot: Record<string, unknown[]> = {};
     for (const category of body.categories as string[]) {
