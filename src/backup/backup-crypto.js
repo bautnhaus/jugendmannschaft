@@ -90,3 +90,43 @@ export async function decryptBackupBlob(encryptedBlob, password) {
   );
   return new Blob([plaintext], { type: "application/zip" });
 }
+
+/** Decrypts locally, then extracts the package manifest only; never imports data. */
+export async function readBackupManifestBlob(zipBlob) {
+  if (!(zipBlob instanceof Blob)) throw new Error("BACKUP_ZIP_NOT_BLOB");
+  const bytes = new Uint8Array(await zipBlob.arrayBuffer());
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let offset = 0;
+  while (offset + 30 <= bytes.length) {
+    const signature = view.getUint32(offset, true);
+    if (signature !== 0x04034b50) {
+      if (signature === 0x02014b50 || signature === 0x06054b50) break;
+      offset++;
+      continue;
+    }
+    const method = view.getUint16(offset + 8, true);
+    const compressedSize = view.getUint32(offset + 18, true);
+    const nameLength = view.getUint16(offset + 26, true);
+    const extraLength = view.getUint16(offset + 28, true);
+    const nameStart = offset + 30;
+    const dataStart = nameStart + nameLength + extraLength;
+    if (dataStart + compressedSize > bytes.length) throw new Error("BACKUP_ZIP_ENTRY_TRUNCATED");
+    const name = new TextDecoder().decode(bytes.slice(nameStart, nameStart + nameLength));
+    if (name === "manifest.json") {
+      let content;
+      const payload = bytes.slice(dataStart, dataStart + compressedSize);
+      if (method === 0) content = payload;
+      else if (method === 8 && typeof DecompressionStream !== "undefined") {
+        const stream = new Blob([payload]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+        content = new Uint8Array(await new Response(stream).arrayBuffer());
+      } else throw new Error("BACKUP_ZIP_COMPRESSION_UNSUPPORTED");
+      let manifest;
+      try { manifest = JSON.parse(new TextDecoder().decode(content)); }
+      catch { throw new Error("BACKUP_MANIFEST_INVALID"); }
+      if (manifest?.format !== "KADAssist-Backup-Package" || !manifest?.scope || !manifest?.snapshot) throw new Error("BACKUP_MANIFEST_SCHEMA_INVALID");
+      return manifest;
+    }
+    offset = dataStart + compressedSize;
+  }
+  throw new Error("BACKUP_MANIFEST_NOT_FOUND");
+}
