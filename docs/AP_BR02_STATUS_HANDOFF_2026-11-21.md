@@ -690,3 +690,16 @@ Die Implementierung wird in kleinen, nachvollziehbaren Änderungen vorgenommen. 
 - DEV-Mirror `bautnhaus/jugendmannschaft-dev`, Branch `main`, Datei `index.html` read-only abgerufen. Blob SHA `67c5860e539bf74bad13368a6483c5cbe3977f38` stimmt mit dem Frontend-Commit überein.
 - Mirror-Inhalt bestätigt: Plattformoption im Dialog, Rollenfreigabe im Mehr-Menü und Restore-Sperrhinweis sind enthalten.
 - Damit sind Quellcommit und DEV-Sync technisch verifiziert. Noch nicht verifiziert ist das reale iPhone-/Browserverhalten bzw. die authentifizierte Rollen-/Scope-Funktionalität.
+
+
+## Testreihenfolge korrigiert – Vereinsadmin vor Superadmin (23.11.2026)
+
+Nutzer hat zu Recht darauf hingewiesen: Vor dem Chatwechsel war der **Backup-Test als Vereinsadmin** der nächste ausstehende Praxistest, weil der UI-Einstieg für diese Rolle damals fehlte. Dieser Test ist noch nicht als bestanden dokumentiert und darf nicht übersprungen werden.
+
+### Verbindliche nächste Reihenfolge
+1. **Vereinsadmin zuerst:** Im DEV als Vereinsadmin anmelden, Mehr → Daten & Sicherung öffnen, Scope-Auswahl und Vereinseinschränkung prüfen. Export für den eigenen Verein zunächst mit den zuvor bewährten Kategorien/kleiner Auswahl testen; Manifest und Scope auf korrekte Vereinszuordnung prüfen. Kein Zugriff auf fremde Vereine.
+2. Ergebnis sofort hier in dieser STATUS_HANDOFF dokumentieren (bestanden / fehlgeschlagen, genaue Beobachtung, nächster Schritt).
+3. Erst nach Abschluss des Vereinsadmin-Tests zum **Superadmin** wechseln: Plattformstart ohne vorherige Vereins-/Mannschaftsauswahl, Dialog öffnen, Scope Plattform/Verein/Mannschaft und Auswahlfelder prüfen.
+4. Danach Superadmin-Scope-Export und serverseitige Negativ-/Berechtigungstests gezielt durchführen.
+
+Der Vereinsadmin-Test ist der priorisierte offene Test und geht dem neuen Superadmin-Test vor. Keine bereits abgeschlossenen Crypto-/ZIP-Grundtests wiederholen, außer ein neuer Befund begründet eine Regression.
