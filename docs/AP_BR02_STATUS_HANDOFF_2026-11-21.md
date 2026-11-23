@@ -753,3 +753,11 @@ Der Vereinsadmin-Test ist der priorisierte offene Test und geht dem neuen Supera
 1. DEV-Frontend-Deploy prüfen und dann Seite „Daten & Sicherung“ mit Vereinsadmin, Mannschaftsadmin und Superadmin auf identische Überschrift „Verwaltung“ kontrollieren.
 2. Vereinsadmin-Backup: Manifest-/Paketinhalt der erfolgreich gestarteten Multi-Team-Auswahl prüfen und festhalten; anschließend gezielter Fremdteam-ID-Negativtest nur mit sicherem Testrequest.
 3. Danach Superadmin-Scope-Test fortsetzen. Restore bleibt gesperrt.
+
+
+## Rollenüberschrift „Verwaltung“ – Nutzerbestätigung (23.11.2026)
+
+- Nutzer hat nach DEV-Sichtprüfung bestätigt: Die Überschrift ist jetzt bei allen Rollen korrekt/einheitlich.
+- Damit ist der UI-Prüfpunkt „Daten & Sicherung: rollenabhängige Überschrift“ abgeschlossen. Keine erneute Prüfung erforderlich.
+- Vereinsadmin-Backup: Einstieg, Multiselect und Start des Downloads zuvor vom Nutzer bestätigt. Paket-/Manifestinhalt und genaue Scope-Prüfung bleiben als separater fachlicher Abnahmepunkt offen.
+- Nächster Arbeitsschritt: erfolgreichen Backup-Download bzw. Paket/Manifest prüfen und sicherstellen, dass exakt die ausgewählten Mannschaften und gewählten Kategorien enthalten sind; keine Restore-Ausführung. Anschließend Superadmin-Backup-Scopes testen.
