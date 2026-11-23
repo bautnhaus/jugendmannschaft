@@ -770,3 +770,5 @@ Der Vereinsadmin-Test ist der priorisierte offene Test und geht dem neuen Supera
 - Crypto module commit `4b32c52f5cf86bab26426d67b28b5176e5a89730`: exportiert `readBackupManifestBlob`, sucht Manifest in ZIP (STORE oder DEFLATE via `DecompressionStream('deflate-raw')`) und prüft minimale Paketstruktur. Entschlüsselung bleibt mit vorhandener AES-GCM/PBKDF2-Funktion lokal.
 - Status: committed in develop. GitHub Pages DEV deployment und praktische Prüfung (falsches Passwort, gültiges Vereinsadmin-Backup, Scope/Team-IDs/Kategorien) stehen aus. Noch keine Backup-Inhaltsabnahme, kein Restore.
 - Hinweis: Der Manifestprüfer bestätigt Paketmanifest/Umfang und Verschlüsselungsintegrität, ersetzt nicht die inhaltliche Validierung aller Datensätze/Assets.
+
+- Nachtrag Deploy: GitHub Actions DEV-Frontend-Deploy für Commit `78e7d6f7d92a5726a2401d251b4a9cf3f6fdef8f` erfolgreich abgeschlossen (Run `45166977676`, conclusion `success`). Crypto-Moduländerung `4b32c52f` ebenfalls erfolgreich verarbeitet. Der Prüfer ist auf DEV verfügbar; Praxistest bleibt offen.
