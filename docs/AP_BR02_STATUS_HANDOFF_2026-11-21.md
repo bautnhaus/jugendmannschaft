@@ -772,3 +772,12 @@ Der Vereinsadmin-Test ist der priorisierte offene Test und geht dem neuen Supera
 - Hinweis: Der Manifestprüfer bestätigt Paketmanifest/Umfang und Verschlüsselungsintegrität, ersetzt nicht die inhaltliche Validierung aller Datensätze/Assets.
 
 - Nachtrag Deploy: GitHub Actions DEV-Frontend-Deploy für Commit `78e7d6f7d92a5726a2401d251b4a9cf3f6fdef8f` erfolgreich abgeschlossen (Run `45166977676`, conclusion `success`). Crypto-Moduländerung `4b32c52f` ebenfalls erfolgreich verarbeitet. Der Prüfer ist auf DEV verfügbar; Praxistest bleibt offen.
+
+
+## AP-BR02 – iOS Dateiauswahl für Backup-Prüfer korrigiert (23.11.2026)
+
+- Nutzer-Praxistest meldete: iOS Dateien-App zeigte `.kadbackup`-Dateien ausgegraut, sodass keine Auswahl möglich war; außerdem war der Dateiauswahl-Button visuell zu unauffällig.
+- Ursache im Frontend bestätigt: Dateifeld hatte restriktives `accept=".kadbackup,application/vnd.kadassist.backup"`. iOS kann die unbekannte Erweiterung/MIME-Zuordnung als Filter behandeln.
+- Änderung in `index.html`, Commit `4e3e36925ccb2f0870ad3217a86789e74670a83b` auf `develop`: `accept`-Filter entfernt (Benutzer kann die Backup-Datei im Dateibrowser auswählen) und Datei-Control mit sichtbarem Rahmen, Mindesthöhe, Kontrast und hervorgehobenem „Datei auswählen“-Systembutton versehen.
+- Sicherheit unverändert: Prüfung weiterhin lokal, Entschlüsselung/Manifest-Lesen; kein Import und kein Upload. Auswahl aller Dateitypen bedeutet nicht, dass sie verarbeitet werden: Crypto-Prüfung validiert weiterhin die gewählte Datei und zeigt bei inkompatiblen Dateien einen Fehler.
+- Status: Commit auf develop; DEV-Deploy und erneuter iPhone-Test stehen aus. Nach Deployment Datei erneut über „Datei auswählen“ wählen und Manifest prüfen. Danach mit falsch benannter/ungeeigneter Datei testen, dass ein verständlicher Fehler erscheint.
