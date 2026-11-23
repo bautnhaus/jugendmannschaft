@@ -2015,7 +2015,7 @@ html[data-theme="dark"] .playerListRow.matchdaySquadTile .matchdayStatusChip.nom
     <div class="card" id="teamSquadSettingsCard"><h3>Kaderplanung</h3><p class="muted">Lege fest, wie viele Spieler standardmäßig in der Kaderempfehlung berücksichtigt werden. Die Einstellung gilt für die Empfehlungsdarstellung in der Spielerliste und für neu berechnete Spieltagsempfehlungen. Bereits gespeicherte Spieltagsempfehlungen bleiben unverändert.</p><div class="formrow"><label>Kader-Zielgröße (1-60)<input id="recommendedSquadSizeInput" type="number" min="1" max="60" value="16" inputmode="numeric"></label><div style="display:flex;align-items:end"><button type="button" class="primary" style="width:100%" onclick="saveRecommendedSquadSize()">Kader-Zielgröße speichern</button></div></div></div>
     <div class="card" id="teamPositionSettingsCard"><h3>Positionen</h3><div id="positionSettings"></div></div>
     <div class="card" id="teamTrainerSettingsCard"><div class="toolbar trainingPageHeader"><h3 id="teamMembersHeading" style="margin:0;flex:1">Mitglieder und Rollen</h3><button type="button" class="primary iconAddButton" onclick="openTeamMemberInvite()" aria-label="Mitglied einladen" title="Mitglied einladen">+</button></div><p class="muted small">Mitglieder der Mannschaft anzeigen und ihre Rollen verwalten.</p><div id="teamMemberRoleFilters" class="playerFilterChips"></div><div id="trainerList" class="playerListRows"></div><div id="teamMemberListFooter" class="playerListFooter"></div><div id="legacyTrainerInviteForm" class="hidden"><div class="formrow"><label>Persönlicher Name<input id="trainerLabelAdd" type="text" autocomplete="off"></label><label>E-Mail des Trainers<input id="trainerEmailAdd" type="email"></label></div><label>Rolle<select id="trainerRoleAdd"><option value="trainer">Trainer</option><option value="admin">Admin</option></select></label><button onclick="addTrainerToTeam()">Trainer hinzufügen</button></div></div>
-    <div class="card" id="dataBackupCard"><h3>Daten</h3><p class="muted">Backup der Mannschaftsdaten sichern oder wiederherstellen.</p><div class="toolbar"><button class="jsonButton" onclick="exportJSON()">JSON sichern</button><label class="btn jsonButton" for="importFile">JSON wiederherstellen</label><input id="importFile" type="file" accept="application/json,.json" onchange="importJSON(event)" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;"></div></div>
+    <div class="card" id="dataBackupCard"><h3>Daten</h3><p class="muted">Backup der Mannschaftsdaten sichern oder wiederherstellen.</p><div class="toolbar"><button class="jsonButton" onclick="exportJSON()">JSON sichern</button><button type="button" class="jsonButton" onclick="openBackupVerification()">Backup prüfen</button><label class="btn jsonButton" for="importFile">JSON wiederherstellen</label><input id="importFile" type="file" accept="application/json,.json" onchange="importJSON(event)" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;"></div></div>
     <div class="card" id="backupDiagnosticCard"><h3>Backup-Diagnose</h3><p class="muted small">Diese Anzeige bleibt auch ohne Fehler sichtbar. Sie zeigt den letzten Status eines Backup-Imports auf diesem Gerät.</p><div id="backupDiagnosticStatus" role="status" class="notice small">Diagnose aktiv – bisher wurde kein Importversuch protokolliert.</div><div id="backupDiagnosticDetails" class="small muted" style="margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere">Noch keine Fehlerdetails vorhanden.</div><div class="toolbar" style="margin-top:10px"><button type="button" onclick="clearBackupDiagnostic()">Diagnose zurücksetzen</button></div></div>
   </div>
   </div>
@@ -4107,6 +4107,47 @@ async function exportJSON(){
     finally{create.disabled=false;}
   });
 }
+
+async function openBackupVerification(){
+  const content=$('modalContent');
+  content.innerHTML='<div class="modalHeader"><h2>Backup prüfen</h2><button type="button" onclick="closeModal()" aria-label="Schließen">×</button></div>'+
+    '<p class="muted">Die Prüfung entschlüsselt das Backup nur lokal in diesem Browser und liest ausschließlich das Paketmanifest. Es werden keine Daten importiert oder an Supabase übertragen.</p>'+
+    '<label>Verschlüsselte Backup-Datei (.kadbackup)<input id="apbr02VerifyFile" type="file" accept=".kadbackup,application/vnd.kadassist.backup"></label>'+
+    '<label>Backup-Passwort<input id="apbr02VerifyPassword" type="password" autocomplete="off"></label>'+
+    '<div id="apbr02VerifyStatus" class="notice small" role="status">Datei auswählen und Passwort eingeben.</div>'+
+    '<div class="toolbar"><button type="button" id="apbr02VerifyStart">Manifest prüfen</button><button type="button" class="secondary" onclick="closeModal()">Schließen</button></div>';
+  $('modal').classList.add('show');
+  $('apbr02VerifyStart').addEventListener('click',async()=>{
+    const file=$('apbr02VerifyFile').files?.[0],password=$('apbr02VerifyPassword').value,status=$('apbr02VerifyStatus'),button=$('apbr02VerifyStart');
+    if(!file){status.textContent='Bitte zuerst die Backup-Datei auswählen.';return;}
+    if(!password){status.textContent='Bitte das Backup-Passwort eingeben.';return;}
+    button.disabled=true;status.textContent='Backup wird lokal entschlüsselt und Manifest geprüft…';
+    try{
+      const cryptoModule=await import('./src/backup/backup-crypto.js');
+      const manifest=await cryptoModule.readBackupManifestBlob(await cryptoModule.decryptBackupBlob(file,password));
+      const scope=manifest.scope||{},categories=Array.isArray(manifest.categories)?manifest.categories:[];
+      const data=manifest.snapshot?.data||{};
+      const teamNames=(data.teams||data.team_list||[]).map(x=>x.name).filter(Boolean);
+      const rows=[
+        ['Format',String(manifest.format||'unbekannt')+' v'+String(manifest.format_version??'?')],
+        ['Erstellt',manifest.created_at?new Date(manifest.created_at).toLocaleString():'Nicht angegeben'],
+        ['Umfang',String(scope.type||'unbekannt')],
+        ['Vereins-IDs',(scope.club_ids||[]).join(', ')||scope.club_id||'—'],
+        ['Mannschafts-IDs',(scope.team_ids||[]).join(', ')||'—'],
+        ['Kategorien',categories.join(', ')||'—'],
+        ['Snapshot',manifest.completeness?.snapshot===true?'vorhanden':'nicht bestätigt'],
+        ['Dateien/Bilder',manifest.completeness?.files_images_included?'enthalten':'nicht ausgewählt'],
+        ['Asset-Anzahl',String(manifest.completeness?.asset_count??manifest.assets?.length??0)],
+        ['Asset-Größe',String(manifest.completeness?.asset_bytes??0)+' Bytes']
+      ];
+      status.className='notice small';
+      status.innerHTML='<strong>Manifest erfolgreich gelesen – kein Restore ausgeführt.</strong><dl style="margin:8px 0 0;display:grid;grid-template-columns:minmax(100px,auto) 1fr;gap:6px">'+rows.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd style="margin:0;overflow-wrap:anywhere">'+esc(v)+'</dd>').join('')+'</dl>';
+    }catch(e){status.className='notice small';status.textContent='Prüfung fehlgeschlagen: '+(e?.name==='OperationError'?'Passwort falsch oder Datei beschädigt.':e?.message||String(e));}
+    finally{button.disabled=false;}
+  });
+}
+window.openBackupVerification=openBackupVerification;
+
 window.exportJSON=exportJSON;
 async function replaceTeamDataWithBackup(c, backup){
   setBackupRestorePhase('Bestehende Datensätze lesen');
