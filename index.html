@@ -322,6 +322,10 @@ html[data-theme="dark"] .rosterViewTabs button:not(.active){color:var(--text-sof
 .photoRemoveButton{position:absolute;top:-3px;right:-3px;z-index:2;width:30px;height:30px;min-width:30px;min-height:30px;padding:0;border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#dc2626;color:#fff;box-shadow:0 1px 4px #0004}
 .photoRemoveButton .material-symbols-outlined{font-size:18px;color:#fff}
 .photoRemoveButton.hidden{display:none!important}
+
+/* AP-BR02: make iOS file selection visible and avoid Safari extension/MIME filtering */
+.backupVerifyFileInput{display:block;width:100%;max-width:100%;margin:8px 0 14px;padding:12px 10px;border:1px solid var(--accent);border-radius:12px;background:var(--card);color:var(--text);font-size:16px;min-height:54px}
+.backupVerifyFileInput::file-selector-button{font:inherit;font-size:15px;font-weight:600;margin:0 10px 0 0;padding:9px 12px;border:1px solid var(--accent);border-radius:9px;background:#dbeafe;color:#1d4ed8}
 </style>
 <style>
 .iconAddButton{width:40px!important;min-width:40px!important;max-width:40px!important;height:40px!important;min-height:40px!important;max-height:40px!important;flex:0 0 40px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:10px!important;font-size:23px!important;line-height:1!important}
@@ -4112,7 +4116,7 @@ async function openBackupVerification(){
   const content=$('modalContent');
   content.innerHTML='<div class="modalHeader"><h2>Backup prüfen</h2><button type="button" onclick="closeModal()" aria-label="Schließen">×</button></div>'+
     '<p class="muted">Die Prüfung entschlüsselt das Backup nur lokal in diesem Browser und liest ausschließlich das Paketmanifest. Es werden keine Daten importiert oder an Supabase übertragen.</p>'+
-    '<label>Verschlüsselte Backup-Datei (.kadbackup)<input id="apbr02VerifyFile" type="file" accept=".kadbackup,application/vnd.kadassist.backup"></label>'+
+    '<label>Verschlüsselte Backup-Datei (.kadbackup)<input id="apbr02VerifyFile" class="backupVerifyFileInput" type="file"></label>'+
     '<label>Backup-Passwort<input id="apbr02VerifyPassword" type="password" autocomplete="off"></label>'+
     '<div id="apbr02VerifyStatus" class="notice small" role="status">Datei auswählen und Passwort eingeben.</div>'+
     '<div class="toolbar"><button type="button" id="apbr02VerifyStart">Manifest prüfen</button><button type="button" class="secondary" onclick="closeModal()">Schließen</button></div>';
