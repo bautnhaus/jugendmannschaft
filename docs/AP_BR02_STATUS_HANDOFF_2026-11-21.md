@@ -761,3 +761,12 @@ Der Vereinsadmin-Test ist der priorisierte offene Test und geht dem neuen Supera
 - Damit ist der UI-Prüfpunkt „Daten & Sicherung: rollenabhängige Überschrift“ abgeschlossen. Keine erneute Prüfung erforderlich.
 - Vereinsadmin-Backup: Einstieg, Multiselect und Start des Downloads zuvor vom Nutzer bestätigt. Paket-/Manifestinhalt und genaue Scope-Prüfung bleiben als separater fachlicher Abnahmepunkt offen.
 - Nächster Arbeitsschritt: erfolgreichen Backup-Download bzw. Paket/Manifest prüfen und sicherstellen, dass exakt die ausgewählten Mannschaften und gewählten Kategorien enthalten sind; keine Restore-Ausführung. Anschließend Superadmin-Backup-Scopes testen.
+
+
+## AP-BR02 – lokaler Backup-Prüfer (23.11.2026)
+
+- Nutzer stimmte dem sicheren Prüfmodus zu: verschlüsselte Datei lokal entschlüsseln, nur `manifest.json` lesen, kein Restore/keine Supabase-Schreiboperation.
+- Frontend commit `78e7d6f7d92a5726a2401d251b4a9cf3f6fdef8f`: Datenkarte erhält Aktion „Backup prüfen“. Modal akzeptiert `.kadbackup` + Passwort; verwendet Browsermodul, zeigt Format/Version, Datum, Scope, Vereins-/Mannschafts-IDs, Kategorien, Snapshot-Flag, Dateien-/Bilder-Flag, Asset-Anzahl/-Bytes. Fehler-/Passwortmeldung bleibt lokal. Keine Upload-/API-Anfrage und kein Restore.
+- Crypto module commit `4b32c52f5cf86bab26426d67b28b5176e5a89730`: exportiert `readBackupManifestBlob`, sucht Manifest in ZIP (STORE oder DEFLATE via `DecompressionStream('deflate-raw')`) und prüft minimale Paketstruktur. Entschlüsselung bleibt mit vorhandener AES-GCM/PBKDF2-Funktion lokal.
+- Status: committed in develop. GitHub Pages DEV deployment und praktische Prüfung (falsches Passwort, gültiges Vereinsadmin-Backup, Scope/Team-IDs/Kategorien) stehen aus. Noch keine Backup-Inhaltsabnahme, kein Restore.
+- Hinweis: Der Manifestprüfer bestätigt Paketmanifest/Umfang und Verschlüsselungsintegrität, ersetzt nicht die inhaltliche Validierung aller Datensätze/Assets.
