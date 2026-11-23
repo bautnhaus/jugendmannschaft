@@ -725,3 +725,13 @@ Der Vereinsadmin-Test ist der priorisierte offene Test und geht dem neuen Supera
 3. Manifest weist Scope-Typ und ausgewählte Team-IDs klar aus; vorhandene Vereinsbackup-Semantik unverändert.
 4. Mehr-Bereichsüberschrift für Vereinsadmin und Mannschaftsadmin einheitlich „Verwaltung“ (bzw. final abgestimmte neutrale Bezeichnung).
 5. Erst nach Commit, DEV-Deploy und Sichtprüfung den Vereinsadmin-Exporttest fortsetzen. Superadmin-Test bleibt danach.
+
+
+## Korrektur Multi-Team-Backup Vereinsadmin – Umsetzung (23.11.2026)
+
+- Frontend commit `a4bca42987afb58b9cfe1b9bad533cb612acc9bb` in develop: Vereinsadmin-Dialog bietet „Eigener Verein – alle Mannschaften“ und „Ausgewählte Mannschaften“. Bei Auswahl der zweiten Option erscheint eine Checkbox-Multiselect-Liste der Mannschaften des aktuellen Vereins. Mannschaftscontext ist nicht länger Voraussetzung; keine Einzelauswahl per iOS-Select.
+- Request sendet `team_ids` zusätzlich zum Club-Scope. Frontend verlangt mindestens eine markierte Mannschaft.
+- Edge Function commit `3ffd8c74c118b2738a23b5279b81cde38e905e09`: validiert `team_ids` (Typ, UUID, Duplikate, nur Club-Scope) und prüft serverseitig anhand DB, dass jede ID existiert und `club_id` exakt dem autorisierten Club entspricht. Erst danach wird `authorizedTeamIds` auf die Auswahl begrenzt. Fremd-/manipulierte IDs scheitern mit 403; fehlerhafte Requests 400.
+- Edge Function `create-backup-package` deployed in Supabase DEV: ACTIVE, Version 4, `verify_jwt=true`, Deployment SHA-256 `640ff0963103c7487cc879b7ee9f5e8cb9e42ec024cb2fc1cff5cfc9dd9199ba`. Kein PROD-Deployment.
+- Neutraler Rollen-Kontexttitel „Verwaltung“ statt „Vereinsverwaltung“ ist in Frontend-Commit `a4bca429` enthalten. Der dynamische Mehr-Unterseiten-Titel `management` war bereits „Verwaltung“.
+- Status: Code und Edge Function deployed; Browser-/E2E-Test mit Vereinsadmin nach diesem Update steht noch aus. Vereinsadmin-Backup noch nicht fachlich bestanden; erst im DEV erneut Dialog prüfen und danach Export mit ausgewählten Mannschaften, Manifest-Team-IDs und Negativprüfung (fremde Team-ID) abnehmen. Superadmin-Test bleibt anschließend.
