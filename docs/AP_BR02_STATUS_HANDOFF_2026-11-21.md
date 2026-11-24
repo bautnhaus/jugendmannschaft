@@ -884,3 +884,12 @@ Nutzer bestätigte den DEV-Login; die Startprüfung ist damit für den aktuellen
 - Testseite: `https://dev.kadassist.de/docs/dev-tests/ap-br02-restore-preflight.html`.
 - Noch nicht behauptet: tatsächliche Ausführung der Browser-Fixtures oder vollständige ZIP-Preflight-Prüfung auf iPhone. Bitte zunächst nur die isolierte synthetische Testseite öffnen und das Ergebnis bestätigen.
 - Der App-Dialog ist noch nicht mit diesem Preflight verbunden; der bestehende Restore bleibt gesperrt. Keine Daten-/Storage-Schreiboperation und kein PROD.
+
+
+### Restore-Preflight in Backup-Prüfung integriert (24.11.2026)
+- Nutzer hat die synthetische AP-BR02-Preflight-Testseite erfolgreich bestätigt: alle Fixture-Tests PASS.
+- Nächster Umsetzungsschritt begonnen: Die bestehende lokale Backup-Prüfung ruft nach Entschlüsselung `validatePackageManifest()` aus `src/backup/restore-planner.js` auf. Validiert werden Paket-/Snapshot-Version, erlaubte Kategorien/Tabellen, Datensatzschlüssel und Duplikate, interne Referenzen sowie Asset-Manifest und deklarierte Asset-Summen.
+- Bei Erfolg zeigt der Dialog zusätzlich die Anzahl der geprüften Snapshot-Tabellen. Bestehender verständlicher Backup-Inhaltsbericht bleibt erhalten.
+- Änderung in DEV-Mirror `bautnhaus/jugendmannschaft-dev`, Branch `main`: Commit `ed0714145a8fd858e086d81806f91ad0d9fb658b`.
+- GitHub Pages Build/Deployment Run `45469446521` war bei Dokumentationseintrag noch in Bearbeitung. Keine PROD-Änderung.
+- Diese Integration ist weiterhin eine read-only Paket-/Manifestprüfung; sie führt keinen Merge, Restore oder Supabase-Write aus. ZIP-Asset-Bytes und der anschließende Datenbank-Merge-Plan bleiben separate nächste Schritte.
