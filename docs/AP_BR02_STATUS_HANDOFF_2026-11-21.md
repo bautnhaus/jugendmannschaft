@@ -853,3 +853,26 @@ Aktuelle develop-Quellen geprüft, keine Änderungen:
 - Das Paket enthält derzeit keinen bestätigten Restore-Plan, keine Konfliktauflösung und keine Restore-Transaktion. Diese sind vor einer Umsetzung als Design-/Code-Arbeit zu spezifizieren.
 
 Status: nur Quellen-/Vertragsprüfung. Kein Import, kein Restore, keine DB-/Storage-Schreiboperation, kein Deployment.
+
+
+## Restore-Implementierung – Phase 1: lokaler Paket-Preflight (24.11.2026)
+
+Nutzer bestätigte den DEV-Login; die Startprüfung ist damit für den aktuellen Arbeitsstand geschlossen. Restore-Umsetzung begonnen, weiterhin nur `develop`.
+
+### Neue Codeartefakte
+- `src/backup/restore-planner.js`, Commit `9cdf1d40d41399efbbc4082f3e25fd9fc408bb1c`:
+  - reiner, nicht schreibender Paketvertrag-Validator (Package v1 / Snapshot v16).
+  - Kategorien-/Tabellen-Allowlist, Schema-/ID-Duplikatprüfung, bekannte FK-Prüfungen, Asset-Pfad- und Manifest-Count/Byte-Prüfung.
+  - ZIP-Reader-Prüfung über die bereits vendorte zip.js-Bibliothek; jedes deklarierte Asset muss im Archiv liegen und exakt die deklarierte Bytezahl haben.
+  - Merge-Vorschau-Helfer: fehlende Datensätze als Additionskandidaten; keine Löschungen; Updatevorschlag nur bei eindeutig neuerem Backup-Zeitstempel, bei Gleichstand/fehlendem Zeitstempel aktuellen Datensatz behalten.
+- `docs/dev-tests/ap-br02-restore-preflight.html`, Commit `18a564d3dcebb0dbd973781a064be925b5cb59a8`:
+  - synthetische Browser-Fixtures für gültiges Manifest, unbekannte Kategorie, doppelte IDs, Traversal-Pfad, Merge/Never-delete, Newer-wins und unklare Zeitstempel.
+  - keine Supabase-Verbindung, keine echten Daten, keine Schreiboperation.
+
+### Sicherheitsgrenze / Status
+- Dies ist **Phase 1 – lokaler Preflight und reiner Merge-Planer**, noch kein DB-Restore und keine Aktivierung des alten JSON-Imports.
+- Der alte destruktive `replaceTeamDataWithBackup()` bleibt gesperrt und wird nicht wiederverwendet.
+- Die Preview-Funktion ist noch nicht mit dem produktiven Dialog oder dem aktuellen Datenbestand verbunden.
+- Vor dem nächsten Schritt: JavaScript-/Browser-Fixtures auf DEV ausführen und Syntaxfehler beheben; danach UI-Integration der lokalen Datei-/Passwortprüfung und eines klaren Dry-run-Berichts.
+- Danach erst serverseitig autorisierten Scope und aktuelle Daten read-only abgleichen. DB-Schreibpfad/Transaktion, Asset-Restore und tatsächliche Wiederherstellung bleiben getrennte spätere Phasen.
+- Kein Edge-Function-Deployment, keine SQL-/DB-/Storage-Schreiboperation, kein PROD-Deployment.
