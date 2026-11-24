@@ -831,3 +831,25 @@ Aktuelle Quelle erneut direkt aus `develop` geprüft:
 - [ ] Erst nach Review: isolierte DEV-Testdaten, positive/negative Tests, Fehler-/Abbruchverhalten und separate Freigabe für eine Restore-Implementierung.
 
 **Nächster konkreter Schritt:** Restore-Plan/Mapping auf Basis des tatsächlichen aktuellen Paketformats und der bestehenden Tabellen-/Beziehungsinventur ausarbeiten. Bis dahin bleibt der Sperr-Return erhalten; keine SQL-/DB-/Storage-Schreiboperation, kein PROD.
+
+
+## Restore-Formatabgleich – Paketvertrag read-only (24.11.2026)
+
+Aktuelle develop-Quellen geprüft, keine Änderungen:
+- Edge Function `supabase/functions/create-backup-package/index.ts`, Blob `fd45da0f8431c117e954701986d2459001477e0e`.
+- Crypto-Modul `src/backup/backup-crypto.js`, Blob `abce8eb2537fb759bb62f16b04db2e1711def30f`.
+
+### Aktueller Container-/Payload-Aufbau
+1. Äußere Datei `.kadbackup`: KADB v1 Header + PBKDF2-HMAC-SHA-256 (600.000 Iterationen) + AES-256-GCM; der Header ist authentifiziert. Passwort bleibt lokal.
+2. Nach lokaler Entschlüsselung: ZIP-Archiv.
+3. `manifest.json`: `format=KADAssist-Backup-Package`, `format_version=1`, Scope (type/id, club_ids/team_ids, display_names), ausgewählte Kategorien, `snapshot` (Datenformat `KADAssist-Teamdaten-JSON`, derzeit Version 16, Tabellen unter `snapshot.data`), `assets` und `completeness`.
+4. Asset-Dateien liegen unter internen `archive_path`-Einträgen; Asset-Metadaten enthalten derzeit Bucket, Objektpfad, Archivpfad, Bytezahl und Herkunft. Ein SHA-256-Feld je Asset ist im aktuell geprüften Manifestvertrag nicht vorhanden.
+
+### Restore-Designfolge
+- Restore darf nicht den alten JSON-Backup-Parser direkt auf `manifest.snapshot` anwenden. Es braucht einen expliziten versionierten Adapter `Package v1 → geprüfter RestorePlan`.
+- Vor jeder Schreiboperation müssen alle erwarteten ZIP-Einträge, Asset-Pfade, Größen, Kategorien, Scope-IDs, Tabellenformen, Datensatz-IDs und FK-Beziehungen vollständig validiert sein. Keine teilweise valide Datei darf bereits DB-Änderungen auslösen.
+- GCM authentifiziert den verschlüsselten Container; zusätzlich ist ein semantischer Preflight erforderlich (Manifest-/Payload-Konsistenz, Asset-Count/Bytes, Archive-Pfade ohne Traversal, erlaubte Kategorien und Tabellen, Snapshot-Version-Unterstützung).
+- Die neue Prüfung/Restore-Engine muss die ursprüngliche Scope-Autorisierung serverseitig erneut durchsetzen; ein in der Datei enthaltenes `scope`-Objekt ist nur deklarierter Backup-Inhalt und keine Berechtigung.
+- Das Paket enthält derzeit keinen bestätigten Restore-Plan, keine Konfliktauflösung und keine Restore-Transaktion. Diese sind vor einer Umsetzung als Design-/Code-Arbeit zu spezifizieren.
+
+Status: nur Quellen-/Vertragsprüfung. Kein Import, kein Restore, keine DB-/Storage-Schreiboperation, kein Deployment.
