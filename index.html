@@ -4125,7 +4125,7 @@ async function openBackupVerification(){
   const content=$('modalContent');
   content.innerHTML='<div class="modalHeader"><h2>Backup prüfen</h2></div>'+
     '<p class="muted">Die Prüfung entschlüsselt das Backup nur lokal in diesem Browser und liest ausschließlich das Paketmanifest. Es werden keine Daten importiert oder an Supabase übertragen.</p>'+
-    '<label class="backupVerifyFileLabel">Verschlüsselte Backup-Datei (.kadbackup)<input id="apbr02VerifyFile" class="backupVerifyFileInput" type="file"><span class="backupVerifyChooseButton">Datei auswählen</span><span id="apbr02VerifyFileName" class="backupVerifyFileName">Noch keine Datei ausgewählt</span></label>'+
+    '<label class="backupVerifyFileLabel">Verschlüsselte Backup-Datei (.kadbackup)<input id="apbr02VerifyFile" class="backupVerifyFileInput" type="file" accept=".kadbackup,application/octet-stream"><span class="backupVerifyChooseButton">Datei auswählen</span><span id="apbr02VerifyFileName" class="backupVerifyFileName">Noch keine Datei ausgewählt</span></label>'+
     '<label>Backup-Passwort<input id="apbr02VerifyPassword" type="password" autocomplete="off"></label>'+
     '<div id="apbr02VerifyStatus" class="backupVerifyStatus small" role="status">Datei auswählen und Passwort eingeben.</div>'+
     '<div class="toolbar"><button type="button" id="apbr02VerifyStart">Manifest prüfen</button><button type="button" class="secondary" onclick="closeModal()">Schließen</button></div>';
@@ -4144,32 +4144,33 @@ async function openBackupVerification(){
       const manifest=await cryptoModule.readBackupManifestBlob(await cryptoModule.decryptBackupBlob(file,password));
       const scope=manifest.scope||{},categories=Array.isArray(manifest.categories)?manifest.categories:[];
       const data=manifest.snapshot?.data||{};
-      const teams=(data.teams||data.team_list||[]);
-      const teamNames=teams.map(x=>x.name).filter(Boolean);
-      const teamNameById=new Map(teams.filter(x=>x.id&&x.name).map(x=>[String(x.id),x.name]));
-      const teamIds=(scope.team_ids||[]);
-      const teamDisplay=teamIds.map(id=>teamNameById.get(String(id))?teamNameById.get(String(id))+' ('+id+')':String(id)).join(', ')||'—';
-      const clubs=(data.clubs||data.club_list||[]);
-      const clubNameById=new Map(clubs.filter(x=>x.id&&x.name).map(x=>[String(x.id),x.name]));
-      const clubIds=(scope.club_ids||[]);
-      const clubDisplay=clubIds.map(id=>clubNameById.get(String(id))?clubNameById.get(String(id))+' ('+id+')':String(id)).join(', ')||scope.club_id||'—';
-      const rows=[
-        ['Format',String(manifest.format||'unbekannt')+' v'+String(manifest.format_version??'?')],
-        ['Erstellt',manifest.created_at?new Date(manifest.created_at).toLocaleString():'Nicht angegeben'],
-        ['Umfang',String(scope.type||'unbekannt')],
-        ['Vereine',clubDisplay],
-        ['Mannschaften',teamDisplay],
-        ['Kategorien',categories.join(', ')||'—'],
-        ['Snapshot',manifest.completeness?.snapshot===true?'vorhanden':'nicht bestätigt'],
-        ['Dateien/Bilder',manifest.completeness?.files_images_included?'enthalten':'nicht ausgewählt'],
-        ['Asset-Anzahl',String(manifest.completeness?.asset_count??manifest.assets?.length??0)],
-        ['Asset-Größe',String(manifest.completeness?.asset_bytes??0)+' Bytes']
-      ];
+      const categoryLabels={team_core:'Mannschaft & Stammdaten',training:'Training & Anwesenheit',matchday:'Spieltage & Kader',season_history:'Saisonhistorie',discipline_history:'Sperren & Disziplin',files_images:'Dateien & Bilder'};
+      const tableLabels={positions:'Positionen',players:'Spieler',player_positions:'Spieler-Positionen',teams:'Mannschaften',training_series:'Trainingsserien',trainings:'Trainings',attendance:'Anwesenheit',training_players:'Spielerzuordnungen im Training',training_trainers:'Trainerzuordnungen im Training',training_responses:'Trainingsrückmeldungen',matchdays:'Spieltage',matchday_players:'Kadernominierungen',matchday_attendance:'Spieltag-Rückmeldungen',matchday_trainers:'Trainer am Spieltag',matchday_recommendation_runs:'Kaderempfehlungen',matchday_recommendation_players:'Empfohlene Spieler',seasons:'Spielzeiten',team_season_closure_audit:'Saisonabschlüsse',training_behavior_events:'Verhaltensereignisse',training_suspensions:'Sperren',training_suspension_exceptions:'Sperrausnahmen',matchday_early_suspension_resets:'Sperren zurückgesetzt',matchday_nomination_reminders:'Nominierungserinnerungen',team_suspension_game_type_settings:'Spielform-Einstellungen',team_suspension_game_types:'Spielformen'};
+      const categoryTables={team_core:['positions','players','player_positions','teams'],training:['training_series','trainings','attendance','training_players','training_trainers','training_responses'],matchday:['matchdays','matchday_players','matchday_attendance','matchday_trainers','matchday_recommendation_runs','matchday_recommendation_players'],season_history:['seasons','team_season_closure_audit'],discipline_history:['training_behavior_events','training_suspensions','training_suspension_exceptions','matchday_early_suspension_resets','matchday_nomination_reminders','team_suspension_game_type_settings','team_suspension_game_types']};
+      const names=scope.display_names||{},teamNameById=new Map((data.teams||data.team_list||[]).filter(x=>x.id&&x.name).map(x=>[String(x.id),x.name]));
+      for(const item of (names.teams||[]))if(item.id&&item.name)teamNameById.set(String(item.id),item.name);
+      const clubNameById=new Map((names.clubs||[]).filter(x=>x.id&&x.name).map(x=>[String(x.id),x.name]));
+      const resolved=(ids,map,label)=>ids?.length?ids.map(id=>map.get(String(id))||label+' (Bezeichnung fehlt im Paket)').join(', '):'Keine';
+      const typeLabels={team:'Mannschaft',club:'Verein',platform:'Plattform'};
+      const rows=[['Backup erstellt',manifest.created_at?new Date(manifest.created_at).toLocaleString('de-DE'):'Nicht angegeben'],['Sicherungsumfang',typeLabels[scope.type]||'Nicht angegeben'],['Verein(e)',resolved(scope.club_ids||[],clubNameById,'Verein')],['Mannschaft(en)',resolved(scope.team_ids||[],teamNameById,'Mannschaft')],['Datenbereiche',categories.map(c=>categoryLabels[c]||c).join(', ')||'Keine angegeben'],['Snapshot',manifest.completeness?.snapshot===true?'Datenstand enthalten':'Nicht bestätigt'],['Dateien & Bilder',manifest.completeness?.files_images_included?'Mit ausgewählten Dateien/Bildern':'Nicht ausgewählt'],['Enthaltene Dateien',String(manifest.completeness?.asset_count??manifest.assets?.length??0)],['Dateigröße',formatBackupBytes(manifest.completeness?.asset_bytes??0)]];
+      const countRows=[];
+      for(const category of categories){
+        if(category==='files_images'){countRows.push(['Dateien & Bilder',manifest.completeness?.files_images_included?'Asset-Referenzen im Paket':'Nicht im Backup enthalten']);continue;}
+        const tables=(categoryTables[category]||[]).filter(table=>Array.isArray(data[table]));
+        if(!tables.length){countRows.push([categoryLabels[category]||category,'Datenbereich ausgewählt; Anzahl nicht separat ausgewiesen']);continue;}
+        for(const table of tables){const n=data[table].length;countRows.push([tableLabels[table]||table,n+' '+(n===1?'Datensatz':'Datensätze')]);}
+      }
       status.className='notice small';
-      status.innerHTML='<strong>Manifest erfolgreich gelesen – kein Restore ausgeführt.</strong><dl>'+rows.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd style="margin:0;overflow-wrap:anywhere">'+esc(v)+'</dd>').join('')+'</dl>';
+      status.innerHTML='<strong>Backup erfolgreich entschlüsselt und geprüft. Es wurde nichts wiederhergestellt.</strong><dl>'+rows.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd style="margin:0 0 .55rem;overflow-wrap:anywhere">'+esc(v)+'</dd>').join('')+'</dl><h3>Enthaltene Daten</h3><dl>'+countRows.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd style="margin:0 0 .4rem;overflow-wrap:anywhere">'+esc(v)+'</dd>').join('')+'</dl>';
     }catch(e){status.className='notice small';status.textContent='Prüfung fehlgeschlagen: '+(e?.name==='OperationError'?'Passwort falsch oder Datei beschädigt.':e?.message||String(e));}
     finally{button.disabled=false;}
   });
+}
+function formatBackupBytes(value){
+  const bytes=Number(value)||0;
+  if(bytes<1024)return bytes+' Bytes';
+  if(bytes<1024*1024)return (bytes/1024).toLocaleString('de-DE',{maximumFractionDigits:1})+' KB';
+  return (bytes/(1024*1024)).toLocaleString('de-DE',{maximumFractionDigits:2})+' MB';
 }
 window.openBackupVerification=openBackupVerification;
 
