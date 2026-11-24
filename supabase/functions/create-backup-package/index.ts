@@ -324,11 +324,23 @@ Deno.serve(async (req: Request) => {
         }
       }
     }
+    // Readable labels for the local backup verifier; restricted to the already authorized scope.
+    const displayNames: { clubs: Array<{ id: string; name: string }>; teams: Array<{ id: string; name: string }> } = { clubs: [], teams: [] };
+    for (let start = 0; start < authorizedClubIds.length; start += 200) {
+      const { data: clubLabels, error: clubLabelError } = await admin.from("clubs").select("id,name").in("id", authorizedClubIds.slice(start, start + 200));
+      if (clubLabelError) return reply(req, { error: "Vereinsbezeichnungen für die Backup-Prüfung konnten nicht ermittelt werden." }, 500);
+      displayNames.clubs.push(...(clubLabels || []).filter((row: any) => row.name).map((row: any) => ({ id: String(row.id), name: String(row.name) })));
+    }
+    for (let start = 0; start < authorizedTeamIds.length; start += 200) {
+      const { data: teamLabels, error: teamLabelError } = await admin.from("teams").select("id,name").in("id", authorizedTeamIds.slice(start, start + 200));
+      if (teamLabelError) return reply(req, { error: "Mannschaftsbezeichnungen für die Backup-Prüfung konnten nicht ermittelt werden." }, 500);
+      displayNames.teams.push(...(teamLabels || []).filter((row: any) => row.name).map((row: any) => ({ id: String(row.id), name: String(row.name) })));
+    }
     const packageManifest = {
       format: "KADAssist-Backup-Package",
       format_version: 1,
       created_at: new Date().toISOString(),
-      scope: { type: body.scope_type, id: scopeId, club_id: clubId, club_ids: authorizedClubIds, team_ids: authorizedTeamIds },
+      scope: { type: body.scope_type, id: scopeId, club_id: clubId, club_ids: authorizedClubIds, team_ids: authorizedTeamIds, display_names: displayNames },
       categories: body.categories,
       snapshot: { format: "KADAssist-Teamdaten-JSON", version: 16, data: snapshot },
       assets: assetManifest,
