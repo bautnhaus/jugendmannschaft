@@ -4147,22 +4147,53 @@ async function openBackupVerification(){
       const categoryLabels={team_core:'Mannschaft & Stammdaten',training:'Training & Anwesenheit',matchday:'Spieltage & Kader',season_history:'Saisonhistorie',discipline_history:'Sperren & Disziplin',files_images:'Dateien & Bilder'};
       const tableLabels={positions:'Positionen',players:'Spieler',player_positions:'Spieler-Positionen',teams:'Mannschaften',training_series:'Trainingsserien',trainings:'Trainings',attendance:'Anwesenheit',training_players:'Spielerzuordnungen im Training',training_trainers:'Trainerzuordnungen im Training',training_responses:'Trainingsrückmeldungen',matchdays:'Spieltage',matchday_players:'Kadernominierungen',matchday_attendance:'Spieltag-Rückmeldungen',matchday_trainers:'Trainer am Spieltag',matchday_recommendation_runs:'Kaderempfehlungen',matchday_recommendation_players:'Empfohlene Spieler',seasons:'Spielzeiten',team_season_closure_audit:'Saisonabschlüsse',training_behavior_events:'Verhaltensereignisse',training_suspensions:'Sperren',training_suspension_exceptions:'Sperrausnahmen',matchday_early_suspension_resets:'Sperren zurückgesetzt',matchday_nomination_reminders:'Nominierungserinnerungen',team_suspension_game_type_settings:'Spielform-Einstellungen',team_suspension_game_types:'Spielformen'};
       const categoryTables={team_core:['positions','players','player_positions','teams'],training:['training_series','trainings','attendance','training_players','training_trainers','training_responses'],matchday:['matchdays','matchday_players','matchday_attendance','matchday_trainers','matchday_recommendation_runs','matchday_recommendation_players'],season_history:['seasons','team_season_closure_audit'],discipline_history:['training_behavior_events','training_suspensions','training_suspension_exceptions','matchday_early_suspension_resets','matchday_nomination_reminders','team_suspension_game_type_settings','team_suspension_game_types']};
-      const names=scope.display_names||{},teamNameById=new Map((data.teams||data.team_list||[]).filter(x=>x.id&&x.name).map(x=>[String(x.id),x.name]));
-      for(const item of (names.teams||[]))if(item.id&&item.name)teamNameById.set(String(item.id),item.name);
-      const clubNameById=new Map((names.clubs||[]).filter(x=>x.id&&x.name).map(x=>[String(x.id),x.name]));
-      const resolved=(ids,map,label)=>ids?.length?ids.map(id=>map.get(String(id))||label+' (Bezeichnung fehlt im Paket)').join(', '):'Keine';
-      const typeLabels={team:'Mannschaft',club:'Verein',platform:'Plattform'};
-      const rows=[['Backup erstellt',manifest.created_at?new Date(manifest.created_at).toLocaleString('de-DE'):'Nicht angegeben'],['Sicherungsumfang',typeLabels[scope.type]||'Nicht angegeben'],['Verein(e)',resolved(scope.club_ids||[],clubNameById,'Verein')],['Mannschaft(en)',resolved(scope.team_ids||[],teamNameById,'Mannschaft')],['Datenbereiche',categories.map(c=>categoryLabels[c]||c).join(', ')||'Keine angegeben'],['Snapshot',manifest.completeness?.snapshot===true?'Datenstand enthalten':'Nicht bestätigt'],['Dateien & Bilder',manifest.completeness?.files_images_included?'Mit ausgewählten Dateien/Bildern':'Nicht ausgewählt'],['Enthaltene Dateien',String(manifest.completeness?.asset_count??manifest.assets?.length??0)],['Dateigröße',formatBackupBytes(manifest.completeness?.asset_bytes??0)]];
-      const countRows=[];
+      const names=scope.display_names||{};
+      const teamNameById=new Map((names.teams||[]).filter(x=>x.id&&x.name).map(x=>[String(x.id),String(x.name)]));
+      (data.teams||data.team_list||[]).forEach(x=>{if(x.id&&x.name)teamNameById.set(String(x.id),String(x.name));});
+      const clubNameById=new Map((names.clubs||[]).filter(x=>x.id&&x.name).map(x=>[String(x.id),String(x.name)]));
+      const unique=(values)=>[...new Set((values||[]).filter(Boolean).map(String))];
+      const resolved=(ids,map,fallback)=>unique(ids).map(id=>map.get(id)||fallback).filter(Boolean);
+      const typeLabels={team:'Mannschaftsbackup',club:'Vereinsbackup',platform:'Plattformbackup'};
+      const clubNames=resolved(scope.club_ids,clubNameById,'Vereinsname im Paket nicht verfügbar');
+      const teamNames=resolved(scope.team_ids,teamNameById,'Mannschaftsname im Paket nicht verfügbar');
+      const categoryLabels={team_core:'Mannschaft & Stammdaten',training:'Training & Anwesenheit',matchday:'Spieltage & Kader',season_history:'Saison & Historie',discipline_history:'Sperren & fachliche Historie',files_images:'Dateien & Bilder'};
+      const tableLabels={positions:'Positionen',players:'Spieler',player_positions:'Spieler-Positionen',teams:'Mannschaften',training_series:'Trainingsserien',trainings:'Trainings',attendance:'Anwesenheit',training_players:'Spielerzuordnungen im Training',training_trainers:'Trainerzuordnungen im Training',training_responses:'Trainingsrückmeldungen',matchdays:'Spieltage',matchday_players:'Kadernominierungen',matchday_attendance:'Spieltag-Rückmeldungen',matchday_trainers:'Trainer am Spieltag',matchday_recommendation_runs:'Kaderempfehlungen',matchday_recommendation_players:'Empfohlene Spieler',seasons:'Spielzeiten',team_season_closure_audit:'Saisonabschlüsse',training_behavior_events:'Verhaltensereignisse',training_suspensions:'Sperren',training_suspension_exceptions:'Sperrausnahmen',matchday_early_suspension_resets:'Sperrenausgleiche',matchday_nomination_reminders:'Nominierungserinnerungen',team_suspension_game_type_settings:'Spielform-Einstellungen',team_suspension_game_types:'Spielformen'};
+      const categoryTables={team_core:['positions','players','player_positions','teams'],training:['training_series','trainings','attendance','training_players','training_trainers','training_responses'],matchday:['matchdays','matchday_players','matchday_attendance','matchday_trainers','matchday_recommendation_runs','matchday_recommendation_players'],season_history:['seasons','team_season_closure_audit'],discipline_history:['training_behavior_events','training_suspensions','training_suspension_exceptions','matchday_early_suspension_resets','matchday_nomination_reminders','team_suspension_game_type_settings','team_suspension_game_types']};
+      const displayName=(x)=>String(x?.name||[x?.first_name,x?.last_name].filter(Boolean).join(' ')||x?.display_name||'').trim();
+      const dateLabel=(value)=>value?new Date(value+'T00:00:00').toLocaleDateString('de-DE'):'Datum offen';
+      const summarize=(items,formatter,limit=18)=>{const all=(items||[]).map(formatter).filter(Boolean);return all.length?all.slice(0,limit).join(' · ')+(all.length>limit?' · … und '+(all.length-limit)+' weitere':''):'Keine Einträge in diesem Datenbereich';};
+      const detailGroups=[];
       for(const category of categories){
-        if(category==='files_images'){countRows.push(['Dateien & Bilder',manifest.completeness?.files_images_included?'Asset-Referenzen im Paket':'Nicht im Backup enthalten']);continue;}
+        const label=categoryLabels[category]||category;
+        if(category==='files_images'){
+          const assets=Array.isArray(manifest.assets)?manifest.assets:[];
+          const assetNames=assets.map(a=>String(a.name||a.filename||a.path||a.storage_path||'Datei').split('/').pop());
+          detailGroups.push({title:label,summary:manifest.completeness?.files_images_included?'Dateien/Bilder sind im Paket enthalten':'Nicht im Backup enthalten',detail:assetNames.length?summarize(assetNames,x=>x,12):'Keine Dateien oder Bilder im Paketmanifest aufgeführt'});
+          continue;
+        }
         const tables=(categoryTables[category]||[]).filter(table=>Array.isArray(data[table]));
-        if(!tables.length){countRows.push([categoryLabels[category]||category,'Datenbereich ausgewählt; Anzahl nicht separat ausgewiesen']);continue;}
-        for(const table of tables){const n=data[table].length;countRows.push([tableLabels[table]||table,n+' '+(n===1?'Datensatz':'Datensätze')]);}
+        const counts=tables.map(table=>(tableLabels[table]||table)+': '+data[table].length).join(' · ');
+        let details=[];
+        if(category==='team_core'){
+          if(Array.isArray(data.players))details.push('Spieler: '+summarize(data.players,displayName));
+          if(Array.isArray(data.positions))details.push('Positionen: '+summarize(data.positions,x=>x.name));
+          if(Array.isArray(data.teams))details.push('Mannschaften: '+summarize(data.teams,x=>x.name));
+        }else if(category==='training'){
+          if(Array.isArray(data.trainings))details.push('Termine: '+summarize(data.trainings,x=>dateLabel(x.training_date||x.date)+(x.name?' – '+x.name:'')));
+          if(Array.isArray(data.training_series))details.push('Serien: '+summarize(data.training_series,x=>x.name||'Trainingsserie'));
+        }else if(category==='matchday'){
+          if(Array.isArray(data.matchdays))details.push('Spieltage: '+summarize(data.matchdays,x=>dateLabel(x.match_date||x.date)+([x.name,x.opponent].filter(Boolean).join(' – ')?' – '+[x.name,x.opponent].filter(Boolean).join(' – '):'')));
+        }else if(category==='season_history'){
+          if(Array.isArray(data.seasons))details.push('Spielzeiten: '+summarize(data.seasons,x=>x.name||'Spielzeit'));
+        }else if(category==='discipline_history'){
+          if(Array.isArray(data.training_behavior_events))details.push('Ereignisse: '+summarize(data.training_behavior_events,x=>(x.player_name_snapshot||'Spieler')+' – '+({yellow_card:'Gelbe Karte',red_card:'Rote Karte',positive_star:'Positiver Stern'}[x.event_type]||'Ereignis')));
+          if(Array.isArray(data.training_suspensions))details.push('Sperren: '+data.training_suspensions.length+' Einträge');
+        }
+        detailGroups.push({title:label,summary:counts||'Datenbereich ausgewählt; keine Tabellenwerte im Manifest',detail:details.join('\n')||'Die enthaltenen Datensätze sind gezählt; keine Namensliste für diesen Bereich verfügbar.'});
       }
-      status.className='notice small';
-      status.innerHTML='<strong>Backup erfolgreich entschlüsselt und geprüft. Es wurde nichts wiederhergestellt.</strong><dl>'+rows.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd style="margin:0 0 .55rem;overflow-wrap:anywhere">'+esc(v)+'</dd>').join('')+'</dl><h3>Enthaltene Daten</h3><dl>'+countRows.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd style="margin:0 0 .4rem;overflow-wrap:anywhere">'+esc(v)+'</dd>').join('')+'</dl>';
-    }catch(e){status.className='notice small';status.textContent='Prüfung fehlgeschlagen: '+(e?.name==='OperationError'?'Passwort falsch oder Datei beschädigt.':e?.message||String(e));}
+      const scopeLines=[['Sicherungsumfang',typeLabels[scope.type]||'Nicht angegeben'],['Verein(e)',clubNames.join(', ')||'Keine Vereinsbezeichnung enthalten'],['Mannschaft(en)',teamNames.join(', ')||'Keine Mannschaftsbezeichnung enthalten'],['Datenbereiche',categories.map(c=>categoryLabels[c]||c).join(', ')||'Keine angegeben'],['Backup erstellt',manifest.created_at?new Date(manifest.created_at).toLocaleString('de-DE'):'Nicht angegeben'],['Datenstand',manifest.completeness?.snapshot===true?'Enthalten':'Nicht bestätigt'],['Dateien & Bilder',manifest.completeness?.files_images_included?'Ausgewählt':'Nicht ausgewählt'],['Dateianzahl',String(manifest.completeness?.asset_count??manifest.assets?.length??0)],['Dateigröße',formatBackupBytes(manifest.completeness?.asset_bytes??0)]];
+      status.className='notice small backupVerifyResult';
+      status.innerHTML='<strong>Backup erfolgreich entschlüsselt und geprüft – es wurde nichts wiederhergestellt.</strong><h3>Was ist gesichert?</h3><dl>'+scopeLines.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>'+detailGroups.map(g=>'<section class="backupVerifyGroup"><h3>'+esc(g.title)+'</h3><p class="backupVerifyCounts">'+esc(g.summary)+'</p><p class="backupVerifyDetails">'+esc(g.detail)+'</p></section>').join('');    }catch(e){status.className='notice small';status.textContent='Prüfung fehlgeschlagen: '+(e?.name==='OperationError'?'Passwort falsch oder Datei beschädigt.':e?.message||String(e));}
     finally{button.disabled=false;}
   });
 }
