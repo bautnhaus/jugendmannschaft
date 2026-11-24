@@ -876,3 +876,11 @@ Nutzer bestätigte den DEV-Login; die Startprüfung ist damit für den aktuellen
 - Vor dem nächsten Schritt: JavaScript-/Browser-Fixtures auf DEV ausführen und Syntaxfehler beheben; danach UI-Integration der lokalen Datei-/Passwortprüfung und eines klaren Dry-run-Berichts.
 - Danach erst serverseitig autorisierten Scope und aktuelle Daten read-only abgleichen. DB-Schreibpfad/Transaktion, Asset-Restore und tatsächliche Wiederherstellung bleiben getrennte spätere Phasen.
 - Kein Edge-Function-Deployment, keine SQL-/DB-/Storage-Schreiboperation, kein PROD-Deployment.
+
+
+### Deploy-/Mirror-Verifikation Phase 1 (24.11.2026)
+- GitHub Actions DEV deploy Run `45449211192` für Commit `64a934ed4fe6a0f3be6b0ec0e44d8a4a49594253`: completed / success.
+- DEV-Mirror `bautnhaus/jugendmannschaft-dev`, Branch `main`: `src/backup/restore-planner.js` und synthetische Testseite vorhanden; Mirror-Blob-SHAs geprüft.
+- Testseite: `https://dev.kadassist.de/docs/dev-tests/ap-br02-restore-preflight.html`.
+- Noch nicht behauptet: tatsächliche Ausführung der Browser-Fixtures oder vollständige ZIP-Preflight-Prüfung auf iPhone. Bitte zunächst nur die isolierte synthetische Testseite öffnen und das Ergebnis bestätigen.
+- Der App-Dialog ist noch nicht mit diesem Preflight verbunden; der bestehende Restore bleibt gesperrt. Keine Daten-/Storage-Schreiboperation und kein PROD.
