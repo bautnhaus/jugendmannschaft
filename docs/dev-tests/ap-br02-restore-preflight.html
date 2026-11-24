@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KADAssist AP-BR02 – Restore Preflight-Test</title>
+<style>body{font:16px system-ui,-apple-system,sans-serif;max-width:760px;margin:24px auto;padding:0 16px;color:#172033}pre{white-space:pre-wrap;background:#f3f5f9;padding:14px;border-radius:12px}.pass{color:#166534}.fail{color:#b91c1c}</style></head><body>
+<h1>AP-BR02 · Restore-Preflight (DEV)</h1>
+<p><strong>Nur synthetische Testdaten.</strong> Keine Supabase-Verbindung, keine echten Vereins-/Spielerdaten, keine Schreiboperation.</p>
+<p>Prüft die Paket-Schema-Validierung und die Merge-/Never-delete-/Newer-wins-Vorschau mit Fixtures.</p>
+<pre id="result">Test wird ausgeführt …</pre>
+<script type="module">
+import {validatePackageManifest,buildMergePreview} from '../../src/backup/restore-planner.js';
+const out=document.getElementById('result'),results=[];
+function test(name,fn){try{fn();results.push('PASS  '+name);}catch(e){results.push('FAIL  '+name+' — '+e.message);}}
+const base=()=>({format:'KADAssist-Backup-Package',format_version:1,created_at:'2026-01-01T00:00:00Z',
+scope:{type:'team',id:'team-fixture',team_ids:['team-fixture'],club_ids:[],display_names:{teams:[{id:'team-fixture',name:'Fixture Team'}]}},
+categories:['team_core'],snapshot:{format:'KADAssist-Teamdaten-JSON',version:16,data:{players:[{id:'p1',name:'Fixture Player',created_at:'2026-01-01T00:00:00Z'}]}},
+assets:[],completeness:{snapshot:true,files_images_included:false,asset_count:0,asset_bytes:0}});
+test('akzeptiert gültiges versioniertes Fixture',()=>{validatePackageManifest(base());});
+test('weist unbekannte Kategorie zurück',()=>{const m=base();m.categories=['unknown'];let rejected=false;try{validatePackageManifest(m);}catch{rejected=true;}if(!rejected)throw Error('unknown category accepted');});
+test('weist doppelte Datensatz-ID zurück',()=>{const m=base();m.snapshot.data.players.push({...m.snapshot.data.players[0]});let rejected=false;try{validatePackageManifest(m);}catch{rejected=true;}if(!rejected)throw Error('duplicate row accepted');});
+test('weist unsicheren Asset-Pfad zurück',()=>{const m=base();m.assets=[{archive_path:'assets/../secret',bytes:1}];m.completeness.asset_count=1;m.completeness.asset_bytes=1;let rejected=false;try{validatePackageManifest(m);}catch{rejected=true;}if(!rejected)throw Error('unsafe path accepted');});
+test('Merge ergänzt fehlende IDs und löscht nichts',()=>{const preview=buildMergePreview({players:[{id:'p1',name:'A'},{id:'p2',name:'B'}]},{players:[{id:'p1',name:'A'},{id:'p3',name:'C'}]},['players']);if(preview.additions!==1||preview.deletes!==0||preview.tables[0].neverDelete!==2)throw Error(JSON.stringify(preview));});
+test('Newer-wins aktualisiert nur bei eindeutig neuerem Zeitstempel',()=>{const preview=buildMergePreview({players:[{id:'p1',name:'Backup',updated_at:'2026-02-01T00:00:00Z'}]},{players:[{id:'p1',name:'Current',updated_at:'2026-01-01T00:00:00Z'}]},['players']);if(preview.updates!==1)throw Error(JSON.stringify(preview));});
+test('unklare Zeitstempel behalten aktuellen Datensatz',()=>{const preview=buildMergePreview({players:[{id:'p1',name:'Backup'}]},{players:[{id:'p1',name:'Current'}]},['players']);if(preview.updates!==0||preview.kept!==1)throw Error(JSON.stringify(preview));});
+out.textContent=results.join('\n')+'\n\n'+(results.every(x=>x.startsWith('PASS'))?'ALLE PREFLIGHT-FIXTURES BESTANDEN':'FEHLER – keine Integration freigeben');
+out.className=results.every(x=>x.startsWith('PASS'))?'pass':'fail';
+</script></body></html>
