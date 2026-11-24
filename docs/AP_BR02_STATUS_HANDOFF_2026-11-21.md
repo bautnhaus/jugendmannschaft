@@ -806,3 +806,28 @@ Der Vereinsadmin-Test ist der priorisierte offene Test und geht dem neuen Supera
 ### Arbeits- und Dokumentationsregel
 - Dieser Statusnachtrag wird als fortlaufender Checkpoint auf `develop` gepflegt. Nach jedem weiteren relevanten Schritt Ergebnis, Grenzen, Commit/Deploy und den exakt nächsten Schritt ergänzen.
 - Weiterhin nur `develop` und DEV. Keine SQL-/DB-/Storage-Schreiboperation, keine PROD-Änderung und keine Aktivierung des Legacy-Restore.
+
+
+## Read-only Restore-Bestandsprüfung – nächster Arbeitsabschnitt (24.11.2026)
+
+Aktuelle Quelle erneut direkt aus `develop` geprüft:
+- `index.html` Blob `e5ab0034714400d0c3ada880d83498e2d7aca3e6` (Branchstand nach Startfix).
+- Restore-Implementierung: `replaceTeamDataWithBackup(c, backup)`; Aufrufpfad `window.importJSON`.
+
+### Befund aus dem aktuellen Code
+- Der Restore-Handler beginnt mit einem **unbedingten Sperr-Return** und einer Meldung, dass Restore bis zur sicheren Umsetzung von Merge / Never-delete / Newer-wins gesperrt bleibt. Der nachfolgende Legacy-Importcode ist damit über diesen UI-Handler derzeit nicht erreichbar.
+- Die Legacy-Funktion selbst ist weiterhin destruktiv: Sie löscht vorhandene teambezogene Player-, Training-, Matchday-, Series- und Position-Datensätze bzw. deren Zuordnungen und fügt anschließend Backup-Datensätze mit IDs erneut ein.
+- Sie ist auf den globalen aktuellen Mannschaftskontext `team` zugeschnitten; sie ist kein Restore-Executor für die neuen `.kadbackup`-Pakete mit explizitem Team-/Vereins-/Plattformscope.
+- Der alte JSON-Importvertrag (camelCase-Arrays wie `players`, `trainings`, `matchdays`) ist nicht gleich dem neuen verschlüsselten Paket-/Manifestvertrag. Eine direkte Übergabe des geprüften `.kadbackup`-Payloads an die Legacy-Funktion ist nicht zulässig.
+- Das automatische „Safety Backup“ und Rollback der Legacy-Funktion sind kein Ersatz für eine transaktionale, konfliktbewusste Restore-Planung; der Ablauf kann bereits mehrere Lösch-/Insert-Operationen ausgeführt haben, bevor ein Fehler auftritt.
+
+### Ergebnis
+- [x] Aktuellen Restore-Aufrufpfad und Sperr-Return read-only bestätigt.
+- [x] Legacy-Replace-Verhalten als inkompatibel mit den verbindlichen Restore-Regeln bestätigt.
+- [x] Kein Restore ausgelöst; keine Daten verändert.
+- [ ] Neuer Restore-Vertrag und Dry-run/Preview spezifizieren.
+- [ ] Paketdatei lokal validieren und in ein internes, typisiertes Restore-Modell überführen; keine untrusted Manifest-/Datenwerte direkt in DB-Requests verwenden.
+- [ ] Konfliktregeln, IDs/FK-Abhängigkeiten, Scope und Datei-/Asset-Restore definieren; fehlende Daten niemals als Löschauftrag interpretieren.
+- [ ] Erst nach Review: isolierte DEV-Testdaten, positive/negative Tests, Fehler-/Abbruchverhalten und separate Freigabe für eine Restore-Implementierung.
+
+**Nächster konkreter Schritt:** Restore-Plan/Mapping auf Basis des tatsächlichen aktuellen Paketformats und der bestehenden Tabellen-/Beziehungsinventur ausarbeiten. Bis dahin bleibt der Sperr-Return erhalten; keine SQL-/DB-/Storage-Schreiboperation, kein PROD.
