@@ -781,3 +781,28 @@ Der Vereinsadmin-Test ist der priorisierte offene Test und geht dem neuen Supera
 - Änderung in `index.html`, Commit `4e3e36925ccb2f0870ad3217a86789e74670a83b` auf `develop`: `accept`-Filter entfernt (Benutzer kann die Backup-Datei im Dateibrowser auswählen) und Datei-Control mit sichtbarem Rahmen, Mindesthöhe, Kontrast und hervorgehobenem „Datei auswählen“-Systembutton versehen.
 - Sicherheit unverändert: Prüfung weiterhin lokal, Entschlüsselung/Manifest-Lesen; kein Import und kein Upload. Auswahl aller Dateitypen bedeutet nicht, dass sie verarbeitet werden: Crypto-Prüfung validiert weiterhin die gewählte Datei und zeigt bei inkompatiblen Dateien einen Fehler.
 - Status: Commit auf develop; DEV-Deploy und erneuter iPhone-Test stehen aus. Nach Deployment Datei erneut über „Datei auswählen“ wählen und Manifest prüfen. Danach mit falsch benannter/ungeeigneter Datei testen, dass ein verständlicher Fehler erscheint.
+
+
+## Fortsetzung Backup-Prüfer / Abschluss verständliche Manifestanzeige (24.11.2026)
+
+### Nutzerbestätigte DEV-Prüfung
+- Die iOS-Dateiauswahl wurde erneut praktisch verwendet: Die `.kadbackup`-Datei ließ sich auswählen und öffnen; Passwort wurde eingegeben und der lokale Prüflauf erfolgreich ausgeführt.
+- Der Prüfer zeigte zunächst unaufgelöste IDs. Die Anzeige wurde daraufhin um lesbare Bezeichnungen erweitert (Vereins-/Mannschaftsnamen, Kategorien und Datenbereiche sowie verständliche Tabellen-/Datensatzlabels und Zusammenfassungen).
+- Nutzer hat die überarbeitete Ergebnisdarstellung anhand der Screenshots geprüft und bestätigt: **„Das sieht gut aus.“** Damit ist die UX-Abnahme der verständlichen Manifest-/Inhaltsübersicht für den getesteten Backup-Fall bestanden.
+- Prüfvorgang bleibt strikt lokal: Datei wird entschlüsselt und Paketinhalt/Manifest gelesen; kein Restore und keine Supabase-Schreiboperation.
+
+### Code-/Deploy-Stand
+- Commits auf `develop` für Dateiauswahl/Feedback/Labels und lesbare Ergebnisauflösung: `53274eed`, `5ba234ed`, `803573bb`, `798cdb84`, `e615b682` (zusätzlich frühere UX-/Picker-Commits siehe Git-Historie).
+- Beim letzten Integrationsschritt blockierten doppelte Deklarationen im zentralen App-Script die App-Initialisierung. Korrektur in Commit `41b50125c5d5d27d348a2ea6f6a17b38f695b33d` (`Fix duplicate declarations blocking app startup`).
+- GitHub Actions Deploy DEV Run `45444457116`: completed / success für genau diesen Commit. Das bestätigt den DEV-Deploy; die Wiederherstellung der Anmeldung muss getrennt durch einen aktuellen Login-Test bestätigt werden.
+- Die Backup-Prüfung ist damit für den getesteten Datei-/Passwort-/Manifestablauf praktisch bestätigt. Das ist **keine** Restore-Abnahme und auch kein vollständiger Rollen-/Scope-Sicherheitstest für sämtliche Backup-Varianten.
+
+### Noch offen – nicht erneut erledigte Prüfschritte ansetzen
+1. Nach dem jüngsten App-Startup-Fix einmal den DEV-Login praktisch bestätigen; bei Erfolg diesen Punkt schließen. Kein allgemeiner Syntaxcheck von Grund auf wiederholen, sofern kein neuer Fehler auftritt.
+2. Die verbleibende rollen-/scopebezogene Exportabnahme gezielt vervollständigen: Vereinsadmin-Auswahl mit den konkret gewählten Mannschaften gegen Manifest/Paketinhalt; anschließend Superadmin-Scope (Plattform/Verein/Mannschaft) und autorisierter Negativtest. Bereits bestätigte ZIP-/Crypto-Grundtests und die lesbare Manifestdarstellung nicht wiederholen.
+3. Danach Restore als separates Arbeitspaket vorbereiten. Vor Implementierung die vorhandene Legacy-Funktion `replaceTeamDataWithBackup()` nochmals im aktuellen `develop` prüfen und dokumentieren, warum sie wegen Replace/Delete-Verhalten nicht verwendet werden darf.
+4. Restore-Konzept auf die verbindlichen Regeln ausrichten: rollen- und zielscopegebundene Prüfung, Vorschau/Dry-run, Merge zulässiger fehlender Datensätze, **Never-delete** für im Backup fehlende vorhandene Datensätze, **Newer-wins** bei Konflikten, FK-/Beziehungsprüfung, Dateien/Bilder und nachvollziehbares Ergebnisprotokoll. Restore erst nach Codeprüfung, DEV-Tests und separater Freigabe aktivieren.
+
+### Arbeits- und Dokumentationsregel
+- Dieser Statusnachtrag wird als fortlaufender Checkpoint auf `develop` gepflegt. Nach jedem weiteren relevanten Schritt Ergebnis, Grenzen, Commit/Deploy und den exakt nächsten Schritt ergänzen.
+- Weiterhin nur `develop` und DEV. Keine SQL-/DB-/Storage-Schreiboperation, keine PROD-Änderung und keine Aktivierung des Legacy-Restore.
