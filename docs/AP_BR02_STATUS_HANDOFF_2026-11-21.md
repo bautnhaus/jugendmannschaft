@@ -1065,3 +1065,17 @@ Auf DEV-Testseite nach abgeschlossenem GitHub Pages Deployment die nun 17 Fixtur
 - Workflow/deployment success confirms publication only; browser execution of the fixture page has not yet been observed in this assistant session. Do not claim the 17 cases have passed on this deployed page until the page output is inspected. User can open the test page and report the visible PASS/FAIL summary.
 - No restore executor, DB/Storage writes, SQL/RPC migration or PROD action. Restore remains disabled.
 - Next: inspect the deployed test page's output. If all 17 PASS, mark the merge-preview regression gate complete and proceed to the next documented read-only review; do not rerun the earlier 9 package-preflight cases.
+
+
+## AP-BR02 Fortsetzung – Exportvertrag / Feldregeln abgeglichen (25.11.2026)
+
+- Nutzer hat die DEV-Testseite geöffnet und Screenshots des tatsächlichen Browserergebnisses geliefert: 17 Fixture-Ausgaben PASS, Abschluss **ALLE PREFLIGHT-FIXTURES BESTANDEN**. Damit ist der 17er Merge-Preview-Regressions-Gate im Browser bestätigt. Die vorherigen neun Paket-/ZIP-Preflight-Tests werden nicht erneut ausgeführt.
+- Read-only Live-Schema-Prüfungen in Supabase DEV (Projektref `pzazqvvoruqnqhcorbwx`) dokumentiert: Tabellen/PK/Unique/FK/Trigger; insbesondere Audit append-only, serverseitige updated_at-Trigger, fachliche Side-Effect-Trigger, CASCADE/RESTRICT/SET NULL und Auth-/Actor-FKs. Details in Restore-Mapping §8–11.
+- Quellabgleich auf Repository `bautnhaus/jugendmannschaft`, Branch `develop`: `supabase/functions/create-backup-package/index.ts` und `src/backup/restore-planner.js`. Quellen stimmen mit DEV-Mirror-Stand überein. KADB-Paket hat format v1 / Snapshot v16; alte JSON-Exportfunktion in `index.html` ist ein anderes Legacy-/Prototype-Format (v15), nicht mit AP-BR02 verwechseln.
+- Restore-Feld-Allowlist gegen Serverexport-Selects abgeglichen: UPDATE_FIELDS sind im Export vorhanden; geschützte Felder wie `players.active`, `photo_path`, `photo_data`, Team-/Club-Identität und Zeitstempel sind nicht Newer-wins-Updatefelder.
+- Neue sicherheitsrelevante offene Punkte: (1) DB-Spielerbildfelder werden unabhängig von der files_images-Kategorie mit exportiert, Assets jedoch separat – Restore muss Bildfelder bei fehlendem/ungültigem Assetpaket zurückhalten und DB-Referenzen erst nach sicherem Asset-Plan setzen. (2) Trainer-/Actor-User-FKs werden nicht sämtlich im Preflight gegen vorhandene berechtigte Zielkontext-Nutzer geprüft; keine User/Role/Auth-Anlage oder Actor-Remapping aus Backup zulassen. (3) gezielte Fixtures für fehlende/außerhalb-Scope Trainer/Actor-Referenzen und weitere historische Matchday-Refs erforderlich.
+- Dokumentation: Restore-Mapping §12 ergänzt, Commit `de3823ce55b781e1e5cf42cdeffd30b1e30e9125`.
+- Status: keine Planner-Codeänderung in dieser Prüfrunde; keine Tests erneut ausgeführt; keine DB-/Storage-Schreiboperation, Migration, Restore/Executor oder PROD-Aktion.
+
+### Nächster Schritt
+Die zuvor definierte Preview-UI-Abnahme (blockierende Konflikte, Add/Keep/Update-Zählung, Never-delete-Ausweisung) anhand der tatsächlich bereitgestellten DEV-Ansicht prüfen. Danach – falls UI-Gate abgeschlossen – die nun identifizierten User-/Actor- und Asset-Feldregeln in eine präzise Restore-Planung und gezielte neue synthetische Regression-Fixtures überführen. Vor jeder Restore-Executor- oder DB-/Storage-Schreibarbeit ist weiterhin separate Freigabe erforderlich.
