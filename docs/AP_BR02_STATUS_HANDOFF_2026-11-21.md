@@ -952,3 +952,17 @@ Nutzer bestätigte den DEV-Login; die Startprüfung ist damit für den aktuellen
 3. Backup-Prüfdialog auf DEV einmal mit dem vorhandenen Backup testen; Erwartung: neuer Bericht inkl. Asset-Zähler/Bytegröße und UI-Reihenfolge.
 4. Da das vorhandene Backup keine Assets enthält, für eine echte >0-Byte-Prüfung ausschließlich ein synthetisches Paket oder ein Backup mit ausdrücklich ausgewählten Testassets verwenden.
 5. Danach Restore-Mapping und Scope-/Konfliktregeln read-only spezifizieren. Keine tatsächliche DB-/Storage-Wiederherstellung ohne gesonderte Freigabe.
+
+
+### Nutzerprüfung Restore-Preflight-Seite – Screenshot 25.11.2026
+- Nutzer hat die DEV-Testseite geöffnet und einen erfolgreichen Fixture-Lauf als Screenshot zurückgemeldet.
+- Sichtbar bestanden: gültiges versioniertes Fixture; unbekannte Kategorie; doppelte Datensatz-ID; unsicherer Asset-Pfad; Merge ergänzt IDs und löscht nichts; Newer-wins nur bei eindeutig neuerem Zeitstempel; unklare Zeitstempel behalten den aktuellen Datensatz. Anzeige: „ALLE PREFLIGHT-FIXTURES BESTANDEN“.
+- Diese sichtbare Ausgabe enthält die 7 bisherigen Schema-/Merge-Fixtures. Die neu ergänzten ZIP-/Asset-Byte-Fixtures (gültiges ZIP mit Asset-Bytes und absichtlicher Asset-Größenabweichung) sind im Screenshot nicht aufgeführt. Daher nicht als durch den Screenshot bestanden dokumentieren; ihr tatsächlicher Browserlauf bleibt separat zu bestätigen.
+- Nach Nutzer-Screenshot erneut geprüft: aktueller develop-Code und DEV-Mirror stimmen auf Blob a8e41502541c27174cdcc985a4cb27c31f5633ca überein; Testseite und DEV-Mirror stimmen auf Blob 2348acd1edef76a28f8dc3f1775b7e5b62b16dc7 überein. Aktuelle GitHub Pages Actions für Code-/Test-/Handover-Commits sind erfolgreich.
+- Damit ist Deployment/Synchronisierung verifiziert; kein Restore und keine echten Daten wurden verarbeitet.
+
+### Nächster Schritt nach bestandenem Basis-Preflight
+1. Testseite einmal neu laden (Cache umgehen, falls nötig) und prüfen, ob die beiden ZIP-Asset-Fixtures als zusätzliche PASS-Zeilen erscheinen.
+2. Falls sie fehlen oder Fehler zeigen: Testseite/Console und zip.js-Aufruf untersuchen; noch keine Integration als vollständig byte-getestet abnehmen.
+3. Anschließend Backup-Prüfdialog auf DEV testen: ein Picker-Auslöser, Dateiname nicht anklickbar, primäre Aktion rechts, Schließen links, erfolgreicher AP-BR02-Bericht.
+4. Restore-Mapping/Scope/Konfliktregeln weiter nur read-only ausarbeiten. Schreib-Restore weiterhin nicht freigegeben.
