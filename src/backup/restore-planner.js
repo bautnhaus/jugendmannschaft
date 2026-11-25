@@ -58,6 +58,12 @@ const INSERT_ONLY_TABLES = new Set([
 ]);
 
 const TABLE_REFS = Object.freeze({
+  positions: [["team_id", "teams"]],
+  players: [["team_id", "teams"]],
+  seasons: [["team_id", "teams"]],
+  training_series: [["team_id", "teams"]],
+  trainings: [["team_id", "teams"], ["season_id", "seasons"], ["series_id", "training_series"]],
+  matchdays: [["team_id", "teams"], ["season_id", "seasons"]],
   player_positions: [["player_id", "players"], ["position_id", "positions"]],
   attendance: [["training_id", "trainings"], ["player_id", "players"]],
   training_players: [["training_id", "trainings"], ["player_id", "players"]],
@@ -68,7 +74,14 @@ const TABLE_REFS = Object.freeze({
   matchday_trainers: [["matchday_id", "matchdays"]],
   matchday_recommendation_runs: [["matchday_id", "matchdays"]],
   matchday_recommendation_players: [["recommendation_id", "matchday_recommendation_runs"], ["player_id", "players"]],
-  trainings: [["series_id", "training_series"]],
+  training_behavior_events: [["team_id", "teams"], ["season_id", "seasons"], ["training_id", "trainings"], ["player_id", "players"]],
+  training_suspensions: [["team_id", "teams"], ["season_id", "seasons"], ["player_id", "players"], ["source_event_id", "training_behavior_events"], ["intended_matchday_id", "matchdays"], ["served_matchday_id", "matchdays"]],
+  training_suspension_exceptions: [["team_id", "teams"], ["suspension_id", "training_suspensions"], ["player_id", "players"], ["matchday_id", "matchdays"]],
+  matchday_early_suspension_resets: [["team_id", "teams"], ["season_id", "seasons"], ["player_id", "players"], ["matchday_id", "matchdays"]],
+  matchday_nomination_reminders: [["team_id", "teams"], ["player_id", "players"], ["source_matchday_id", "matchdays"], ["fulfilled_matchday_id", "matchdays"]],
+  team_suspension_game_type_settings: [["team_id", "teams"]],
+  team_suspension_game_types: [["team_id", "team_suspension_game_type_settings", "team_id"]],
+  team_season_closure_audit: [["team_id", "teams"], ["season_id", "seasons"]]
 });
 
 const fail = (code, detail) => { throw new Error("RESTORE_PREFLIGHT_" + code + (detail ? ":" + detail : "")); };
@@ -98,12 +111,21 @@ export function validatePackageManifest(manifest) {
       if (seen.has(key)) fail("ROW_KEY_DUPLICATE", table);
       seen.add(key);
     }
+    for (const fields of TABLE_UNIQUE_KEYS[table] || []) {
+      const uniqueSeen = new Set();
+      for (const row of rows) {
+        if (fields.some(field => row[field] === null || row[field] === undefined)) continue;
+        const uniqueKey = fields.map(field => String(row[field])).join("\\u001f");
+        if (uniqueSeen.has(uniqueKey)) fail("ROW_UNIQUE_CONFLICT", table + ":" + fields.join("+"));
+        uniqueSeen.add(uniqueKey);
+      }
+    }
   }
   for (const [table, refs] of Object.entries(TABLE_REFS)) {
     const rows = data[table] || [];
-    for (const row of rows) for (const [field, parent] of refs) {
+    for (const row of rows) for (const [field, parent, parentKey = "id"] of refs) {
       if (row[field] == null) continue;
-      const parentIds = new Set((data[parent] || []).map(x => String(x.id)));
+      const parentIds = new Set((data[parent] || []).map(x => String(x[parentKey])));
       // Parent tables not included as a selected category may have valid external references;
       // those are validated against the scoped current database during the next stage.
       if (data[parent] && !parentIds.has(String(row[field]))) fail("FOREIGN_KEY_INVALID", table + "." + field);
@@ -190,12 +212,22 @@ export function buildMergePreview(backupData, currentData, tableNames = Object.k
     const current = Array.isArray(currentData?.[table]) ? currentData[table] : [];
     const currentByKey = new Map(current.map(row => [rowKey(table, row), row]));
     const detail = { table, backupCount: incoming.length, currentCount: current.length, add: 0, update: 0, keep: 0, conflict: 0, newerBackup: 0 };
+    const seenIncomingUnique = new Map();
     for (const row of incoming) {
       const old = currentByKey.get(rowKey(table, row));
+      let duplicateIncomingUnique = null;
+      for (const fields of TABLE_UNIQUE_KEYS[table] || []) {
+        if (fields.some(field => row[field] === null || row[field] === undefined)) continue;
+        const uniqueKey = fields.map(field => String(row[field])).join("\\u001f");
+        if (seenIncomingUnique.has(uniqueKey) && seenIncomingUnique.get(uniqueKey) !== rowKey(table, row)) duplicateIncomingUnique = fields;
+        else seenIncomingUnique.set(uniqueKey, rowKey(table, row));
+      }
       if (!old) {
         const unique = uniqueConflict(table, row, current);
-        if (unique) { detail.conflict++; conflicts++; detail.conflictDetails ||= []; detail.conflictDetails.push({ reason: "UNIQUE_CONSTRAINT_COLLISION", fields: unique.fields }); }
-        else { detail.add++; additions++; }
+        if (unique || duplicateIncomingUnique) {
+          detail.conflict++; conflicts++; detail.conflictDetails ||= [];
+          detail.conflictDetails.push({ reason: duplicateIncomingUnique ? "BACKUP_UNIQUE_CONSTRAINT_COLLISION" : "UNIQUE_CONSTRAINT_COLLISION", fields: duplicateIncomingUnique || unique.fields });
+        } else { detail.add++; additions++; }
         continue;
       }
       if (JSON.stringify(old) === JSON.stringify(row)) { detail.keep++; kept++; continue; }
