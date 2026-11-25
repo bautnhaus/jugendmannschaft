@@ -82,3 +82,40 @@ Aktueller `buildMergePreview()` nutzt pro Tabelle die definierten Schlüssel. Ze
 ## Status
 
 Read-only Mapping abgeschlossen als Arbeitsgrundlage. Keine Supabase-Verbindung im Preflight, keine DB-/Storage-Schreiboperation, kein tatsächlicher Restore und keine PROD-Änderung. Nächster Schritt ist die gezielte fachliche Entscheidung zu den offenen Restore-Gates; erst danach darf eine isolierte DEV-Implementierung geplant werden.
+
+
+## 6. Feld-Whitelist – read-only Ableitung aus dem Exportvertrag (25.11.2026)
+
+**Status: Entwurf/Analyse, keine freigegebene Schreib-Whitelist.** Quelle ist die aktuelle Export-Edge-Function auf develop (Export-Selects). Die Listen definieren, welche Felder das Paket aktuell überhaupt enthält; sie sind ausdrücklich noch keine pauschale Erlaubnis, jedes Feld beim Restore zu schreiben.
+
+### Feldklassen und vorläufige Restore-Regeln
+
+| Feldklasse | Beispiele aus Exportvertrag | Vorschlag für Restore |
+|---|---|---|
+| Datensatz-/Verknüpfungsschlüssel | id; zusammengesetzte Keys wie training_id + player_id, matchday_id + user_id, recommendation_id + player_id | Für Match/Idempotenz verwenden. Bei Insert ursprüngliche Identität erhalten, damit Beziehungen/Historie konsistent bleiben. Niemals per Update ändern. |
+| Scope-/Besitzfelder | team_id, club_id | Vor jedem Plan gegen autorisierten Zielscope prüfen. In einem Same-scope-Ansatz nicht remappen und nicht aktualisieren. Abweichung führt zum Abbruch, nicht zu stiller Zuordnung. |
+| Fachliche Nutzdaten | Namen, Termine, Spiel-/Trainingsdaten, Notizen, Status, Spielerattribute, Zuordnungswerte | Kandidaten für Insert; Update nur nach feldbezogener Whitelist und fachlicher Validierung. |
+| Zeit-/Versionsfelder | created_at, updated_at, modified_at (falls im künftigen Schema vorhanden) | Zeitstempel dienen der Newer-wins-Entscheidung. created_at bei Insert ggf. als historische Metadaten erhalten; Update-Zeitstempelstrategie muss festgelegt werden, damit Restore keinen Datensatz künstlich veraltet oder neuer erscheinen lässt. Nicht blind überschreiben. |
+| Personen-/Akteur-Referenzen | user_id, created_by, awarded_by, voided_by, granted_by, revoked_by, closed_by, updated_by | Keine Benutzer-, Rollen-, Mitgliedschafts- oder Profilanlage aus dem Backup. Referenzen gegen existierende Benutzer/FKs im autorisierten Zielkontext prüfen. Fehlende Pflichtreferenz: vor Anwendung als Konflikt melden. |
+| Fachliche Historie / Snapshotfelder | *_snapshot, awarded_at, served_at, expired_at, voided_at, applied_at, cancelled_at, fulfilled_at | Fachliche Historie, nicht mit technischen Audit-/Auth-Daten gleichsetzen. Für Event-/Historientabellen Insert-only als sichere Ausgangshypothese prüfen; Updates nur, wenn das Datenmodell ausdrücklich veränderlichen Status erlaubt. |
+| Storage-/Asset-Verweise | photo_path, photo_data, Manifest bucket/object_path/archive_path | DB-Verweise erst nach Asset-Preflight und sicherer Zielpfadableitung aktualisieren. Paketpfad nie als Schreibziel vertrauen. Asset-Merge ist ein eigener Planabschnitt. |
+
+### Tabelle-spezifische Prüfpunkte aus den tatsächlichen Selects
+
+- teams: id und club_id sind Identität/Scope; fachliche Teamattribute können Kandidaten sein. Vereins-/Teamzuordnung nicht verändern.
+- positions, players, seasons, training_series, trainings, matchdays: Primär-ID und Teambezug schützen; alle sonstigen Felder erst nach Schema-/Constraint-Abgleich freigeben.
+- Join-/Teilnahmetabellen (player_positions, attendance, training_players, training_trainers, training_responses, matchday_players, matchday_attendance, matchday_trainers, matchday_recommendation_players): zusammengesetzte Identität ist unveränderlich; beide Seiten der Beziehung müssen im Paket oder im autorisierten Zielbestand auflösbar sein.
+- matchday_recommendation_runs: created_by ist Personenreferenz; Run und abhängige Empfehlungsspieler müssen gemeinsam bzw. referenzsicher verarbeitet werden.
+- Disziplin-/Sperren-/Reset-/Reminder-Tabellen: direkte IDs, Akteur-FKs, Status- und Ereigniszeitpunkte sowie Snapshotfelder getrennt prüfen. Nicht als generische „alle Spalten aktualisieren“-Tabellen behandeln.
+- team_suspension_game_type_settings und team_suspension_game_types: team_id ist Scope-/Schlüsselbestandteil; updated_by ist Akteurreferenz.
+- team_season_closure_audit: fachliche Saisonabschluss-Historie, aber closed_by ist eine Akteurreferenz. Insert-only/Append-Verhalten und Existenzprüfung sind vor Restore festzulegen.
+
+### Noch nicht beantwortet – nächste fachlich-technische Freigaben
+
+1. Same-scope-only für die erste Restore-Version (keine Team-/Vereins-ID-Neuzuordnung) oder kontrolliertes Remapping. Der sichere technische Vorschlag ist Same-scope-only.
+2. Exakte Insert- und Update-Spalten pro Tabelle, einschließlich unveränderlicher bzw. serververwalteter Felder.
+3. Umgang mit fehlenden oder nicht mehr gültigen Akteur-/Benutzerreferenzen.
+4. Insert-only-/Update-Regeln für fachliche Historien- und Ereignistabellen.
+5. DB-Atomarität: ein paketweiter RPC/Transaktionspfad statt sequenzieller Client-REST-Schreiboperationen mit möglichem Teil-Restore.
+
+Bis diese Punkte bestätigt und spezifiziert sind, bleibt buildMergePreview() ausschließlich Vorschau; kein DB-/Storage-Executor und kein Restore.
