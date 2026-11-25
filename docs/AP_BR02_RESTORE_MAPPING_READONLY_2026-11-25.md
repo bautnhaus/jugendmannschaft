@@ -311,3 +311,15 @@ Der Export enthält `training_trainers.user_id`, `matchday_trainers.user_id`, `m
 - Für jeden relevanten Export-FK (einschließlich `intended_matchday_id`, `served_matchday_id`, Reminder-/Exception-Matchdays) Fixtures für vorhanden, fehlend und außerhalb des Scope ergänzen.
 
 **Ergebnis:** Export-Feld-Allowlist und Update-Feld-Allowlist sind in der geprüften Quelle konsistent. Bildreferenzen und User-/Actor-FKs sind jedoch noch nicht restore-ready und benötigen eine eigene sichere Feld-/Referenzregel. Keine Planner-Codeänderung vorgenommen; keine Testausführung wiederholt; keine DB-/Storage-Schreiboperation, kein Restore/Executor, keine PROD-Änderung.
+
+
+## 13. DEV-UI-Abgrenzung – Paketprüfung vs. Restore-Vorschau
+
+Quellprüfung von `index.html` im Branch `develop`:
+
+- Die aktuelle Aktion **„Backup prüfen“** entschlüsselt lokal und ruft `inspectRestoreArchive()` auf. Die sichtbare Ergebnisansicht zeigt Paket-/Scope-/Kategorie-/Tabellen-/Asset-Zusammenfassung. Sie liest keine Zieltabellen und ruft `buildMergePreview()` nicht auf.
+- Damit ist die Benutzeroberfläche eine **Paket-Preflight-/Verifikationsansicht**, keine echte Zielzustands-Merge-Vorschau. Add/Update/Keep/Conflict und Never-delete-Zielbestände werden im UI aktuell nicht angezeigt.
+- Die alte Funktion `replaceTeamDataWithBackup()` ist im `index.html` weiterhin vorhanden und wird vom Legacy-JSON-Importpfad verwendet. Sie löscht vorhandene Teamdaten vor dem Einspielen und besitzt einen eigenen Safety-/Rollback-Pfad. Sie ist ein separates Altformat-/Altverfahren, **kein AP-BR02-KADB-Restore** und darf nicht als Ausweichweg für das neue Paket benutzt werden.
+- Die Browser-Fixtures testen die reine Planner-Funktion isoliert mit synthetischen aktuellen Zielzeilen; sie belegen weder eine Integration in die UI noch echte Zielzustandsabfrage. Die erfolgreiche 17er Fixture-Abnahme bleibt gültig, ist aber nicht gleichbedeutend mit einer visuellen Merge-Preview-Abnahme.
+
+**Konsequenz / Gate:** Vor einem späteren Restore-Executor braucht es zuerst eine ausdrücklich read-only Zielzustands-Preview, die serverseitig den exakten Scope erneut autorisiert, erlaubte Tabellen/Zielzeilen abfragt, Konflikte einschließlich Unique-/FK-/Actor-/Asset-Regeln sichtbar macht und klar `0 writes` garantiert. Die Legacy-Importoberfläche muss dabei als eigener Pfad klar getrennt bleiben. Keine UI-/Planner-Codeänderung in dieser Prüfung; keine DB-/Storage-Schreiboperation, kein Restore, kein PROD.
