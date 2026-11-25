@@ -1936,6 +1936,15 @@ html[data-theme="dark"] .playerListRow.matchdaySquadTile .matchdayStatusChip.nom
  background:rgba(37,99,235,.24)!important;border-color:#60a5fa!important;color:#bfdbfe!important;
 }
 </style>
+<script src="./vendor/zipjs/2.25.0/zip.min.js"></script>
+<style>
+/* Mobile dialog action order: secondary/cancel left, primary action right (thumb reach). */
+.modalbox .toolbar button.secondary{order:-1}
+/* AP-BR02 file picker: only the visible chooser opens the file dialog; filename is informational. */
+.backupVerifyPicker{position:relative;display:inline-flex;margin:2px 0 8px}
+.backupVerifyFileLabel{margin-bottom:5px}
+.backupVerifyFileInput:focus-visible+.backupVerifyChooseButton{outline:2px solid var(--accent);outline-offset:3px}
+</style>
 </head>
 <body>
 <div id="loginView">
@@ -4124,11 +4133,11 @@ async function exportJSON(){
 async function openBackupVerification(){
   const content=$('modalContent');
   content.innerHTML='<div class="modalHeader"><h2>Backup prüfen</h2></div>'+
-    '<p class="muted">Die Prüfung entschlüsselt das Backup nur lokal in diesem Browser und liest ausschließlich das Paketmanifest. Es werden keine Daten importiert oder an Supabase übertragen.</p>'+
-    '<label class="backupVerifyFileLabel">Verschlüsselte Backup-Datei (.kadbackup)<input id="apbr02VerifyFile" class="backupVerifyFileInput" type="file" accept=".kadbackup,application/octet-stream"><span class="backupVerifyChooseButton">Datei auswählen</span><span id="apbr02VerifyFileName" class="backupVerifyFileName">Noch keine Datei ausgewählt</span></label>'+
+    '<p class="muted">Die Prüfung entschlüsselt das Backup nur lokal in diesem Browser. Sie validiert das Paketmanifest, die ZIP-Einträge und die tatsächlichen Größen der enthaltenen Asset-Dateien. Es werden keine Daten importiert oder an Supabase übertragen.</p>'+
+    '<label for="apbr02VerifyFile">Verschlüsselte Backup-Datei (.kadbackup)</label><div class="backupVerifyPicker"><input id="apbr02VerifyFile" class="backupVerifyFileInput" type="file" accept=".kadbackup,application/octet-stream"><label for="apbr02VerifyFile" class="backupVerifyChooseButton">Datei auswählen</label></div><div id="apbr02VerifyFileName" class="backupVerifyFileName">Noch keine Datei ausgewählt</div>'+
     '<label>Backup-Passwort<input id="apbr02VerifyPassword" type="password" autocomplete="off"></label>'+
     '<div id="apbr02VerifyStatus" class="backupVerifyStatus small" role="status">Datei auswählen und Passwort eingeben.</div>'+
-    '<div class="toolbar"><button type="button" id="apbr02VerifyStart">Manifest prüfen</button><button type="button" class="secondary" onclick="closeModal()">Schließen</button></div>';
+    '<div class="toolbar"><button type="button" class="secondary" onclick="closeModal()">Schließen</button><button type="button" id="apbr02VerifyStart">Paket prüfen</button></div>';
   $('modal').classList.add('show');
   $('apbr02VerifyFile').addEventListener('change',()=>{
     const file=$('apbr02VerifyFile').files?.[0];
@@ -4138,13 +4147,14 @@ async function openBackupVerification(){
     const file=$('apbr02VerifyFile').files?.[0],password=$('apbr02VerifyPassword').value,status=$('apbr02VerifyStatus'),button=$('apbr02VerifyStart');
     if(!file){status.textContent='Bitte zuerst die Backup-Datei auswählen.';return;}
     if(!password){status.textContent='Bitte das Backup-Passwort eingeben.';return;}
-    button.disabled=true;status.textContent='Backup wird lokal entschlüsselt und Manifest geprüft…';
+    button.disabled=true;status.textContent='Backup wird lokal entschlüsselt und ZIP-Paket geprüft…';
     try{
       const cryptoModule=await import('./src/backup/backup-crypto.js');
       const decryptedArchive=await cryptoModule.decryptBackupBlob(file,password);
-      const manifest=await cryptoModule.readBackupManifestBlob(decryptedArchive);
       const restorePlanner=await import('./src/backup/restore-planner.js');
-      const preflight=restorePlanner.validatePackageManifest(manifest);
+      const archiveCheck=await restorePlanner.inspectRestoreArchive(decryptedArchive);
+      const manifest=archiveCheck.manifest;
+      const preflight=archiveCheck;
       const scope=manifest.scope||{},categories=Array.isArray(manifest.categories)?manifest.categories:[];
       const data=manifest.snapshot?.data||{};
       const categoryLabels={team_core:'Mannschaft & Stammdaten',training:'Training & Anwesenheit',matchday:'Spieltage & Kader',season_history:'Saisonhistorie',discipline_history:'Sperren & Disziplin',files_images:'Dateien & Bilder'};
@@ -4193,7 +4203,7 @@ const displayName=(x)=>String(x?.name||[x?.first_name,x?.last_name].filter(Boole
       }
       const scopeLines=[['Sicherungsumfang',typeLabels[scope.type]||'Nicht angegeben'],['Verein(e)',clubNames.join(', ')||'Keine Vereinsbezeichnung enthalten'],['Mannschaft(en)',teamNames.join(', ')||'Keine Mannschaftsbezeichnung enthalten'],['Datenbereiche',categories.map(c=>categoryLabels[c]||c).join(', ')||'Keine angegeben'],['Backup erstellt',manifest.created_at?new Date(manifest.created_at).toLocaleString('de-DE'):'Nicht angegeben'],['Datenstand',manifest.completeness?.snapshot===true?'Enthalten':'Nicht bestätigt'],['Dateien & Bilder',manifest.completeness?.files_images_included?'Ausgewählt':'Nicht ausgewählt'],['Dateianzahl',String(manifest.completeness?.asset_count??manifest.assets?.length??0)],['Dateigröße',formatBackupBytes(manifest.completeness?.asset_bytes??0)]];
       status.className='notice small backupVerifyResult';
-      status.innerHTML='<strong>Backup entschlüsselt und AP-BR02-Paketprüfung bestanden – es wurde nichts wiederhergestellt.</strong><p>Schema, ausgewählte Tabellen, Datensatz-IDs, interne Referenzen und Asset-Manifest geprüft. '+preflight.tableNames.length+' Datentabellen sind im Snapshot enthalten.</p><h3>Was ist gesichert?</h3><dl>'+scopeLines.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>'+detailGroups.map(g=>'<section class="backupVerifyGroup"><h3>'+esc(g.title)+'</h3><p class="backupVerifyCounts">'+esc(g.summary)+'</p><p class="backupVerifyDetails">'+esc(g.detail)+'</p></section>').join('');    }catch(e){status.className='notice small';status.textContent='Prüfung fehlgeschlagen: '+(e?.name==='OperationError'?'Passwort falsch oder Datei beschädigt.':e?.message||String(e));}
+      status.innerHTML='<strong>Backup entschlüsselt und AP-BR02-Paketprüfung bestanden – es wurde nichts wiederhergestellt.</strong><p>Schema, ausgewählte Tabellen, Datensatz-IDs, interne Referenzen, ZIP-Einträge, Asset-Manifest und tatsächliche Asset-Bytegrößen geprüft. '+preflight.tableNames.length+' Datentabellen, '+preflight.assets.length+' Assets und '+formatBackupBytes(preflight.verifiedAssetBytes)+' Asset-Daten geprüft.</p><h3>Was ist gesichert?</h3><dl>'+scopeLines.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>'+detailGroups.map(g=>'<section class="backupVerifyGroup"><h3>'+esc(g.title)+'</h3><p class="backupVerifyCounts">'+esc(g.summary)+'</p><p class="backupVerifyDetails">'+esc(g.detail)+'</p></section>').join('');    }catch(e){status.className='notice small';status.textContent='Prüfung fehlgeschlagen: '+(e?.name==='OperationError'?'Passwort falsch oder Datei beschädigt.':e?.message||String(e));}
     finally{button.disabled=false;}
   });
 }
