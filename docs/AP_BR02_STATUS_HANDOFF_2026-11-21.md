@@ -1016,3 +1016,15 @@ Zunächst die Scope-Gate-Entscheidung festhalten: Vorschlag für die erste Resto
 
 ### Nächster Arbeitsgang (read-only)
 Die exakten Insert-/Update-Spalten tabellenweise gegen aktuelle DEV-Schemaquelle, Constraints, Trigger und FK-Aktionen ableiten. Dabei insbesondere Auth-/Akteur-FKs, Eventstatus und Audit-Zeitstempel prüfen. Danach wird eine konkret versionierte Tabellen-Allowlist dokumentiert und erst zur Nutzerfreigabe vorgelegt. Kein Executor bis separate Freigabe.
+
+
+## DEV-Schemaabgleich und tabellenbezogene Restore-Allowlist (25.11.2026)
+
+- Nutzer hat den nächsten Schritt freigegeben. Read-only direkt im Supabase-Projekt Jugendmannschaft DEV (Ref pzazqvvoruqnqhcorbwx) abgefragt: exportierte Tabellen-Spalten/Datentypen/Nullbarkeit/Defaults, PK-/Unique-/FK-/Check-Constraints und relevante Trigger. Gegen Export-Selects in create-backup-package Edge Function auf develop abgeglichen.
+- Restore-Mapping Abschnitt 8 ergänzt, Commit 2ec8efff145c94256a9a13fd42eb21b9360e12a6. Enthält pro Tabelle Insert-/Update-Kandidaten, Join-/Unique-Konflikte, historische Insert-only-Regeln, Parent-/Child-Planreihenfolge und konkrete DEV-Trigger/FK-Risiken.
+- Kritische Live-Schemafunde: Player-Team- und Aktivstatus-Schutztrigger; updated_at-Trigger auf Kernobjekten; Matchday-Status AFTER-Trigger kann frühe Sperren-Resets fachlich reconciliieren; recommendation_runs unique(matchday_id); team_season_closure_audit unique(season_id) und RESTRICT-FKs; Trainer-Relations haben Auth-User-FKs.
+- Schemaabgleich ist read-only. Keine Schema-/Tabellenänderung, Migration, Edge-Function-Änderung, Deployment, DB-/Storage-Schreiboperation oder Restore; PROD unberührt.
+- Die Allowlist ist noch Planungsgrundlage, kein freigegebener Executor. Vor Implementierung sind insbesondere transaktionale Atomarität/Triggerkontrolle sowie verbindliche nullable-vs-block Behandlung fehlender optionaler Auth-Akteur-FKs zu spezifizieren. Keine erneute Ausführung der bereits bestandenen 9 Fixtures/Dialogtests.
+
+### Nächster Schritt
+Read-only prüfen, ob die vorhandene Merge-Preview dieselben tatsächlichen Constraints und Sonderfälle bereits berücksichtigt (Unique-Konflikte jenseits PK, fachliche Triggerwirkung, Historien-Insert-only und Auth-FK-Referenzen). Danach Preview-Lücken und notwendige Erweiterungen dokumentieren; weiterhin kein Restore-Executor.
