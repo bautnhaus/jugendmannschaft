@@ -4141,7 +4141,10 @@ async function openBackupVerification(){
     button.disabled=true;status.textContent='Backup wird lokal entschlüsselt und Manifest geprüft…';
     try{
       const cryptoModule=await import('./src/backup/backup-crypto.js');
-      const manifest=await cryptoModule.readBackupManifestBlob(await cryptoModule.decryptBackupBlob(file,password));
+      const decryptedArchive=await cryptoModule.decryptBackupBlob(file,password);
+      const manifest=await cryptoModule.readBackupManifestBlob(decryptedArchive);
+      const restorePlanner=await import('./src/backup/restore-planner.js');
+      const preflight=restorePlanner.validatePackageManifest(manifest);
       const scope=manifest.scope||{},categories=Array.isArray(manifest.categories)?manifest.categories:[];
       const data=manifest.snapshot?.data||{};
       const categoryLabels={team_core:'Mannschaft & Stammdaten',training:'Training & Anwesenheit',matchday:'Spieltage & Kader',season_history:'Saisonhistorie',discipline_history:'Sperren & Disziplin',files_images:'Dateien & Bilder'};
@@ -4190,7 +4193,7 @@ const displayName=(x)=>String(x?.name||[x?.first_name,x?.last_name].filter(Boole
       }
       const scopeLines=[['Sicherungsumfang',typeLabels[scope.type]||'Nicht angegeben'],['Verein(e)',clubNames.join(', ')||'Keine Vereinsbezeichnung enthalten'],['Mannschaft(en)',teamNames.join(', ')||'Keine Mannschaftsbezeichnung enthalten'],['Datenbereiche',categories.map(c=>categoryLabels[c]||c).join(', ')||'Keine angegeben'],['Backup erstellt',manifest.created_at?new Date(manifest.created_at).toLocaleString('de-DE'):'Nicht angegeben'],['Datenstand',manifest.completeness?.snapshot===true?'Enthalten':'Nicht bestätigt'],['Dateien & Bilder',manifest.completeness?.files_images_included?'Ausgewählt':'Nicht ausgewählt'],['Dateianzahl',String(manifest.completeness?.asset_count??manifest.assets?.length??0)],['Dateigröße',formatBackupBytes(manifest.completeness?.asset_bytes??0)]];
       status.className='notice small backupVerifyResult';
-      status.innerHTML='<strong>Backup erfolgreich entschlüsselt und geprüft – es wurde nichts wiederhergestellt.</strong><h3>Was ist gesichert?</h3><dl>'+scopeLines.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>'+detailGroups.map(g=>'<section class="backupVerifyGroup"><h3>'+esc(g.title)+'</h3><p class="backupVerifyCounts">'+esc(g.summary)+'</p><p class="backupVerifyDetails">'+esc(g.detail)+'</p></section>').join('');    }catch(e){status.className='notice small';status.textContent='Prüfung fehlgeschlagen: '+(e?.name==='OperationError'?'Passwort falsch oder Datei beschädigt.':e?.message||String(e));}
+      status.innerHTML='<strong>Backup entschlüsselt und AP-BR02-Paketprüfung bestanden – es wurde nichts wiederhergestellt.</strong><p>Schema, ausgewählte Tabellen, Datensatz-IDs, interne Referenzen und Asset-Manifest geprüft. '+preflight.tableNames.length+' Datentabellen sind im Snapshot enthalten.</p><h3>Was ist gesichert?</h3><dl>'+scopeLines.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>'+detailGroups.map(g=>'<section class="backupVerifyGroup"><h3>'+esc(g.title)+'</h3><p class="backupVerifyCounts">'+esc(g.summary)+'</p><p class="backupVerifyDetails">'+esc(g.detail)+'</p></section>').join('');    }catch(e){status.className='notice small';status.textContent='Prüfung fehlgeschlagen: '+(e?.name==='OperationError'?'Passwort falsch oder Datei beschädigt.':e?.message||String(e));}
     finally{button.disabled=false;}
   });
 }
