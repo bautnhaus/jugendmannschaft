@@ -115,7 +115,7 @@ export function validatePackageManifest(manifest) {
       const uniqueSeen = new Set();
       for (const row of rows) {
         if (fields.some(field => row[field] === null || row[field] === undefined)) continue;
-        const uniqueKey = fields.map(field => String(row[field])).join("\\u001f");
+        const uniqueKey = fields.map(field => String(row[field])).join("\u001f");
         if (uniqueSeen.has(uniqueKey)) fail("ROW_UNIQUE_CONFLICT", table + ":" + fields.join("+"));
         uniqueSeen.add(uniqueKey);
       }
@@ -194,7 +194,7 @@ function uniqueConflict(table, incoming, currentRows) {
     const candidate = fields.map(field => incoming[field]);
     if (candidate.some(value => value === null || value === undefined)) continue; // PostgreSQL UNIQUE permits multiple NULLs
     const hit = currentRows.find(row => fields.every((field, i) => row[field] === candidate[i]));
-    if (hit) return { fields, currentKey: fields.map(field => String(hit[field])).join("\\u001f") };
+    if (hit) return { fields, currentKey: fields.map(field => String(hit[field])).join("\u001f") };
   }
   return null;
 }
@@ -218,7 +218,7 @@ export function buildMergePreview(backupData, currentData, tableNames = Object.k
       let duplicateIncomingUnique = null;
       for (const fields of TABLE_UNIQUE_KEYS[table] || []) {
         if (fields.some(field => row[field] === null || row[field] === undefined)) continue;
-        const uniqueKey = fields.map(field => String(row[field])).join("\\u001f");
+        const uniqueKey = fields.map(field => String(row[field])).join("\u001f");
         if (seenIncomingUnique.has(uniqueKey) && seenIncomingUnique.get(uniqueKey) !== rowKey(table, row)) duplicateIncomingUnique = fields;
         else seenIncomingUnique.set(uniqueKey, rowKey(table, row));
       }
@@ -234,7 +234,11 @@ export function buildMergePreview(backupData, currentData, tableNames = Object.k
       const allowed = UPDATE_FIELDS[table] || [];
       const mutableDifference = allowed.some(field => JSON.stringify(old[field]) !== JSON.stringify(row[field]));
       const backupTime = timestamp(row), currentTime = timestamp(old);
-      if (!INSERT_ONLY_TABLES.has(table) && mutableDifference && backupTime !== null && currentTime !== null && backupTime > currentTime) {
+      const uniqueOnOtherRow = uniqueConflict(table, row, current.filter(candidate => rowKey(table, candidate) !== rowKey(table, old)));
+      if (uniqueOnOtherRow) {
+        detail.keep++; kept++; detail.conflict++; conflicts++; detail.conflictDetails ||= [];
+        detail.conflictDetails.push({ reason: "UPDATE_UNIQUE_CONSTRAINT_COLLISION", fields: uniqueOnOtherRow.fields });
+      } else if (!INSERT_ONLY_TABLES.has(table) && mutableDifference && backupTime !== null && currentTime !== null && backupTime > currentTime) {
         detail.update++; detail.newerBackup++; updates++;
       } else {
         detail.keep++; kept++;
