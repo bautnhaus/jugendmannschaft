@@ -992,3 +992,15 @@ Nutzer bestätigte den DEV-Login; die Startprüfung ist damit für den aktuellen
 - Das Mapping dokumentiert Kategorie-/Tabellen-Allowlist, zusammengesetzte Schlüssel und FK-Prüfung, Scope-Neuprüfung, Asset-Zielzuordnung sowie Merge/Never-delete/Newer-wins. Es benennt ausdrücklich offene Gates (Same-scope vs. Remapping, Feld-Whitelist, atomare Anwendung, Asset-Konflikte, externe Parent-Referenzen).
 - Restore bleibt gesperrt. Keine Supabase-Schreiboperation, keine Storage-Mutation, keine Migration und keine PROD-Änderung.
 - Nächster Schritt: offene Restore-Gates fachlich einzeln festlegen; danach erst einen isolierten DEV-Restore-Plan/Implementierung vorbereiten. Keine erneute Paket-/Fixture-Runde erforderlich.
+
+
+## Feld-Whitelist-Analyse Restore – Checkpoint (25.11.2026)
+
+- Read-only Exportvertrag direkt aus develop geprüft: supabase/functions/create-backup-package/index.ts. Die aktuell selektierten Spalten wurden gegen das bestehende Restore-Mapping eingeordnet.
+- Restore-Mapping ergänzt: docs/AP_BR02_RESTORE_MAPPING_READONLY_2026-11-25.md, Abschnitt 6. Commit 23bfb68e43cb7b1b0a897a74a2efd7c7383cf095.
+- Ergebnis ist ausdrücklich ein **Entwurf**, keine freigegebene Schreib-Whitelist: Identitäts-/Join-Keys unveränderlich; team_id/club_id Scope-Felder validieren und nicht remappen; Akteur-/User-Referenzen vorab auflösen; Historien-/Snapshotfelder nicht generisch überschreiben; Asset-Referenzen erst nach eigenständigem Asset-Plan.
+- Keine Code-/Restore-Executor-Änderung, keine Supabase-/DB-/Storage-Schreiboperation, keine SQL-/Migration, kein Deployment und keine PROD-Änderung.
+- Bereits abgeschlossene Checks bleiben abgeschlossen: 9 synthetische Restore-Preflight-Fixtures PASS; Backup-Prüfdialog auf DEV erfolgreich; UI-Dateiauswahl und Daumenposition abgenommen; lokaler Paket-Preflight im Dialog erfolgreich. Keine Wiederholung erforderlich.
+
+### Nächster Schritt
+Zunächst die Scope-Gate-Entscheidung festhalten: Vorschlag für die erste Restore-Version ist Same-scope-only (Paket und explizit autorisierter Zielkontext müssen exakt übereinstimmen; kein Team-/Vereins-ID-Remapping). Danach die tabellenspezifische Insert-/Update-Allowlist und Akteurreferenz-Regeln spezifizieren. Bis zur Bestätigung bleibt alles read-only und Restore gesperrt.
