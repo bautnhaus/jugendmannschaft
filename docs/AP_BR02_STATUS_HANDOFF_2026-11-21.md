@@ -1037,3 +1037,21 @@ Read-only prüfen, ob die vorhandene Merge-Preview dieselben tatsächlichen Cons
 - Weiter: TABLE_REFS unvollständig bei Saison-/Team-/historischen FK-Beziehungen und Auth-Akteuren; Preview ignoriert mehrere Unique-Constraints (Position/Season Name, Run pro Matchday, Rang, Season closure); generischer timestamp-Fallback kann Append-only-Historie bzw. nicht-versionierte Relations als Update vorschlagen; Matchday-Status hat fachlichen AFTER-Trigger.
 - Das ist Review/Dokumentation. Planner-Code nicht geändert und keine Fixtures erneut ausgeführt. Nächster Umsetzungsschritt ist ein klar abgegrenzter DEV-Code-Fix der reinen Merge-Preview (korrekte Keys, constraint/FK conflict metadata, per-table insert-only/update policy, blocking conflicts) plus neue Regression-Fixtures. Dies ist ausdrücklich kein Restore-Executor und kein DB-/Storage-Schreibpfad.
 - Vor Codeänderung weiterhin: aktuelle DEV-Mirror-Quelldatei/Branch synchron prüfen; reine Planner-/Fixture-Änderung, kein SQL/Migration und kein PROD-Deploy. Die bisher bestandenen 9 ZIP-/Preflight-Fixtures nicht wiederholen; gezielt neue Preview-Regressionstests ergänzen.
+
+
+## Merge-Preview-Härtung – Code und Regression-Fixtures vorbereitet (25.11.2026)
+
+- Auf Basis des DEV-Schema-Reviews die reine Preview-Funktion in `src/backup/restore-planner.js` korrigiert/erweitert:
+  - PKs für `team_suspension_game_type_settings` (`team_id`) und `team_suspension_game_types` (`team_id,game_type`) korrigiert.
+  - zusätzliche paketinterne FK-Prüfungen für Team-/Saison-/Trainings-/Spieltag- und Historienbeziehungen aufgenommen; Parent-Key `team_id` wird bei Game-Type-Settings unterstützt.
+  - bekannte DEV-Unique-Constraints als Preview-Konflikte berücksichtigt und Paketduplikate derselben Unique-Tuple fail-closed abgewiesen.
+  - Newer-wins ist nun feld-/tabellenbezogen; `created_at` allein zählt nicht als Änderungsmarker; Append-only Historie/Relations werden nicht als Updates vorgeschlagen; protected player active status ist nicht in der Update-Allowlist.
+  - Unique-Konflikt eines Update-Kandidaten mit einer anderen bestehenden Zeile blockiert den Update-Vorschlag.
+- Neue acht Regression-Fixtures in `docs/dev-tests/ap-br02-restore-preflight.html` ergänzt (Schema-Keys, Unique-Collision, append-only, protected active, created_at fallback, package FK).
+- Source auf develop: Planner commit `1b10de73`, `b66b65e6`, `1283e83b`, `fadacb5c`; Fixture commit `5d95df43`.
+- DEV-Mirror planner ist inhaltlich identisch mit develop; DEV-Fixture aktualisiert und committed: `3d97f2f2`. GitHub Pages Build/Browserlauf dieser neuen 17-Fixture-Suite ist noch ausstehend.
+- Keine DB-/Storage-Schreiboperation, Migration oder Restore. Kein PROD-Deploy. Der DEV-Code ist weiterhin nur Preflight-/Merge-Preview, kein Executor.
+- Bereits bestandene neun ZIP-/Preflight-Fixtures werden nicht erneut als neue Abnahme gezählt; die neuen Preview-Regressionen müssen nach Deploy gezielt im Browser laufen.
+
+### Nächster Schritt
+Auf DEV-Testseite nach abgeschlossenem GitHub Pages Deployment die nun 17 Fixtures ausführen. Erwartung: alle PASS. Bei einem Fehler zuerst Fixture-/Planner-Fehler beheben, nicht in Richtung Restore-Executor weitergehen. Danach die Preview-Konfliktdarstellung (blockierende Fälle, nie-delete und update/add/keep) im UI prüfen.
