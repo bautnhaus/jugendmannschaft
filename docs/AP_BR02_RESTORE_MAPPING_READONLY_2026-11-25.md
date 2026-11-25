@@ -220,3 +220,62 @@ Die Reihenfolge ist **nur die Preflight-/Merge-Planreihenfolge**, noch keine fre
 ### 8.5 Sicherheitsstatus
 
 Read-only DEV-Schemaanalyse abgeschlossen für die 24 exportierten Restore-Tabellen. Keine Tabellen-/Schemaänderung, keine Migration, keine Edge-Function-Änderung oder Deployment, keine DB-/Storage-Schreiboperation, kein Restore und keine PROD-Änderung.
+
+
+## 9. Preview-Abgleich gegen DEV-Constraints – gefundene Lücken (25.11.2026)
+
+Quelle: aktuelle pure planner-Datei `src/backup/restore-planner.js` auf develop im Vergleich zum live abgefragten DEV-Schema (Abschnitt 8). Dieser Schritt ist Review; der Planner wurde hierbei **nicht geändert**.
+
+### 9.1 Kritischer Schlüssel-Mismatch
+
+Die aktuelle `TABLE_KEYS`-Map stimmt für zwei Tabellen nicht mit dem realen Primärschlüssel überein:
+
+- `team_suspension_game_type_settings`: Planner erwartet `id`; DEV-PK ist `team_id`.
+- `team_suspension_game_types`: Planner erwartet `id`; DEV-PK ist `team_id + game_type`.
+
+Folge: Merge-Preview identifiziert Zeilen nicht zuverlässig (bei fehlendem `id` kann der Key zu `undefined` kollabieren). Vor einer belastbaren Preview müssen diese Key-Definitionen korrigiert und Fixtures für gleiche/verschiedene Team-/Game-Type-Schlüssel ergänzt werden.
+
+### 9.2 TABLE_REFS deckt nicht alle exportierten FK-Beziehungen ab
+
+Der Preflight prüft aktuell nur einen Teil der Elternreferenzen (primär Joins, Trainingsserie, Spieltag/Recommendation). Aus DEV-Schema und Exportvertrag fehlen unter anderem:
+
+- `teams.club_id → clubs.id` (Scope-/Club-Abgleich)
+- `seasons.team_id`, `trainings.season_id`, `matchdays.season_id`
+- Historie: `training_behavior_events` → Team/Saison/Training/Spieler; `training_suspensions` → Team/Saison/Source-Event/Spieltag; `training_suspension_exceptions` → Suspension/Team/Spieler/Matchday
+- `matchday_early_suspension_resets` → Team/Saison/Spieler/Matchday; `matchday_nomination_reminders` → Team/Spieler/Quell- und Fulfillment-Matchday
+- `team_season_closure_audit` → Team/Saison; `team_suspension_game_type_settings` → Team; `team_suspension_game_types` → Settings-Parent
+- erforderliche Trainer-/Akteur-FKs zu `auth.users` (DB-Bestand, nicht Paket-Parent)
+
+V1 muss diese Beziehungen gegen Paket-IDs oder den ausdrücklich autorisierten Same-scope-Zielbestand auflösen. Pflichtreferenz nicht auflösbar: Preview muss den gesamten Plan vor Anwendung als blockiert markieren; keine stillen Teilimporte.
+
+### 9.3 Unique-Constraints zusätzlich zum Primärschlüssel
+
+Der Planner matcht bisher ausschließlich über `TABLE_KEYS`. DEV enthält weitere Unique-Konflikte, die vor dem Insert zu berücksichtigen sind:
+
+- `positions(team_id,name)`
+- `seasons(team_id,name)`
+- `matchday_recommendation_runs(matchday_id)`
+- `matchday_recommendation_players(recommendation_id,rank)`
+- `team_season_closure_audit(season_id)`
+
+Bei Kollision über einen anderen Unique-Key darf die Preview nicht einfach `add` ausweisen. Sie muss einen expliziten Constraint-Konflikt anzeigen und niemals bestehende Historie/Recommendation/Closure ersetzen.
+
+### 9.4 Newer-wins ist derzeit zu generisch
+
+Die Funktion `timestamp()` fällt von `updated_at` auf `modified_at` und schließlich `created_at` zurück. Die Preview kann daher für Tabellen ohne Änderungszeit oder für append-only Historie Updates vorschlagen. Das widerspricht der V1-Tabellenstrategie aus Abschnitt 8:
+
+- Relations ohne Änderungsmarker: Insert-only bei fehlendem Key; vorhandene Zeile behalten.
+- Recommendation-Runs/Children und Event-/Suspension-/Exception-/Reset-/Reminder-/Closure-Historie: Insert-only; gleicher Schlüssel mit abweichendem Inhalt als Konflikt, kein Update.
+- Mutable Stammdaten: Newer-wins nur auf expliziter per-table Update-Allowlist; serverseitige `updated_at`-Trigger nicht mit Backup-Wert überschreiben.
+- Matchday-Status-Update kann den realen AFTER-Trigger zur frühen Sperren-Reconciliation auslösen; daher nicht als generisches Newer-wins-Feld behandeln.
+
+### 9.5 Umsetzungsgates vor Preview-Freigabe
+
+1. Tabellen-Key-Metadaten gegen tatsächliche PKs vervollständigen (insbesondere beide Game-Type-Tabellen).
+2. FK-/Scope-Referenzmetadaten vervollständigen; externe Auth-User-FKs gesondert als existent/fehlend/nullable klassifizieren.
+3. Unique-Constraint-Kollisionsprüfung ergänzen.
+4. Per-table merge policy definieren: insert-only vs. mutable update; niemals allgemeiner timestamp fallback.
+5. Preview-Ausgabe um blockierende Konflikte erweitern; der gesamte Plan muss vor einer späteren Anwendung vollständig validiert sein.
+6. Fixtures für jeden gefundenen Sonderfall ergänzen; bestehende neun PASS-Fixtures bleiben als Baseline bestehen, aber eine neue Preview-Version benötigt eigene Regressionstests.
+
+**Status:** Lücken identifiziert und dokumentiert. Kein Planner-Code geändert, keine Tests neu ausgeführt, keine DB-/Storage-Schreiboperation, kein Restore/Executor und keine PROD-Änderung.
