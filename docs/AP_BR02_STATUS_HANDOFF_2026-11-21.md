@@ -1028,3 +1028,12 @@ Die exakten Insert-/Update-Spalten tabellenweise gegen aktuelle DEV-Schemaquelle
 
 ### Nächster Schritt
 Read-only prüfen, ob die vorhandene Merge-Preview dieselben tatsächlichen Constraints und Sonderfälle bereits berücksichtigt (Unique-Konflikte jenseits PK, fachliche Triggerwirkung, Historien-Insert-only und Auth-FK-Referenzen). Danach Preview-Lücken und notwendige Erweiterungen dokumentieren; weiterhin kein Restore-Executor.
+
+
+## Merge-Preview-Abgleich – konkrete Lücken dokumentiert (25.11.2026)
+
+- Planner `src/backup/restore-planner.js` read-only gegen live DEV-Constraints geprüft. Findings in Restore-Mapping Abschnitt 9 dokumentiert, Commit 535e601c32eb227113e777bb84e02797bb9085f3.
+- Kritischer Befund: TABLE_KEYS erwartet bei `team_suspension_game_type_settings` und `team_suspension_game_types` jeweils `id`, während DEV echte PKs `team_id` bzw. `team_id + game_type` hat. Preview kann für diese Tabellen nicht korrekt keyen.
+- Weiter: TABLE_REFS unvollständig bei Saison-/Team-/historischen FK-Beziehungen und Auth-Akteuren; Preview ignoriert mehrere Unique-Constraints (Position/Season Name, Run pro Matchday, Rang, Season closure); generischer timestamp-Fallback kann Append-only-Historie bzw. nicht-versionierte Relations als Update vorschlagen; Matchday-Status hat fachlichen AFTER-Trigger.
+- Das ist Review/Dokumentation. Planner-Code nicht geändert und keine Fixtures erneut ausgeführt. Nächster Umsetzungsschritt ist ein klar abgegrenzter DEV-Code-Fix der reinen Merge-Preview (korrekte Keys, constraint/FK conflict metadata, per-table insert-only/update policy, blocking conflicts) plus neue Regression-Fixtures. Dies ist ausdrücklich kein Restore-Executor und kein DB-/Storage-Schreibpfad.
+- Vor Codeänderung weiterhin: aktuelle DEV-Mirror-Quelldatei/Branch synchron prüfen; reine Planner-/Fixture-Änderung, kein SQL/Migration und kein PROD-Deploy. Die bisher bestandenen 9 ZIP-/Preflight-Fixtures nicht wiederholen; gezielt neue Preview-Regressionstests ergänzen.
