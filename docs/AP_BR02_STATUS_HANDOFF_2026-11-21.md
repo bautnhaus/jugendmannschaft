@@ -1004,3 +1004,15 @@ Nutzer bestätigte den DEV-Login; die Startprüfung ist damit für den aktuellen
 
 ### Nächster Schritt
 Zunächst die Scope-Gate-Entscheidung festhalten: Vorschlag für die erste Restore-Version ist Same-scope-only (Paket und explizit autorisierter Zielkontext müssen exakt übereinstimmen; kein Team-/Vereins-ID-Remapping). Danach die tabellenspezifische Insert-/Update-Allowlist und Akteurreferenz-Regeln spezifizieren. Bis zur Bestätigung bleibt alles read-only und Restore gesperrt.
+
+
+## AP-BR02 Restore – Scope-Gate und Tabellenstrategie checkpoint (25.11.2026)
+
+- Nutzer hat Same-scope-only für Restore V1 bestätigt: Backup ausschließlich in den gleichen Ursprungsscope, kein Team-/Vereins-ID-Remapping. Zielkontext muss vor Anwendung explizit gewählt und serverseitig erneut autorisiert sein; Scope und ausgewählte Teammenge müssen exakt zum Paket passen. Abweichung blockiert den gesamten Restore-Plan, keine Teilanwendung.
+- Read-only Tabellenstrategie ergänzt in docs/AP_BR02_RESTORE_MAPPING_READONLY_2026-11-25.md, Abschnitt 7. Commit 73c0bd868fb7a7b98ca96b16febf1088c04d70a5.
+- Vorläufige Familienregeln: Stammdaten/Relations können fehlende IDs ergänzen; fachliche Historie und Empfehlungsruns als Insert-/Append-only Hypothese; Teamsettings nur eng begrenzt mutable. Schlüssel und Scope nicht updaten; Akteur-FKs müssen bereits autorisiert im Ziel bestehen; technische Audit-/Zeitstempel nicht blind überschreiben; Assets bleiben separater Merge.
+- Das ist weiterhin Spezifikation/Planungs-Allowlist, keine ausführbare Schreibspaltenliste und keine Restore-Freigabe. Keine Codeänderung, DB-/Storage-Schreiboperation, SQL/RPC, Deployment oder PROD-Änderung.
+- Bereits abgenommen: DEV Backup-Dialog, lokaler ZIP-/Asset-Preflight und alle 9 synthetischen Restore-Preflight-Fixtures. Diese Tests nicht erneut durchführen.
+
+### Nächster Arbeitsgang (read-only)
+Die exakten Insert-/Update-Spalten tabellenweise gegen aktuelle DEV-Schemaquelle, Constraints, Trigger und FK-Aktionen ableiten. Dabei insbesondere Auth-/Akteur-FKs, Eventstatus und Audit-Zeitstempel prüfen. Danach wird eine konkret versionierte Tabellen-Allowlist dokumentiert und erst zur Nutzerfreigabe vorgelegt. Kein Executor bis separate Freigabe.
