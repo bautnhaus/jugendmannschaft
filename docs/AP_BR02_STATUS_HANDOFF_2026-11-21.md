@@ -966,3 +966,10 @@ Nutzer bestätigte den DEV-Login; die Startprüfung ist damit für den aktuellen
 2. Falls sie fehlen oder Fehler zeigen: Testseite/Console und zip.js-Aufruf untersuchen; noch keine Integration als vollständig byte-getestet abnehmen.
 3. Anschließend Backup-Prüfdialog auf DEV testen: ein Picker-Auslöser, Dateiname nicht anklickbar, primäre Aktion rechts, Schließen links, erfolgreicher AP-BR02-Bericht.
 4. Restore-Mapping/Scope/Konfliktregeln weiter nur read-only ausarbeiten. Schreib-Restore weiterhin nicht freigegeben.
+
+
+### Wiederholter DEV-Screenshot: ZIP-Fixtures weiterhin nicht sichtbar (25.11.2026, 07:21)
+- Nutzer hat die Preflight-Seite nach dem vorherigen Hinweis erneut geöffnet/abgebildet. Ausgabe ist weiterhin exakt die 7 synchronen Schema-/Merge-Fixtures; die beiden async ZIP-Asset-Byte-Fixtures erscheinen nicht.
+- Repositoryprüfung direkt nach Screenshot: Testseiten-Blob in develop und DEV-Mirror ist identisch (2348acd1edef76a28f8dc3f1775b7e5b62b16dc7); aktueller Code-Blob ebenfalls synchron und enthält inspectRestoreArchive(decryptedArchive). GitHub Actions Deploy DEV für Commit 62428ff7fc97d2b70dc7afa0cd94b71eaf8cc115 ist erfolgreich.
+- Aktuelle Testseitenquelle in develop enthält die beiden asyncTest-Aufrufe (valid asset bytes; mismatched asset size). Der Nutzer-Browser zeigt jedoch deren Resultate nicht. Das ist ein reproduzierbarer Unterschied zwischen GitHub-Quelle/Deploy-Workflow und tatsächlich ausgelieferter/ausgeführter Seite; Ursache noch nicht belegt. Nicht pauschal als Browsercache behaupten und nicht als bestanden werten.
+- Nächster Debug-Schritt: Seite außerhalb des bereits geöffneten In-App-Browser-Tabs neu aufrufen, mit Cache-Buster ?v=2348acd1, idealerweise in Safari; Screenshot erneut prüfen. Wenn weiterhin 7 Zeilen: Seitenquelle/Script-Ausführung gezielt untersuchen (möglicher alter statischer Cache, Script-/Module-Abbruch oder falsche Pages-Origin-Auslieferung). Keine Restore-/DB-Operation.
