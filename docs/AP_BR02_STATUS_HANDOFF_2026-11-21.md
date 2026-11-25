@@ -893,3 +893,24 @@ Nutzer bestätigte den DEV-Login; die Startprüfung ist damit für den aktuellen
 - Änderung in DEV-Mirror `bautnhaus/jugendmannschaft-dev`, Branch `main`: Commit `ed0714145a8fd858e086d81806f91ad0d9fb658b`.
 - GitHub Pages Build/Deployment Run `45469446521` war bei Dokumentationseintrag noch in Bearbeitung. Keine PROD-Änderung.
 - Diese Integration ist weiterhin eine read-only Paket-/Manifestprüfung; sie führt keinen Merge, Restore oder Supabase-Write aus. ZIP-Asset-Bytes und der anschließende Datenbank-Merge-Plan bleiben separate nächste Schritte.
+
+
+## Backup verifier – Nutzer-Praxistest und Integration korrigiert (25.11.2026)
+
+### Nutzer-Test DEV
+- Nutzer hat die Backup-Datei auf dev.kadassist.de erneut lokal entschlüsselt und prüfen lassen. Screenshot bestätigt den erfolgreichen bestehenden Manifest-/Inhaltsbericht; ausdrücklich kein Restore.
+- Bericht enthält u. a. 25 Spieler, 4 Positionen, 32 Spieler-Positionen, 1 Mannschaft, 14 Spieltage, 32 Kadernominierungen, 47 Rückmeldungen und 3 Trainer am Spieltag.
+- Vereinsname im Manifest-Bericht als nicht verfügbar; Backup enthält keine Dateien/Bilder (0 Assets/0 Bytes). Dies ist für den getesteten Umfang kein Asset-Byte-Test.
+- Im Screenshot fehlte der erwartete neue AP-BR02-Preflight-Status bzw. die geprüfte Tabellenanzahl. Daher: alter Manifest-/Inhaltsbericht erfolgreich; Integration durch diesen Screenshot nicht nachgewiesen.
+
+### Read-only Codeabgleich und Korrektur
+- develop/index.html und DEV-Mirror main/index.html waren auf Blob e5ab0034714400d0c3ada880d83498e2d7aca3e6 und enthielten noch nicht den Planner-Aufruf.
+- DEV-Mirror-Commit ed0714145a8fd858e086d81806f91ad0d9fb658b enthält die Integration, jedoch mit wörtlichen backslash-n-Sequenzen in der JavaScript-Einfügung; außerdem war der Commit nicht im abgefragten Branch-/Deploymentstand enthalten. Nicht als funktional abgenommen.
+- Korrekte Integration in develop/index.html vorgenommen: entschlüsseltes ZIP einmal lokal lesen, Manifest extrahieren, restore-planner.js importieren und validatePackageManifest(manifest) aufrufen; Erfolgstext enthält Prüfbereiche und preflight.tableNames.length.
+- Commit 3b8fbb158155e312eac31d659ae8fd7dc2e72c2a (develop), Blob d415c62d6b5e51932b56f8c9036259abb95a5dff.
+- Änderung ist rein lokal/lesend: kein Restore, Merge, Supabase-/Storage-Write, SQL oder PROD.
+
+### Nächster Schritt
+1. Develop→DEV-Synchronisierung und Pages-Deployment für Commit 3b8fbb158155e312eac31d659ae8fd7dc2e72c2a prüfen.
+2. Nutzer testet einmal denselben vorhandenen Backup-Dialog. Erfolg muss den expliziten AP-BR02-Prüftext und Tabellenanzahl zeigen; kein erneuter Fixture-/Crypto-Test.
+3. Danach getrennt entscheiden/prüfen, ob die tatsächliche ZIP-Asset-Byte-Validierung im Dialog integriert werden soll. Restore bleibt gesperrt.
