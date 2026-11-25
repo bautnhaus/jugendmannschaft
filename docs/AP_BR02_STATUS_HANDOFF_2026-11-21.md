@@ -914,3 +914,41 @@ Nutzer bestätigte den DEV-Login; die Startprüfung ist damit für den aktuellen
 1. Develop→DEV-Synchronisierung und Pages-Deployment für Commit 3b8fbb158155e312eac31d659ae8fd7dc2e72c2a prüfen.
 2. Nutzer testet einmal denselben vorhandenen Backup-Dialog. Erfolg muss den expliziten AP-BR02-Prüftext und Tabellenanzahl zeigen; kein erneuter Fixture-/Crypto-Test.
 3. Danach getrennt entscheiden/prüfen, ob die tatsächliche ZIP-Asset-Byte-Validierung im Dialog integriert werden soll. Restore bleibt gesperrt.
+
+
+## Backupprüfung: ZIP-Asset-Bytes + Dialog-UX (25.11.2026)
+
+### Erfolgreicher Nutzer-Praxistest der Paketprüfung
+- Nutzer bestätigt auf DEV anhand Screenshot: „Backup entschlüsselt und AP-BR02-Paketprüfung bestanden – es wurde nichts wiederhergestellt.“
+- Die Meldung weist 10 Snapshot-Datentabellen aus; Schema, ausgewählte Tabellen, IDs, interne Referenzen und Asset-Manifest wurden gemeldet.
+- Der verwendete Backup-Stand hat „Dateien & Bilder: Nicht ausgewählt“, 0 Dateien und 0 Bytes. Das bestätigt den Paket-/Manifestpfad, aber enthält noch keinen realen Asset-Byte-Test mit Assets > 0.
+
+### ZIP- und Asset-Byteprüfung in den lokalen Dialog eingebunden
+- src/backup/restore-planner.js enthielt bereits inspectRestoreArchive(zipBlob, zipApi). Diese Funktion liest ZIP-Einträge mit der vendorten zip.js-Bibliothek, prüft sichere/eindeutige Pfade, Manifest, Paketvalidator und die tatsächlichen entpackten Asset-Bytes gegen deklarierte Größe und Gesamtsumme.
+- index.html ruft nach lokaler Entschlüsselung jetzt inspectRestoreArchive(decryptedArchive) auf. Der Ergebnisbericht nennt Snapshot-Tabellen, Asset-Anzahl und geprüfte tatsächliche Asset-Bytegröße.
+- zip.js 2.25.0 wird aus dem bereits versionierten lokalen vendor/zipjs/2.25.0/zip.min.js geladen; keine externe CDN-Abhängigkeit für diese Prüfung.
+- Der aktuell dokumentierte Manifestvertrag enthält pro Asset kein SHA-256. Die aktuelle Byteprüfung bestätigt Pfad-/Vorhandens-/Größenkonsistenz, nicht einen kryptografischen Hash jedes Assets. Hashprüfung erfordert spätere Erweiterung des Export-Manifests.
+- Code-Commit fe7a77d52a51f285b7e8eb157ebf1b3f60fffa19, Blob a8e41502541c27174cdcc985a4cb27c31f5633ca (develop).
+
+### Besprochene UI-Anpassungen umgesetzt
+- Dateiauswahl: nur der sichtbare „Datei auswählen“-Auslöser öffnet den Picker; der Dateiname ist jetzt ein nicht anklickbares Informationsfeld.
+- Dialogaktionen: allgemeine Modal-Toolbar-Regel ergänzt – sekundäre Aktion/Schließen links, primäre Aktion rechts. Im Backup-Dialog steht „Paket prüfen“ rechts und „Schließen“ links.
+- Im Code-Commit enthalten; noch nicht vom Nutzer im deployed DEV-Dialog bestätigt.
+
+### ZIP-Byte-Fixtures ergänzt
+- docs/dev-tests/ap-br02-restore-preflight.html lädt zip.js lokal und enthält zusätzlich:
+  1. gültiges synthetisches ZIP mit Asset-Bytes erfolgreich prüfen,
+  2. ZIP mit abweichender tatsächlicher Asset-Größe zurückweisen.
+- Testseiten-Commits: e4f471b32e5528b8527aa9f8996d2aa2e435c925 und Formatkorrektur 757df036108fbad652e695d21f3b40db96d085e2 (develop).
+- Die neuen Browser-Fixtures wurden in dieser Arbeitssitzung noch nicht live ausgeführt; Ergebnis bleibt offen, bis der DEV-Test bestätigt ist.
+
+### Sicherheit / Scope
+- Ausschließlich lokales Lesen und Entpacken im Browser; kein Restore, Merge, DB-/Supabase-/Storage-Write, SQL, Edge-Function-Deployment oder PROD.
+- Alter destruktiver JSON-Restore bleibt gesperrt. Restore ist nicht freigeschaltet.
+
+### Nächster Schritt
+1. Deployment für die aktuellen develop-Commits abschließen und DEV-Mirror/Pages-Stand verifizieren.
+2. Isolierte Preflight-Testseite öffnen und die neuen ZIP-Byte-Fixtures bestätigen.
+3. Backup-Prüfdialog auf DEV einmal mit dem vorhandenen Backup testen; Erwartung: neuer Bericht inkl. Asset-Zähler/Bytegröße und UI-Reihenfolge.
+4. Da das vorhandene Backup keine Assets enthält, für eine echte >0-Byte-Prüfung ausschließlich ein synthetisches Paket oder ein Backup mit ausdrücklich ausgewählten Testassets verwenden.
+5. Danach Restore-Mapping und Scope-/Konfliktregeln read-only spezifizieren. Keine tatsächliche DB-/Storage-Wiederherstellung ohne gesonderte Freigabe.
