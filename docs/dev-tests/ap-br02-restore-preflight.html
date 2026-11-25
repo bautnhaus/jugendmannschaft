@@ -32,6 +32,6 @@ async function asyncTest(name,fn){try{await fn();results.push("PASS  "+name);}ca
 const assetFixture=()=>{const m=base();m.assets=[{archive_path:"assets/fixture.bin",bytes:6,bucket:"fixture",object_path:"synthetic.bin",mime_type:"application/octet-stream"}];m.completeness.asset_count=1;m.completeness.asset_bytes=6;return m;};
 await asyncTest("ZIP-Preflight prüft tatsächliche synthetische Asset-Bytes",async()=>{const blob=await makeZipFixture(assetFixture(),new Uint8Array([1,2,3,4,5,6]));const result=await inspectRestoreArchive(blob,window.zip);if(result.verifiedAssetBytes!==6||result.assets.length!==1)throw Error("byte/asset count mismatch");});
 await asyncTest("ZIP-Preflight weist falsche tatsächliche Asset-Größe zurück",async()=>{const blob=await makeZipFixture(assetFixture(),new Uint8Array([1,2,3,4,5]));let rejected=false;try{await inspectRestoreArchive(blob,window.zip);}catch(e){rejected=e.message.includes("ASSET_SIZE_MISMATCH");}if(!rejected)throw Error("mismatched asset size accepted");});
-out.textContent=results.join('\\n')+'\\n\\n'+(results.every(x=>x.startsWith('PASS'))?'ALLE PREFLIGHT-FIXTURES BESTANDEN':'FEHLER – keine Integration freigeben');
+out.textContent=results.join('\n')+'\n\n'+(results.every(x=>x.startsWith('PASS'))?'ALLE PREFLIGHT-FIXTURES BESTANDEN':'FEHLER – keine Integration freigeben');
 out.className=results.every(x=>x.startsWith('PASS'))?'pass':'fail';
 </script></body></html>
