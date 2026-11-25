@@ -981,3 +981,14 @@ Nutzer bestätigte den DEV-Login; die Startprüfung ist damit für den aktuellen
 - Ergebnisanzeige: „ALLE PREFLIGHT-FIXTURES BESTANDEN“. Das schließt die Schema-/Merge-/Never-delete-/Newer-wins-Fixtures und die synthetische ZIP-Byte-Prüfung ein.
 - Damit ist der Browserlauf der isolierten Restore-Preflight-Testseite abgeschlossen. Ausschließlich synthetische Daten; keine Supabase-Verbindung, keine Schreiboperation, kein echter Restore.
 - Nächster Schritt: aktualisierten Backup-Prüfdialog in DEV testen (Picker nur über Button, Dateiname nicht anklickbar, primäre Aktion rechts, Schließen links, Paketprüfung erfolgreich). Danach read-only Restore-Mapping/Scope/Konfliktregeln dokumentieren. Tatsächlicher Restore bleibt gesperrt und benötigt separate Freigabe.
+
+
+## DEV Backup-Prüfdialog bestätigt + Read-only Restore-Mapping (25.11.2026)
+
+- Nutzer hat den aktualisierten Backup-Prüfdialog auf DEV mit dem vorhandenen Backup erneut geprüft. Paketprüfung erfolgreich; 10 Datentabellen, 0 Assets / 0 Asset-Bytes (Dateien/Bilder waren im Backup nicht ausgewählt). Es wurde nichts wiederhergestellt.
+- UI-Abnahme: Dateiauswahl nur über den sichtbaren „Datei auswählen“-Button; Dateinamensfeld ist nicht mehr zweiter Picker-Auslöser. In Dialogaktionen steht die primäre Aktion rechts (Daumenreichweite), „Schließen“ links.
+- Die neun synthetischen Restore-Preflight-Fixtures sind bestanden; kein echter DB-/Storage-Restore.
+- Read-only Restore-Mapping aus aktuellem `restore-planner.js` und dem Paketmanifest erstellt: `docs/AP_BR02_RESTORE_MAPPING_READONLY_2026-11-25.md`, Commit `39ec6709d114570c32a3b1c2c00affbc0f4ddcad`.
+- Das Mapping dokumentiert Kategorie-/Tabellen-Allowlist, zusammengesetzte Schlüssel und FK-Prüfung, Scope-Neuprüfung, Asset-Zielzuordnung sowie Merge/Never-delete/Newer-wins. Es benennt ausdrücklich offene Gates (Same-scope vs. Remapping, Feld-Whitelist, atomare Anwendung, Asset-Konflikte, externe Parent-Referenzen).
+- Restore bleibt gesperrt. Keine Supabase-Schreiboperation, keine Storage-Mutation, keine Migration und keine PROD-Änderung.
+- Nächster Schritt: offene Restore-Gates fachlich einzeln festlegen; danach erst einen isolierten DEV-Restore-Plan/Implementierung vorbereiten. Keine erneute Paket-/Fixture-Runde erforderlich.
