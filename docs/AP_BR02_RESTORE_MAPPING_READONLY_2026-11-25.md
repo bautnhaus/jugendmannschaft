@@ -119,3 +119,39 @@ Read-only Mapping abgeschlossen als Arbeitsgrundlage. Keine Supabase-Verbindung 
 5. DB-Atomarität: ein paketweiter RPC/Transaktionspfad statt sequenzieller Client-REST-Schreiboperationen mit möglichem Teil-Restore.
 
 Bis diese Punkte bestätigt und spezifiziert sind, bleibt buildMergePreview() ausschließlich Vorschau; kein DB-/Storage-Executor und kein Restore.
+
+## 7. Scope-Gate und Tabellenstrategie – fachliche Fortführung (25.11.2026)
+
+### 7.1 Entscheidung: Same-scope-only für Restore V1
+
+Festgelegt im Arbeitsverlauf am 25.11.2026: Die erste Restore-Version arbeitet ausschließlich im selben Ursprungsscope. Kein Wechsel von Verein/Mannschaft, kein Team-/Club-ID-Remapping, keine automatische Umdeutung von IDs.
+
+Ein Paket muss mit dem aktuell explizit gewählten und serverseitig erneut autorisierten Zielkontext exakt übereinstimmen. Die Backup-Manifestangabe ist nur Vergleichsgrundlage, keine Berechtigung. Bei Scope-Abweichung: Restore-Plan stoppen, keine Teilanwendung.
+
+Für Vereins-Backups mit ausgewählten Mannschaften muss zusätzlich die konkrete Mannschaftsauswahl dem ursprünglichen Paketumfang entsprechen. Plattformumfang bleibt Plattformumfang; keine implizite Teilwiederherstellung über diesen Gate-Schritt.
+
+### 7.2 Vorläufige Tabellenstrategie (Planungs-Allowlist, noch kein Executor)
+
+| Tabellenfamilie | Tabellen | Insert-Verhalten | Konflikt-/Update-Verhalten |
+|---|---|---|---|
+| Stammdaten | teams, positions, players, seasons, training_series, trainings, matchdays | Fehlende Datensätze mit stabiler Backup-ID ergänzen; nur exportierte, schema-validierte Felder | Newer-wins als Vorschlag für fachlich mutable Felder; Schlüssel, Scope und serververwaltete Felder nie aktualisieren |
+| Zuordnungen / Teilnahmen | player_positions, attendance, training_players, training_trainers, training_responses, matchday_players, matchday_attendance, matchday_trainers | Fehlende Relation anhand vollständigem zusammengesetztem Schlüssel ergänzen | Relations-Keys unveränderlich; Updates nur für explizit mutable Status-/Fachfelder, nicht generisch für alle Spalten |
+| Empfehlungsdaten | matchday_recommendation_runs, matchday_recommendation_players | Als zusammengehörige fachliche Berechnungshistorie ergänzen, Referenzen und Parent-Run vorher auflösen | Keine automatische Änderung bestehender Runs oder ihrer Rang-/Spielerlisten; bei Identitätskonflikt behalten und Konflikt ausweisen |
+| Fachliche Ereignis-/Historientabellen | training_behavior_events, training_suspensions, training_suspension_exceptions, matchday_early_suspension_resets, matchday_nomination_reminders, team_season_closure_audit | Append-/Insert-only als sichere V1-Hypothese; IDs und historische Snapshots erhalten | Bestehende Historienereignisse nicht per Newer-wins überschreiben. Gleich-ID-Konflikt: behalten und melden, nicht aktualisieren |
+| Team-Konfiguration | team_suspension_game_type_settings, team_suspension_game_types | Fehlende zulässige Einstellungen/Typen ergänzen | Settings können fachlich mutable sein, jedoch nur eng definierte Nutzfelder; team_id, Schlüssel und updated_by nicht überschreiben. Zeitstempel nicht als alleinige fachliche Autorisierung behandeln |
+
+### 7.3 Globale Feldregeln für jede Tabellen-Allowlist
+
+- Insert: Nur Felder aus dem versionierten Exportvertrag und nach Prüfung gegen das aktuelle DEV-/Zielschema. Keine unbekannten Paketfelder weiterreichen.
+- Identity: Primär- und zusammengesetzte Schlüssel bleiben original und unveränderlich; Update-Statements enthalten sie ausschließlich in der WHERE-/Conflict-Bedingung.
+- Scope: team_id/club_id müssen den Same-scope-Gate passieren und sind keine Update-Felder.
+- Akteure: user_id- und *_by-Referenzen dürfen keine Auth-, Profil-, Rollen- oder Mitgliedschaftsdatensätze erzeugen. FK-Ziel muss im autorisierten Zielbestand existieren; sonst vor Anwendung als Konflikt blockieren.
+- Server-/Auditfelder: Keine pauschale Übernahme von created_at, updated_at oder Trigger-/Auditfeldern in Updates. Insert-Erhalt historischer Zeitstempel ist noch pro Tabelle zu bestätigen; Update-Zeitstempel sollen vom Zielsystem/Trigger stammen, sofern das Schema dies vorsieht.
+- Historische Snapshots: *_snapshot sind fachliche Daten und dürfen bei Insert erhalten bleiben; bei bestehendem Ereignis nicht als gewöhnliche mutable Felder überschreiben.
+- Asset-Referenzen: photo_path, photo_data, Avatar-/Crestpfade bleiben vom Daten-Restore getrennt und werden erst in einem eigenständigen, konfliktgeprüften Asset-Plan gesetzt.
+
+### 7.4 Vor Implementierung noch zu spezifizieren
+
+Diese Tabelle ist eine Planungs-Allowlist, keine technisch ausführbare Spaltenliste. Vor jedem Executor müssen pro Tabelle die exakten Insert- und Update-Spalten gegen das tatsächliche DEV-Schema, Constraints, Trigger und FK-Aktionen dokumentiert werden. Besonders zu prüfen: Zeitstempel/Trigger, User-FKs bei Historie, nullable Referenzen, Eventstatus mit späterer Änderung und Asset-Datenspalten.
+
+Keine DB-/Storage-Schreiboperation, keine RPC-/SQL-Migration und keine Restore-Implementierung wurde durch diese Dokumentation freigegeben.
