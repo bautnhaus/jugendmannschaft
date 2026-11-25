@@ -973,3 +973,11 @@ Nutzer bestätigte den DEV-Login; die Startprüfung ist damit für den aktuellen
 - Repositoryprüfung direkt nach Screenshot: Testseiten-Blob in develop und DEV-Mirror ist identisch (2348acd1edef76a28f8dc3f1775b7e5b62b16dc7); aktueller Code-Blob ebenfalls synchron und enthält inspectRestoreArchive(decryptedArchive). GitHub Actions Deploy DEV für Commit 62428ff7fc97d2b70dc7afa0cd94b71eaf8cc115 ist erfolgreich.
 - Aktuelle Testseitenquelle in develop enthält die beiden asyncTest-Aufrufe (valid asset bytes; mismatched asset size). Der Nutzer-Browser zeigt jedoch deren Resultate nicht. Das ist ein reproduzierbarer Unterschied zwischen GitHub-Quelle/Deploy-Workflow und tatsächlich ausgelieferter/ausgeführter Seite; Ursache noch nicht belegt. Nicht pauschal als Browsercache behaupten und nicht als bestanden werten.
 - Nächster Debug-Schritt: Seite außerhalb des bereits geöffneten In-App-Browser-Tabs neu aufrufen, mit Cache-Buster ?v=2348acd1, idealerweise in Safari; Screenshot erneut prüfen. Wenn weiterhin 7 Zeilen: Seitenquelle/Script-Ausführung gezielt untersuchen (möglicher alter statischer Cache, Script-/Module-Abbruch oder falsche Pages-Origin-Auslieferung). Keine Restore-/DB-Operation.
+
+
+### ZIP-Asset-Byte-Fixtures im DEV-Browser bestanden (25.11.2026, 07:24)
+- Nutzer hat nach erneutem Aufruf mit Cache-Buster den Screenshot der Testseite geliefert. Nun sind alle 9 Fixtures sichtbar PASS.
+- Die zwei zuvor fehlenden Tests sind jetzt ausdrücklich bestätigt: (1) ZIP-Preflight prüft tatsächliche synthetische Asset-Bytes; (2) ZIP-Preflight weist falsche tatsächliche Asset-Größe zurück.
+- Ergebnisanzeige: „ALLE PREFLIGHT-FIXTURES BESTANDEN“. Das schließt die Schema-/Merge-/Never-delete-/Newer-wins-Fixtures und die synthetische ZIP-Byte-Prüfung ein.
+- Damit ist der Browserlauf der isolierten Restore-Preflight-Testseite abgeschlossen. Ausschließlich synthetische Daten; keine Supabase-Verbindung, keine Schreiboperation, kein echter Restore.
+- Nächster Schritt: aktualisierten Backup-Prüfdialog in DEV testen (Picker nur über Button, Dateiname nicht anklickbar, primäre Aktion rechts, Schließen links, Paketprüfung erfolgreich). Danach read-only Restore-Mapping/Scope/Konfliktregeln dokumentieren. Tatsächlicher Restore bleibt gesperrt und benötigt separate Freigabe.
