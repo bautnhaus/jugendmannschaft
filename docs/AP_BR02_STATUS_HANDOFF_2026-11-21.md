@@ -1079,3 +1079,14 @@ Auf DEV-Testseite nach abgeschlossenem GitHub Pages Deployment die nun 17 Fixtur
 
 ### Nächster Schritt
 Die zuvor definierte Preview-UI-Abnahme (blockierende Konflikte, Add/Keep/Update-Zählung, Never-delete-Ausweisung) anhand der tatsächlich bereitgestellten DEV-Ansicht prüfen. Danach – falls UI-Gate abgeschlossen – die nun identifizierten User-/Actor- und Asset-Feldregeln in eine präzise Restore-Planung und gezielte neue synthetische Regression-Fixtures überführen. Vor jeder Restore-Executor- oder DB-/Storage-Schreibarbeit ist weiterhin separate Freigabe erforderlich.
+
+
+## DEV-UI-Status nach Quellenprüfung (25.11.2026)
+
+- Aktuelle UI-Funktion „Backup prüfen“ wurde im `index.html` geprüft: lokale Entschlüsselung + `inspectRestoreArchive()`; kein Zielzustandsabruf, keine Integration von `buildMergePreview()`, keine Add/Update/Keep/Conflict- oder Never-delete-Zielübersicht.
+- Daher ist die bestehende Oberfläche Paketverifikation, keine Merge-Preview. Die 17 erfolgreichen Fixtures prüfen isolierte synthetische Planner-Szenarien, nicht eine UI-/DB-Integration.
+- Legacy `replaceTeamDataWithBackup()` bleibt in `index.html` und wird durch den alten JSON-Importpfad aufgerufen. Dieser Altpfad ist destruktiv und bleibt strikt getrennt/gesperrt für AP-BR02-KADB; nicht als Ersatzweg nutzen.
+- Restore-Mapping §13 ergänzt, Commit `5d5f154e828044a40cd547f1fbabeba9a2b3be8f`.
+
+### Nächster Schritt – klarer Scope
+Eine **read-only Zielzustands-Merge-Preview** spezifizieren/umsetzen: exakter Scope und Server-Autorisierung, nur erlaubte Zielzeilen lesen, Preview-Planner an tatsächliche Daten binden, Add/Update/Keep/Conflict/Never-delete darstellen und die zuvor offenen Actor-/Asset-Regeln blockierend abbilden. Vor Codearbeiten Branch-/DEV-Stand prüfen; keine DB-/Storage-Schreiboperation, kein Restore-Executor, keine Migration und keine PROD-Aktion.
