@@ -28,6 +28,35 @@ const TABLE_KEYS = Object.freeze({
   matchday_recommendation_players: ["recommendation_id", "player_id"]
 });
 
+// Actual DEV-schema unique constraints beyond the primary/merge key.
+const TABLE_UNIQUE_KEYS = Object.freeze({
+  positions: [["team_id", "name"]],
+  seasons: [["team_id", "name"]],
+  matchday_recommendation_runs: [["matchday_id"]],
+  matchday_recommendation_players: [["recommendation_id", "rank"]],
+  team_season_closure_audit: [["season_id"]]
+});
+
+// Only these tables may propose a field-level Newer-wins update in preview.
+// All other tables are insert-only/keep-on-conflict for V1.
+const UPDATE_FIELDS = Object.freeze({
+  teams: ["name", "recommended_squad_size", "birth_cohorts", "abbreviation"],
+  players: ["name", "first_name", "last_name", "birth_year", "preferred_foot", "level", "notes"],
+  seasons: ["name", "start_date", "end_date", "is_active"],
+  training_series: ["start_date", "end_date", "start_time", "duration_minutes", "weekdays", "location", "name"],
+  trainings: ["training_date", "name", "start_time", "duration_minutes", "location", "note", "series_id", "overrides", "season_id"],
+  matchdays: ["match_date", "name", "opponent", "location", "notes", "kickoff_time", "duration_minutes", "game_type", "season_id"],
+  matchday_attendance: ["present"]
+});
+
+const INSERT_ONLY_TABLES = new Set([
+  "positions", "player_positions", "attendance", "training_players", "training_trainers", "training_responses",
+  "matchday_players", "matchday_trainers", "matchday_recommendation_runs", "matchday_recommendation_players",
+  "training_behavior_events", "training_suspensions", "training_suspension_exceptions",
+  "matchday_early_suspension_resets", "matchday_nomination_reminders",
+  "team_suspension_game_type_settings", "team_suspension_game_types", "team_season_closure_audit"
+]);
+
 const TABLE_REFS = Object.freeze({
   player_positions: [["player_id", "players"], ["position_id", "positions"]],
   attendance: [["training_id", "trainings"], ["player_id", "players"]],
@@ -131,9 +160,19 @@ function rowKey(table, row) {
   return fields.map(f => String(row[f])).join("\u001f");
 }
 function timestamp(row) {
-  for (const key of ["updated_at", "modified_at", "created_at"]) {
+  // created_at is not a change marker; never use it for Newer-wins.
+  for (const key of ["updated_at", "modified_at"]) {
     const value = row?.[key], parsed = value ? Date.parse(value) : NaN;
     if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+function uniqueConflict(table, incoming, currentRows) {
+  for (const fields of TABLE_UNIQUE_KEYS[table] || []) {
+    const candidate = fields.map(field => incoming[field]);
+    if (candidate.some(value => value === null || value === undefined)) continue; // PostgreSQL UNIQUE permits multiple NULLs
+    const hit = currentRows.find(row => fields.every((field, i) => row[field] === candidate[i]));
+    if (hit) return { fields, currentKey: fields.map(field => String(hit[field])).join("\\u001f") };
   }
   return null;
 }
@@ -145,22 +184,36 @@ function timestamp(row) {
  */
 export function buildMergePreview(backupData, currentData, tableNames = Object.keys(backupData || {})) {
   const tables = [];
-  let additions = 0, updates = 0, kept = 0;
+  let additions = 0, updates = 0, kept = 0, conflicts = 0;
   for (const table of tableNames) {
     const incoming = Array.isArray(backupData?.[table]) ? backupData[table] : [];
     const current = Array.isArray(currentData?.[table]) ? currentData[table] : [];
     const currentByKey = new Map(current.map(row => [rowKey(table, row), row]));
-    const detail = { table, backupCount: incoming.length, currentCount: current.length, add: 0, update: 0, keep: 0, newerBackup: 0 };
+    const detail = { table, backupCount: incoming.length, currentCount: current.length, add: 0, update: 0, keep: 0, conflict: 0, newerBackup: 0 };
     for (const row of incoming) {
       const old = currentByKey.get(rowKey(table, row));
-      if (!old) { detail.add++; additions++; continue; }
+      if (!old) {
+        const unique = uniqueConflict(table, row, current);
+        if (unique) { detail.conflict++; conflicts++; detail.conflictDetails ||= []; detail.conflictDetails.push({ reason: "UNIQUE_CONSTRAINT_COLLISION", fields: unique.fields }); }
+        else { detail.add++; additions++; }
+        continue;
+      }
       if (JSON.stringify(old) === JSON.stringify(row)) { detail.keep++; kept++; continue; }
+      const allowed = UPDATE_FIELDS[table] || [];
+      const mutableDifference = allowed.some(field => JSON.stringify(old[field]) !== JSON.stringify(row[field]));
       const backupTime = timestamp(row), currentTime = timestamp(old);
-      if (backupTime !== null && currentTime !== null && backupTime > currentTime) { detail.update++; detail.newerBackup++; updates++; }
-      else { detail.keep++; kept++; }
+      if (!INSERT_ONLY_TABLES.has(table) && mutableDifference && backupTime !== null && currentTime !== null && backupTime > currentTime) {
+        detail.update++; detail.newerBackup++; updates++;
+      } else {
+        detail.keep++; kept++;
+        // Same identity but differing content in an append-only or non-versioned table is a review conflict.
+        if (INSERT_ONLY_TABLES.has(table) || !mutableDifference || backupTime === null || currentTime === null) {
+          detail.conflict++; conflicts++; detail.conflictDetails ||= []; detail.conflictDetails.push({ reason: INSERT_ONLY_TABLES.has(table) ? "INSERT_ONLY_ID_COLLISION" : "NO_VALID_NEWER_MUTABLE_FIELDS" });
+        }
+      }
     }
     detail.neverDelete = current.length; // all current rows absent from backup remain untouched
     tables.push(detail);
   }
-  return { tables, additions, updates, kept, deletes: 0, policy: "merge-never-delete-newer-wins-preflight" };
+  return { tables, additions, updates, kept, conflicts, deletes: 0, policy: "merge-never-delete-table-aware-newer-wins-preflight" };
 }
