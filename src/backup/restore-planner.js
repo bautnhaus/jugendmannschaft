@@ -20,7 +20,7 @@ const TABLE_KEYS = Object.freeze({
   matchday_recommendation_runs: ["id"], seasons: ["id"], team_season_closure_audit: ["id"],
   training_behavior_events: ["id"], training_suspensions: ["id"], training_suspension_exceptions: ["id"],
   matchday_early_suspension_resets: ["id"], matchday_nomination_reminders: ["id"],
-  team_suspension_game_type_settings: ["id"], team_suspension_game_types: ["id"],
+  team_suspension_game_type_settings: ["team_id"], team_suspension_game_types: ["team_id", "game_type"],
   player_positions: ["player_id", "position_id"], attendance: ["training_id", "player_id"],
   training_players: ["training_id", "player_id"], training_trainers: ["training_id", "user_id"],
   training_responses: ["training_id", "player_id"], matchday_players: ["matchday_id", "player_id"],
