@@ -155,3 +155,68 @@ Für Vereins-Backups mit ausgewählten Mannschaften muss zusätzlich die konkret
 Diese Tabelle ist eine Planungs-Allowlist, keine technisch ausführbare Spaltenliste. Vor jedem Executor müssen pro Tabelle die exakten Insert- und Update-Spalten gegen das tatsächliche DEV-Schema, Constraints, Trigger und FK-Aktionen dokumentiert werden. Besonders zu prüfen: Zeitstempel/Trigger, User-FKs bei Historie, nullable Referenzen, Eventstatus mit späterer Änderung und Asset-Datenspalten.
 
 Keine DB-/Storage-Schreiboperation, keine RPC-/SQL-Migration und keine Restore-Implementierung wurde durch diese Dokumentation freigegeben.
+
+
+## 8. Schema-Abgleich DEV und tabellenbezogene Insert-/Update-Kandidaten (25.11.2026)
+
+**Quelle / Methodik:** Read-only Abfrage des aktuellen Supabase-DEV-Projekts `Jugendmannschaft DEV` (Projektref `pzazqvvoruqnqhcorbwx`): `information_schema.columns`, `information_schema.table_constraints`, `pg_get_constraintdef` und `information_schema.triggers`. Abgleich gegen die Select-Allowlist in `supabase/functions/create-backup-package/index.ts` auf `develop`. Keine Datenzeilen verändert.
+
+Dies ist eine **schema-geprüfte Restore-Planungs-Allowlist**, noch keine Executor-Freigabe. Exportfelder und DB-Spalten sind zunächst nur die maximale Kandidatenmenge. Jede Anwendung muss vorab gegen Same-scope, Beziehungen, Constraints und bestehende Datensätze geprüft werden.
+
+### 8.1 Globale Insert-/Update-Regel
+
+- **Insert:** stabile Paket-ID bzw. vollständiger zusammengesetzter Schlüssel erhalten; nur die im Exportvertrag vorhandenen und im aktuellen Ziel-Schema vorhandenen Spalten berücksichtigen. Werte validieren; Scope/FKs vorab prüfen.
+- **Update:** nur wenn ein belastbarer fachlicher Newer-wins-Zeitvergleich existiert UND die Tabelle unten ausdrücklich als updatefähig markiert ist. Keys, Scope, Akteurreferenzen, Triggerfelder und historische Status-/Auditfelder nie als generische Update-Payload.
+- **Kein verlässlicher Update-Zeitstempel / Join-Key-Konflikt:** bestehende Zeile behalten und Konflikt anzeigen; kein Update.
+- **Never-delete:** kein DELETE, kein Ersetzen einer kompletten Kategorie/Tabelle, kein Entfernen fehlender Relationen.
+- `created_at` ist kein allgemeiner Änderungsmarker. `updated_at`-Trigger setzen den Zielzeitpunkt; Backup-`updated_at` darf nicht blind als Zielwert geschrieben werden.
+
+### 8.2 Tabellenfamilien – konkrete V1-Kandidaten
+
+| Tabelle(n) | Insert-Kandidaten (Export + DEV-Schema) | Update-Kandidat | V1-Konfliktverhalten |
+|---|---|---|---|
+| `teams` | `id,name,created_at,updated_at,recommended_squad_size,club_id,birth_cohorts,abbreviation,active` | Nur mutable Team-Fachfelder nach Same-scope; `id/club_id` ausgeschlossen. `updated_at` Trigger-verwaltet. | Scopeabweichung blockiert. Kein Wechsel/Neuaufbau der Teamidentität. |
+| `positions` | `id,team_id,name,sort_order,created_at,color` | **Kein Newer-wins-Update**: kein `updated_at` im Schema; vorhandene Position behalten. | Unique `team_id,name` kann Paket-ID-Kollision erzeugen: Konflikt melden, nicht umbenennen/überschreiben. |
+| `players` | `id,team_id,name,first_name,last_name,birth_year,preferred_foot,level,notes,active,created_at,updated_at`; Foto-/Asset-Felder separat | `name,first_name,last_name,birth_year,preferred_foot,level,notes` nur als fachliche Kandidaten; `active` nicht restore-updaten (Schutztrigger); `id/team_id` gesperrt; `updated_at` Trigger. | Bei aktiven Status-/Teamkonflikten blockieren bzw. behalten; kein Deaktivieren/Reaktivieren. Foto getrennt. |
+| `player_positions` | `player_id,position_id` | Keine Updates (nur Relation). | Vollständiger zusammengesetzter Key; fehlende Relation ergänzen, bestehende behalten. |
+| `seasons` | `id,team_id,name,start_date,end_date,is_active,created_at,updated_at` | Fachfelder nur nach festgelegter Saisonregel; `id/team_id` gesperrt, `updated_at` Trigger. | Unique `team_id,name`; mehrere aktive Saisonwerte/Abschluss-Audit vor Insert validieren. |
+| `training_series` | `id,team_id,start_date,end_date,start_time,duration_minutes,weekdays,location,name,created_at,updated_at` | `start_date,end_date,start_time,duration_minutes,weekdays,location,name` Kandidaten; IDs/Scope gesperrt, Zeitstempel Trigger. | Check date-range, duration, weekdays prüfen; keine Serie löschen oder bestehende Trainingseinträge entfernen. |
+| `trainings` | `id,team_id,training_date,name,start_time,duration_minutes,location,status,note,series_id,overrides,season_id,created_at,updated_at` | `training_date,name,start_time,duration_minutes,location,status,note,series_id,overrides,season_id` Kandidaten nach Newer-wins; ID/Scope geschützt, `updated_at` Trigger. | FK auf Saison/Serie auflösen; Status nur validiert, keine indirekte Status-/Sperren-Neuberechnung durch Restore zulassen. |
+| `attendance`, `training_players`, `training_trainers`, `training_responses` | Exportfelder je Tabelle; zusammengesetzte Schlüssel | Keine Newer-wins-Updates mangels stabiler Änderungszeit; `training_responses.created_at` ist Erstellung, nicht Änderung. | Fehlende Relationszeile einfügen; bestehende Relation behalten. Auth-User FK bei Trainerzeilen vorab auflösen. |
+| `matchdays` | `id,team_id,match_date,name,opponent,location,notes,kickoff_time,duration_minutes,game_type,status,season_id,created_at,updated_at` | Fachliche Matchday-Felder Kandidaten; ID/Scope gesperrt; `updated_at` Trigger. | FK Saison, Status-/Constraints und Matchday-abhängige Triggerwirkungen vor Restore prüfen. |
+| `matchday_players`, `matchday_trainers` | Exportfelder, vollständige Join-Keys | Kein Update (kein Änderungsmarker); Trainer-Teilnahme zusätzlich Auth-FK. | Fehlende Relation ergänzen; bestehende Nominierung/Spiel-/Anwesenheitsdaten nicht überschreiben. |
+| `matchday_attendance` | `matchday_id,player_id,present,updated_at` | `present` ist Kandidat für Newer-wins, `updated_at` als Vergleichsmarker; Zielzeitstempel Trigger-/Serverregel prüfen. | Vor Update Matchday/Spieler und Scope prüfen; Zeitstempel nicht aus Backup direkt setzen. |
+| `matchday_recommendation_runs` / `matchday_recommendation_players` | Runs: `id,matchday_id,created_at,created_by`; Child: `recommendation_id,player_id,rank` | Kein Update. Run ist einmalig je Matchday (Unique `matchday_id`); child hat Unique `recommendation_id,rank`. | Run samt Kindern konsistent planen; vorhandener anderer Run für Matchday ist Konflikt, niemals ersetzen. `created_by` muss existierender Auth-User sein oder Paket blockieren. |
+| `training_behavior_events` | Alle Exportfelder einschließlich fachlicher Snapshot-/Void-Daten | **Insert-only** in V1; kein Update von Ereignis-/Voidstatus, auch wenn `updated_at` existiert. | IDs beibehalten; FK auf Training/Spieler/Season und Akteure prüfen; vorhandenes Ereignis unverändert. |
+| `training_suspensions` | Alle Exportfelder inkl. Snapshot, Status, served/expired/void und `manual_target_locked` | **Insert-only**; keine Statusfortschreibung durch Newer-wins. | Source event, Saison, Spieltage, Spieler und Akteure auflösen; CHECK-Statusmetadaten als zusammenhängenden Satz validieren. |
+| `training_suspension_exceptions` | Alle Exportfelder inkl. grant/revoke history | **Insert-only**; keine Überschreibung bestehender Ausnahme oder Widerrufshistorie. | Suspension FK (RESTRICT), Matchday/Spieler und Akteure prüfen; vollständige revoke metadata validieren. |
+| `matchday_early_suspension_resets`, `matchday_nomination_reminders` | Alle Exportfelder inkl. Status-/Snapshot-/Fulfillment-/Cancellation-Daten | **Insert-only**; Status- und Verlauf nicht per Newer-wins überschreiben. | FK und Status-Metadaten vollständig validieren; bestehende ID behalten. Prüfen, ob INSERT Trigger Audit-/Fachfolgen auslösen würde. |
+| `team_suspension_game_type_settings` | `team_id,updated_at,updated_by` | Kein Backup-Update auf `updated_by`; Zeitstempel Zielsystem. | Team-Scope und optionalen Akteur prüfen; Settings-Row vor Types bereitstellen. |
+| `team_suspension_game_types` | `team_id,game_type,created_at` | Kein Update (Relation/Set). | Fehlende erlaubte Game-Type-Relationen ergänzen; niemals bestehende entfernen; Settings-Parent-FK beachten. |
+| `team_season_closure_audit` | `id,team_id,season_id,closed_by,closed_at,reason,expired_suspensions_count,season_name_snapshot` | **Insert-only**, niemals Newer-wins. | Unique `season_id` und FK `ON DELETE RESTRICT`: bereits vorhandener Abschluss ist Konflikt; keine Duplikat-/Ersetzungsstrategie. |
+
+### 8.3 Reale DEV-Schema-Funde, die Restore-Verhalten beeinflussen
+
+- `players`: Trigger `prevent_player_team_change` und `protect_player_active_status`; Team-/Aktivstatus darf nicht durch Restore umgangen werden.
+- `teams`, `players`, `seasons`, `trainings`, `matchdays`: `set_updated_at()`-Trigger vorhanden. Ziel-`updated_at` ist serverseitig.
+- `matchdays`: AFTER UPDATE-Trigger `e05_reconcile_early_resets_on_matchday_status()`; Matchday-Statusänderungen können fachliche Folgen auslösen. Restore-Update darf diese nicht unkontrolliert auslösen; V1 daher Matchday-Status-Updates besonders behandeln/standardmäßig konfliktbehalten.
+- `matchday_recommendation_runs`: Unique auf `matchday_id`, nicht nur Primär-ID.
+- `team_season_closure_audit`: Unique auf `season_id`, Saison-/Team-FKs mit `ON DELETE RESTRICT`.
+- Join-/Trainer-Tabellen referenzieren `auth.users`; Backup darf weder Benutzer noch Rollen/Mitgliedschaften rekonstruieren. Fehlende erforderliche Benutzerreferenz muss vor der Anwendung im Plan sichtbar werden.
+- Historische Tabellen enthalten optionale Akteur-FKs mit `ON DELETE SET NULL` sowie Snapshotfelder. V1 erhält Snapshottext, erzeugt aber keine Auth-Identität; konkrete null-/block-Policy muss im finalen RPC verbindlich sein.
+
+### 8.4 Reihenfolge für die reine Plan-/Validierungsphase
+
+1. Same-scope Paket- und Mannschaftsauswahl bestätigen.
+2. Tabellen-/Spalten-Allowlist gegen Paketversion und aktuelles Schema prüfen.
+3. Parent-Datensätze: Team-Kontext (bereits vorhanden), Spieler/Positionen, Saison/Serie, Training/Matchday.
+4. Child-Relationen und Recommendation-Run/-Children gegen Parent-IDs prüfen.
+5. Historische Event-/Sperren-/Ausnahme-/Reset-/Reminder-Datensätze in FK-Abhängigkeitsfolge validieren; Insert-only.
+6. Team-Settings vor Game-Type-Relations.
+7. Assetplan separat nach Byte-/Hashprüfung und sicherer Zielpfadableitung.
+
+Die Reihenfolge ist **nur die Preflight-/Merge-Planreihenfolge**, noch keine freigegebene SQL-Transaktionsimplementierung. Die atomare Anwendung, triggerneutrale Strategie, Konfliktbericht und die endgültige User-FK-Null-/Blockregel bleiben gesonderte technische Gates.
+
+### 8.5 Sicherheitsstatus
+
+Read-only DEV-Schemaanalyse abgeschlossen für die 24 exportierten Restore-Tabellen. Keine Tabellen-/Schemaänderung, keine Migration, keine Edge-Function-Änderung oder Deployment, keine DB-/Storage-Schreiboperation, kein Restore und keine PROD-Änderung.
