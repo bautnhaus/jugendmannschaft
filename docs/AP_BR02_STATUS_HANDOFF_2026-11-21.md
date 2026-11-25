@@ -1055,3 +1055,13 @@ Read-only prüfen, ob die vorhandene Merge-Preview dieselben tatsächlichen Cons
 
 ### Nächster Schritt
 Auf DEV-Testseite nach abgeschlossenem GitHub Pages Deployment die nun 17 Fixtures ausführen. Erwartung: alle PASS. Bei einem Fehler zuerst Fixture-/Planner-Fehler beheben, nicht in Richtung Restore-Executor weitergehen. Danach die Preview-Konfliktdarstellung (blockierende Fälle, nie-delete und update/add/keep) im UI prüfen.
+
+
+## DEV Merge-Preview Regression Deployment Checkpoint (25.11.2026)
+
+- GitHub Pages workflow DEV run 45656881384 completed successfully: build, report-build-status and deploy all SUCCESS. Deployed commit on DEV mirror main: f9aa3e5ff2fd645cd377c0e5cec3bc37df1708de.
+- Test page docs/dev-tests/ap-br02-restore-preflight.html and src/backup/restore-planner.js were fetched from DEV mirror main and confirmed content-identical to develop at checkpoint.
+- Current test page contains 17 executable fixture cases: 15 synchronous manifest/merge regression cases plus 2 asynchronous ZIP asset-byte cases. These include protected player active status, created_at not qualifying as Newer-wins, append-only history, unique-key collisions, internal team FK validation, actual asset-byte verification and size mismatch rejection.
+- Workflow/deployment success confirms publication only; browser execution of the fixture page has not yet been observed in this assistant session. Do not claim the 17 cases have passed on this deployed page until the page output is inspected. User can open the test page and report the visible PASS/FAIL summary.
+- No restore executor, DB/Storage writes, SQL/RPC migration or PROD action. Restore remains disabled.
+- Next: inspect the deployed test page's output. If all 17 PASS, mark the merge-preview regression gate complete and proceed to the next documented read-only review; do not rerun the earlier 9 package-preflight cases.
