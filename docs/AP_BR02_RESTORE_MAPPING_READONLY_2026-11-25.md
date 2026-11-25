@@ -279,3 +279,35 @@ Die Funktion `timestamp()` fällt von `updated_at` auf `modified_at` und schlie�
 6. Fixtures für jeden gefundenen Sonderfall ergänzen; bestehende neun PASS-Fixtures bleiben als Baseline bestehen, aber eine neue Preview-Version benötigt eigene Regressionstests.
 
 **Status:** Lücken identifiziert und dokumentiert. Kein Planner-Code geändert, keine Tests neu ausgeführt, keine DB-/Storage-Schreiboperation, kein Restore/Executor und keine PROD-Änderung.
+
+
+## 12. Export-Vertrag ↔ Restore-Preflight-Abgleich – 25.11.2026
+
+**Quellen direkt geprüft:** `supabase/functions/create-backup-package/index.ts` und `src/backup/restore-planner.js` im Repository-Branch `develop`. Beide Quellstände entsprechen den im DEV-Mirror geprüften Dateien (Edge Function SHA `fd45da0f8431c117e954701986d2459001477e0e`; Planner SHA `ae6ea68df0fd7ce499ffbb382043d52c0e8ff56f`). Der Paketvertrag setzt `format_version: 1` und Snapshot `KADAssist-Teamdaten-JSON` Version `16`; dies stimmt mit dem Preflight-Konstantenstand überein. Die ältere direkte JSON-Exportfunktion in `index.html` erzeugt dagegen ein anderes, legacy/prototype-only Format (Version 15) und ist **nicht** der AP-BR02-KADB-Paketvertrag. Diese Formate nicht vermischen.
+
+### Bestätigte Exportfelder und Preview-Regeln
+
+- Die serverseitige Function enthält eine explizite Tabellen-/Spalten-Allowlist. Die in `UPDATE_FIELDS` des Preview-Planners genannten Felder sind im jeweiligen Export-Select enthalten; keine Allowlist-Feldreferenz fehlt im Exportvertrag.
+- Der Export liefert in `players` zusätzlich `active`, `photo_data`, `photo_path`, `created_at` und `updated_at`. Diese Felder sind bewusst nicht Teil der bestehenden Newer-wins-Update-Allowlist: Status-/Storage-/Zeitfelder werden nicht durch einen normalen Update-Vorschlag überschrieben.
+- Der Export von `teams` enthält `club_id` und `active`; diese sind nicht in der Update-Allowlist. Der Restore bleibt strikt am selben Scope; Club-/Teamidentität wird nicht neu zugeordnet.
+- Tabellen mit Actor-/User-Referenzen exportieren neben fachlichen Daten auch IDs und Snapshots der handelnden Personen. Diese sind keine Auth-/Profilanlage und dürfen nicht dazu führen, Nutzerkonten, Rollen oder Mitgliedschaften aus dem Backup anzulegen.
+
+### Kritischer offener Punkt: Bilder im DB-Snapshot versus Asset-Kategorie
+
+Der Export fragt `players.photo_data` und `players.photo_path` auch im normalen Player-Datensatz ab. Die Kategorie `files_images` steuert zusätzlich die Extraktion tatsächlicher Storage-Objekte/Legacy-Inline-Bilder in den ZIP-Assetbereich. Daraus folgt für eine spätere Restore-Implementierung:
+
+1. Wenn `files_images` nicht gewählt oder ein Asset nicht verifiziert/wiederherstellbar ist, dürfen `photo_path` und `photo_data` nicht blind aus dem Snapshot in die Zieldatenbank übernommen werden.
+2. Wenn die Kategorie gewählt ist, müssen Datenbank-Bildreferenzen erst nach erfolgreicher Asset-Planung und -Wiederherstellung gesetzt werden; Storage bleibt ein eigener, separat freizugebender Schritt.
+3. Keine signed URL, temporäre URL oder rohe Inline-Base64-Nutzlast als dauerhafte Restore-Referenz übernehmen. `photo_data` ist als legacy-inline Quelle gesondert zu behandeln, nicht als normales Spielerfeld.
+
+### FK-Prüflücke für User-/Trainer-Beziehungen
+
+Der Export enthält `training_trainers.user_id`, `matchday_trainers.user_id`, `matchday_recommendation_runs.created_by` sowie mehrere Actor-Felder in Disziplin-/Historientabellen. Der aktuelle Preflight `TABLE_REFS` validiert interne Domain-Referenzen, aber nicht sämtliche User-/Actor-Referenzen gegen einen bestehenden, autorisierten Zielkontext. Die DB-FK allein verhindert zwar unbekannte Auth-IDs, sie belegt jedoch nicht, dass der Nutzer im exakt gewählten Team-/Vereinskontext zulässig ist.
+
+**Vor Restore-Freigabe erforderlich:** ein feldgenauer User-/Actor-Plan:
+- Trainer-Teilnahmen nur gegen bereits bestehende und im Zielkontext berechtigte Trainerkonten prüfen.
+- Actor-IDs niemals erzeugen oder auf eine andere Person mappen.
+- Fehlende optionale Actor-Referenzen nach dokumentierter Entscheidung entweder als Konflikt/Deferred behandeln oder explizit nullen; keine stillschweigende Änderung.
+- Für jeden relevanten Export-FK (einschließlich `intended_matchday_id`, `served_matchday_id`, Reminder-/Exception-Matchdays) Fixtures für vorhanden, fehlend und außerhalb des Scope ergänzen.
+
+**Ergebnis:** Export-Feld-Allowlist und Update-Feld-Allowlist sind in der geprüften Quelle konsistent. Bildreferenzen und User-/Actor-FKs sind jedoch noch nicht restore-ready und benötigen eine eigene sichere Feld-/Referenzregel. Keine Planner-Codeänderung vorgenommen; keine Testausführung wiederholt; keine DB-/Storage-Schreiboperation, kein Restore/Executor, keine PROD-Änderung.
