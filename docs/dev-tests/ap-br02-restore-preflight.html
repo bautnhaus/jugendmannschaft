@@ -6,8 +6,9 @@
 <p><strong>Nur synthetische Testdaten.</strong> Keine Supabase-Verbindung, keine echten Vereins-/Spielerdaten, keine Schreiboperation.</p>
 <p>Prüft die Paket-Schema-Validierung und die Merge-/Never-delete-/Newer-wins-Vorschau mit Fixtures.</p>
 <pre id="result">Test wird ausgeführt …</pre>
+<script src="../../vendor/zipjs/2.25.0/zip.min.js"></script>
 <script type="module">
-import {validatePackageManifest,buildMergePreview} from '../../src/backup/restore-planner.js';
+import {validatePackageManifest,buildMergePreview,inspectRestoreArchive} from '../../src/backup/restore-planner.js';
 const out=document.getElementById('result'),results=[];
 function test(name,fn){try{fn();results.push('PASS  '+name);}catch(e){results.push('FAIL  '+name+' — '+e.message);}}
 const base=()=>({format:'KADAssist-Backup-Package',format_version:1,created_at:'2026-01-01T00:00:00Z',
@@ -21,6 +22,16 @@ test('weist unsicheren Asset-Pfad zurück',()=>{const m=base();m.assets=[{archiv
 test('Merge ergänzt fehlende IDs und löscht nichts',()=>{const preview=buildMergePreview({players:[{id:'p1',name:'A'},{id:'p2',name:'B'}]},{players:[{id:'p1',name:'A'},{id:'p3',name:'C'}]},['players']);if(preview.additions!==1||preview.deletes!==0||preview.tables[0].neverDelete!==2)throw Error(JSON.stringify(preview));});
 test('Newer-wins aktualisiert nur bei eindeutig neuerem Zeitstempel',()=>{const preview=buildMergePreview({players:[{id:'p1',name:'Backup',updated_at:'2026-02-01T00:00:00Z'}]},{players:[{id:'p1',name:'Current',updated_at:'2026-01-01T00:00:00Z'}]},['players']);if(preview.updates!==1)throw Error(JSON.stringify(preview));});
 test('unklare Zeitstempel behalten aktuellen Datensatz',()=>{const preview=buildMergePreview({players:[{id:'p1',name:'Backup'}]},{players:[{id:'p1',name:'Current'}]},['players']);if(preview.updates!==0||preview.kept!==1)throw Error(JSON.stringify(preview));});
-out.textContent=results.join('\n')+'\n\n'+(results.every(x=>x.startsWith('PASS'))?'ALLE PREFLIGHT-FIXTURES BESTANDEN':'FEHLER – keine Integration freigeben');
+async function makeZipFixture(manifest,assetBytes){
+ const writer=new window.zip.BlobWriter("application/zip"),zipWriter=new window.zip.ZipWriter(writer);
+ await zipWriter.add("manifest.json",new window.zip.BlobReader(new Blob([JSON.stringify(manifest)],{type:"application/json"})));
+ if(assetBytes!==null)await zipWriter.add("assets/fixture.bin",new window.zip.BlobReader(new Blob([assetBytes])));
+ await zipWriter.close();return writer.getData();
+}
+async function asyncTest(name,fn){try{await fn();results.push("PASS  "+name);}catch(e){results.push("FAIL  "+name+" — "+e.message);}}
+const assetFixture=()=>{const m=base();m.assets=[{archive_path:"assets/fixture.bin",bytes:6,bucket:"fixture",object_path:"synthetic.bin",mime_type:"application/octet-stream"}];m.completeness.asset_count=1;m.completeness.asset_bytes=6;return m;};
+await asyncTest("ZIP-Preflight prüft tatsächliche synthetische Asset-Bytes",async()=>{const blob=await makeZipFixture(assetFixture(),new Uint8Array([1,2,3,4,5,6]));const result=await inspectRestoreArchive(blob,window.zip);if(result.verifiedAssetBytes!==6||result.assets.length!==1)throw Error("byte/asset count mismatch");});
+await asyncTest("ZIP-Preflight weist falsche tatsächliche Asset-Größe zurück",async()=>{const blob=await makeZipFixture(assetFixture(),new Uint8Array([1,2,3,4,5]));let rejected=false;try{await inspectRestoreArchive(blob,window.zip);}catch(e){rejected=e.message.includes("ASSET_SIZE_MISMATCH");}if(!rejected)throw Error("mismatched asset size accepted");});
+out.textContent=results.join('\\n')+'\\n\\n'+(results.every(x=>x.startsWith('PASS'))?'ALLE PREFLIGHT-FIXTURES BESTANDEN':'FEHLER – keine Integration freigeben');
 out.className=results.every(x=>x.startsWith('PASS'))?'pass':'fail';
 </script></body></html>
