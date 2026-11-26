@@ -323,3 +323,37 @@ Quellprüfung von `index.html` im Branch `develop`:
 - Die Browser-Fixtures testen die reine Planner-Funktion isoliert mit synthetischen aktuellen Zielzeilen; sie belegen weder eine Integration in die UI noch echte Zielzustandsabfrage. Die erfolgreiche 17er Fixture-Abnahme bleibt gültig, ist aber nicht gleichbedeutend mit einer visuellen Merge-Preview-Abnahme.
 
 **Konsequenz / Gate:** Vor einem späteren Restore-Executor braucht es zuerst eine ausdrücklich read-only Zielzustands-Preview, die serverseitig den exakten Scope erneut autorisiert, erlaubte Tabellen/Zielzeilen abfragt, Konflikte einschließlich Unique-/FK-/Actor-/Asset-Regeln sichtbar macht und klar `0 writes` garantiert. Die Legacy-Importoberfläche muss dabei als eigener Pfad klar getrennt bleiben. Keine UI-/Planner-Codeänderung in dieser Prüfung; keine DB-/Storage-Schreiboperation, kein Restore, kein PROD.
+
+
+## 14. Architektur der Zielzustands-Preview – RLS- und Auth-Review (26.11.2026)
+
+### Live-DEV RLS-Metadaten
+Im Supabase-DEV-Projekt wurden `pg_policies` für die KADB-Domain-Tabellen read-only abgefragt. Die Policies zeigen:
+- Standard-Mitgliedszugriff nutzt je Tabelle `is_team_member(team_id)` bzw. Parent-Joins.
+- Kontextadministration/Superadmin verwendet zusätzlich `has_selected_team_context(team_id)` und je nach Tabelle `global_user_roles`.
+- Für reine Historien-/Disziplin-Tabellen bestehen teils SELECT-only Policies für Mitglied oder ausgewählten Kontext.
+- Child-Tabellen prüfen den Teambezug häufig über Elternobjekte (training/matchday/recommendation), nicht über eine direkte `team_id`.
+
+**Folgerung:** Eine Browser-seitige Query-Liste kann nicht als alleinige Autorisierung betrachtet werden. Preview muss bei jeder Anforderung den Nutzer authentifizieren, den angefragten Scope serverseitig bestätigen und alle Datenabfragen an exakt die autorisierten Team-IDs binden. Bei Query-/RLS-Fehler oder fehlenden Parent-Daten muss die Preview fail-closed abbrechen (kein Teilplan als scheinbar vollständig anzeigen).
+
+### Vorhandene, geeignete Server-Referenz
+`supabase/functions/create-backup-package/index.ts` wurde im Branch `develop` untersucht:
+- validiert Bearer-Token mit `auth.getUser()`;
+- autorisiert Team über `is_team_admin`, Verein über `can_manage_club_context`, Plattform über Superadmin-Rolle;
+- löst ausgewählte Teams gegen den Verein auf und prüft exakte Zugehörigkeit;
+- verwendet Service-Role erst nach Autorisierung und filtert Team-/Child-Abfragen anhand serverseitig ermittelter Parent-IDs.
+
+Das ist ein **Autorisierungsmuster**, aber kein fertiger Preview-Endpunkt. Es ist außerdem Exportcode und darf nicht unbesehen kopiert werden: Restore-Preview benötigt strikt read-only Tabellenabfragen, begrenzte Datenmenge, dieselbe Scope-Identität wie Manifest und vollständige Parent-/Actor-Prüfung.
+
+### Zielarchitektur – noch nicht implementiert
+1. Authentifizierung des Bearer-Tokens am Server.
+2. Scope-Typ/-ID aus Manifest und expliziter UI-Auswahl abgleichen; Restore-V1 nur exakt ursprünglicher Team-/Vereinsscope, keine ID-Mappings.
+3. Autorisierung mit denselben serverseitigen Rollen-/Kontextregeln wie die bestehende Backup-Funktion; Vereinsadmin-Mehrteam-Scope nur für ausdrücklich selektierte und verifizierte Team-IDs.
+4. Nur SELECT auf eine feste Tabelle-/Spalten-Allowlist; niemals INSERT/UPDATE/DELETE/Storage.
+5. Daten nach Parent-IDs paginiert abrufen, RLS/Fehler vollständig prüfen; wenn eine Tabelle nicht lesbar oder die Preview unvollständig ist, Gesamtpreview blockieren.
+6. Backup und Zielbestand im reinen Planner vergleichen; Actor-IDs nur auf vorhandene, im selben Zielkontext zulässige Nutzer prüfen; fehlende/außerhalb Scope liegende Actor-FKs blockierend bzw. explizit Deferred gemäß späterer Entscheidung.
+7. Bildfelder nur dann in einen späteren Plan aufnehmen, wenn files_images gewählt und alle Asset-Referenzen/Bytes verifiziert sind; kein Storage-Zugriff/Restore in dieser Preview.
+8. UI zeigt Add/Update/Keep/Conflict/Never-delete sowie Grund und Vollständigkeitsstatus; klare Anzeige **„Nur Vorschau – 0 Änderungen“**.
+
+### Grenzen / Freigabestatus
+Diese Runde war nur Dokumentations-/Metadatenreview. Kein Edge-Function-Code angelegt oder geändert, keine Function deployed, kein SQL-/Schema-/Storage-Write, kein Restore-Executor, keine PROD-Aktion. Umsetzung ist als nächster DEV-Code-Schritt vorgesehen; neue DB-Migration ist nicht erforderlich oder vorgesehen.
