@@ -1090,3 +1090,15 @@ Die zuvor definierte Preview-UI-Abnahme (blockierende Konflikte, Add/Keep/Update
 
 ### Nächster Schritt – klarer Scope
 Eine **read-only Zielzustands-Merge-Preview** spezifizieren/umsetzen: exakter Scope und Server-Autorisierung, nur erlaubte Zielzeilen lesen, Preview-Planner an tatsächliche Daten binden, Add/Update/Keep/Conflict/Never-delete darstellen und die zuvor offenen Actor-/Asset-Regeln blockierend abbilden. Vor Codearbeiten Branch-/DEV-Stand prüfen; keine DB-/Storage-Schreiboperation, kein Restore-Executor, keine Migration und keine PROD-Aktion.
+
+
+## 26.11.2026 – Read-only Preview-Architektur auf RLS geprüft
+
+- Live Supabase DEV `pg_policies` für Restore-Domain-Tabellen abgefragt. Policies verwenden `is_team_member`, `has_selected_team_context`, Superadmin-Rollen und bei Child-Tabellen Parent-Joins; eine pauschale Client-Abfrage darf daher nicht als Auth-Gate gelten.
+- Bestehende Edge Function `create-backup-package/index.ts` als Auth-/Scope-Muster geprüft: Bearer via `auth.getUser()`, Team-Admin `is_team_admin`, Vereinskontext `can_manage_club_context`, Plattform-Superadmin; Auswahlteams werden serverseitig dem Verein zugeordnet und bestätigt. Diese Function ist kein Restore-Preview-Endpunkt.
+- Restore-Zielpreview-Architektur in Mapping §14 dokumentiert: serverauthentifiziert, exact manifest+selected scope, same-scope, fixed SELECT-only allowlist, Parent-ID-basiert/paginiert, alle Fehler fail-closed, Actor-FK-/Asset-Gates, Planner rein read-only, UI zeigt Add/Update/Keep/Conflict/Never-delete und „0 Änderungen“.
+- Commit Restore-Mapping §14: `2abdad26bce58256f1ff7a10e4b9eebc428fa88b`.
+- Noch kein Edge-Function-Code angelegt/geändert oder deployed; keine SQL-/Schema-/Storage-Schreiboperation, kein Restore-Executor und keine PROD-Aktion.
+
+### Nächster Schritt
+DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migration): zuerst die Server-Handler-/Query-Spezifikation als festes Table/Column-/Parent-ID-Mapping und Fail-closed Response-Schema erstellen, dann isolierte Autorisierungs-/Scope-/Actor-/Asset-Fixtures. Erst nach lokalem Review/Tests und separater Deployment-Freigabe die DEV Function veröffentlichen.
