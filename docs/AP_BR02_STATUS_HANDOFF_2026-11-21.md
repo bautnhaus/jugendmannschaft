@@ -1102,3 +1102,22 @@ Eine **read-only Zielzustands-Merge-Preview** spezifizieren/umsetzen: exakter Sc
 
 ### Nächster Schritt
 DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migration): zuerst die Server-Handler-/Query-Spezifikation als festes Table/Column-/Parent-ID-Mapping und Fail-closed Response-Schema erstellen, dann isolierte Autorisierungs-/Scope-/Actor-/Asset-Fixtures. Erst nach lokalem Review/Tests und separater Deployment-Freigabe die DEV Function veröffentlichen.
+
+
+## 26.11.2026 – Preview-Contract DEV-Codevorbereitung
+
+- Aktuelle `develop`-Quellen vor Änderung neu eingelesen: Edge-Export v1/snapshot v16, Pure Planner, Status-Handover und Mapping. Keine erledigten Fixture-/Schema-Prüfungen wiederholt.
+- Neue reine Moduldatei `src/backup/restore-preview-contract.js` angelegt. Sie enthält:
+  - feste, serverseitig zu verwendende SELECT-Allowlist;
+  - Request-Validierung für Restore-V1 `team`-Scope: Manifest-Scope == ausgewählter Scope, Team-ID exakt gleich, keine Team-ID-Mappings/Mehrteam-Expansion;
+  - fail-closed Envelope bei unvollständigem Zielread;
+  - Status-/Antwortvertrag mit explizitem `write_count: 0`.
+- Zuerst wurden die SELECT-Felder aus dem tatsächlichen `create-backup-package/index.ts` abgeglichen. Eine initiale manuelle Tabellenfeldliste zeigte Abweichungen und wurde korrigiert. Der endgültige Whitelist-Abgleich wurde maschinell durchgeführt: 25 Exporttabellen, 25 Preview-Selects, **kein Feld-/Tabellenmismatch**. Final Contract commit `524d60310e048eb8cb52cd587a1a89105ad7488a`.
+- Synthetische Browser-Fixture-Datei `docs/dev-tests/ap-br02-preview-contract.html` ergänzt (7 Fälle: feste Whitelist, gültiger Scope, gewählter Scope-Mismatch, Manifest-Mismatch, Mehrteamblock, incomplete read fail-closed, read-only success envelope). Commit `c769f9f86a6d219474d8304aca2de4b10c6d8a77`. Diese neuen Contract-Fixtures sind **noch nicht vom Nutzer im Browser ausgeführt**; nicht als PASS verbuchen.
+- Contract initial commit `63bbe51db98b7a866d24be9b1ed1dc3baea52b4d` wurde durch Korrekturcommit abgelöst; maßgeblich ist der korrigierte Commit.
+- Keine Edge Function / Serverhandler implementiert oder deployed; Contract allein autorisiert keine Datenabfrage und ersetzt keine Serverprüfung. Die RLS-/Auth-Architektur bleibt Pflicht. Keine SQL-/Schema-/Storage-Schreiboperation, kein Restore-Executor, keine PROD-Aktion.
+
+### Nächster Schritt
+1. Nutzer führt neue isolierte Preview-Contract-Fixtures in DEV Pages aus und zeigt tatsächliche Ausgabe.
+2. Danach erst den Server-Handler als **SELECT-only** implementieren: Auth-Token validieren, RPC/Role und Team-Kontext erneut serverseitig prüfen, Package/Manifest scope vergleichen, nur fixe Allowlist und Parent-ID-Filter lesen, paginieren/limitieren, read errors vollständig blockieren. Keine Schreibmethoden/Storage.
+3. Serverhandler nicht deployen ohne separate Zustimmung; keine Datenmigration erforderlich.
