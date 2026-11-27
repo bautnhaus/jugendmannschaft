@@ -1230,3 +1230,6 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - Zwischenläufe deckten zunächst TypeScript-Typfehler in der Auth-Injection und in den Mock-Callbacks auf. Diese wurden mit expliziten Typen korrigiert. Frühere fehlgeschlagene Runs sind historische Fehler, nicht als PASS zählen.
 - Diese Tests beweisen bislang nur die isolierte Autorisierungsfunktion. Der vollständige Handler mit Mock-Query-Builder (Service-Role-SELECT-Reihenfolge, Parent-FK/Paging/Read-Failure) bleibt offen.
 - Kein Edge-Function-Deployment, keine Request-Ausführung gegen Supabase, keine Daten-/Storage-Schreiboperation, kein Restore-Executor, keine PROD-Aktion.
+
+
+- CI-Abschluss nach dem Checkpoint: Run `46025949067` **success** am Commit `20eea0b33961150d09348760f8471837ee27cc1d`. Deno-Handler-Typecheck, Contract-Typecheck und alle 5 synthetischen Auth-Gate-Tests sind grün. Reiner CI-Test; keine Function deployed oder ausgeführt.
