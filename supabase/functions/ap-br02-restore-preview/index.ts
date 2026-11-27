@@ -104,7 +104,7 @@ Deno.serve(async (req: Request) => {
       else {
         const parentRef = (REFS[table] || []).find(ref => ref.field !== "team_id");
         if (!parentRef || !Array.isArray(current[parentRef.parent])) { readErrors.push({ code: "PARENT_SCOPE_UNRESOLVED" }); break; }
-        const ids = current[parentRef.parent].map(row => row.id).filter(Boolean);
+        const ids = current[parentRef.parent].map(row => row[parentRef.parentKey || "id"]).filter(Boolean);
         if (!ids.length) { current[table] = []; continue; }
         query = query.in(parentRef.field, ids);
       }
@@ -127,7 +127,7 @@ Deno.serve(async (req: Request) => {
         for (const ref of REFS[table] || []) {
           const value = row[ref.field];
           if (value == null) continue;
-          const allowedIds = new Set((current[ref.parent] || []).map(parent => String(parent.id)));
+          const allowedIds = new Set((current[ref.parent] || []).map(parent => String(parent[ref.parentKey || "id"])));
           if (!allowedIds.has(String(value))) {
             return reply(req, makePreviewEnvelope({ scope, rowsByTable: {}, readErrors: [{ code: "TARGET_FOREIGN_KEY_SCOPE_INVALID" }] }), 200);
           }
