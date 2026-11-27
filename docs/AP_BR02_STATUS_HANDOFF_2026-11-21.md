@@ -1197,3 +1197,13 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - Commits: Contract closure `14853dd8f6636f991d185bd1ef35ed19bead6785`; Handler `3bcd651cc8bf4c9d62a8014c7f71873b7dcd79f3`; Fixture `ac99ac056cc1c2b2f377ae79beaddbf9a18a7fad`; newline rendering `880dc99b99b2d57d9508ef609d0e46dfb1fd7f97`.
 - **Nächster Schritt:** DEV mirror/Pages deployment auf die neueste develop-Version prüfen und Browser-Fixtures erneut laufen lassen (jetzt 9). Danach Handler isoliert kompilieren und Mock-Read-Tests für Auth, exakt gleichen Teamkontext, transitive Parent-Reads, Pagination/Row-Limits und fail-closed Fehlerausgänge vorbereiten.
 - Weiterhin kein Deployment der Preview-Edge-Function, keine Datenänderung, kein Restore-Executor, keine SQL-/Storage-/PROD-Aktion.
+
+
+## 27.11.2026 – Preview Contract browser gate bestanden (9 Fixtures)
+
+- Nutzer-Screenshot bestätigt **9/9 PASS** und `ALLE CONTRACT-FIXTURES BESTANDEN`, einschließlich der neuen transitiven Parent-Closure-Fixture. Der Test ist auf der tatsächlichen DEV-Seite ausgeführt.
+- DEV-Deploy/Synchronisierung read-only geprüft: Mirror `bautnhaus/jugendmannschaft-dev`, Branch `main`, enthält die aktuelle Contract-Testseite, `resolvePreviewReadClosure()` und die aktualisierte Edge-Handler-Referenz. GitHub Actions letzter relevanter Deploy-Run `45976495995` completed/success; DEV-Mirror-Head zum Abgleich `4669be942c34b4da2a1e4826e46b61eaa178376a`.
+- Contract-Gate ist abgeschlossen. Das bestätigt ausschließlich die browserseitigen reinen Fixture-Tests, nicht die Ausführung des Edge-Handlers.
+- Nächste technische Schranke: Handler statisch auf Auth/Scope-before-service-read, transitive Team-Scope-Abhängigkeiten, Paging/Max-Row und fail-closed Verhalten reviewed. Ein echter Deno/Supabase-Edge-Compile und isolierter Mock-Read des Handler-Runtimes sind in dieser Umgebung noch nicht ausgeführt; nicht als bestanden markieren.
+- Preview-Function `ap-br02-restore-preview` bleibt nicht deployed. Kein SQL, keine Daten-/Storage-Schreiboperation, kein Restore, keine PROD-Änderung.
+- Nächster Schritt: lokale/CI-fähige Handler-Prüfung vorbereiten (Deno type-check oder isolierte Testhülle, ausschließlich synthetische Mock-Requests/Mock-Reads). Erst nach bestandenem Compile/Mock-Gate wird ein separates DEV-Deployment zur manuellen Auth-/Scope-Prüfung erwogen – mit expliziter Freigabe, da es eine neue Edge Function wäre.
