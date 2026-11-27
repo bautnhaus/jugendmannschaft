@@ -1264,3 +1264,14 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - Backend-Funktion `ap-br02-restore-preview` ist im Supabase DEV-Projekt derzeit noch **nicht deployed** (read-only Function-Liste geprüft). Der Button kann bis zu diesem Deployment noch keine Live-Zielvorschau liefern; Fehler werden in der UI abgefangen.
 - Nächster konkreter Schritt: Deploy dieser SELECT-only Preview-Function nach Supabase DEV aus den exakt committed Dateien; anschließend einen einzigen realen DEV-Previewlauf mit dem bereits vom Nutzer geprüften Backup. Keine Restore-Anwendung.
 - Grenzen: Preview-Handler liest nur Zielzeilen mit Service-Role nach Auth-/Teamadmin-Gate und Same-scope Prüfung; es gibt keine INSERT/UPDATE/DELETE/Storage-Schreibpfade. Der Legacy-Replace-Restore bleibt gesperrt. Keine SQL/Migration, keine PROD-Aktion.
+
+
+### 27.11.2026 – Read-only Restore-Zielvorschau jetzt in DEV bereitgestellt
+
+- Frontend-Commit `95495d68fd35305d9da92e450ff50815af5f2c3e`: der vorhandene lokale Backup-Prüfer bietet nach erfolgreichem KADB-/ZIP-/Manifest-Preflight nun die Aktion **„Nur Vorschau erstellen“**.
+- Aktion sendet das geprüfte Manifest plus explizite Team-ID an die getrennte Edge Function `ap-br02-restore-preview`. UI zeigt nur einen vollständig erfolgreichen, ausdrücklich schreibfreien Preview-Vertrag an; Fehler/blocked bleiben „keine Änderungen“.
+- GitHub Actions DEV Deploy Run `46051271339`: completed/success; DEV-Mirror `bautnhaus/jugendmannschaft-dev/main` wurde synchronisiert. Read-only geprüft: aktuelles `index.html` enthält den Funktionsaufruf und Contract-Datei ist vorhanden.
+- Supabase DEV Edge Function `ap-br02-restore-preview` neu deployed: ACTIVE, Version 1, `verify_jwt=true`; SHA `e50b475b46a04083db216609417dbc0592dca81b836af763f6621af695833c85`. Enthaltene Dateien stammen aus develop: Handler, isoliertes Auth-Modul, Preview-Contract und Merge-Planner.
+- Funktionalitätsumfang dieser Stufe: authentifizierter Teamadmin, exakter Same-team-Scope, serverseitig erlaubte SELECT-Spalten, team-/parent-gebundene Zielreads mit Paging/Limits, Backup-Team-/FK-Closure-Guard, deterministische Merge-/Never-delete-/Newer-wins-Vorschau. Der Handler enthält keinen DB-Write und keinen Storage-Write.
+- **Jetzt notwendiger Praxisschritt:** Nutzer öffnet in DEV „Backup prüfen“, wählt dasselbe bereits geprüfte Mannschaftsbackup und Passwort, führt die lokale Paketprüfung aus und klickt dann „Nur Vorschau erstellen“. Erwartet werden Zahlen für Ergänzen/Aktualisieren/Beibehalten/Konflikte/Never-delete. Bitte den angezeigten Status oder Screenshot zurückmelden; das ist der erste tatsächliche Aufruf dieser neu bereitgestellten Preview-Route.
+- Kein Restore wurde ausgeführt. Legacy Replace bleibt gesperrt; keine SQL-/Migration, keine PROD-Änderung.
