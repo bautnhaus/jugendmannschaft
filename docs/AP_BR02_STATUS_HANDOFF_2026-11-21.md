@@ -1172,3 +1172,16 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - Testseite in `docs/dev-tests/ap-br02-preview-contract.html` angepasst: Module werden dynamisch innerhalb eines `try/catch` geladen; Startstatus wird sofort aktualisiert; Importfehler sollen nun sichtbar als `BLOCKIERT – Testmodul konnte nicht geladen werden` inklusive Stack/Fehlertext erscheinen. Erfolgreiche/fehlgeschlagene Fixtures werden weiterhin einzeln ausgegeben.
 - Commit: `6f363125a7dbc39a665fa88c3d275d1b38bbed42`. Eine nachfolgende identische Commit-Anfrage ergab keine neue Änderung (GitHub gab denselben Content SHA zurück).
 - **Nächster Schritt:** auf Mirror/Pages-Sync dieses neuen Commits warten, Seite im Browser mit Aktualisieren neu laden und den nun sichtbaren Status/Fehlertext ablesen. Noch keine Live-Tests des Edge-Handlers, kein Deployment, keine Supabase-/PROD-Änderungen.
+
+
+### 27.11.2026 – Preview Contract PASS und DEV-Schemaabgleich
+
+- Nutzer-Screenshot bestätigt alle 8 Contract-Fixtures mit Schlussmeldung `ALLE CONTRACT-FIXTURES BESTANDEN`. Gate für den reinen Client-/Contract-Test ist damit geschlossen. Ausgabe hatte sichtbare literal `\\n`; reine Anzeige, keine Fixture-Fehler.
+- Anzeige korrigiert, damit die Ergebniszeilen echte Zeilenumbrüche verwenden. Commit `7cbf14cf6eb33c526cf9355828fd74d5bf34b88e`; GitHub-Readback geprüft.
+- Read-only Supabase DEV-Schemaabgleich (Projekt `pzazqvvoruqnqhcorbwx`, gesund/aktiv): alle 25 SELECT-Allowlist-Tabellen existieren, sämtliche aktuell definierten SELECT-Spalten stimmen mit dem DEV-Schema überein; kein Feld-/Tabellenmismatch gefunden. Keine SQL-Abfrage mit Schreibwirkung und keine Schemaänderung.
+- Supabase DEV Edge-Function-Liste geprüft: `ap-br02-restore-preview` ist **nicht deployed**. Live-Function-Readback gab NotFound; bestätigt Status „nur Git-Source“.
+- Statische Handlerprüfung: Request/Auth-/Teamadmin-Gate vor Service-Role-Reads; feste Select-Allowlist; Team- oder Parent-ID-gebundene, paginierte SELECTs; kein Insert/Update/Upsert/Delete/Storage. Handler-Source SHA `755c399759b56df7bae2c5870585944c252f8fc5`.
+- **Wichtiger offener Reviewpunkt vor Compile/Mock-Abnahme:** Der Handler prüft Manifest-Scope und die Ziel-FK-Beziehungen, aber es ist noch nicht belegt, dass jede untrusted Backup-Zeile (insbesondere `team_id`) strikt auf die gewählte Team-ID beschränkt wird und Backup-FKs bei ausgelassenen Kategorien gegen erlaubte Ziel-Parent-IDs validiert werden. Dies in einem adversarialen Mock-Read-Test gezielt prüfen und ggf. fail-closed korrigieren; keine Bereitstellung bis abgeschlossen.
+- Kompilierung wurde in dieser Runde nicht ausgeführt: Deno nicht im Tool-Container vorhanden; externer Downloadversuch zur Beschaffung des Quelltexts war wegen fehlender DNS-/Netzwerkverbindung nicht möglich. Kein Deno-Compile-Ergebnis behaupten.
+- Nächster Schritt: isolierte adversarial Mock-Read-Testmatrix für backup-row scope / backup-FK closure / permission denial / target-read error / pagination bounds, dann Deno compile in einer verfügbaren lokalen DEV-Umgebung. Erst danach separater Deployment-Freigabeschritt.
+- Keine Edge Function deployed, kein Frontend angebunden, kein SQL/Storage-Write, kein Restore-Executor, keine PROD-Aktion.
