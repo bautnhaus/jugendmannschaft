@@ -38,12 +38,9 @@ Deno.serve(async (req: Request) => {
     const snapshotData = body.manifest.snapshot.data;
     if (!snapshotData || typeof snapshotData !== "object" || Array.isArray(snapshotData)) return reply(req, { error: "Snapshot fehlt oder ist ungültig." }, 400);
     const scope = validateRestorePreviewRequest({
-      scope_type: body.manifest.scope?.type,
-      scope_id: body.manifest.scope?.id,
       selected_team_id: body.selected_team_id,
-      manifest_scope: { type: body.manifest.scope?.type, id: body.manifest.scope?.id, team_ids: body.manifest.scope?.team_ids },
+      manifest_scope: body.manifest.scope,
     });
-    if (scope.scope_type !== "team") return reply(req, { error: "Restore-Preview V1 erlaubt ausschließlich denselben Team-Scope." }, 400);
 
     if (!Array.isArray(body.manifest.categories) || !body.manifest.categories.every((category: unknown) => typeof category === "string")) return reply(req, { error: "Kategorien sind ungültig." }, 400);
     const categoryTables: Record<string, string[]> = CATEGORY_TABLES;
@@ -71,8 +68,11 @@ Deno.serve(async (req: Request) => {
       return reply(req, { error: messages[String(authorization.code)] || "Autorisierung fehlgeschlagen." }, authorization.status);
     }
     const admin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
-    const { data: team, error: teamError } = await admin.from("teams").select("id").eq("id", scope.scope_id).maybeSingle();
+    const { data: team, error: teamError } = await admin.from("teams").select("id,club_id").eq("id", scope.scope_id).maybeSingle();
     if (teamError || !team) return reply(req, { error: "Zielmannschaft nicht eindeutig verfügbar." }, 404);
+    if (scope.package_scope_type === "club" && String(team.club_id || "") !== String(scope.package_club_id || "")) {
+      return reply(req, { status: "blocked", complete: false, write_count: 0, error_code: "TARGET_CLUB_SCOPE_MISMATCH" }, 400);
+    }
 
     // Read dependency closure in topological order. All direct rows are team-filtered;
     // child tables are constrained by IDs obtained from already scoped target parents.
