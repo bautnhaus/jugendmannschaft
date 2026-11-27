@@ -68,7 +68,7 @@ Deno.serve(async (req: Request) => {
         PERMISSION_CHECK_FAILED: "Mannschaftsberechtigung konnte nicht geprüft werden.",
         TEAM_ACCESS_DENIED: "Kein Zugriff auf diesen Mannschaftskontext.",
       };
-      return reply(req, { error: messages[authorization.code] || "Autorisierung fehlgeschlagen." }, authorization.status);
+      return reply(req, { error: messages[String(authorization.code)] || "Autorisierung fehlgeschlagen." }, authorization.status);
     }
     const admin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data: team, error: teamError } = await admin.from("teams").select("id").eq("id", scope.scope_id).maybeSingle();
