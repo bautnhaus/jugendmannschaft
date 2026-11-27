@@ -52,7 +52,7 @@ Deno.test("team admin passes only after exact team permission RPC", async () => 
   assertEquals(stub.calls.at(-1), { type: "rpc", name: "is_team_admin", args: { p_team_id: "team-fixture" } });
 });
 
-const TEAM = "team-fixture";
+const TEAM = "11111111-1111-4111-8111-111111111111";
 Deno.test("backup direct team_id must equal authorized team", () => {
   const result = validateBackupTeamClosure({
     backupData: { players: [{ id: "p1", team_id: "other-team" }] },
@@ -92,7 +92,7 @@ Deno.test("child FK can resolve only against scope-filtered target parents", () 
   assertEquals(result.ok, true);
 });
 
-const CLUB = "club-fixture";
+const CLUB = "22222222-2222-4222-8222-222222222222";
 Deno.test("exact one-team club backup can be previewed only as that team", () => {
   const result = validateRestorePreviewRequest({
     selected_team_id: TEAM,
