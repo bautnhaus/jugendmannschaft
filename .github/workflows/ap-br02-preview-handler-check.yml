@@ -1,0 +1,31 @@
+name: AP-BR02 Preview Handler Check
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "supabase/functions/ap-br02-restore-preview/**"
+      - "src/backup/restore-preview-contract.js"
+      - "src/backup/restore-planner.js"
+      - ".github/workflows/ap-br02-preview-handler-check.yml"
+  pull_request:
+    branches: [develop]
+    paths:
+      - "supabase/functions/ap-br02-restore-preview/**"
+      - "src/backup/restore-preview-contract.js"
+      - "src/backup/restore-planner.js"
+      - ".github/workflows/ap-br02-preview-handler-check.yml"
+  workflow_dispatch:
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check preview handler (no deployment or request execution)
+        run: deno check supabase/functions/ap-br02-restore-preview/index.ts
+      - name: Check pure preview contract module
+        run: deno check src/backup/restore-preview-contract.js
