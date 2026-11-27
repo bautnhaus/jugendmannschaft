@@ -1185,3 +1185,15 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - Kompilierung wurde in dieser Runde nicht ausgeführt: Deno nicht im Tool-Container vorhanden; externer Downloadversuch zur Beschaffung des Quelltexts war wegen fehlender DNS-/Netzwerkverbindung nicht möglich. Kein Deno-Compile-Ergebnis behaupten.
 - Nächster Schritt: isolierte adversarial Mock-Read-Testmatrix für backup-row scope / backup-FK closure / permission denial / target-read error / pagination bounds, dann Deno compile in einer verfügbaren lokalen DEV-Umgebung. Erst danach separater Deployment-Freigabeschritt.
 - Keine Edge Function deployed, kein Frontend angebunden, kein SQL/Storage-Write, kein Restore-Executor, keine PROD-Aktion.
+
+
+### 27.11.2026 – Preview Contract bestanden; transitive Parent-Closure behoben
+
+- Nutzer-Screenshot bestätigt alle 8 bisherigen Contract-Fixtures mit `ALLE CONTRACT-FIXTURES BESTANDEN`. Sichtbares `\\n` war ein Zeilenumbruch-Darstellungsfehler; Testausgabe wurde danach auf echte Zeilenumbrüche umgestellt.
+- Read-only Schemaabgleich gegen aktuelles Supabase DEV (`pzazqvvoruqnqhcorbwx`, `public`, verbose metadata): alle 25 festen SELECT-Allowlist-Tabellen vorhanden; jedes in `PREVIEW_SELECTS` genannte Feld existiert aktuell in der jeweiligen Tabelle. Zusätzlich 52 Parent-/FK-Felder und Parent-Key-Spalten im Mapping geprüft: keine Schema-Fehlreferenz.
+- Supabase DEV Edge-Function-Liste zeigt `ap-br02-restore-preview` **nicht deployed**. Nur die vorhandenen Funktionen sind aktiv; Preview-Handler wurde nicht deployed/ausgeführt. PROD wurde nicht angesprochen.
+- Review fand einen fail-closed Funktionsfehler: Handler fügte nur direkte Eltern in `required` ein. Bei verschachtelten Beziehungen (z. B. recommendation_players → recommendation_runs → matchdays → seasons/teams) konnte die Abhängigkeitskette unvollständig bleiben und den Preview-Read blockieren.
+- Neue pure Helper-Funktion `resolvePreviewReadClosure()` ergänzt; Handler nutzt nun transitive Parent-Closure. Neue 9. Browser-Fixture prüft exemplarisch die gesamte Kette bis teams/seasons/players. Fixture-Seite korrigiert die Ausgabe auf echte Newline-Zeichen.
+- Commits: Contract closure `14853dd8f6636f991d185bd1ef35ed19bead6785`; Handler `3bcd651cc8bf4c9d62a8014c7f71873b7dcd79f3`; Fixture `ac99ac056cc1c2b2f377ae79beaddbf9a18a7fad`; newline rendering `880dc99b99b2d57d9508ef609d0e46dfb1fd7f97`.
+- **Nächster Schritt:** DEV mirror/Pages deployment auf die neueste develop-Version prüfen und Browser-Fixtures erneut laufen lassen (jetzt 9). Danach Handler isoliert kompilieren und Mock-Read-Tests für Auth, exakt gleichen Teamkontext, transitive Parent-Reads, Pagination/Row-Limits und fail-closed Fehlerausgänge vorbereiten.
+- Weiterhin kein Deployment der Preview-Edge-Function, keine Datenänderung, kein Restore-Executor, keine SQL-/Storage-/PROD-Aktion.
