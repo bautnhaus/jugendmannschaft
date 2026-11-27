@@ -23,7 +23,7 @@ try {
   test("mehrere Team-IDs blockieren",()=>{let ok=false;try{validateRestorePreviewRequest({scope_type:"team",scope_id:id,selected_team_id:id,manifest_scope:{type:"team",id,team_ids:[id,id]}})}catch(e){ok=e.message==="TEAM_SET_MISMATCH"}if(!ok)throw Error("multi-team accepted")});
   test("unvollständiger Zielread erzeugt blocked/0-write envelope",()=>{const e=makePreviewEnvelope({scope:{type:"team",id},rowsByTable:{},readErrors:[{code:"TABLE_READ_FAILED"}]});if(e.status!=="blocked"||e.complete||e.write_count!==0)throw Error(JSON.stringify(e))});
   test("vollständiger Read bleibt ausdrücklich read-only",()=>{const e=makePreviewEnvelope({scope:{type:"team",id},rowsByTable:{players:[]}});if(e.status!=="read_only_ready"||e.write_count!==0||e.message_code!=="PREVIEW_ONLY_NO_CHANGES")throw Error(JSON.stringify(e))});
-  out.textContent=results.join("\\n")+"\\n\\n"+(results.every(x=>x.startsWith("PASS"))?"ALLE CONTRACT-FIXTURES BESTANDEN":"FEHLER – Preview-Integration nicht freigeben");
+  out.textContent=results.join("\n")+"\n\n"+(results.every(x=>x.startsWith("PASS"))?"ALLE CONTRACT-FIXTURES BESTANDEN":"FEHLER – Preview-Integration nicht freigeben");
   out.className=results.every(x=>x.startsWith("PASS"))?"pass":"fail";
 } catch(error) {
   out.className="fail";
