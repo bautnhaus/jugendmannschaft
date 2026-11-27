@@ -130,3 +130,65 @@ export const PREVIEW_PARENT_REFS = Object.freeze( {
   team_suspension_game_types: [{field:"team_id",parent:"teams"}],
   team_season_closure_audit: [{field:"team_id",parent:"teams"},{field:"season_id",parent:"seasons"}],
 }) ;
+
+
+/**
+ * Validates every selected backup row against the exact authorized team and its
+ * FK closure. Parent rows may be supplied by selected backup tables or by the
+ * already scope-filtered target read. Does not mutate data.
+ */
+export function validateBackupTeamClosure({ backupData, selectedTables, teamId, targetRows, parentRefs = PREVIEW_PARENT_REFS }) {
+  const selected = new Set(selectedTables || []);
+  const visiting = new Set();
+  const checked = new Map();
+
+  function belongs(table, row) {
+    const key = String(row?.id ?? JSON.stringify(row));
+    const token = table + ":" + key;
+    if (checked.has(token)) return checked.get(token);
+    if (visiting.has(token)) return false;
+    visiting.add(token);
+
+    if (Object.prototype.hasOwnProperty.call(row || {}, "team_id") && row.team_id !== teamId) {
+      visiting.delete(token);
+      checked.set(token, false);
+      return false;
+    }
+
+    for (const ref of parentRefs[table] || []) {
+      const value = row?.[ref.field];
+      if (value == null) continue;
+      const parentKey = ref.parentKey || "id";
+      const backupParents = selected.has(ref.parent)
+        ? (backupData?.[ref.parent] || []).filter(parent => String(parent?.[parentKey]) === String(value))
+        : [];
+      const targetParents = (targetRows?.[ref.parent] || []).filter(parent => String(parent?.[parentKey]) === String(value));
+
+      if (backupParents.length) {
+        if (!backupParents.some(parent => belongs(ref.parent, parent))) {
+          visiting.delete(token);
+          checked.set(token, false);
+          return false;
+        }
+      } else if (!targetParents.length) {
+        visiting.delete(token);
+        checked.set(token, false);
+        return false;
+      }
+    }
+    visiting.delete(token);
+    checked.set(token, true);
+    return true;
+  }
+
+  for (const table of selected) {
+    const rows = backupData?.[table];
+    if (!Array.isArray(rows)) return { ok: false, code: "BACKUP_TABLE_MISSING" };
+    for (const row of rows) {
+      if (!row || typeof row !== "object" || Array.isArray(row) || !belongs(table, row)) {
+        return { ok: false, code: "BACKUP_TEAM_OR_FOREIGN_KEY_SCOPE_INVALID", table };
+      }
+    }
+  }
+  return { ok: true };
+}
