@@ -1233,3 +1233,18 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 
 
 - CI-Abschluss nach dem Checkpoint: Run `46025949067` **success** am Commit `20eea0b33961150d09348760f8471837ee27cc1d`. Deno-Handler-Typecheck, Contract-Typecheck und alle 5 synthetischen Auth-Gate-Tests sind grün. Reiner CI-Test; keine Function deployed oder ausgeführt.
+
+
+### 27.11.2026 – Backup-Team-/FK-Closure-Guard mit adversarial Fixtures
+
+- Offenen Sicherheitsreview umgesetzt: vor Planner-Erstellung ruft der Handler nun `validateBackupTeamClosure` auf. Jede ausgewählte Backup-Zeile wird geprüft:
+  - explizites `team_id` muss exakt der autorisierten Team-ID entsprechen;
+  - FK-Ancestry muss entweder über ausgewählte Backup-Parent-Zeilen rekursiv auf dasselbe Team oder über bereits scope-gefilterte Ziel-Parent-Zeilen aufgelöst werden;
+  - nicht auflösbare Parent-Referenz oder Scope-/FK-Widerspruch blockiert die Preview fail-closed mit `write_count: 0`.
+- Reine Contract-Funktion in `src/backup/restore-preview-contract.js`, vom Handler nach erfolgreichem, autorisiertem Zielread aufgerufen. Keine Änderungen an DB/Schema/RLS.
+- Vier neue adversarial Fixtures ergänzt (Cross-team direct `team_id`, gültige Parent-Kette aus Backup, unbekannte FK wird blockiert, Child-FK nur aus scoped target parents). Zusammen mit fünf Auth-/Permission-Fixtures jetzt **9 Deno-Tests PASS**.
+- Finaler isolierter CI-Lauf: Run `46026265656`, Commit `90070c159d3f807866ea6814e298a767bbcb61a7`, **success**: Handler-Typecheck, Contract-Typecheck, 9/9 Tests.
+- DEV Pages Deploy ist ein statischer Code-/Testseiten-Deploy; keine Supabase Edge Function bereitgestellt oder ausgeführt.
+- Dazwischenliegende CI-Fehler wurden durch den Workflow aufgedeckt und behoben (TS-Signatur versehentlich in JS-Modul; auf JSDoc umgestellt). Nicht als erfolgreiche Tests zählen.
+- **Nächster Schritt:** isolierte Mock-Query-Builder-/Handler-Tests für tatsächliche SELECT-Reihenfolge, Teamfilter/Parent-ID-Filters, Paging/Row-Limits, Read-Fehler → blocked und keine Service-Role-Abfrage vor Auth/Team-Admin-Gate. Aktuell sind Auth-/Backup-Scope-Helfer getestet, noch nicht die komplette Request-Route.
+- Kein Edge-Function-Deployment, kein Supabase-Request, keine Daten-/Storage-Schreiboperation, kein Restore-Executor, keine PROD-Aktion.
