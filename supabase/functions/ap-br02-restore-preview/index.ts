@@ -34,7 +34,8 @@ Deno.serve(async (req: Request) => {
     let body: any; try { body = JSON.parse(raw); } catch { return reply(req, { error: "Ungültiger JSON-Request." }, 400); }
     if (!body?.manifest) return reply(req, { error: "Manifest fehlt." }, 400);
     validatePackageManifest(body.manifest);
-    const snapshotData = body.manifest.snapshot.data;\n    if (!snapshotData || typeof snapshotData !== "object" || Array.isArray(snapshotData)) return reply(req, { error: "Snapshot fehlt oder ist ungültig." }, 400);
+    const snapshotData = body.manifest.snapshot.data;
+    if (!snapshotData || typeof snapshotData !== "object" || Array.isArray(snapshotData)) return reply(req, { error: "Snapshot fehlt oder ist ungültig." }, 400);
     const scope = validateRestorePreviewRequest({
       scope_type: body.manifest.scope?.type,
       scope_id: body.manifest.scope?.id,
