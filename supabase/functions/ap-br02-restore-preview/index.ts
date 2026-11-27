@@ -2,7 +2,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { authorizePreviewTeam } from "./restore-preview-auth.ts";
 import { CATEGORY_TABLES, validatePackageManifest, buildMergePreview } from "../../../src/backup/restore-planner.js";
-import { PREVIEW_SELECTS, PREVIEW_PARENT_REFS, validateRestorePreviewRequest, makePreviewEnvelope, resolvePreviewReadClosure, RESTORE_PREVIEW_MAX_ROWS_PER_TABLE } from "../../../src/backup/restore-preview-contract.js";
+import { PREVIEW_SELECTS, PREVIEW_PARENT_REFS, validateRestorePreviewRequest, makePreviewEnvelope, resolvePreviewReadClosure, validateBackupTeamClosure, RESTORE_PREVIEW_MAX_ROWS_PER_TABLE } from "../../../src/backup/restore-preview-contract.js";
 
 const ORIGINS = new Set(["https://dev.kadassist.de"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -119,6 +119,19 @@ Deno.serve(async (req: Request) => {
           }
         }
       }
+    }
+
+    // Treat every backup row/FK as untrusted: prove its exact team ancestry
+    // against selected package parents or the already scope-filtered target closure.
+    const backupScope = validateBackupTeamClosure({
+      backupData: snapshotData,
+      selectedTables,
+      teamId: scope.scope_id,
+      targetRows: current,
+      parentRefs: REFS,
+    });
+    if (!backupScope.ok) {
+      return reply(req, makePreviewEnvelope({ scope, rowsByTable: {}, readErrors: [{ code: backupScope.code }] }), 200);
     }
 
     // Avoid querying profiles for arbitrary IDs supplied by the untrusted backup:
