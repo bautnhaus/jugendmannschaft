@@ -1207,3 +1207,15 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - Nächste technische Schranke: Handler statisch auf Auth/Scope-before-service-read, transitive Team-Scope-Abhängigkeiten, Paging/Max-Row und fail-closed Verhalten reviewed. Ein echter Deno/Supabase-Edge-Compile und isolierter Mock-Read des Handler-Runtimes sind in dieser Umgebung noch nicht ausgeführt; nicht als bestanden markieren.
 - Preview-Function `ap-br02-restore-preview` bleibt nicht deployed. Kein SQL, keine Daten-/Storage-Schreiboperation, kein Restore, keine PROD-Änderung.
 - Nächster Schritt: lokale/CI-fähige Handler-Prüfung vorbereiten (Deno type-check oder isolierte Testhülle, ausschließlich synthetische Mock-Requests/Mock-Reads). Erst nach bestandenem Compile/Mock-Gate wird ein separates DEV-Deployment zur manuellen Auth-/Scope-Prüfung erwogen – mit expliziter Freigabe, da es eine neue Edge Function wäre.
+
+
+### 27.11.2026 – Isolierter Deno-Typecheck eingeführt und bestanden
+
+- Nach dem 9/9 Browser-Contract-Gate wurde ein dedizierter GitHub-Actions-Workflow angelegt: `.github/workflows/ap-br02-preview-handler-check.yml`.
+- Der Workflow führt nur `deno check` für den Preview-Handler und den reinen Contract aus. Er startet weder `Deno.serve` noch einen Request, verbindet sich nicht mit Supabase und deployt keine Edge Function.
+- Der erste Typecheck fand tatsächliche TS-Typfehler im Handler (Category-/Table-Allowlist-Indexierung und zu eng inferierte Fehlerarrays). Diese wurden mit Runtime-Validierung und expliziten Typen korrigiert. In weiteren Läufen wurden von mir eingeführte Syntax-/JSDoc-Duplikate entdeckt und bereinigt.
+- Aktueller endgültiger CI-Lauf: **success**, Run `46007975262`, Commit `6f2b0f4108b5fc0786f69a9689380d53aadeadbb`. Beide Schritte – Handler und Contract – sind erfolgreich.
+- DEV-Deploy zu diesem Commit ebenfalls **success** (Run `46007975207`). Das ist ein Code-/Dokumentationsdeploy auf DEV Pages, kein Supabase-Edge-Function-Deployment.
+- Contract-Helfer bleiben reine JS-Funktionen; JSDoc-Typen statt TypeScript-Syntax in `.js`.
+- **Noch offen / nächster Schritt:** isolierte Mock-Read-/Request-Tests des Handler-Ablaufs. Dafür muss die Request-Logik testbar vom `Deno.serve`-Start getrennt werden bzw. eine kontrollierte Mock-Hülle entstehen. Testfälle: OPTIONS/Method, Auth fehlt/ungültig, Permission-RPC deny/error, falscher Team-Scope, SELECT-Abhängigkeiten/Parent-Closure, Paging/Max-Rows, Read-Failure → blocked/0-write und keine unautorisierte Service-Read vor Auth+Scope.
+- Kein Preview-Function-Deployment, keine echte Request-Ausführung, keine Daten-/Storage-Schreiboperation, kein Restore, keine PROD-Änderung.
