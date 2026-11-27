@@ -102,11 +102,11 @@ Deno.serve(async (req: Request) => {
       if (table === "teams") query = query.eq("id", scope.scope_id);
       else if (select.split(",").includes("team_id")) query = query.eq("team_id", scope.scope_id);
       else {
-        const parent = (PARENTS[table] || [])[0];
-        if (!parent || !Array.isArray(current[parent.table])) { readErrors.push({ code: "PARENT_SCOPE_UNRESOLVED" }); break; }
-        const ids = current[parent.table].map(row => row.id ?? row.team_id).filter(Boolean);
+        const parentRef = (REFS[table] || []).find(ref => ref.field !== "team_id");
+        if (!parentRef || !Array.isArray(current[parentRef.parent])) { readErrors.push({ code: "PARENT_SCOPE_UNRESOLVED" }); break; }
+        const ids = current[parentRef.parent].map(row => row.id).filter(Boolean);
         if (!ids.length) { current[table] = []; continue; }
-        query = query.in(parent.key, ids);
+        query = query.in(parentRef.field, ids);
       }
       const rows: any[] = [];
       for (let offset = 0; ; offset += PAGE) {
@@ -120,6 +120,20 @@ Deno.serve(async (req: Request) => {
       current[table] = rows;
     }
     if (readErrors.length) return reply(req, makePreviewEnvelope({ scope, rowsByTable: {}, readErrors }), 200);
+
+    // Check every known foreign key against the complete, authorized target parent rows.
+    for (const table of required) {
+      for (const row of current[table] || []) {
+        for (const ref of REFS[table] || []) {
+          const value = row[ref.field];
+          if (value == null) continue;
+          const allowedIds = new Set((current[ref.parent] || []).map(parent => String(parent.id)));
+          if (!allowedIds.has(String(value))) {
+            return reply(req, makePreviewEnvelope({ scope, rowsByTable: {}, readErrors: [{ code: "TARGET_FOREIGN_KEY_SCOPE_INVALID" }] }), 200);
+          }
+        }
+      }
+    }
 
     // Actor/profile references are not silently remapped. Report an explicit gate
     // rather than implying the preview is integration-ready until actor resolution exists.
