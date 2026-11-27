@@ -1,5 +1,6 @@
 // AP-BR02 target-state preview endpoint. SELECT-only; no Storage and no writes.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { authorizePreviewTeam } from "./restore-preview-auth.ts";
 import { CATEGORY_TABLES, validatePackageManifest, buildMergePreview } from "../../../src/backup/restore-planner.js";
 import { PREVIEW_SELECTS, PREVIEW_PARENT_REFS, validateRestorePreviewRequest, makePreviewEnvelope, resolvePreviewReadClosure, RESTORE_PREVIEW_MAX_ROWS_PER_TABLE } from "../../../src/backup/restore-preview-contract.js";
 
@@ -59,12 +60,16 @@ Deno.serve(async (req: Request) => {
     const authHeader = req.headers.get("Authorization");
     if (!url || !anon || !service) return reply(req, { error: "Preview-Backend nicht konfiguriert." }, 500);
     if (!authHeader?.startsWith("Bearer ")) return reply(req, { error: "Anmeldung erforderlich." }, 401);
-    const user = createClient(url, anon, { global: { headers: { Authorization: authHeader } }, auth: { persistSession: false, autoRefreshToken: false } });
-    const { data: authData, error: authError } = await user.auth.getUser();
-    if (authError || !authData.user) return reply(req, { error: "Benutzer konnte nicht authentifiziert werden." }, 401);
-    const { data: allowed, error: permissionError } = await user.rpc("is_team_admin", { p_team_id: scope.scope_id });
-    if (permissionError) return reply(req, { error: "Mannschaftsberechtigung konnte nicht geprüft werden." }, 500);
-    if (allowed !== true) return reply(req, { error: "Kein Zugriff auf diesen Mannschaftskontext." }, 403);
+    const authorization = await authorizePreviewTeam({ createClient, url, anonKey: anon, authHeader, teamId: scope.scope_id });
+    if (!authorization.ok) {
+      const messages: Record<string, string> = {
+        AUTH_REQUIRED: "Anmeldung erforderlich.",
+        AUTH_INVALID: "Benutzer konnte nicht authentifiziert werden.",
+        PERMISSION_CHECK_FAILED: "Mannschaftsberechtigung konnte nicht geprüft werden.",
+        TEAM_ACCESS_DENIED: "Kein Zugriff auf diesen Mannschaftskontext.",
+      };
+      return reply(req, { error: messages[authorization.code] || "Autorisierung fehlgeschlagen." }, authorization.status);
+    }
     const admin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data: team, error: teamError } = await admin.from("teams").select("id").eq("id", scope.scope_id).maybeSingle();
     if (teamError || !team) return reply(req, { error: "Zielmannschaft nicht eindeutig verfügbar." }, 404);
