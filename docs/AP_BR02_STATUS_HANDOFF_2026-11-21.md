@@ -1163,3 +1163,12 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - Letzter Handler-Fix-Commit: `df45c630e5dde68cc3e516671770fa35ff2f7aef`.
 - Browser-Testseite aktuell auf 8 Fixtures erweitert, aber nach diesen Source-/Teständerungen noch nicht erneut im Browser bestätigt. DEV Pages-Sync/Deployment ist abzuwarten.
 - Handler bleibt unkompiliert/un-deployed. Keine SQL-/Schema-/Storageänderung, kein Restore-Executor, keine PROD-Aktion.
+
+
+### 27.11.2026 – Browser-Preflight bleibt bei Ladeplatzhalter; Diagnoseausgabe ergänzt
+
+- Nutzer-Screenshot zeigt weiterhin `Tests werden ausgeführt …`, ohne PASS/FAIL-Ende. Daher **kein aktueller Testnachweis** und Fixture-Gate bleibt offen.
+- Quellprüfung der DEV-Spiegelseite ergab: statische ES-Modulimporte standen vor dem Testcode. Bei einem Import-/Parsefehler bricht das Modul vor der Ausgabe ab; die HTML-Fallbackzeile blieb unbegrenzt sichtbar und zeigte keine Diagnose.
+- Testseite in `docs/dev-tests/ap-br02-preview-contract.html` angepasst: Module werden dynamisch innerhalb eines `try/catch` geladen; Startstatus wird sofort aktualisiert; Importfehler sollen nun sichtbar als `BLOCKIERT – Testmodul konnte nicht geladen werden` inklusive Stack/Fehlertext erscheinen. Erfolgreiche/fehlgeschlagene Fixtures werden weiterhin einzeln ausgegeben.
+- Commit: `6f363125a7dbc39a665fa88c3d275d1b38bbed42`. Eine nachfolgende identische Commit-Anfrage ergab keine neue Änderung (GitHub gab denselben Content SHA zurück).
+- **Nächster Schritt:** auf Mirror/Pages-Sync dieses neuen Commits warten, Seite im Browser mit Aktualisieren neu laden und den nun sichtbaren Status/Fehlertext ablesen. Noch keine Live-Tests des Edge-Handlers, kein Deployment, keine Supabase-/PROD-Änderungen.
