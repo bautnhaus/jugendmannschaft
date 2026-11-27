@@ -137,7 +137,7 @@ export const PREVIEW_PARENT_REFS = Object.freeze( {
  * FK closure. Parent rows may be supplied by selected backup tables or by the
  * already scope-filtered target read. Does not mutate data.
  */
-export function validateBackupTeamClosure({ backupData, selectedTables, teamId, targetRows, parentRefs = PREVIEW_PARENT_REFS }) {
+export function validateBackupTeamClosure({ backupData, selectedTables, teamId, targetRows, parentRefs = PREVIEW_PARENT_REFS }: { backupData: Record<string, any[]>; selectedTables: string[]; teamId: string; targetRows: Record<string, any[]>; parentRefs?: Record<string, Array<{ field: string; parent: string; parentKey?: string }>> }) {
   const selected = new Set(selectedTables || []);
   const visiting = new Set();
   const checked = new Map();
