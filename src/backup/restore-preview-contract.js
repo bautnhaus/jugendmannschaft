@@ -41,20 +41,32 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 /** Validates the exact same-scope restore preview request. Does not authorize it. */
 export function validateRestorePreviewRequest(body) {
   if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("REQUEST_INVALID");
-  const { scope_type, scope_id, selected_team_id, manifest_scope } = body;
-  if (scope_type !== "team" || !UUID.test(String(scope_id || "")) ||
-      !UUID.test(String(selected_team_id || "")) || scope_id !== selected_team_id) {
-    throw new Error("SCOPE_MISMATCH");
-  }
-  if (!manifest_scope || manifest_scope.type !== scope_type || manifest_scope.id !== scope_id) {
-    throw new Error("MANIFEST_SCOPE_MISMATCH");
-  }
-  if (manifest_scope.team_ids !== undefined &&
-      (!Array.isArray(manifest_scope.team_ids) || manifest_scope.team_ids.length !== 1 ||
-       manifest_scope.team_ids[0] !== selected_team_id)) {
+  const { selected_team_id, manifest_scope } = body;
+  if (!UUID.test(String(selected_team_id || "")) || !manifest_scope ||
+      !["team", "club"].includes(manifest_scope.type) ||
+      !UUID.test(String(manifest_scope.id || ""))) throw new Error("SCOPE_MISMATCH");
+
+  const teamIds = manifest_scope.team_ids;
+  if (!Array.isArray(teamIds) || teamIds.length !== 1 || teamIds[0] !== selected_team_id) {
     throw new Error("TEAM_SET_MISMATCH");
   }
-  return Object.freeze({ scope_type, scope_id, selected_team_id });
+  if (manifest_scope.type === "team" && manifest_scope.id !== selected_team_id) {
+    throw new Error("MANIFEST_SCOPE_MISMATCH");
+  }
+  // A club-created package may be previewed as a team subset only if its manifest
+  // explicitly contains exactly this one team and the club identity is self-consistent.
+  if (manifest_scope.type === "club" &&
+      (manifest_scope.club_id !== manifest_scope.id || !UUID.test(String(manifest_scope.club_id || "")))) {
+    throw new Error("MANIFEST_SCOPE_MISMATCH");
+  }
+  return Object.freeze({
+    scope_type: "team",
+    scope_id: selected_team_id,
+    selected_team_id,
+    package_scope_type: manifest_scope.type,
+    package_scope_id: manifest_scope.id,
+    package_club_id: manifest_scope.type === "club" ? manifest_scope.club_id : null,
+  });
 }
 
 /** Builds a fail-closed envelope; incomplete target reads are never presented as a plan.
