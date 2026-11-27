@@ -1248,3 +1248,19 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - Dazwischenliegende CI-Fehler wurden durch den Workflow aufgedeckt und behoben (TS-Signatur versehentlich in JS-Modul; auf JSDoc umgestellt). Nicht als erfolgreiche Tests zählen.
 - **Nächster Schritt:** isolierte Mock-Query-Builder-/Handler-Tests für tatsächliche SELECT-Reihenfolge, Teamfilter/Parent-ID-Filters, Paging/Row-Limits, Read-Fehler → blocked und keine Service-Role-Abfrage vor Auth/Team-Admin-Gate. Aktuell sind Auth-/Backup-Scope-Helfer getestet, noch nicht die komplette Request-Route.
 - Kein Edge-Function-Deployment, kein Supabase-Request, keine Daten-/Storage-Schreiboperation, kein Restore-Executor, keine PROD-Aktion.
+
+
+## Restore – erste nutzbare Zielvorschau im lokalen Backup-Prüfer verbunden (27.11.2026)
+
+- Nutzer hat die Fortsetzung ausdrücklich gestartet mit Ziel, funktionalen Fortschritt zu priorisieren und weitere isolierte Tests nicht als Selbstzweck zu wiederholen.
+- Aktueller develop-Code `index.html` read-only geprüft: lokaler Prüfer entschlüsselt die Datei und validiert Manifest/ZIP/Asset-Bytes; noch kein Zielvergleich im Dialog.
+- Neue UI-Stufe committed: `index.html`, Commit `95495d68fd35305d9da92e450ff50815af5f2c3e`.
+  - Nach erfolgreichem lokalem Paket-Preflight kann der Nutzer **„Nur Vorschau erstellen“** auswählen.
+  - Die UI ruft die getrennte Edge Function `ap-br02-restore-preview` mit dem geprüften Manifest und expliziter Team-ID auf.
+  - Nur exakter Same-Team-Scope (Paket `scope.type=team`, Paket-ID = angemeldeter Teamkontext) wird angeboten; Club-/Plattformpakete werden nicht umgedeutet.
+  - Ergebnis wird als Ergänzungen, Aktualisierungskandidaten, Beibehalten, Konflikte und Never-delete angezeigt; tabellarische Counts ebenfalls.
+  - Die Oberfläche akzeptiert nur `read_only_ready`, `complete=true`, `write_count=0`; bei Fehler/blocked wird keine erfolgreiche Vorschau dargestellt.
+- GitHub Actions DEV Deploy für Commit `95495d68fd35305d9da92e450ff50815af5f2c3e`: Run `46051271339`, completed/success; develop wurde ins DEV-Mirror synchronisiert.
+- Backend-Funktion `ap-br02-restore-preview` ist im Supabase DEV-Projekt derzeit noch **nicht deployed** (read-only Function-Liste geprüft). Der Button kann bis zu diesem Deployment noch keine Live-Zielvorschau liefern; Fehler werden in der UI abgefangen.
+- Nächster konkreter Schritt: Deploy dieser SELECT-only Preview-Function nach Supabase DEV aus den exakt committed Dateien; anschließend einen einzigen realen DEV-Previewlauf mit dem bereits vom Nutzer geprüften Backup. Keine Restore-Anwendung.
+- Grenzen: Preview-Handler liest nur Zielzeilen mit Service-Role nach Auth-/Teamadmin-Gate und Same-scope Prüfung; es gibt keine INSERT/UPDATE/DELETE/Storage-Schreibpfade. Der Legacy-Replace-Restore bleibt gesperrt. Keine SQL/Migration, keine PROD-Aktion.
