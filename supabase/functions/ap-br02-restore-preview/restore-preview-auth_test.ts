@@ -105,13 +105,13 @@ Deno.test("exact one-team club backup can be previewed only as that team", () =>
 Deno.test("multi-team club package is blocked from team preview", () => {
   let code = "";
   try { validateRestorePreviewRequest({ selected_team_id: TEAM, manifest_scope: { type: "club", id: CLUB, club_id: CLUB, team_ids: [TEAM, "other-team"] } }); }
-  catch (error) { code = String(error.message); }
+  catch (error) { code = error instanceof Error ? error.message : String(error); }
   assertEquals(code, "TEAM_SET_MISMATCH");
 });
 Deno.test("club identity mismatch is blocked", () => {
   let code = "";
   try { validateRestorePreviewRequest({ selected_team_id: TEAM, manifest_scope: { type: "club", id: CLUB, club_id: "other-club", team_ids: [TEAM] } }); }
-  catch (error) { code = String(error.message); }
+  catch (error) { code = error instanceof Error ? error.message : String(error); }
   assertEquals(code, "MANIFEST_SCOPE_MISMATCH");
 });
 Deno.test("backup team root row must be exact selected team", () => {
