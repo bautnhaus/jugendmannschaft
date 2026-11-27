@@ -4210,9 +4210,10 @@ const displayName=(x)=>String(x?.name||[x?.first_name,x?.last_name].filter(Boole
       previewWrap.className='backupVerifyGroup';
       const previewHeading=document.createElement('h3');previewHeading.textContent='Zielbestand abgleichen';
       const previewNote=document.createElement('p');previewNote.className='backupVerifyDetails';
-      const exactTeamPackage=scope.type==='team'&&String(scope.id)===String(team||'');
-      if(exactTeamPackage&&supabase){
-        previewNote.textContent='Vergleicht das geprüfte Paket mit genau dieser angemeldeten Mannschaft. Die Vorschau liest den Zielbestand; es wird nichts wiederhergestellt.';
+      const exactTeamPackage=scope.type==='team'&&String(scope.id)===String(team||'')&&Array.isArray(scope.team_ids)&&scope.team_ids.length===1&&String(scope.team_ids[0])===String(team||'');
+      const exactSingleTeamClubPackage=scope.type==='club'&&String(scope.club_id||'')===String(scope.id||'')&&Array.isArray(scope.team_ids)&&scope.team_ids.length===1&&String(scope.team_ids[0])===String(team||'');
+      if((exactTeamPackage||exactSingleTeamClubPackage)&&supabase){
+        previewNote.textContent=exactSingleTeamClubPackage?'Vereinsbackup mit genau dieser einen Mannschaft. Die Vorschau bleibt strikt auf diese Mannschaft und ihren Vereinsbezug begrenzt; es wird nichts wiederhergestellt.':'Vergleicht das geprüfte Paket mit genau dieser angemeldeten Mannschaft. Die Vorschau liest den Zielbestand; es wird nichts wiederhergestellt.';
         const previewButton=document.createElement('button');previewButton.type='button';previewButton.textContent='Nur Vorschau erstellen';
         const previewResult=document.createElement('div');previewResult.className='backupVerifyDetails';previewResult.setAttribute('role','status');
         previewButton.addEventListener('click',async()=>{
@@ -4240,7 +4241,7 @@ const displayName=(x)=>String(x?.name||[x?.first_name,x?.last_name].filter(Boole
         });
         previewWrap.append(previewHeading,previewNote,previewButton,previewResult);
       }else{
-        previewNote.textContent='Der sichere Zielabgleich ist für Restore V1 nur bei einem Mannschaftsbackup im exakt ausgewählten Mannschaftskontext verfügbar. Vereins-/Plattformpakete werden nicht umgedeutet. Es wurde nichts geändert.';
+        previewNote.textContent='Der sichere Zielabgleich ist für Restore V1 nur bei einem Mannschaftsbackup oder einem Vereinsbackup mit exakt einer ausgewählten, hier aktiven Mannschaft verfügbar. Mehrteam- und Plattformpakete bleiben gesperrt. Es wurde nichts geändert.';
         previewWrap.append(previewHeading,previewNote);
       }
       status.appendChild(previewWrap);
