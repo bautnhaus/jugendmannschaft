@@ -1141,3 +1141,14 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 2. Ergänzende isolierte Tests für jede Tabellen-Parent-Beziehung, fehlende Tabellen/Read-Fehler, Actor-Profil fehlt, Body-/Row-Limits und Cross-Team FK.
 3. Danach Frontend DEV-Integration in den lokalen Backup-Verify-Dialog: verschlüsseltes Backup lokal entschlüsseln, validiertes Manifest/Snapshot an den Endpunkt senden, nur aggregierte Preview zeigen; keinerlei Restore-Button oder Write-Route.
 4. Vor Function-Deployment separat um Zustimmung bitten; bis dahin nicht deployen.
+
+
+### 27.11.2026 – Preview-Handler statische Review-Runde
+
+- Source-Review von `ap-br02-restore-preview/index.ts` fortgesetzt. Keine `.insert(`, `.update(`, `.upsert(`, `.delete(` oder Storage-Aufrufe gefunden.
+- Parent-/FK-Regeln aus dem Handler in `src/backup/restore-preview-contract.js` als feste, clientunabhängige `PREVIEW_PARENT_REFS` zentralisiert. Endpoint bindet diese gemeinsame Map ein; Browser-Testseite ergänzt eine Fixture, die alle Exporttabellen gegen SELECT-Allowlist und Parent-Scope-Regel prüft.
+- Während der Änderungen wurde ein kurzzeitig leerer Handler-Map-Stand erkannt und vor Abschluss korrigiert. Aktueller GitHub-Readback bestätigt `const REFS = PREVIEW_PARENT_REFS` und den Import. Die Browser-Testseite hatte zunächst einen fehlerhaften literal escaped newline im Modulimport; ebenfalls korrigiert. Der aktuelle HTML-Readback zeigt gültige getrennte Importzeilen.
+- Aktuelle relevante Commits: Contract/Parent-Map `c5784dd4207027a24b8b8b6f8dbafda3df56318f`; Handler bindet zentrale Map `0553caed6ed68472227a48f4a10bfca617a30c90`; Scope-Map-Test `3eddfb6f1ff6ecc6cc1c7f2210817f6da66b63ee`; HTML-Importkorrektur `d23229454095a16747dbb6171854ffa9aa514aaa`.
+- **Aktualisierte 8-Fixture-Browserseite muss nach DEV-Pages-Deploy erneut ausgeführt werden.** Vorherige 7/7 Contract-Fixtures bleiben als historischer Nachweis bestehen; sie decken die neue Parent-Map-Fixture nicht ab.
+- Edge Function weiterhin nicht kompiliert, nicht deployed und nicht live getestet. Deployment-Freigabe nicht erteilt. Kein SQL/Schema-/Storage-Write, kein Restore-Executor, keine PROD-Aktion.
+- Nächster Schritt: Pages-Deploy der aktuellen develop-Testdatei prüfen; den tatsächlichen Browseroutput der nun 8 Fixtures abwarten. Danach Deno-/Edge-Function Compile- und Mock-Read-Tests (Auth, exact team scope, Parent closure, actor refs, fail-closed read errors, bounds), erst danach Frontend-Anbindung planen.
