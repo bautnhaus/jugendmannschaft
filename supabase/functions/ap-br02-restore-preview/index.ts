@@ -1,7 +1,7 @@
 // AP-BR02 target-state preview endpoint. SELECT-only; no Storage and no writes.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { CATEGORY_TABLES, validatePackageManifest, buildMergePreview } from "../../../src/backup/restore-planner.js";
-import { PREVIEW_SELECTS, PREVIEW_PARENT_REFS, validateRestorePreviewRequest, makePreviewEnvelope, RESTORE_PREVIEW_MAX_ROWS_PER_TABLE } from "../../../src/backup/restore-preview-contract.js";
+import { PREVIEW_SELECTS, PREVIEW_PARENT_REFS, validateRestorePreviewRequest, makePreviewEnvelope, resolvePreviewReadClosure, RESTORE_PREVIEW_MAX_ROWS_PER_TABLE } from "../../../src/backup/restore-preview-contract.js";
 
 const ORIGINS = new Set(["https://dev.kadassist.de"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -70,8 +70,7 @@ Deno.serve(async (req: Request) => {
     // Read dependency closure in topological order. All direct rows are team-filtered;
     // child tables are constrained by IDs obtained from already scoped target parents.
     const order = ["teams","positions","players","seasons","training_series","trainings","matchdays","matchday_recommendation_runs","player_positions","attendance","training_players","training_trainers","training_responses","matchday_players","matchday_attendance","matchday_trainers","matchday_recommendation_players","team_season_closure_audit","training_behavior_events","training_suspensions","training_suspension_exceptions","matchday_early_suspension_resets","matchday_nomination_reminders","team_suspension_game_type_settings","team_suspension_game_types"];
-    const required = new Set(selectedTables);
-    for (const t of selectedTables) for (const p of REFS[t] || []) required.add(p.parent);
+    const required = resolvePreviewReadClosure(selectedTables, REFS);
     const current: Record<string, any[]> = {};
     const readErrors: { code: string }[] = [];
     for (const table of order) {
