@@ -84,6 +84,22 @@ export function makePreviewEnvelope({ scope, rowsByTable, readErrors = [], sourc
 }
 
 
+/** Resolves the complete transitive parent set needed for safe target reads. */
+export function resolvePreviewReadClosure(selectedTables, parentRefs = PREVIEW_PARENT_REFS) {
+  const required = new Set(selectedTables || []);
+  const pending = [...required];
+  while (pending.length) {
+    const table = pending.pop();
+    for (const ref of parentRefs[table] || []) {
+      if (!required.has(ref.parent)) {
+        required.add(ref.parent);
+        pending.push(ref.parent);
+      }
+    }
+  }
+  return required;
+}
+
 // Fixed FK/parent map for server preview reads; never supplied by the client.
 export const PREVIEW_PARENT_REFS = Object.freeze( {
   positions: [{field:"team_id",parent:"teams"}], players: [{field:"team_id",parent:"teams"}],
