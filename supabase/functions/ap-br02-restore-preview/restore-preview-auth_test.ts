@@ -3,11 +3,11 @@ import { authorizePreviewTeam } from "./restore-preview-auth.ts";
 
 function clientStub({ user = { id: "synthetic-user" }, authError = null, allowed = true, rpcError = null }: { user?: { id: string } | null; authError?: unknown; allowed?: boolean; rpcError?: unknown }) {
   const calls: Array<Record<string, unknown>> = [];
-  const createClient = (_url, _key, options) => {
+  const createClient = (_url: string, _key: string, options: unknown) => {
     calls.push({ type: "client", options });
     return {
       auth: { getUser: async () => ({ data: { user }, error: authError }) },
-      rpc: async (name, args) => {
+      rpc: async (name: string, args: Record<string, unknown>) => {
         calls.push({ type: "rpc", name, args });
         return { data: allowed, error: rpcError };
       },
