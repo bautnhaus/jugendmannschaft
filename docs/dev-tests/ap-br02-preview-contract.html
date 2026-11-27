@@ -28,6 +28,6 @@ try {
   out.className=results.every(x=>x.startsWith("PASS"))?"pass":"fail";
 } catch(error) {
   out.className="fail";
-  out.textContent="BLOCKIERT – Testmodul konnte nicht geladen werden.\\n"+String(error?.stack||error);
+  out.textContent="BLOCKIERT – Testmodul konnte nicht geladen werden."+String.fromCharCode(10)+String(error?.stack||error);
 }
 </script></html>
