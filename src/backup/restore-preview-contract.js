@@ -164,6 +164,12 @@ export function validateBackupTeamClosure({ backupData, selectedTables, teamId, 
     if (visiting.has(token)) return false;
     visiting.add(token);
 
+    if (table === "teams" && String(row?.id || "") !== String(teamId)) {
+      visiting.delete(token);
+      checked.set(token, false);
+      return false;
+    }
+
     if (Object.prototype.hasOwnProperty.call(row || {}, "team_id") && row.team_id !== teamId) {
       visiting.delete(token);
       checked.set(token, false);
