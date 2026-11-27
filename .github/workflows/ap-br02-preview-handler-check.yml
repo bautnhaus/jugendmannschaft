@@ -29,3 +29,5 @@ jobs:
         run: deno check supabase/functions/ap-br02-restore-preview/index.ts
       - name: Check pure preview contract module
         run: deno check src/backup/restore-preview-contract.js
+      - name: Run synthetic authorization gate tests (no network or Supabase)
+        run: deno test supabase/functions/ap-br02-restore-preview/restore-preview-auth_test.ts
