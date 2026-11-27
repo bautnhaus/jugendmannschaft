@@ -1,8 +1,8 @@
 import { assertEquals, assert } from "jsr:@std/assert";
 import { authorizePreviewTeam } from "./restore-preview-auth.ts";
 
-function clientStub({ user = { id: "synthetic-user" }, authError = null, allowed = true, rpcError = null }) {
-  const calls = [];
+function clientStub({ user = { id: "synthetic-user" }, authError = null, allowed = true, rpcError = null }: { user?: { id: string } | null; authError?: unknown; allowed?: boolean; rpcError?: unknown }) {
+  const calls: Array<Record<string, unknown>> = [];
   const createClient = (_url, _key, options) => {
     calls.push({ type: "client", options });
     return {
