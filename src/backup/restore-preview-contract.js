@@ -82,3 +82,30 @@ export function makePreviewEnvelope({ scope, rowsByTable, readErrors = [], sourc
     rows_by_table: rowsByTable
   };
 }
+
+
+// Fixed FK/parent map for server preview reads; never supplied by the client.
+export const PREVIEW_PARENT_REFS = Object.freeze( {
+  positions: [{field:"team_id",parent:"teams"}], players: [{field:"team_id",parent:"teams"}],
+  seasons: [{field:"team_id",parent:"teams"}], training_series: [{field:"team_id",parent:"teams"}],
+  trainings: [{field:"team_id",parent:"teams"},{field:"season_id",parent:"seasons"},{field:"series_id",parent:"training_series"}],
+  matchdays: [{field:"team_id",parent:"teams"},{field:"season_id",parent:"seasons"}],
+  player_positions: [{field:"player_id",parent:"players"},{field:"position_id",parent:"positions"}],
+  attendance: [{field:"training_id",parent:"trainings"},{field:"player_id",parent:"players"}],
+  training_players: [{field:"training_id",parent:"trainings"},{field:"player_id",parent:"players"}],
+  training_trainers: [{field:"training_id",parent:"trainings"}],
+  training_responses: [{field:"training_id",parent:"trainings"},{field:"player_id",parent:"players"}],
+  matchday_players: [{field:"matchday_id",parent:"matchdays"},{field:"player_id",parent:"players"}],
+  matchday_attendance: [{field:"matchday_id",parent:"matchdays"},{field:"player_id",parent:"players"}],
+  matchday_trainers: [{field:"matchday_id",parent:"matchdays"}],
+  matchday_recommendation_runs: [{field:"matchday_id",parent:"matchdays"}],
+  matchday_recommendation_players: [{field:"recommendation_id",parent:"matchday_recommendation_runs"},{field:"player_id",parent:"players"}],
+  training_behavior_events: [{field:"team_id",parent:"teams"},{field:"season_id",parent:"seasons"},{field:"training_id",parent:"trainings"},{field:"player_id",parent:"players"}],
+  training_suspensions: [{field:"team_id",parent:"teams"},{field:"season_id",parent:"seasons"},{field:"player_id",parent:"players"},{field:"source_event_id",parent:"training_behavior_events"},{field:"intended_matchday_id",parent:"matchdays"},{field:"served_matchday_id",parent:"matchdays"}],
+  training_suspension_exceptions: [{field:"team_id",parent:"teams"},{field:"suspension_id",parent:"training_suspensions"},{field:"player_id",parent:"players"},{field:"matchday_id",parent:"matchdays"}],
+  matchday_early_suspension_resets: [{field:"team_id",parent:"teams"},{field:"season_id",parent:"seasons"},{field:"player_id",parent:"players"},{field:"matchday_id",parent:"matchdays"}],
+  matchday_nomination_reminders: [{field:"team_id",parent:"teams"},{field:"player_id",parent:"players"},{field:"source_matchday_id",parent:"matchdays"},{field:"fulfilled_matchday_id",parent:"matchdays"}],
+  team_suspension_game_type_settings: [{field:"team_id",parent:"teams"}],
+  team_suspension_game_types: [{field:"team_id",parent:"teams"}],
+  team_season_closure_audit: [{field:"team_id",parent:"teams"},{field:"season_id",parent:"seasons"}],
+}) ;
