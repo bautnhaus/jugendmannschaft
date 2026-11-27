@@ -6,17 +6,27 @@
 <p>Reine synthetische Tests. Kein Supabase-Zugriff, keine echten Teamdaten, keine Schreiboperation.</p>
 <pre id="out">Tests werden ausgeführt …</pre>
 <script type="module">
-import {validateRestorePreviewRequest,makePreviewEnvelope,PREVIEW_SELECTS,PREVIEW_PARENT_REFS} from "../../src/backup/restore-preview-contract.js";
-import {CATEGORY_TABLES} from "../../src/backup/restore-planner.js";
-const out=document.querySelector("#out"),results=[];
-const id="123e4567-e89b-42d3-a456-426614174000";
-function test(name,fn){try{fn();results.push("PASS  "+name)}catch(e){results.push("FAIL  "+name+" — "+e.message)}}
-test("fester Export-Select-Vertrag ist nicht leer",()=>{if(Object.keys(PREVIEW_SELECTS).length!==25||Object.values(PREVIEW_SELECTS).some(s=>!s))throw Error("whitelist incomplete")});
-test("jede exportierte Tabelle besitzt feste SELECT- und Parent-Scope-Regel",()=>{const tables=[...new Set(Object.values(CATEGORY_TABLES).flat())];const missing=tables.filter(t=>!PREVIEW_SELECTS[t]||(t!=="teams"&&!PREVIEW_PARENT_REFS[t]));if(missing.length)throw Error("fehlende Scope-Regel: "+missing.join(","));for(const refs of Object.values(PREVIEW_PARENT_REFS))for(const ref of refs)if(!PREVIEW_SELECTS[ref.parent])throw Error("Parent ohne SELECT: "+ref.parent)});\ntest("gültiger exakt gleicher Team-Scope wird geparst",()=>{const x=validateRestorePreviewRequest({scope_type:"team",scope_id:id,selected_team_id:id,manifest_scope:{type:"team",id,team_ids:[id]}});if(x.scope_id!==id)throw Error("scope mismatch")});
-test("abweichender gewählter Teamkontext blockiert",()=>{let ok=false;try{validateRestorePreviewRequest({scope_type:"team",scope_id:id,selected_team_id:"123e4567-e89b-42d3-a456-426614174001",manifest_scope:{type:"team",id}})}catch(e){ok=e.message==="SCOPE_MISMATCH"}if(!ok)throw Error("mismatch accepted")});
-test("Manifest-Scope-Abweichung blockiert",()=>{let ok=false;try{validateRestorePreviewRequest({scope_type:"team",scope_id:id,selected_team_id:id,manifest_scope:{type:"team",id:"123e4567-e89b-42d3-a456-426614174001"}})}catch(e){ok=e.message==="MANIFEST_SCOPE_MISMATCH"}if(!ok)throw Error("manifest mismatch accepted")});
-test("mehrere Team-IDs blockieren",()=>{let ok=false;try{validateRestorePreviewRequest({scope_type:"team",scope_id:id,selected_team_id:id,manifest_scope:{type:"team",id,team_ids:[id,id]}})}catch(e){ok=e.message==="TEAM_SET_MISMATCH"}if(!ok)throw Error("multi-team accepted")});
-test("unvollständiger Zielread erzeugt blocked/0-write envelope",()=>{const e=makePreviewEnvelope({scope:{type:"team",id},rowsByTable:{},readErrors:[{code:"TABLE_READ_FAILED"}]});if(e.status!=="blocked"||e.complete||e.write_count!==0)throw Error(JSON.stringify(e))});
-test("vollständiger Read bleibt ausdrücklich read-only",()=>{const e=makePreviewEnvelope({scope:{type:"team",id},rowsByTable:{players:[]}});if(e.status!=="read_only_ready"||e.write_count!==0||e.message_code!=="PREVIEW_ONLY_NO_CHANGES")throw Error(JSON.stringify(e))});
-out.textContent=results.join("\n")+"\n\n"+(results.every(x=>x.startsWith("PASS"))?"ALLE CONTRACT-FIXTURES BESTANDEN":"FEHLER – Preview-Integration nicht freigeben");out.className=results.every(x=>x.startsWith("PASS"))?"pass":"fail";
+const out=document.querySelector("#out");
+out.textContent="Testmodul wird geladen …";
+try {
+  const contract=await import("../../src/backup/restore-preview-contract.js");
+  const planner=await import("../../src/backup/restore-planner.js");
+  const {validateRestorePreviewRequest,makePreviewEnvelope,PREVIEW_SELECTS,PREVIEW_PARENT_REFS}=contract;
+  const {CATEGORY_TABLES}=planner;
+  const results=[],id="123e4567-e89b-42d3-a456-426614174000";
+  function test(name,fn){try{fn();results.push("PASS  "+name)}catch(e){results.push("FAIL  "+name+" — "+String(e?.message||e))}}
+  test("fester Export-Select-Vertrag ist nicht leer",()=>{if(Object.keys(PREVIEW_SELECTS).length!==25||Object.values(PREVIEW_SELECTS).some(s=>!s))throw Error("whitelist incomplete; count="+Object.keys(PREVIEW_SELECTS).length)});
+  test("jede exportierte Tabelle besitzt feste SELECT- und Parent-Scope-Regel",()=>{const tables=[...new Set(Object.values(CATEGORY_TABLES).flat())];const missing=tables.filter(t=>!PREVIEW_SELECTS[t]||(t!=="teams"&&!PREVIEW_PARENT_REFS[t]));if(missing.length)throw Error("fehlende Scope-Regel: "+missing.join(","));for(const refs of Object.values(PREVIEW_PARENT_REFS))for(const ref of refs)if(!PREVIEW_SELECTS[ref.parent])throw Error("Parent ohne SELECT: "+ref.parent)});
+  test("gültiger exakt gleicher Team-Scope wird geparst",()=>{const x=validateRestorePreviewRequest({scope_type:"team",scope_id:id,selected_team_id:id,manifest_scope:{type:"team",id,team_ids:[id]}});if(x.scope_id!==id)throw Error("scope mismatch")});
+  test("abweichender gewählter Teamkontext blockiert",()=>{let ok=false;try{validateRestorePreviewRequest({scope_type:"team",scope_id:id,selected_team_id:"123e4567-e89b-42d3-a456-426614174001",manifest_scope:{type:"team",id}})}catch(e){ok=e.message==="SCOPE_MISMATCH"}if(!ok)throw Error("mismatch accepted")});
+  test("Manifest-Scope-Abweichung blockiert",()=>{let ok=false;try{validateRestorePreviewRequest({scope_type:"team",scope_id:id,selected_team_id:id,manifest_scope:{type:"team",id:"123e4567-e89b-42d3-a456-426614174001"}})}catch(e){ok=e.message==="MANIFEST_SCOPE_MISMATCH"}if(!ok)throw Error("manifest mismatch accepted")});
+  test("mehrere Team-IDs blockieren",()=>{let ok=false;try{validateRestorePreviewRequest({scope_type:"team",scope_id:id,selected_team_id:id,manifest_scope:{type:"team",id,team_ids:[id,id]}})}catch(e){ok=e.message==="TEAM_SET_MISMATCH"}if(!ok)throw Error("multi-team accepted")});
+  test("unvollständiger Zielread erzeugt blocked/0-write envelope",()=>{const e=makePreviewEnvelope({scope:{type:"team",id},rowsByTable:{},readErrors:[{code:"TABLE_READ_FAILED"}]});if(e.status!=="blocked"||e.complete||e.write_count!==0)throw Error(JSON.stringify(e))});
+  test("vollständiger Read bleibt ausdrücklich read-only",()=>{const e=makePreviewEnvelope({scope:{type:"team",id},rowsByTable:{players:[]}});if(e.status!=="read_only_ready"||e.write_count!==0||e.message_code!=="PREVIEW_ONLY_NO_CHANGES")throw Error(JSON.stringify(e))});
+  out.textContent=results.join("\\n")+"\\n\\n"+(results.every(x=>x.startsWith("PASS"))?"ALLE CONTRACT-FIXTURES BESTANDEN":"FEHLER – Preview-Integration nicht freigeben");
+  out.className=results.every(x=>x.startsWith("PASS"))?"pass":"fail";
+} catch(error) {
+  out.className="fail";
+  out.textContent="BLOCKIERT – Testmodul konnte nicht geladen werden.\\n"+String(error?.stack||error);
+}
 </script></html>
