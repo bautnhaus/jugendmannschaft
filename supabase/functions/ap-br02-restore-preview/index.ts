@@ -45,7 +45,8 @@ Deno.serve(async (req: Request) => {
     if (scope.scope_type !== "team") return reply(req, { error: "Restore-Preview V1 erlaubt ausschließlich denselben Team-Scope." }, 400);
 
     if (!Array.isArray(body.manifest.categories) || !body.manifest.categories.every((category: unknown) => typeof category === "string")) return reply(req, { error: "Kategorien sind ungültig." }, 400);
-    const categoryTables: Record<string, string[]> = CATEGORY_TABLES;\n    const selectedTables: string[] = [...new Set((body.manifest.categories as string[]).flatMap((category: string) => Object.hasOwn(categoryTables, category) ? categoryTables[category] : []))];
+    const categoryTables: Record<string, string[]> = CATEGORY_TABLES;
+    const selectedTables: string[] = [...new Set((body.manifest.categories as string[]).flatMap((category: string) => Object.hasOwn(categoryTables, category) ? categoryTables[category] : []))];
     for (const table of selectedTables) {
       if (!Object.hasOwn(PREVIEW_SELECTS, table)) return reply(req, { error: "Tabelle ist nicht für die Preview freigegeben." }, 400);
       const rows = snapshotData[table];
