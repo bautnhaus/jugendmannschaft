@@ -60,7 +60,7 @@ export function validateRestorePreviewRequest(body) {
 /** Builds a fail-closed envelope; incomplete target reads are never presented as a plan.
  * @param {{scope: unknown, rowsByTable: Record<string, unknown[]>, readErrors?: Array<{code?: string}>, source?: string}} options
  */
-export function makePreviewEnvelope({ scope, rowsByTable, readErrors = [], source = "target-read" }) {export function makePreviewEnvelope({ scope, rowsByTable, readErrors = [] as { code?: string }[], source = "target-read" }) {
+export function makePreviewEnvelope({ scope, rowsByTable, readErrors = [], source = "target-read" }) {
   if (readErrors.length) {
     return {
       version: RESTORE_PREVIEW_VERSION,
@@ -84,7 +84,6 @@ export function makePreviewEnvelope({ scope, rowsByTable, readErrors = [], sourc
     rows_by_table: rowsByTable
   };
 }
-
 
 /** Resolves the complete transitive parent set needed for safe target reads.
  * @param {string[]} selectedTables
