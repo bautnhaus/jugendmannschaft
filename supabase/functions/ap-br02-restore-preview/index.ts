@@ -6,7 +6,7 @@ import { PREVIEW_SELECTS, PREVIEW_PARENT_REFS, validateRestorePreviewRequest, ma
 const ORIGINS = new Set(["https://dev.kadassist.de"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PAGE = 250;
-const MAX_BODY = 4 * 1024 * 1024;
+const MAX_BODY = 32 * 1024 * 1024;
 const headers = (req: Request) => ({
   ...(ORIGINS.has(req.headers.get("Origin") || "") ? { "Access-Control-Allow-Origin": req.headers.get("Origin")! } : {}),
   "Vary": "Origin",
@@ -32,8 +32,8 @@ Deno.serve(async (req: Request) => {
     const raw = await req.text();
     if (new TextEncoder().encode(raw).byteLength > MAX_BODY) return reply(req, { error: "Preview-Request überschreitet die sichere Paketgröße." }, 413);
     let body: any; try { body = JSON.parse(raw); } catch { return reply(req, { error: "Ungültiger JSON-Request." }, 400); }
-    if (!body?.manifest || !body?.snapshot_data || typeof body.snapshot_data !== "object" || Array.isArray(body.snapshot_data)) return reply(req, { error: "Manifest oder Snapshot fehlt." }, 400);
-    validatePackageManifest(body.manifest);
+    if (!body?.manifest) return reply(req, { error: "Manifest fehlt." }, 400);
+    validatePackageManifest(body.manifest);\n    const snapshotData = body.manifest.snapshot.data;\n    if (!snapshotData || typeof snapshotData !== "object" || Array.isArray(snapshotData)) return reply(req, { error: "Snapshot fehlt oder ist ungültig." }, 400);
     const scope = validateRestorePreviewRequest({
       scope_type: body.manifest.scope?.type,
       scope_id: body.manifest.scope?.id,
@@ -41,11 +41,11 @@ Deno.serve(async (req: Request) => {
       manifest_scope: { type: body.manifest.scope?.type, id: body.manifest.scope?.id, team_ids: body.manifest.scope?.team_ids },
     });
     if (scope.scope_type !== "team") return reply(req, { error: "Restore-Preview V1 erlaubt ausschließlich denselben Team-Scope." }, 400);
-    if (JSON.stringify(body.snapshot_data) !== JSON.stringify(body.manifest.snapshot.data)) return reply(req, { error: "Snapshot und validiertes Manifest stimmen nicht überein." }, 400);
+
     const selectedTables = [...new Set(body.manifest.categories.flatMap((category: string) => CATEGORY_TABLES[category] || []))];
     for (const table of selectedTables) {
       if (!Object.hasOwn(PREVIEW_SELECTS, table)) return reply(req, { error: "Tabelle ist nicht für die Preview freigegeben." }, 400);
-      const rows = body.snapshot_data[table];
+      const rows = snapshotData[table];
       if (!Array.isArray(rows) || rows.length > RESTORE_PREVIEW_MAX_ROWS_PER_TABLE) return reply(req, { error: "Backup-Tabelle fehlt oder überschreitet das Preview-Limit: " + table }, 413);
     }
 
@@ -113,23 +113,16 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Actor/profile references are not silently remapped. Report an explicit gate
-    // rather than implying the preview is integration-ready until actor resolution exists.
+    // Avoid querying profiles for arbitrary IDs supplied by the untrusted backup:
+    // this could expose a profile-existence oracle. Actor FK resolution is a
+    // separate validation gate; the preview never silently remaps actors.
     const actorIds = new Set<string>();
-    for (const table of selectedTables) for (const row of body.snapshot_data[table] || []) {
+    for (const table of selectedTables) for (const row of snapshotData[table] || []) {
       for (const field of ACTOR_FIELDS) if (row[field] && UUID.test(String(row[field]))) actorIds.add(String(row[field]));
     }
-    let actorGate = "not_applicable";
-    if (actorIds.size) {
-      const { data: profiles, error } = await admin.from("profiles").select("id").in("id", [...actorIds]);
-      if (error) return reply(req, makePreviewEnvelope({ scope, rowsByTable: {}, readErrors: [{ code: "ACTOR_REFERENCE_READ_FAILED" }] }), 200);
-      const existing = new Set((profiles || []).map((p: any) => String(p.id)));
-      const missing = [...actorIds].filter(id => !existing.has(id));
-      if (missing.length) return reply(req, makePreviewEnvelope({ scope, rowsByTable: {}, readErrors: [{ code: "ACTOR_REFERENCE_MISSING" }] }), 200);
-      actorGate = "existing_profiles_verified_no_remap";
-    }
+    const actorGate = actorIds.size ? "manual_review_required_no_user_lookup" : "not_applicable";
 
-    const backup = body.snapshot_data;
+    const backup = snapshotData;
     const plan = buildMergePreview(backup, current, selectedTables);
     const envelope = makePreviewEnvelope({ scope, rowsByTable: {} });
     return reply(req, {
