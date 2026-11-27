@@ -1219,3 +1219,14 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - Contract-Helfer bleiben reine JS-Funktionen; JSDoc-Typen statt TypeScript-Syntax in `.js`.
 - **Noch offen / nächster Schritt:** isolierte Mock-Read-/Request-Tests des Handler-Ablaufs. Dafür muss die Request-Logik testbar vom `Deno.serve`-Start getrennt werden bzw. eine kontrollierte Mock-Hülle entstehen. Testfälle: OPTIONS/Method, Auth fehlt/ungültig, Permission-RPC deny/error, falscher Team-Scope, SELECT-Abhängigkeiten/Parent-Closure, Paging/Max-Rows, Read-Failure → blocked/0-write und keine unautorisierte Service-Read vor Auth+Scope.
 - Kein Preview-Function-Deployment, keine echte Request-Ausführung, keine Daten-/Storage-Schreiboperation, kein Restore, keine PROD-Änderung.
+
+
+### 27.11.2026 – Mockbare Team-Autorisierung für Preview-Handler ergänzt
+
+- Request-Handler verwendet jetzt isoliertes Modul `supabase/functions/ap-br02-restore-preview/restore-preview-auth.ts` für Bearer-/User-Auth und `is_team_admin(p_team_id)`. Das Modul hat keine Service-Role-Client-Erstellung und keine Tabellen-/Netzwerkreads außerhalb des übergebenen Client-Mocks.
+- Synthetische Deno-Tests ergänzt: fehlender Bearer (kein Clientaufruf), ungültiger User (kein Permission-RPC), Permission-RPC-Fehler (fail-closed), Nicht-Admin (403) und erfolgreicher Teamadmin mit exakt gebundener Team-ID.
+- GitHub-Actions-Workflow erweitert, sodass nach Typecheck/Contract-Check die synthetischen Auth-Gate-Tests ausgeführt werden.
+- Refactor- und Fixture-Dateien sind auf `develop`; zuletzt dokumentierter Testcommit `20eea0b33961150d09348760f8471837ee27cc1d`. Der dazugehörige Actions-Lauf wurde beim Handover-Update noch nicht final abgelesen.
+- Zwischenläufe deckten zunächst TypeScript-Typfehler in der Auth-Injection und in den Mock-Callbacks auf. Diese wurden mit expliziten Typen korrigiert. Frühere fehlgeschlagene Runs sind historische Fehler, nicht als PASS zählen.
+- Diese Tests beweisen bislang nur die isolierte Autorisierungsfunktion. Der vollständige Handler mit Mock-Query-Builder (Service-Role-SELECT-Reihenfolge, Parent-FK/Paging/Read-Failure) bleibt offen.
+- Kein Edge-Function-Deployment, keine Request-Ausführung gegen Supabase, keine Daten-/Storage-Schreiboperation, kein Restore-Executor, keine PROD-Aktion.
