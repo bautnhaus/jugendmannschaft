@@ -1,6 +1,6 @@
 import { assertEquals, assert } from "jsr:@std/assert";
 import { authorizePreviewTeam } from "./restore-preview-auth.ts";
-import { validateBackupTeamClosure } from "../../../src/backup/restore-preview-contract.js";
+import { validateBackupTeamClosure, validateRestorePreviewRequest } from "../../../src/backup/restore-preview-contract.js";
 
 function clientStub({ user = { id: "synthetic-user" }, authError = null, allowed = true, rpcError = null }: { user?: { id: string } | null; authError?: unknown; allowed?: boolean; rpcError?: unknown }) {
   const calls: Array<Record<string, unknown>> = [];
@@ -90,4 +90,34 @@ Deno.test("child FK can resolve only against scope-filtered target parents", () 
     targetRows: { trainings: [{ id: "tr1", team_id: TEAM }], players: [{ id: "p1", team_id: TEAM }] },
   });
   assertEquals(result.ok, true);
+});
+
+const CLUB = "club-fixture";
+Deno.test("exact one-team club backup can be previewed only as that team", () => {
+  const result = validateRestorePreviewRequest({
+    selected_team_id: TEAM,
+    manifest_scope: { type: "club", id: CLUB, club_id: CLUB, team_ids: [TEAM] },
+  });
+  assertEquals(result.scope_type, "team");
+  assertEquals(result.scope_id, TEAM);
+  assertEquals(result.package_scope_type, "club");
+});
+Deno.test("multi-team club package is blocked from team preview", () => {
+  let code = "";
+  try { validateRestorePreviewRequest({ selected_team_id: TEAM, manifest_scope: { type: "club", id: CLUB, club_id: CLUB, team_ids: [TEAM, "other-team"] } }); }
+  catch (error) { code = String(error.message); }
+  assertEquals(code, "TEAM_SET_MISMATCH");
+});
+Deno.test("club identity mismatch is blocked", () => {
+  let code = "";
+  try { validateRestorePreviewRequest({ selected_team_id: TEAM, manifest_scope: { type: "club", id: CLUB, club_id: "other-club", team_ids: [TEAM] } }); }
+  catch (error) { code = String(error.message); }
+  assertEquals(code, "MANIFEST_SCOPE_MISMATCH");
+});
+Deno.test("backup team root row must be exact selected team", () => {
+  const result = validateBackupTeamClosure({
+    backupData: { teams: [{ id: "other-team", club_id: CLUB }] },
+    selectedTables: ["teams"], teamId: TEAM, targetRows: { teams: [{ id: TEAM, club_id: CLUB }] },
+  });
+  assertEquals(result.ok, false);
 });
