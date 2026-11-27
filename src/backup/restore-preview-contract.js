@@ -91,7 +91,7 @@ export function makePreviewEnvelope({ scope, rowsByTable, readErrors = [], sourc
  * @param {Record<string, Array<{field: string, parent: string, parentKey?: string}>>} [parentRefs]
  * @returns {Set<string>}
  */
-export function resolvePreviewReadClosure(selectedTables, parentRefs = PREVIEW_PARENT_REFS) {export function resolvePreviewReadClosure(\n  selectedTables: readonly string[],\n  parentRefs: Record<string, { field: string; parent: string; parentKey?: string }[]> = PREVIEW_PARENT_REFS as unknown as Record<string, { field: string; parent: string; parentKey?: string }[]>\n): Set<string> {
+export function resolvePreviewReadClosure(selectedTables, parentRefs = PREVIEW_PARENT_REFS) {
   const required = new Set(selectedTables || []);
   const pending = [...required];
   while (pending.length) {
