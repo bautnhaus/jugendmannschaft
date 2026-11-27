@@ -1,5 +1,6 @@
 import { assertEquals, assert } from "jsr:@std/assert";
 import { authorizePreviewTeam } from "./restore-preview-auth.ts";
+import { validateBackupTeamClosure } from "../../../src/backup/restore-preview-contract.js";
 
 function clientStub({ user = { id: "synthetic-user" }, authError = null, allowed = true, rpcError = null }: { user?: { id: string } | null; authError?: unknown; allowed?: boolean; rpcError?: unknown }) {
   const calls: Array<Record<string, unknown>> = [];
@@ -49,4 +50,44 @@ Deno.test("team admin passes only after exact team permission RPC", async () => 
   assert(result.ok);
   assertEquals(result.userId, "synthetic-user");
   assertEquals(stub.calls.at(-1), { type: "rpc", name: "is_team_admin", args: { p_team_id: "team-fixture" } });
+});
+
+const TEAM = "team-fixture";
+Deno.test("backup direct team_id must equal authorized team", () => {
+  const result = validateBackupTeamClosure({
+    backupData: { players: [{ id: "p1", team_id: "other-team" }] },
+    selectedTables: ["players"], teamId: TEAM, targetRows: { teams: [{ id: TEAM }] },
+  });
+  assertEquals(result.ok, false);
+  assertEquals(result.code, "BACKUP_TEAM_OR_FOREIGN_KEY_SCOPE_INVALID");
+});
+
+Deno.test("backup FK resolves through same-team selected parent", () => {
+  const result = validateBackupTeamClosure({
+    backupData: {
+      players: [{ id: "p1", team_id: TEAM }],
+      positions: [{ id: "pos1", team_id: TEAM }],
+      player_positions: [{ player_id: "p1", position_id: "pos1" }],
+    },
+    selectedTables: ["players", "positions", "player_positions"],
+    teamId: TEAM, targetRows: { teams: [{ id: TEAM }] },
+  });
+  assertEquals(result.ok, true);
+});
+
+Deno.test("backup FK without backup or scoped target parent fails closed", () => {
+  const result = validateBackupTeamClosure({
+    backupData: { attendance: [{ training_id: "unknown-training", player_id: "unknown-player", present: true }] },
+    selectedTables: ["attendance"], teamId: TEAM, targetRows: { trainings: [], players: [] },
+  });
+  assertEquals(result.ok, false);
+});
+
+Deno.test("child FK can resolve only against scope-filtered target parents", () => {
+  const result = validateBackupTeamClosure({
+    backupData: { attendance: [{ training_id: "tr1", player_id: "p1", present: true }] },
+    selectedTables: ["attendance"], teamId: TEAM,
+    targetRows: { trainings: [{ id: "tr1", team_id: TEAM }], players: [{ id: "p1", team_id: TEAM }] },
+  });
+  assertEquals(result.ok, true);
 });
