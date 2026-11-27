@@ -1152,3 +1152,14 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - **Aktualisierte 8-Fixture-Browserseite muss nach DEV-Pages-Deploy erneut ausgeführt werden.** Vorherige 7/7 Contract-Fixtures bleiben als historischer Nachweis bestehen; sie decken die neue Parent-Map-Fixture nicht ab.
 - Edge Function weiterhin nicht kompiliert, nicht deployed und nicht live getestet. Deployment-Freigabe nicht erteilt. Kein SQL/Schema-/Storage-Write, kein Restore-Executor, keine PROD-Aktion.
 - Nächster Schritt: Pages-Deploy der aktuellen develop-Testdatei prüfen; den tatsächlichen Browseroutput der nun 8 Fixtures abwarten. Danach Deno-/Edge-Function Compile- und Mock-Read-Tests (Auth, exact team scope, Parent closure, actor refs, fail-closed read errors, bounds), erst danach Frontend-Anbindung planen.
+
+
+### 27.11.2026 – Handler-Sicherheits-/Payloadreview
+
+- Zusätzliche Codeprüfung hat zwei Punkte identifiziert und korrigiert:
+  1. Das Preview-Requestformat verwendet jetzt nur das validierte Manifest mit `manifest.snapshot.data`; es verlangt nicht länger eine zweite, byte-/reihenfolgeabhängig identische Kopie `snapshot_data`. Body-Limit auf 32 MiB gesetzt, weiterhin harte Begrenzung.
+  2. Entfernt wurde die direkte Service-Role-Abfrage `profiles` mit frei aus dem Backup übernommenen Actor-UUIDs. Diese Abfrage hätte einem autorisierten Teamadmin potenziell einen Profile-Existenz-Orakelpfad eröffnet. Preview weist Actor-Referenzen jetzt als `manual_review_required_no_user_lookup` aus; keine automatische Identitätsauflösung oder Remapping.
+- Aktueller Readback: Parent-Map-Import vorhanden, Manifest-only Snapshotzugriff vorhanden, keine `body.snapshot_data`-Referenz, keine Profile-Abfrage, keine Insert/Update/Upsert/Delete/Storage-Aufrufe. Zwei versehentlich literal escaped Newline-Sequenzen im Handler wurden vor Abschluss korrigiert; aktueller Quellreadback zeigt sie nicht mehr.
+- Letzter Handler-Fix-Commit: `df45c630e5dde68cc3e516671770fa35ff2f7aef`.
+- Browser-Testseite aktuell auf 8 Fixtures erweitert, aber nach diesen Source-/Teständerungen noch nicht erneut im Browser bestätigt. DEV Pages-Sync/Deployment ist abzuwarten.
+- Handler bleibt unkompiliert/un-deployed. Keine SQL-/Schema-/Storageänderung, kein Restore-Executor, keine PROD-Aktion.
