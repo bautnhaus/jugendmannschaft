@@ -57,8 +57,10 @@ export function validateRestorePreviewRequest(body) {
   return Object.freeze({ scope_type, scope_id, selected_team_id });
 }
 
-/** Builds a fail-closed envelope; incomplete target reads are never presented as a plan. */
-export function makePreviewEnvelope({ scope, rowsByTable, readErrors = [] as { code?: string }[], source = "target-read" }) {
+/** Builds a fail-closed envelope; incomplete target reads are never presented as a plan.
+ * @param {{scope: unknown, rowsByTable: Record<string, unknown[]>, readErrors?: Array<{code?: string}>, source?: string}} options
+ */
+export function makePreviewEnvelope({ scope, rowsByTable, readErrors = [], source = "target-read" }) {export function makePreviewEnvelope({ scope, rowsByTable, readErrors = [] as { code?: string }[], source = "target-read" }) {
   if (readErrors.length) {
     return {
       version: RESTORE_PREVIEW_VERSION,
@@ -84,8 +86,12 @@ export function makePreviewEnvelope({ scope, rowsByTable, readErrors = [] as { c
 }
 
 
-/** Resolves the complete transitive parent set needed for safe target reads. */
-export function resolvePreviewReadClosure(\n  selectedTables: readonly string[],\n  parentRefs: Record<string, { field: string; parent: string; parentKey?: string }[]> = PREVIEW_PARENT_REFS as unknown as Record<string, { field: string; parent: string; parentKey?: string }[]>\n): Set<string> {
+/** Resolves the complete transitive parent set needed for safe target reads.
+ * @param {string[]} selectedTables
+ * @param {Record<string, Array<{field: string, parent: string, parentKey?: string}>>} [parentRefs]
+ * @returns {Set<string>}
+ */
+export function resolvePreviewReadClosure(selectedTables, parentRefs = PREVIEW_PARENT_REFS) {export function resolvePreviewReadClosure(\n  selectedTables: readonly string[],\n  parentRefs: Record<string, { field: string; parent: string; parentKey?: string }[]> = PREVIEW_PARENT_REFS as unknown as Record<string, { field: string; parent: string; parentKey?: string }[]>\n): Set<string> {
   const required = new Set(selectedTables || []);
   const pending = [...required];
   while (pending.length) {
