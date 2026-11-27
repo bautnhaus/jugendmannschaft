@@ -19,7 +19,7 @@ const reply = (req: Request, body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: headers(req) });
 const fail = (code: string, status = 400) => ({ code, status });
 
-const REFS = PREVIEW_PARENT_REFS;
+const REFS: Record<string, { field: string; parent: string; parentKey?: string }[]> = PREVIEW_PARENT_REFS;
 
 const ACTOR_FIELDS = ["created_by","awarded_by","voided_by","granted_by","revoked_by","closed_by","updated_by","user_id","cancelled_by","fulfilled_by","served_by"];
 
@@ -44,7 +44,7 @@ Deno.serve(async (req: Request) => {
     });
     if (scope.scope_type !== "team") return reply(req, { error: "Restore-Preview V1 erlaubt ausschließlich denselben Team-Scope." }, 400);
 
-    const selectedTables = [...new Set(body.manifest.categories.flatMap((category: string) => CATEGORY_TABLES[category] || []))];
+    if (!Array.isArray(body.manifest.categories) || !body.manifest.categories.every((category: unknown) => typeof category === "string")) return reply(req, { error: "Kategorien sind ungültig." }, 400);\n    const categoryTables: Record<string, string[]> = CATEGORY_TABLES;\n    const selectedTables: string[] = [...new Set((body.manifest.categories as string[]).flatMap((category: string) => Object.hasOwn(categoryTables, category) ? categoryTables[category] : []))];
     for (const table of selectedTables) {
       if (!Object.hasOwn(PREVIEW_SELECTS, table)) return reply(req, { error: "Tabelle ist nicht für die Preview freigegeben." }, 400);
       const rows = snapshotData[table];
@@ -75,7 +75,7 @@ Deno.serve(async (req: Request) => {
     const readErrors: { code: string }[] = [];
     for (const table of order) {
       if (!required.has(table)) continue;
-      const select = PREVIEW_SELECTS[table];
+      const select = (PREVIEW_SELECTS as Record<string, string>)[table];
       if (!select) { readErrors.push({ code: "TABLE_ALLOWLIST_MISSING" }); break; }
       let query = admin.from(table).select(select);
       if (table === "teams") query = query.eq("id", scope.scope_id);
