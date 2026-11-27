@@ -1121,3 +1121,23 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 1. Nutzer führt neue isolierte Preview-Contract-Fixtures in DEV Pages aus und zeigt tatsächliche Ausgabe.
 2. Danach erst den Server-Handler als **SELECT-only** implementieren: Auth-Token validieren, RPC/Role und Team-Kontext erneut serverseitig prüfen, Package/Manifest scope vergleichen, nur fixe Allowlist und Parent-ID-Filter lesen, paginieren/limitieren, read errors vollständig blockieren. Keine Schreibmethoden/Storage.
 3. Serverhandler nicht deployen ohne separate Zustimmung; keine Datenmigration erforderlich.
+
+
+## 27.11.2026 – Preview-Contract Browsernachweis und Serverhandler-Vorstufe
+
+- Nutzer hat die veröffentlichte DEV-Testseite geöffnet und Screenshot mit **ALLE CONTRACT-FIXTURES BESTANDEN** übermittelt. 7/7 Contract-Fixtures bestätigt; dieser Schritt ist abgeschlossen.
+- Read-only Edge-Function-Entwurf neu angelegt: `supabase/functions/ap-br02-restore-preview/index.ts`.
+  - Bearer-Authentifizierung via `auth.getUser()`, Team-Adminprüfung via `is_team_admin(p_team_id)`, Zielteam wird serverseitig verifiziert.
+  - Team-only exact same-scope; Manifest + Snapshot werden validiert, ausgewählte Kategorien auf feste Export-Allowlist begrenzt.
+  - SELECT-only mit Service-Role nach Autorisierung; feste Spalten, team_id-Filter oder Parent-ID-Filter, paginierte Abfragen, 5.000 Zeilen pro Tabelle, 4 MiB Requestlimit.
+  - Prüft bekannte Ziel-FKs gegen autorisierte Parent-Zeilen, Profile für referenzierte Actor-IDs; bei Fehlern blockiert die Preview. Planner liefert Add/Update/Keep/Conflict/Never-delete, Antwort enthält keine vollständigen Datenzeilen und `write_count: 0`.
+  - Asset-Wiederherstellung/Storage bleibt ausdrücklich außerhalb des Endpunkts; bei im Paket ausgewählten Bildern wird Asset-Gate als deferred ausgewiesen.
+- Initiale Serverhandler-Erstellung: commit `5fac1f48592d88b45c65b8040328f4ecac3ab8a0`. Scope-/FK-Reviewkorrekturen: `4b9c5a1caee7e638a11e16e09e5df41bc8feb63e` und `360e3f04326a016529e2d1fc996a6787e1d2a62f`.
+- **Status: Source vorbereitet, nicht deployt und nicht kompiliert/live getestet.** Kein Frontend-Aufruf integriert; noch keine Ende-zu-Ende-Preview. Die Funktion enthält keine Insert/Update/Delete-/Storage-Aufrufe. Service-Role SELECT-only Verhalten muss vor Deployment anhand Code/Tests geprüft werden.
+- Keine Supabase Function deployed, keine SQL-/Schema-/Storage-Schreiboperation, kein Restore-Executor, keine PROD-Aktion.
+
+### Nächste Prüfung vor Integration
+1. Deno/Supabase Edge Function compile/test und statische Prüfung: tatsächlich ausschließlich SELECT, keine Seiteneffekte, Importpfade korrekt.
+2. Ergänzende isolierte Tests für jede Tabellen-Parent-Beziehung, fehlende Tabellen/Read-Fehler, Actor-Profil fehlt, Body-/Row-Limits und Cross-Team FK.
+3. Danach Frontend DEV-Integration in den lokalen Backup-Verify-Dialog: verschlüsseltes Backup lokal entschlüsseln, validiertes Manifest/Snapshot an den Endpunkt senden, nur aggregierte Preview zeigen; keinerlei Restore-Button oder Write-Route.
+4. Vor Function-Deployment separat um Zustimmung bitten; bis dahin nicht deployen.
