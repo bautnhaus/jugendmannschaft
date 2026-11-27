@@ -2,7 +2,7 @@
  * AP-BR02 authorization gate, isolated for synthetic unit tests.
  * It never creates a service-role client and never performs target-table reads.
  */
-export async function authorizePreviewTeam({ createClient, url, anonKey, authHeader, teamId }) {
+export async function authorizePreviewTeam({ createClient, url, anonKey, authHeader, teamId }: { createClient: (...args: any[]) => any; url: string; anonKey: string; authHeader: string | null; teamId: string }) {
   if (!authHeader?.startsWith("Bearer ")) {
     return { ok: false, status: 401, code: "AUTH_REQUIRED" };
   }
