@@ -4203,7 +4203,48 @@ const displayName=(x)=>String(x?.name||[x?.first_name,x?.last_name].filter(Boole
       }
       const scopeLines=[['Sicherungsumfang',typeLabels[scope.type]||'Nicht angegeben'],['Verein(e)',clubNames.join(', ')||'Keine Vereinsbezeichnung enthalten'],['Mannschaft(en)',teamNames.join(', ')||'Keine Mannschaftsbezeichnung enthalten'],['Datenbereiche',categories.map(c=>categoryLabels[c]||c).join(', ')||'Keine angegeben'],['Backup erstellt',manifest.created_at?new Date(manifest.created_at).toLocaleString('de-DE'):'Nicht angegeben'],['Datenstand',manifest.completeness?.snapshot===true?'Enthalten':'Nicht bestätigt'],['Dateien & Bilder',manifest.completeness?.files_images_included?'Ausgewählt':'Nicht ausgewählt'],['Dateianzahl',String(manifest.completeness?.asset_count??manifest.assets?.length??0)],['Dateigröße',formatBackupBytes(manifest.completeness?.asset_bytes??0)]];
       status.className='notice small backupVerifyResult';
-      status.innerHTML='<strong>Backup entschlüsselt und AP-BR02-Paketprüfung bestanden – es wurde nichts wiederhergestellt.</strong><p>Schema, ausgewählte Tabellen, Datensatz-IDs, interne Referenzen, ZIP-Einträge, Asset-Manifest und tatsächliche Asset-Bytegrößen geprüft. '+preflight.tableNames.length+' Datentabellen, '+preflight.assets.length+' Assets und '+formatBackupBytes(preflight.verifiedAssetBytes)+' Asset-Daten geprüft.</p><h3>Was ist gesichert?</h3><dl>'+scopeLines.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>'+detailGroups.map(g=>'<section class="backupVerifyGroup"><h3>'+esc(g.title)+'</h3><p class="backupVerifyCounts">'+esc(g.summary)+'</p><p class="backupVerifyDetails">'+esc(g.detail)+'</p></section>').join('');    }catch(e){status.className='notice small';status.textContent='Prüfung fehlgeschlagen: '+(e?.name==='OperationError'?'Passwort falsch oder Datei beschädigt.':e?.message||String(e));}
+      status.innerHTML='<strong>Backup entschlüsselt und AP-BR02-Paketprüfung bestanden – es wurde nichts wiederhergestellt.</strong><p>Schema, ausgewählte Tabellen, Datensatz-IDs, interne Referenzen, ZIP-Einträge, Asset-Manifest und tatsächliche Asset-Bytegrößen geprüft. '+preflight.tableNames.length+' Datentabellen, '+preflight.assets.length+' Assets und '+formatBackupBytes(preflight.verifiedAssetBytes)+' Asset-Daten geprüft.</p><h3>Was ist gesichert?</h3><dl>'+scopeLines.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>'+detailGroups.map(g=>'<section class="backupVerifyGroup"><h3>'+esc(g.title)+'</h3><p class="backupVerifyCounts">'+esc(g.summary)+'</p><p class="backupVerifyDetails">'+esc(g.detail)+'</p></section>').join('');
+      // Functional next step: compare this verified team backup with the authorized live target.
+      // This is server-side SELECT-only preview; it never applies the plan.
+      const previewWrap=document.createElement('section');
+      previewWrap.className='backupVerifyGroup';
+      const previewHeading=document.createElement('h3');previewHeading.textContent='Zielbestand abgleichen';
+      const previewNote=document.createElement('p');previewNote.className='backupVerifyDetails';
+      const exactTeamPackage=scope.type==='team'&&String(scope.id)===String(team||'');
+      if(exactTeamPackage&&supabase){
+        previewNote.textContent='Vergleicht das geprüfte Paket mit genau dieser angemeldeten Mannschaft. Die Vorschau liest den Zielbestand; es wird nichts wiederhergestellt.';
+        const previewButton=document.createElement('button');previewButton.type='button';previewButton.textContent='Nur Vorschau erstellen';
+        const previewResult=document.createElement('div');previewResult.className='backupVerifyDetails';previewResult.setAttribute('role','status');
+        previewButton.addEventListener('click',async()=>{
+          previewButton.disabled=true;previewResult.textContent='Zielbestand wird sicher gelesen und verglichen…';
+          try{
+            const {data:preview,error:previewError}=await supabase.functions.invoke('ap-br02-restore-preview',{body:{manifest,selected_team_id:team}});
+            if(previewError)throw previewError;
+            if(!preview||preview.status!=='read_only_ready'||preview.complete!==true||preview.write_count!==0){
+              const reason=preview?.errors?.join(', ')||preview?.error_code||preview?.message_code||'Vorschau ist nicht vollständig.';
+              previewResult.textContent='Keine sichere Vorschau: '+reason+'. Es wurde nichts geändert.';
+              return;
+            }
+            const totals=preview.summary||{};
+            previewResult.textContent='Vorschau vollständig – keine Änderungen ausgeführt. Ergänzungen: '+(totals.additions??0)+' · Aktualisierungen: '+(totals.updates??0)+' · Beibehalten: '+(totals.kept??0)+' · Konflikte zur Prüfung: '+(totals.conflicts??0)+' · Never-delete: '+(totals.never_delete??0)+'.';
+            const table=document.createElement('div');table.className='backupVerifyDetails';
+            for(const row of preview.tables||[]){
+              const line=document.createElement('p');
+              line.textContent=row.table+': Backup '+row.backupCount+', Ziel '+row.currentCount+', Ergänzen '+row.add+', Aktualisieren '+row.update+', Beibehalten '+row.keep+', Konflikte '+row.conflict;
+              table.appendChild(line);
+            }
+            previewResult.appendChild(table);
+          }catch(error){
+            previewResult.textContent='Zielabgleich fehlgeschlagen; keine Änderungen ausgeführt. '+(error?.message||String(error));
+          }finally{previewButton.disabled=false;}
+        });
+        previewWrap.append(previewHeading,previewNote,previewButton,previewResult);
+      }else{
+        previewNote.textContent='Der sichere Zielabgleich ist für Restore V1 nur bei einem Mannschaftsbackup im exakt ausgewählten Mannschaftskontext verfügbar. Vereins-/Plattformpakete werden nicht umgedeutet. Es wurde nichts geändert.';
+        previewWrap.append(previewHeading,previewNote);
+      }
+      status.appendChild(previewWrap);
+    }catch(e){status.className='notice small';status.textContent='Prüfung fehlgeschlagen: '+(e?.name==='OperationError'?'Passwort falsch oder Datei beschädigt.':e?.message||String(e));}
     finally{button.disabled=false;}
   });
 }
