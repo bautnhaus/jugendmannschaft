@@ -55,8 +55,6 @@ export function authorizeRestoreScope({trustedActor,requestedScope,selectedConte
     const teamsForClub=Array.isArray(clubTeams[id])?clubTeams[id].map(String):[];
     if(selectedTeams.some(teamId=>!teamsForClub.includes(String(teamId))))
       return deny("TEAM_OUTSIDE_SELECTED_CLUB");
-    if(!isSuper&&selectedTeams.some(teamId=>!teams.includes(String(teamId))))
-      return deny("TEAM_NOT_AUTHORIZED");
     return {decision:RESTORE_SCOPE_DECISION.ALLOW,scope:{type:"club",id,teamIds:selectedTeams.map(String),categories:[...categories]}};
   }
 
