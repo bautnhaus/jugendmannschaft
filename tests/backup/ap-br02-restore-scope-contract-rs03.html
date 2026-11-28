@@ -24,6 +24,7 @@ check("Team admin → own selected team allowed",{...base,trustedActor:teamAdmin
 check("Team admin → foreign team denied",{...base,trustedActor:teamAdmin,requestedScope:{...base.requestedScope,id:teamB}},"deny","TEAM_NOT_AUTHORIZED");
 check("Team admin → missing explicit context denied",{...base,trustedActor:teamAdmin,selectedContext:{type:"none",id:""}},"deny","TEAM_CONTEXT_NOT_EXPLICIT");
 check("Club admin → own club and selected team allowed",{trustedActor:clubAdmin,requestedScope:{type:"club",id:clubA,teamIds:[teamA],categories},selectedContext:contextClub,allowedCategories:categories},"allow");
+check("Club admin → other team in same club allowed",{trustedActor:clubAdmin,requestedScope:{type:"club",id:clubA,teamIds:[teamA,teamB],categories},selectedContext:contextClub,allowedCategories:categories},"allow");
 check("Club admin → foreign club denied",{trustedActor:clubAdmin,requestedScope:{type:"club",id:clubB,teamIds:[teamA],categories},selectedContext:{type:"club",id:clubB},allowedCategories:categories},"deny","CLUB_NOT_AUTHORIZED");
 check("Club scope → team outside selected club denied",{trustedActor:clubAdmin,requestedScope:{type:"club",id:clubA,teamIds:[teamB,"foreign"],categories},selectedContext:contextClub,allowedCategories:categories},"deny","TEAM_OUTSIDE_SELECTED_CLUB");
 check("Superadmin → explicitly selected team allowed",{...base,trustedActor:superAdmin},"allow");
