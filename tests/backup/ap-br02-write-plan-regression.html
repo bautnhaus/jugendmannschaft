@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AP-BR02 – Write-plan Regression</title>
+<style>
+body{font:16px system-ui;background:#111827;color:#e5e7eb;margin:0;padding:20px}
+h1{font-size:1.35rem}.panel{background:#1f2937;border:1px solid #374151;border-radius:14px;padding:16px}
+.pass{color:#4ade80}.fail{color:#f87171}pre{white-space:pre-wrap;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<h1>AP-BR02 – Write-plan Regression</h1>
+<p>Isolierte Tests mit synthetischen Daten. Keine Supabase-Verbindung, kein Netzwerk, keine DB-/Storage-Writes.</p>
+<div class="panel"><pre id="result">Tests laufen …</pre></div>
+<script type="module">
+import { buildMergePreview } from "../../src/backup/restore-planner.js";
+import { validateBackupTeamClosure } from "../../src/backup/restore-preview-contract.js";
+
+const output = document.getElementById("result");
+const checks = [];
+function check(name, condition, details = "") {
+  checks.push({name, passed: Boolean(condition), details});
+}
+const team = "11111111-1111-4111-8111-111111111111";
+const playerA = "22222222-2222-4222-8222-222222222222";
+const playerB = "33333333-3333-4333-8333-333333333333";
+const positionA = "44444444-4444-4444-8444-444444444444";
+const positionB = "55555555-5555-4555-8555-555555555555";
+const matchday = "66666666-6666-4666-8666-666666666666";
+const run = "77777777-7777-4777-8777-777777777777";
+
+function plan(backup, current, table) {
+  return buildMergePreview(backup, current, [table]);
+}
+
+// Insert-only identity collision: keep target, surface conflict, never update/delete.
+const relation = plan(
+  {matchday_players:[{matchday_id:matchday,player_id:playerA,team_number:2}]},
+  {matchday_players:[{matchday_id:matchday,player_id:playerA,team_number:1}]},
+  "matchday_players"
+);
+check("Insert-only relation collision is keep + conflict",
+  relation.updates===0 && relation.kept===1 && relation.conflicts===1 && relation.deletes===0,
+  JSON.stringify(relation));
+
+// Unique collision under a different primary key must not be treated as an add.
+const position = plan(
+  {positions:[{id:positionB,team_id:team,name:"Keeper",sort_order:1,created_at:"2026-01-01T00:00:00Z"}]},
+  {positions:[{id:positionA,team_id:team,name:"Keeper",sort_order:0,created_at:"2025-01-01T00:00:00Z"}]},
+  "positions"
+);
+check("Unique team/name collision is conflict, not add",
+  position.additions===0 && position.conflicts===1 && position.deletes===0,
+  JSON.stringify(position));
+
+// Recommendation rank is unique even when the incoming child has a different player key.
+const rank = plan(
+  {matchday_recommendation_players:[{recommendation_id:run,player_id:playerB,rank:1}]},
+  {matchday_recommendation_players:[{recommendation_id:run,player_id:playerA,rank:1}]},
+  "matchday_recommendation_players"
+);
+check("Recommendation rank collision is conflict, not replacement",
+  rank.additions===0 && rank.conflicts===1 && rank.updates===0 && rank.deletes===0,
+  JSON.stringify(rank));
+
+// FK/scope closure must reject a player belonging to another team.
+let scopeRejected = false;
+try {
+  validateBackupTeamClosure({
+    backupData:{teams:[{id:team}],players:[{id:playerA,team_id:"88888888-8888-4888-8888-888888888888"}]},
+    selectedTables:["teams","players"],teamId:team,targetRows:{}
+  });
+} catch (error) { scopeRejected = String(error).includes("SCOPE") || String(error).includes("TEAM"); }
+check("Cross-team row is rejected by scope closure",scopeRejected);
+
+// A plan is never allowed to delete target rows omitted from backup.
+const omitted = plan({players:[]},{players:[{id:playerA,team_id:team,name:"Existing",updated_at:"2026-01-01T00:00:00Z"}]},"players");
+check("Backup omission produces zero deletes and preserves target row",
+  omitted.deletes===0 && omitted.kept===0 && omitted.tables[0].neverDelete===1,
+  JSON.stringify(omitted));
+
+const passed=checks.filter(x=>x.passed).length;
+output.innerHTML=checks.map(x=>
+  '<span class="'+(x.passed?'pass':'fail')+'">'+(x.passed?'PASS':'FAIL')+'</span> — '+x.name+
+  (x.details?'\n'+x.details:'')
+).join('\n\n')+'\n\nResult: '+passed+'/'+checks.length+' passed';
+document.title=passed===checks.length?'PASS – AP-BR02 Write-plan':'FAIL – AP-BR02 Write-plan';
+if(passed!==checks.length) throw new Error("Write-plan regression failed");
+</script>
+</body>
+</html>
