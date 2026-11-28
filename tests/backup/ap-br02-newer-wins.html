@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AP-BR02 Newer-wins Regression</title></head>
+<body>
+<h1>AP-BR02 – Newer-wins Regression</h1>
+<p>Isolierter Browser-Test mit synthetischen Daten. Kein Supabase-Client, keine Netzwerkzugriffe, keine Writes.</p>
+<pre id="result">Tests werden ausgeführt …</pre>
+<script type="module">
+import { buildMergePreview } from "../../src/backup/restore-planner.js";
+
+const out = document.getElementById("result");
+const checks = [];
+function assert(name, condition, details) {
+  checks.push({ name, passed: Boolean(condition), details });
+}
+const current = { players: [{
+  id: "fixture-player-01", name: "Zielwert", first_name: "Test",
+  updated_at: "2026-11-27T10:00:00.000Z"
+}] };
+const newerBackup = { players: [{
+  id: "fixture-player-01", name: "Backupwert", first_name: "Test",
+  updated_at: "2026-11-27T11:00:00.000Z"
+}] };
+const olderBackup = { players: [{
+  id: "fixture-player-01", name: "Backupwert", first_name: "Test",
+  updated_at: "2026-11-27T09:00:00.000Z"
+}] };
+
+const newer = buildMergePreview(newerBackup, current, ["players"]);
+assert("Newer backup proposes one update", newer.updates === 1 && newer.kept === 0,
+  JSON.stringify(newer));
+assert("Newer backup never deletes", newer.deletes === 0, String(newer.deletes));
+
+const older = buildMergePreview(olderBackup, current, ["players"]);
+assert("Older backup keeps target value", older.updates === 0 && older.kept === 1,
+  JSON.stringify(older));
+assert("Older backup never deletes", older.deletes === 0, String(older.deletes));
+
+const equalBackup = { players: [{
+  id: "fixture-player-01", name: "Backupwert", first_name: "Test",
+  updated_at: "2026-11-27T10:00:00.000Z"
+}] };
+const equal = buildMergePreview(equalBackup, current, ["players"]);
+assert("Equal timestamp does not update", equal.updates === 0 && equal.kept === 1,
+  JSON.stringify(equal));
+
+const passed = checks.filter(x => x.passed).length;
+out.textContent = checks.map(x => (x.passed ? "PASS" : "FAIL") + " — " + x.name +
+  (x.details ? "\\n  " + x.details : "")).join("\\n\\n") +
+  "\\n\\nResult: " + passed + "/" + checks.length + " passed";
+document.title = passed === checks.length ? "PASS – AP-BR02 Regression" : "FAIL – AP-BR02 Regression";
+if (passed !== checks.length) throw new Error("AP-BR02 regression failed");
+</script>
+</body>
+</html>
