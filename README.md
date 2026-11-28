@@ -32,6 +32,11 @@
 
 ## Aktuelle Arbeitsübergabe
 
+- **PROD-Hotfix 28.11.2026:** [Spieltagsteams nach tatsächlicher Anwesenheit – erfolgreich deployed](docs/PROD_HANDOFF_MATCHDAY_ATTENDANCE_2026-11-28.md). Isoliert auf main; Backup/Restore aus develop bleibt unveröffentlicht.
+- **Main Deploy:** Historischen main-only Workflow wiederhergestellt; für isolierte Hotfix-Deployments verwenden.
+
+## Aktuelle Arbeitsübergabe
+
 - **Aktueller DEV-Stand (28.11.2026):** [Spieltagsteams anhand tatsächlicher Anwesenheit](docs/DEV_HANDOFF_MATCHDAY_TEAM_ATTENDANCE_2026-11-28.md) – Code in develop committed; DEV-Praxistest noch offen.
 
 ## Aktuelle Arbeitsübergabe
