@@ -1275,3 +1275,12 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - Funktionalitätsumfang dieser Stufe: authentifizierter Teamadmin, exakter Same-team-Scope, serverseitig erlaubte SELECT-Spalten, team-/parent-gebundene Zielreads mit Paging/Limits, Backup-Team-/FK-Closure-Guard, deterministische Merge-/Never-delete-/Newer-wins-Vorschau. Der Handler enthält keinen DB-Write und keinen Storage-Write.
 - **Jetzt notwendiger Praxisschritt:** Nutzer öffnet in DEV „Backup prüfen“, wählt dasselbe bereits geprüfte Mannschaftsbackup und Passwort, führt die lokale Paketprüfung aus und klickt dann „Nur Vorschau erstellen“. Erwartet werden Zahlen für Ergänzen/Aktualisieren/Beibehalten/Konflikte/Never-delete. Bitte den angezeigten Status oder Screenshot zurückmelden; das ist der erste tatsächliche Aufruf dieser neu bereitgestellten Preview-Route.
 - Kein Restore wurde ausgeführt. Legacy Replace bleibt gesperrt; keine SQL-/Migration, keine PROD-Änderung.
+
+
+### 28.11.2026 – Erster echter DEV-Zielabgleich erfolgreich bestätigt
+
+- Nutzer hat die nach lokaler Paketprüfung verfügbare Aktion **„Nur Vorschau erstellen“** ausgeführt und die Ergebnisansicht per Screenshot bestätigt.
+- Anzeige: **Vorschau vollständig – keine Änderungen ausgeführt**; Ergänzungen 0, Aktualisierungen 0, Beibehalten 655, Konflikte 0, Never-delete 655. Die sichtbaren Tabellenzeilen weisen Backup- und Zielbestand übereinstimmend aus; alle aufgeführten Zeilen wurden als Beibehalten gezählt.
+- Dies ist der erste bestätigte authentifizierte Zielzustands-Previewlauf über die bereitgestellte DEV-Edge-Function. Es wurde kein Restore angewendet; der `write_count=0`-Vertrag und die UI-Sicherheitsprüfung sind erfüllt. Keine DB-/Storage-Schreiboperation und keine PROD-Aktion.
+- Zusammen mit dem zuvor bestätigten isolierten Newer-wins-Test (5/5) und den Contract-/Handler-CI-Gates ist die **read-only Zielvorschau als DEV-Praxisschritt abgeschlossen**.
+- Nächster Arbeitsschritt: Restore-Executor-Spezifikation und Implementierungsgrenzen für V1 aus dem bereits dokumentierten Same-scope-/Never-delete-/Newer-wins-/Insert-only-Vertrag ableiten. Vor einem Executor sind noch Transaktions-/Atomaritätsstrategie, exakte feldbezogene Insert-/Update-Payloads, Actor-FK-Regel und Asset-Plan verbindlich abzuschließen. Keine Schreibfunktion oder RPC implementieren/deployen, bevor diese Gates und ein separater DEV-Write-Testplan geklärt sind.
