@@ -24,7 +24,16 @@ export async function authorizePreviewTeam({ createClient, url, anonKey, authHea
   // Superadmin team context. No service-role client exists at this point.
   const teamGrant = await userClient.rpc("is_team_admin", { p_team_id: teamId });
   if (teamGrant.error) return { ok: false, status: 500, code: "PERMISSION_CHECK_FAILED" };
-  if (teamGrant.data === true) return { ok: true, userClient, userId: authData.user.id, grant: "team" };
+  if (teamGrant.data === true) {
+    if (packageScopeType === "club" && packageClubId) {
+      const { data: team, error: teamError } = await userClient.from("teams")
+        .select("id,club_id").eq("id", teamId).maybeSingle();
+      if (teamError) return { ok: false, status: 500, code: "CLUB_TEAM_CHECK_FAILED" };
+      if (!team || String(team.club_id || "") !== String(packageClubId))
+        return { ok: false, status: 403, code: "TEAM_OUTSIDE_SELECTED_CLUB" };
+    }
+    return { ok: true, userClient, userId: authData.user.id, grant: "team" };
+  }
 
   // Club-admin fallback for a one-team subset of a club package. The RPC
   // checks club membership and explicit selected-club context; the team/club
