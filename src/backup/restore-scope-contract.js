@@ -33,7 +33,8 @@ export function authorizeRestoreScope({trustedActor,requestedScope,selectedConte
   // must be that same team. No inferred team from a backup manifest.
   if(requestedScope.type==="team") {
     const id=String(requestedScope.id||"");
-    if(!id||!teams.includes(id)) return deny("TEAM_NOT_AUTHORIZED");
+    const isSuper=trustedActor.isSuperAdmin===true;
+    if(!id||(!isSuper&&!teams.includes(id))) return deny("TEAM_NOT_AUTHORIZED");
     if(selectedContext.type!=="team"||String(selectedContext.id||"")!==id)
       return deny("TEAM_CONTEXT_NOT_EXPLICIT");
     return {decision:RESTORE_SCOPE_DECISION.ALLOW,scope:{type:"team",id,categories:[...categories]}};
