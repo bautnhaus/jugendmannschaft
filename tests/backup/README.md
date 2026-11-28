@@ -2,10 +2,10 @@
 
 ## Status
 
-**DEV-Browser-Test: BESTANDEN — 5/5 Prüfungen**  
+**DEV-Browser-Test – Operation Contract V1: BESTANDEN — 11/11 Prüfungen**  
 Ergebnis vom Nutzer am 28.11.2026 per Screenshot bestätigt.
 
-Der Lauf ist ein isolierter Regressionstest. Er bestätigt die geprüfte Merge-Planer-Logik, ist aber keine Freigabe für einen Restore mit echten Daten und ersetzt keine DEV-Praxistests.
+Der Lauf ist ein isolierter synthetischer Contract-Test. Er bestätigt die geprüften Operation-Entscheidungen, ist aber keine Freigabe für einen Restore mit echten Daten und ersetzt keine Rollen-/Scope-, Ziel-Datenbank- oder DEV-Praxistests.
 
 ## Ausführen auf DEV
 
@@ -40,7 +40,8 @@ Die Seite führt den isolierten Test gegen `src/backup/restore-planner.js` aus u
 - Pure Entscheidungsfunktion: `src/backup/restore-operation-contract.js`.
 - Browser-Fixtures: `ap-br02-operation-contract-v1.html`.
 - Prüft Insert, strikt neueres whitelisted Update, Older/Equal Keep, unverifizierbaren Zeitstempel als Conflict, protected-field/table deny, Insert-only collision, zusätzliche Unique-Kollisionen und Never-delete bei Backup-Auslassung.
-- Der Test ist neu und **noch nicht vom Nutzer im DEV-Browser bestätigt**.
+- **Bestätigt:** Nutzerlauf am 28.11.2026 mit `Result: 11/11 passed`.
+- Der geschützte Feldfehler wurde in Commit `d2a5f3d` korrigiert; die Regression ist im bestätigten 11/11-Lauf enthalten.
 - Die Funktion ist kein Restore-Executor: sie authentifiziert keine Rolle, validiert keinen Live-Scope, liest keine DB und führt keine Writes aus. Serverseitige Autorisierung und trusted plan derivation bleiben zwingend.
 
 
