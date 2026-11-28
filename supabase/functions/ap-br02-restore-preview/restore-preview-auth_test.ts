@@ -121,3 +121,50 @@ Deno.test("backup team root row must be exact selected team", () => {
   });
   assertEquals(result.ok, false);
 });
+
+
+const CLUB_FIXTURE = "22222222-2222-4222-8222-222222222222";
+function clubAdminStub({clubAllowed=true,teamClub=CLUB_FIXTURE,clubQueryError=null}: {clubAllowed?:boolean;teamClub?:string|null;clubQueryError?:unknown}={}) {
+  const calls: string[]=[];
+  let clients=0;
+  const createClient=(_url:string,_key:string,_options:unknown)=>{
+    clients++;
+    return {
+      auth:{getUser:async()=>({data:{user:{id:"club-admin-fixture"}},error:null})},
+      rpc:async(name:string,args:Record<string,unknown>)=>{
+        calls.push("rpc:"+name+":"+String(args.p_team_id||args.p_club_id));
+        if(name==="is_team_admin") return {data:false,error:null};
+        return {data:clubAllowed,error:null};
+      },
+      from:(table:string)=>{
+        calls.push("from:"+table);
+        return {select:(_columns:string)=>({eq:(_field:string,_value:string)=>({maybeSingle:async()=>({data:teamClub?{id:TEAM,club_id:teamClub}:null,error:clubQueryError})})})};
+      }
+    };
+  };
+  return {createClient,calls,get clients(){return clients;}};
+}
+Deno.test("club admin grant is checked through selected-club RPC and team RLS before privileged client",async()=>{
+  const stub=clubAdminStub();
+  const result=await authorizePreviewTeam({ ...stub,url:"synthetic",anonKey:"synthetic",authHeader:"Bearer fixture",teamId:TEAM,packageScopeType:"club",packageClubId:CLUB_FIXTURE});
+  assert(result.ok);
+  assertEquals(result.grant,"club");
+  assertEquals(stub.calls,["rpc:is_team_admin:"+TEAM,"rpc:can_manage_club_context:"+CLUB_FIXTURE,"from:teams"]);
+  assertEquals(stub.clients,1);
+});
+Deno.test("club admin cannot cross club boundary and fails before privileged client",async()=>{
+  const stub=clubAdminStub({teamClub:"33333333-3333-4333-8333-333333333333"});
+  const result=await authorizePreviewTeam({ ...stub,url:"synthetic",anonKey:"synthetic",authHeader:"Bearer fixture",teamId:TEAM,packageScopeType:"club",packageClubId:CLUB_FIXTURE});
+  assertEquals(result,{ok:false,status:403,code:"TEAM_OUTSIDE_SELECTED_CLUB"});
+  assertEquals(stub.clients,1);
+});
+Deno.test("club membership RPC error fails closed",async()=>{
+  const stub=clubAdminStub({clubAllowed:false});
+  const result=await authorizePreviewTeam({ ...stub,url:"synthetic",anonKey:"synthetic",authHeader:"Bearer fixture",teamId:TEAM,packageScopeType:"club",packageClubId:CLUB_FIXTURE});
+  assertEquals(result,{ok:false,status:403,code:"TEAM_ACCESS_DENIED"});
+});
+Deno.test("club-team RLS lookup error fails closed",async()=>{
+  const stub=clubAdminStub({clubQueryError:{message:"synthetic"}});
+  const result=await authorizePreviewTeam({ ...stub,url:"synthetic",anonKey:"synthetic",authHeader:"Bearer fixture",teamId:TEAM,packageScopeType:"club",packageClubId:CLUB_FIXTURE});
+  assertEquals(result,{ok:false,status:500,code:"CLUB_TEAM_CHECK_FAILED"});
+});
