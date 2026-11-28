@@ -1297,3 +1297,13 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
   `https://dev.kadassist.de/tests/backup/ap-br02-write-plan-regression.html`
 - **Noch nicht durch Nutzer im iPhone-Browser ausgeführt/abgenommen.** Bitte nur die Testseite öffnen und das angezeigte Ergebnis (PASS/FAIL) zurückmelden. Keine echten Teamdaten werden berührt.
 - Danach: bei PASS Testresultat dokumentieren; als nächstes die synthetische Executor-Operationenmatrix/Idempotenz-Fixtures fertigstellen und den RPC-/Transaktionsentwurf security-reviewen. SQL-/RPC-Implementierung erst nach separater Freigabe.
+
+
+### 28.11.2026 – Write-plan Regression durch Nutzer bestätigt (5/5 PASS)
+
+- Nutzer hat die DEV-Browserseite `tests/backup/ap-br02-write-plan-regression.html` auf dem iPhone geöffnet und den Screenshot mit **Result: 5/5 passed** übermittelt.
+- Bestätigte synthetische Fälle: Insert-only identity collision → keep + conflict; Unique team/name collision → conflict, kein Add; Recommendation rank collision → conflict, kein Replacement; Cross-team row → scope closure rejects; Backup omission → zero deletes, target row bleibt.
+- Das schließt ausschließlich das reine Write-plan-Regression-Gate. Es belegt weder echte DB-Write-Ausführung noch Executor-Idempotenz oder Rollen-RPCs.
+- Nächster fokussierter Schritt: aus dem bereits bestätigten Rollen-/Scope-Zielbild und dem Preview-/Planner-Vertrag einen konkreten Operation-Contract (insert / whitelisted newer-update / keep / conflict / blocked) samt userverständlicher Konfliktentscheidung und Wiederholungs-/Idempotenzgrenze ableiten. Dabei keine weitere Wiederholung der bestandenen Browser-Fixtures.
+- Anschließend gezielte Security-Review der transaktionalen RPC-Grenze: Rolle und gewählter Kontext serverseitig erneut autorisieren, niemals Preview-JSON als vertrauenswürdigen Write-Plan verwenden, keine Client-Tabellen-/Feldsteuerung, vollständiger Rollback bei Fehler.
+- Keine SQL-/RPC-Implementierung oder Deployment in diesem Schritt; diese bleibt separater Freigabepunkt. Kein DB-/Storage-Write, kein Restore, keine PROD-Änderung.
