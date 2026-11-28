@@ -124,7 +124,7 @@ Deno.test("backup team root row must be exact selected team", () => {
 
 
 const CLUB_FIXTURE = "22222222-2222-4222-8222-222222222222";
-function clubAdminStub({clubAllowed=true,teamClub=CLUB_FIXTURE,clubQueryError=null}: {clubAllowed?:boolean;teamClub?:string|null;clubQueryError?:unknown}={}) {
+function clubAdminStub({clubAllowed=true,teamAllowed=false,teamClub=CLUB_FIXTURE,clubQueryError=null}: {clubAllowed?:boolean;teamAllowed?:boolean;teamClub?:string|null;clubQueryError?:unknown}={}) {
   const calls: string[]=[];
   let clients=0;
   const createClient=(_url:string,_key:string,_options:unknown)=>{
@@ -133,7 +133,7 @@ function clubAdminStub({clubAllowed=true,teamClub=CLUB_FIXTURE,clubQueryError=nu
       auth:{getUser:async()=>({data:{user:{id:"club-admin-fixture"}},error:null})},
       rpc:async(name:string,args:Record<string,unknown>)=>{
         calls.push("rpc:"+name+":"+String(args.p_team_id||args.p_club_id));
-        if(name==="is_team_admin") return {data:false,error:null};
+        if(name==="is_team_admin") return {data:teamAllowed,error:null};
         return {data:clubAllowed,error:null};
       },
       from:(table:string)=>{
@@ -167,4 +167,11 @@ Deno.test("club-team RLS lookup error fails closed",async()=>{
   const stub=clubAdminStub({clubQueryError:{message:"synthetic"}});
   const result=await authorizePreviewTeam({ ...stub,url:"synthetic",anonKey:"synthetic",authHeader:"Bearer fixture",teamId:TEAM,packageScopeType:"club",packageClubId:CLUB_FIXTURE});
   assertEquals(result,{ok:false,status:500,code:"CLUB_TEAM_CHECK_FAILED"});
+});
+
+Deno.test("team grant cannot bypass club-package ancestry check",async()=>{
+  const stub=clubAdminStub({teamAllowed:true,teamClub:"33333333-3333-4333-8333-333333333333"});
+  const result=await authorizePreviewTeam({ ...stub,url:"synthetic",anonKey:"synthetic",authHeader:"Bearer fixture",teamId:TEAM,packageScopeType:"club",packageClubId:CLUB_FIXTURE});
+  assertEquals(result,{ok:false,status:403,code:"TEAM_OUTSIDE_SELECTED_CLUB"});
+  assertEquals(stub.clients,1);
 });
