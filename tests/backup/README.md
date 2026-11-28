@@ -34,3 +34,11 @@ Die Seite führt den isolierten Test gegen `src/backup/restore-planner.js` aus u
 - Testlaufseite: `ap-br02-newer-wins-runner.html`
 - ursprünglicher Regressionstest: `ap-br02-newer-wins.html`
 - geprüfte Implementierung: `../../src/backup/restore-planner.js`
+
+## Operation Contract V1 – synthetischer Test (28.11.2026)
+
+- Pure Entscheidungsfunktion: `src/backup/restore-operation-contract.js`.
+- Browser-Fixtures: `ap-br02-operation-contract-v1.html`.
+- Prüft Insert, strikt neueres whitelisted Update, Older/Equal Keep, unverifizierbaren Zeitstempel als Conflict, protected-field/table deny, Insert-only collision, zusätzliche Unique-Kollisionen und Never-delete bei Backup-Auslassung.
+- Der Test ist neu und **noch nicht vom Nutzer im DEV-Browser bestätigt**.
+- Die Funktion ist kein Restore-Executor: sie authentifiziert keine Rolle, validiert keinen Live-Scope, liest keine DB und führt keine Writes aus. Serverseitige Autorisierung und trusted plan derivation bleiben zwingend.
