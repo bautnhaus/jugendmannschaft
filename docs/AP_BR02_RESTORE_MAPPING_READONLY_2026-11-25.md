@@ -357,3 +357,32 @@ Das ist ein **Autorisierungsmuster**, aber kein fertiger Preview-Endpunkt. Es is
 
 ### Grenzen / Freigabestatus
 Diese Runde war nur Dokumentations-/Metadatenreview. Kein Edge-Function-Code angelegt oder geändert, keine Function deployed, kein SQL-/Schema-/Storage-Write, kein Restore-Executor, keine PROD-Aktion. Umsetzung ist als nächster DEV-Code-Schritt vorgesehen; neue DB-Migration ist nicht erforderlich oder vorgesehen.
+
+
+## 15. Newer-wins-Regression – Codeprüfung nach synthetischem Testauftrag (28.11.2026)
+
+### Ausgangspunkt
+Die vom Nutzer bestätigten zwei Regressionen sind:
+1. **Backup neuer als Ziel:** eine erlaubte fachliche Änderung mit gültigem, strikt neuerem `updated_at` muss als genau ein Update vorgeschlagen werden.
+2. **Backup älter als Ziel:** der Zielwert bleibt erhalten; kein Update wird vorgeschlagen.
+
+### Quellprüfung
+`src/backup/restore-planner.js` auf `develop` wurde erneut direkt gelesen. Die Funktion `timestamp()` akzeptiert ausschließlich `updated_at` und `modified_at`; `created_at` ist ausdrücklich ausgeschlossen. `buildMergePreview()` führt das Update nur aus der Vorschau, wenn:
+- die Tabelle nicht insert-only ist,
+- mindestens ein Feld aus `UPDATE_FIELDS` fachlich abweicht,
+- beide Änderungszeitpunkte gültig sind,
+- der Backup-Zeitpunkt strikt größer ist,
+- kein Unique-Constraint-Konflikt auf eine andere Zielzeile entsteht.
+
+Bei älterem, gleichem oder unbekanntem Zeitstempel bleibt der Zielbestand erhalten. Die Preview zählt die Zeile als Keep; bei nicht beweisbarer Aktualisierbarkeit wird zusätzlich ein Konfliktgrund protokolliert. Das entspricht dem beabsichtigten fail-closed-Verhalten.
+
+### Teststatus und Grenze
+Die Logik ist anhand des aktuellen Quellcodes nachvollzogen. **Die zwei synthetischen Fälle wurden in dieser Chat-Runde nicht als ausführbare Repository-Testfälle angelegt oder in einer Testlaufzeit ausgeführt.** Im geprüften Repository liegt kein bekanntes Testskript/Package-Setup vor; die zuvor vermutete Testdatei `tests/backup/restore-planner.test.js` existiert an diesem Pfad nicht (GitHub 404). Deshalb wird kein automatischer PASS behauptet und kein Planner-Code geändert.
+
+### Nächster sicherer Schritt
+Vor der nächsten Codeänderung zuerst die vorhandene Browser-Fixture-Struktur in `index.html` bzw. den dokumentierten DEV-Testablauf lokalisieren und die beiden synthetischen Zeilen dort ergänzen. Ausführung ausschließlich lokal/DEV, mit synthetischen Objekten und ohne Supabase-Aufruf. Erwartete Assertion:
+- neuer Backup-Zeitstempel: `update === 1`, `keep === 0` für die Testzeile;
+- älterer Backup-Zeitstempel: `update === 0`, `keep === 1`;
+- in beiden Fällen `deletes === 0`.
+
+Kein Restore, keine DB-/Storage-Schreiboperation, keine Migration und keine PROD-Änderung.
