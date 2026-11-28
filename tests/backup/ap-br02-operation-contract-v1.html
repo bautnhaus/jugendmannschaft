@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AP-BR02 – Operation Contract V1</title>
+<style>body{font:16px system-ui;background:#111827;color:#e5e7eb;padding:20px}h1{font-size:1.3rem}.panel{background:#1f2937;border:1px solid #374151;border-radius:14px;padding:16px}.pass{color:#4ade80}.fail{color:#f87171}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style>
+</head><body><h1>AP-BR02 – Operation Contract V1</h1>
+<p>Pure synthetische Vertrags-Tests. Keine Supabase-Verbindung, keine Netzwerkzugriffe, keine Writes.</p>
+<div class="panel"><pre id="result">Tests laufen …</pre></div>
+<script type="module">
+import {decideRestoreOperation,omissionOperation,OPERATION} from "../../src/backup/restore-operation-contract.js";
+const out=document.getElementById("result"), checks=[];
+const team="11111111-1111-4111-8111-111111111111";
+const player="22222222-2222-4222-8222-222222222222";
+const position="33333333-3333-4333-8333-333333333333";
+const allowed=["players","positions","matchday_players","matchday_recommendation_players","matchdays"];
+function assert(name,got,expected){checks.push({name,pass:got.operation===expected,details:JSON.stringify(got)});}
+const target={id:player,team_id:team,name:"A",notes:"old",updated_at:"2026-11-27T10:00:00Z"};
+assert("Missing allowed row → insert",decideRestoreOperation({table:"players",backupRow:{...target,updated_at:"2026-11-27T11:00:00Z"},targetRows:[],allowedTables:allowed}),OPERATION.INSERT);
+assert("Newer mutable backup → update_newer",decideRestoreOperation({table:"players",backupRow:{...target,notes:"new",updated_at:"2026-11-27T11:00:00Z"},targetRows:[target],allowedTables:allowed}),OPERATION.UPDATE_NEWER);
+assert("Older backup → keep",decideRestoreOperation({table:"players",backupRow:{...target,notes:"older",updated_at:"2026-11-27T09:00:00Z"},targetRows:[target],allowedTables:allowed}),OPERATION.KEEP);
+assert("Equal timestamp → keep",decideRestoreOperation({table:"players",backupRow:{...target,notes:"equal",updated_at:target.updated_at},targetRows:[target],allowedTables:allowed}),OPERATION.KEEP);
+assert("Missing timestamp → conflict",decideRestoreOperation({table:"players",backupRow:{...target,notes:"uncertain",updated_at:null},targetRows:[target],allowedTables:allowed}),OPERATION.CONFLICT);
+assert("Protected team_id change → blocked",decideRestoreOperation({table:"players",backupRow:{...target,team_id:"99999999-9999-4999-8999-999999999999",updated_at:"2026-11-28T00:00:00Z"},targetRows:[target],allowedTables:allowed}),OPERATION.BLOCKED);
+assert("Unknown table → blocked",decideRestoreOperation({table:"profiles",backupRow:{id:player},targetRows:[],allowedTables:allowed}),OPERATION.BLOCKED);
+assert("Insert-only identity collision → conflict",decideRestoreOperation({table:"matchday_players",backupRow:{matchday_id:player,player_id:player,team_number:2},targetRows:[{matchday_id:player,player_id:player,team_number:1}],allowedTables:allowed}),OPERATION.CONFLICT);
+assert("Unique position name collision → conflict",decideRestoreOperation({table:"positions",backupRow:{id:position,team_id:team,name:"Keeper"},targetRows:[{id:"44444444-4444-4444-8444-444444444444",team_id:team,name:"Keeper"}],allowedTables:allowed}),OPERATION.CONFLICT);
+assert("Recommendation rank collision → conflict",decideRestoreOperation({table:"matchday_recommendation_players",backupRow:{recommendation_id:player,player_id:position,rank:1},targetRows:[{recommendation_id:player,player_id:"44444444-4444-4444-8444-444444444444",rank:1}],allowedTables:allowed}),OPERATION.CONFLICT);
+checks.push({name:"Backup omission → never-delete keep",pass:omissionOperation().operation===OPERATION.KEEP&&omissionOperation().reason==="NEVER_DELETE_BACKUP_OMISSION",details:JSON.stringify(omissionOperation())});
+const passed=checks.filter(x=>x.pass).length;
+out.textContent=checks.map(x=>(x.pass?"PASS":"FAIL")+" — "+x.name+"\n"+x.details).join("\n\n")+"\n\nResult: "+passed+"/"+checks.length+" passed";
+out.className=passed===checks.length?"pass":"fail";
+document.title=passed===checks.length?"PASS – AP-BR02 Operation Contract":"FAIL – AP-BR02 Operation Contract";
+if(passed!==checks.length)throw new Error("Operation contract tests failed");
+</script></body></html>
