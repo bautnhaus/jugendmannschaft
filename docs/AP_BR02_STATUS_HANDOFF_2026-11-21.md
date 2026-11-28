@@ -1309,3 +1309,14 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - Keine SQL-/RPC-Implementierung oder Deployment in diesem Schritt; diese bleibt separater Freigabepunkt. Kein DB-/Storage-Write, kein Restore, keine PROD-Änderung.
 
 - Ergänzende Operation-Contract-Spezifikation in `docs/AP_BR02_RESTORE_EXECUTOR_V1_DESIGN_2026-11-28.md` (Rollen-/Scope-Gate, Insert/Update/Keep/Conflict/Blocked, sichere Konfliktanzeige, serverseitige Idempotenzgrenze): Commit `9ffa86f93dbf3a71b62e8acde26c60ecc0c13a43`. Keine Write-Freigabe.
+
+
+
+### 28.11.2026 – Pure Operation Contract V1 vorbereitet
+
+- Relevante Spezifikation und bestehende Planner-/Preview-Module erneut gelesen; bestandene Write-plan-Regression 5/5 nicht wiederholt.
+- Neue reine Entscheidungsfunktion `src/backup/restore-operation-contract.js`, Commit `2883ad8fd75d7c68069a15da902468b246078825`. Statusoperationen: insert, update_newer, keep, conflict, blocked; schützt Insert-only, Unique-Kollisionen, geschützte Felder, nicht beweisbare Zeitstempel und Never-delete.
+- Neue synthetische Browser-Fixtures `tests/backup/ap-br02-operation-contract-v1.html`, Commit `38074e2d6badc5cf8d336b1f45b526e73d2be67c`; Testdokumentation Commit `79045e8c833e9fe106de5a25b512d49e3dd5d478`; Executor-Design ergänzt Commit `a64756e3b383afbf5433c6b885c374a5d7399412`.
+- **Testseite noch nicht vom Nutzer ausgeführt.** Bereitgestellt auf develop; DEV-Deploy/Verfügbarkeit ist noch zu verifizieren.
+- Sicherheitsgrenze: helper ist kein kompletter paketweiter Write-Plan und keine Autorisierung. Rollen, Live-Scope, Paketfingerprint/Idempotency-Key und atomare Transaktion müssen serverseitig getrennt umgesetzt/reviewed werden. Keine SQL/RPC-, DB-/Storage-Write-, Restore- oder PROD-Aktion ausgeführt.
+- Nächster konkreter Schritt: Deploy-Run prüfen und den Nutzer ausschließlich den neuen isolierten Test auf DEV ausführen lassen; bei PASS die nächste gezielte Security-/Idempotenz-Fixture-Stufe bearbeiten.
