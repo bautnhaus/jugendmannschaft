@@ -143,3 +143,18 @@ Der Browser darf diese Operationsliste anzeigen, aber niemals verbindliche SQL-O
 1. Operation-Contract als reine Funktion modellieren, ohne Datenbankzugriff; Tests für jeden Status plus Allowlist-/Field-projection.
 2. Adversarial Tests für Rolle/Scope, fehlenden Actor, triggergeschützte Felder, unique collision, package fingerprint reuse und gleiche/abweichende Idempotency-Key.
 3. Danach den minimalen transaktionalen RPC-Vertrag inkl. Security-Review entwerfen. SQL, Migration und RPC bleiben separater Approval-Gate.
+
+
+## Operation Contract V1 – erste pure Funktion und Fixture (28.11.2026)
+
+- Neue pure Funktion: `src/backup/restore-operation-contract.js`, Commit `2883ad8`. Sie bildet für eine einzelne synthetische Zeile die Entscheidung `insert / update_newer / keep / conflict / blocked` ab.
+- Harte Gates im Helper: feste Tabellen-Allowlist des Aufrufers, definierte Identität, Insert-only, additional unique keys, protected fields, strictly-newer valid timestamp und keine Delete-Operation bei Backup-Auslassung.
+- Browser-Testseite: `tests/backup/ap-br02-operation-contract-v1.html`, Commit `38074e2`; README-Testumfang dokumentiert, Commit `79045e8`.
+- **Noch nicht auf DEV ausgeführt/abgenommen.** Die Funktion ist ein pure decision helper, kein Auth-/Scope-Gate, kein vollständiger paketweiter Plan, kein RPC und kein Executor. Der erlaubte Tabellenumfang muss später ausschließlich serverseitig stammen; clientseitige Werte sind nicht vertrauenswürdig.
+- Kein SQL, keine Migration, kein Edge-Deployment, kein DB-/Storage-Write, kein Restore, keine PROD-Änderung.
+
+### Nächster Schritt
+
+1. Nutzer führt den neuen isolierten DEV-Browser-Test aus und bestätigt PASS/FAIL.
+2. Bei PASS folgt eine gezielte adversarial fixture-Erweiterung für Rollen-/Kontextmatrix und Plan-Fingerprint-/Idempotency-Key-Entscheidungen; die Funktion selbst darf keine Rolle oder Idempotenz behaupten, solange serverseitiger Actor-/Vorgangsvertrag noch nicht implementiert ist.
+3. Danach Security-/Transaktionsentwurf für einen minimalen RPC reviewen; SQL/RPC bleibt separate Freigabe.
