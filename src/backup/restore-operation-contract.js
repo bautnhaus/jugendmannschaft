@@ -102,6 +102,12 @@ export function decideRestoreOperation({table,backupRow,targetRows=[],allowedTab
       ? {operation:OPERATION.KEEP,reason:"IDENTICAL_APPEND_ONLY_ROW"}
       : {operation:OPERATION.CONFLICT,reason:"INSERT_ONLY_IDENTITY_COLLISION"};
   }
+  const protectedChanged=[...PROTECTED_FIELDS].filter(field=>
+    Object.prototype.hasOwnProperty.call(backupRow,field) &&
+    JSON.stringify(target[field])!==JSON.stringify(backupRow[field])
+  );
+  if(protectedChanged.length)
+    return {operation:OPERATION.BLOCKED,reason:"PROTECTED_FIELD",fields:protectedChanged};
   const fields=MUTABLE_FIELDS[table]||[];
   const changed=fields.filter(field=>JSON.stringify(target[field])!==JSON.stringify(backupRow[field]));
   if(!changed.length) return {operation:OPERATION.KEEP,reason:"NO_MUTABLE_DIFFERENCE"};
