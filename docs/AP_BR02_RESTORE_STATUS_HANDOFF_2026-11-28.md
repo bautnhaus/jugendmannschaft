@@ -34,7 +34,7 @@ Die Funktion darf ausschließlich trusted serverseitig ermittelte Identität/Rol
 - fehlender oder mehrdeutiger Kontext, nicht zugehörige Team-ID, fremder Club, leere Scope-Auswahl und nicht erlaubte Kategorie: fail-closed.
 - Vor jeder Ziel-Datenabfrage muss die serverseitige Prüfung erfolgreich sein.
 
-Implementiert auf develop: `src/backup/restore-scope-contract.js` und `tests/backup/ap-br02-restore-scope-contract-rs03.html` (synthetische Rollen-/Kontextfälle). Der DEV-Browserlauf ist noch ausstehend. Die reine Contract-Stufe bleibt ohne Supabase-Verbindung, SQL, Storage-Zugriff oder Writes. Erst nach bestätigten Tests wird die sichere Server-Read-Integration geplant. Write-Executor, Transaktions-/Rollback-Konzept und echte Restore-Praxistests bleiben getrennte spätere Stufen.
+Implementiert auf develop: `src/backup/restore-scope-contract.js` und `tests/backup/ap-br02-restore-scope-contract-rs03.html` (synthetische Rollen-/Kontextfälle). Der DEV-Browserlauf wurde am 28.11.2026 vom Nutzer mit **11/11 PASS** bestätigt. Die reine Contract-Stufe bleibt ohne Supabase-Verbindung, SQL, Storage-Zugriff oder Writes. Erst nach bestätigten Tests wird die sichere Server-Read-Integration geplant. Write-Executor, Transaktions-/Rollback-Konzept und echte Restore-Praxistests bleiben getrennte spätere Stufen.
 
 ## Arbeitsregeln
 
@@ -54,3 +54,13 @@ Implementiert auf develop: `src/backup/restore-scope-contract.js` und `tests/bac
 - Commit `42f127b`: Testfall ergänzt, dass ein Vereinsadmin mehrere ausdrücklich ausgewählte Teams innerhalb des eigenen Vereins sichern/restaurieren darf.
 - Browser-Testseite: `tests/backup/ap-br02-restore-scope-contract-rs03.html`.
 - Erwartung nach DEV-Deploy: alle 11 synthetischen Fälle PASS. Noch keine Serverintegration oder Writes.
+
+
+## RS03 – DEV-Browsernachweis und nächste Sicherheitsprüfung (28.11.2026)
+
+- Nutzerbestätigung per Screenshot: `tests/backup/ap-br02-restore-scope-contract-rs03.html` zeigt **11/11 passed**.
+- Das bestätigt die reine synthetische Scope-Funktion; es bestätigt ausdrücklich noch keine echte Edge-Function-/Supabase-Rollenintegration.
+- Code-Audit der bestehenden `supabase/functions/ap-br02-restore-preview/index.ts` und `restore-preview-auth.ts` ergab: Der aktuelle Preview-Endpunkt autorisiert ausschließlich über `is_team_admin(p_team_id)`. Die RS03-Funktion wird dort noch nicht eingebunden. Die bestehenden SQL-Policies/RPCs kennen außerdem den ausgewählten Vereinskontext über `can_manage_club_context(p_club_id)` und Superadmin-Teamkontext über `is_team_admin(p_team_id)`.
+- Daher ist **RS04 – serverseitige Rollen-/Scope-Integration in die bestehende read-only Preview** der nächste sinnvolle Schritt. Vor einer Änderung müssen die Auth-Prüfung, der Kontextwechsel (Team/Verein), Club-Zuordnung und Reihenfolge aller Service-Role-Reads im bestehenden Endpoint als zusammenhängender Ablauf abgestimmt werden.
+- Ziel-Rollenmatrix RS04: Mannschaftsadmin im autorisierten Team; Vereinsadmin im ausdrücklich ausgewählten Verein und innerhalb dessen Teamzugehörigkeit; Superadmin nur im explizit ausgewählten Team-/Vereinskontext. Jede Ablehnung muss vor dem ersten privilegierten Ziel-SELECT erfolgen.
+- RS04 bleibt read-only: kein Restore-Write, keine Storage-Aktion, keine SQL-/Schemaänderung, kein PROD-Deploy. Zuerst synthetische Unit-Tests für Auth-Reihenfolge und alle drei Rollen, danach isolierter DEV-Preview-Praxistest.
