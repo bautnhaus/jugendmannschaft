@@ -31,6 +31,10 @@
 - Ein erfolgreicher Edge-Function-Deploy ist nicht gleichbedeutend mit einem erfolgreichen Website-Deploy oder einem bestandenen End-to-End-Test.
 
 ## Aktuelle Arbeitsübergabe
+
+- **Aktueller DEV-Stand (28.11.2026):** [Spieltagsteams anhand tatsächlicher Anwesenheit](docs/DEV_HANDOFF_MATCHDAY_TEAM_ATTENDANCE_2026-11-28.md) – Code in develop committed; DEV-Praxistest noch offen.
+
+## Aktuelle Arbeitsübergabe
 - Die Einladungsthematik AP05 ist abgeschlossen; die Dokumente vom 02.11.2026 sind historische Übergaben und kein offener Arbeitsauftrag.
 - [Aktuelle Übergabe für den nächsten Backlog-Chat](docs/UEBERGABE_NEUER_CHAT_2026-11-06.md)
 - [Kopierprompt für den nächsten Backlog-Chat](docs/PROMPT_NEUER_CHAT_BACKLOG_2026-11-06.txt)
