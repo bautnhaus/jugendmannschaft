@@ -95,3 +95,51 @@ Der schema-basierte Gate bestätigt, dass die V1-Whitelist nicht nur nach Tabell
 ### Änderungsgrenze
 
 Diese Ergänzung dokumentiert ausschließlich die read-only DEV-Prüfung. Kein App-Code, kein SQL/DDL, keine Migration, kein DB-/Storage-Write, kein Restore und keine PROD-Änderung.
+
+
+## Operation Contract V1 – Rolle, Scope, Konflikt und Wiederholung
+
+Diese Sektion konkretisiert den vorhandenen Zielbild-/Preview-Vertrag; sie erteilt keine Write-Freigabe.
+
+### Rollen- und Scope-Gate
+
+| Rolle | zulässiger Restore-Kontext V1 | Grenze |
+|---|---|---|
+| Superadmin | nur der ausdrücklich ausgewählte Verein oder die ausdrücklich ausgewählte Mannschaft | neutraler Account; kein impliziter globaler Restore |
+| Vereinsadmin | eigener Verein, Umfang explizit ausgewählt | keine fremden Vereine; serverseitige Vereinsmitgliedschaft/Permission prüfen |
+| Mannschaftsadmin | eigene Mannschaft, Umfang explizit ausgewählt | kein teamübergreifender Restore |
+| Trainer / sonstige Rolle | kein Restore-Recht aus dem bisherigen Modell B ableitbar | bis zu einer ausdrücklich dokumentierten Berechtigungsentscheidung deny-by-default |
+
+Das ist eine Scope-/Autorisierungsregel, keine Rollenbehauptung aus dem Client. Der Server prüft die aktuelle Rolle und Zugehörigkeit sowohl bei Preview als auch unmittelbar beim Apply. Ein zuvor bestätigter Preview-Plan ersetzt die erneute Prüfung nicht.
+
+### Operationen, die der Executor später ausschließlich serverseitig ableitet
+
+- `insert`: fehlender Datensatz auf einer expliziten Insert-Allowlist; alle FK-, Unique-, Actor- und Trigger-Gates sind erfüllt.
+- `update_newer`: nur auf feldbezogener Update-Allowlist, wenn Backup-`updated_at` valide und strikt neuer als Ziel-`updated_at` ist; Identitäts-/Scope-/Actor-/Statusfelder ausgeschlossen.
+- `keep`: Zielwert bleibt unverändert (gleich, älter, gleichzeitiger oder nicht beweisbarer Zeitstempel).
+- `conflict`: eindeutiger Schlüssel kollidiert, append-only Identität kollidiert oder fachliche Werte widersprechen sich. Kein automatisches Replace.
+- `blocked`: Paket-/Scope-/FK-/Actor-/Berechtigungs-/Constraint-/Trigger- oder Vollständigkeitsprüfung schlägt fehl. Ein Blocker verhindert den Paket-Apply.
+
+Der Browser darf diese Operationsliste anzeigen, aber niemals verbindliche SQL-Operationen oder freie Tabellen-/Spaltenpayloads liefern. Der Server berechnet sie aus geprüftem Paket und aktuellem Zielbestand neu.
+
+### Konfliktbehandlung und Nutzerentscheidung
+
+- Preview zeigt Zähler und pro Konflikt mindestens Tabelle, stabile Datensatzreferenz, Grund und betroffene Unique-/FK-Regel; keine unnötigen personenbezogenen Daten im Log.
+- Sicherer Default ist `keep target` / Paketdatensatz nicht anwenden. Ein Unique-/Insert-only-Konflikt wird nicht durch Umbenennen, UUID-Austausch oder Ersetzen automatisch „repariert“.
+- V1 darf keine manuelle „Backup erzwingt Überschreiben“-Option anbieten. Das wäre eine neue fachliche Berechtigung und müsste separat entschieden, feldgenau abgesichert und getestet werden.
+- Konflikte, die nur einen unabhängigen Datensatz betreffen und keinen Paket-/Scope-/Integritätsblocker darstellen, können nach expliziter Bestätigung als „überspringen/beibehalten“ behandelt werden. Integritäts- oder Sicherheitsblocker sind nicht über die UI übersteuerbar.
+- Newer-wins ist eine deterministische Regel für freigegebene mutable Felder, keine Konflikt-Override-Funktion.
+
+### Idempotenz und Wiederholung
+
+- Jeder Apply-Versuch erhält einen serverseitig gebundenen Restore-Vorgang (Scope, Paketfingerprint, Actor, Version, Status); der Client kann höchstens eine Korrelations-ID beisteuern.
+- Identische erfolgreiche Paket-/Scope-Wiederholung darf keine zweite Kopie oder erneute fachliche Nebenwirkung erzeugen. Ein bereits abgeschlossener Vorgang wird als „bereits angewendet“ zurückgegeben.
+- Gleiche Korrelations-ID mit anderem Paketfingerprint/Scope wird abgewiesen.
+- Für atomare Einmaligkeit ist ein serverseitiger Idempotency-Key mit Unique-Constraint bzw. gleichwertiger transaktionaler Mechanismus nötig. Das erfordert Schema-/RPC-Entscheidung und ist noch nicht implementiert oder freigegeben.
+- Keine Retry-Strategie darf einen unbekannten Teilcommit voraussetzen: Paket-Apply muss transaktional sein; Fehler führen zu vollständigem Rollback, danach kann derselbe Vorgang sicher erneut geprüft werden.
+
+### Nächste konkrete Implementierungsstufe
+
+1. Operation-Contract als reine Funktion modellieren, ohne Datenbankzugriff; Tests für jeden Status plus Allowlist-/Field-projection.
+2. Adversarial Tests für Rolle/Scope, fehlenden Actor, triggergeschützte Felder, unique collision, package fingerprint reuse und gleiche/abweichende Idempotency-Key.
+3. Danach den minimalen transaktionalen RPC-Vertrag inkl. Security-Review entwerfen. SQL, Migration und RPC bleiben separater Approval-Gate.
