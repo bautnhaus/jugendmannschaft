@@ -64,3 +64,13 @@ Implementiert auf develop: `src/backup/restore-scope-contract.js` und `tests/bac
 - Daher ist **RS04 – serverseitige Rollen-/Scope-Integration in die bestehende read-only Preview** der nächste sinnvolle Schritt. Vor einer Änderung müssen die Auth-Prüfung, der Kontextwechsel (Team/Verein), Club-Zuordnung und Reihenfolge aller Service-Role-Reads im bestehenden Endpoint als zusammenhängender Ablauf abgestimmt werden.
 - Ziel-Rollenmatrix RS04: Mannschaftsadmin im autorisierten Team; Vereinsadmin im ausdrücklich ausgewählten Verein und innerhalb dessen Teamzugehörigkeit; Superadmin nur im explizit ausgewählten Team-/Vereinskontext. Jede Ablehnung muss vor dem ersten privilegierten Ziel-SELECT erfolgen.
 - RS04 bleibt read-only: kein Restore-Write, keine Storage-Aktion, keine SQL-/Schemaänderung, kein PROD-Deploy. Zuerst synthetische Unit-Tests für Auth-Reihenfolge und alle drei Rollen, danach isolierter DEV-Preview-Praxistest.
+
+
+## RS04 – serverseitige Preview-Autorisierung integriert (28.11.2026)
+
+- Commits auf `develop`: `bd083f9` (Auth-Gate), `6d14795` (Einbindung in Preview vor Service-Role-Client/Target-SELECT), `d21b676` (synthetische Club-Gate-Tests).
+- Der bestehende JWT-Client prüft zuerst `is_team_admin(selected_team_id)`. Für ein ein-Teamiges Club-Backup kann danach `can_manage_club_context(package_club_id)` greifen; bei erfolgreicher Clubprüfung wird die Mannschafts-/Vereinszugehörigkeit über eine RLS-geschützte Abfrage des Nutzerclients verifiziert.
+- Erst nach erfolgreichem Gate wird im Handler der Service-Role-Client erstellt und der erste privilegierte Ziel-SELECT ausgeführt. Auth-/Clubfehler sind fail-closed.
+- Tests ergänzen Clubadmin-Erlaubnis, Fremdverein-Mannschaft, fehlende Clubberechtigung und Fehler bei RLS-Zuordnungsprüfung. Bestehende Teamadmin-/Auth-Tests bleiben enthalten.
+- **Noch offen:** GitHub Actions/Typecheck-Ausführung und DEV-Deployment/Browsertest stehen aus. Diese Codeintegration ist kein bestätigter Laufzeitnachweis.
+- Unverändert: keine SQL-/Schemaänderung, keine Storage-Aktion, keine Writes, kein Restore und kein PROD-Deploy.
