@@ -69,3 +69,29 @@ Supabase-REST-Aufrufe über mehrere Tabellen sind kein paketweiter atomarer Comm
 ## Änderungsgrenze dieses Commits
 
 Nur diese Spezifikation auf `develop`. Kein App-Code, kein Edge-Function-Deployment, kein SQL, keine Migration, keine DB-/Storage-Schreiboperation, kein Restore und keine PROD-Änderung.
+
+
+## DEV-Schema-Gate 1 – Constraints und fachliche Trigger (28.11.2026)
+
+**Read-only in Supabase DEV** (Projekt pzazqvvoruqnqhcorbwx) geprüft; keine Migration, kein DDL und keine Datenänderung. Grundlage: PostgreSQL-Katalogabfrage der AP-BR02-Tabellen sowie verbose Table-Metadaten.
+
+### Bestätigte Schreib-Risiken, die der Planer vorab abfangen muss
+
+- matchday_recommendation_runs: UNIQUE auf matchday_id zusätzlich zum PK. Ein zweiter Run für denselben Spieltag ist kein gewöhnliches Add; als Konflikt behalten.
+- matchday_recommendation_players: UNIQUE auf (recommendation_id, rank) zusätzlich zum zusammengesetzten PK. Rang-Kollision darf nicht durch Update/Replace gelöst werden.
+- positions: UNIQUE auf (team_id, name); seasons: UNIQUE auf (team_id, name); Namenskonflikte bei abweichender UUID müssen vor Anwendung als Konflikt ausgewiesen werden.
+- team_season_closure_audit: UNIQUE auf season_id, FK mit ON DELETE RESTRICT und Mutation-Blocker-Trigger für UPDATE/DELETE/TRUNCATE. Für V1 strikt insert-only; bestehende Saisonabschluss-Auditzeile nicht verändern.
+- matchday_players: INSERT/Änderung löst Aktiv-Spieler- und Sperrenprüfung aus; weitere AFTER-Trigger können Early-Reset-/Reminder-Ereignisse reconciliieren. Diese Tabelle bleibt im V1-Executor gesperrt bzw. nur als vorher geprüfte Insert-Operation mit expliziter Trigger-Auswirkungsprüfung.
+- matchdays: Status-UPDATE triggert Early-Reset-Reconciliation; zusätzlich updated_at-Trigger. Statusänderungen bleiben im V1-Executor gesperrt.
+- players: team_id-Änderung und active-Änderung werden durch Schutztrigger verhindert/geschützt; updated_at wird durch Trigger gesetzt. Diese Felder nicht restore-seitig schreiben.
+- training_players und matchday_players: Zuweisungen an inaktive Spieler werden durch Trigger blockiert. Vorab muss der Zielspieler aktiv und dem selben Scope zugeordnet sein.
+- matchday_nomination_reminders und matchday_early_suspension_resets: Status-/Snapshot-/Reason-Checks sowie Actor-FKs; bei fehlender Referenz oder inkonsistentem Status als Konflikt blockieren, nicht automatisch umformen.
+- Child-Relationen mit ON DELETE CASCADE bekräftigen Never-delete: der Executor darf keine Delete-/Replace-Strategie verwenden, da dies sonst fachliche abhängige Daten entfernen könnte.
+
+### Konsequenz für den nächsten Schritt
+
+Der schema-basierte Gate bestätigt, dass die V1-Whitelist nicht nur nach Tabellen, sondern auch nach **Operation und Triggerwirkung** unterscheiden muss. Der nächste Arbeitsschritt ist deshalb ein reiner, synthetischer Write-Plan-Vertrag mit expliziten Operationen (insert, erlaubtes update, keep, conflict, blocked) und Fixtures für die oben genannten Unique-/FK-/Triggerfälle. Noch kein RPC-/SQL-Executor und keine realen Writes.
+
+### Änderungsgrenze
+
+Diese Ergänzung dokumentiert ausschließlich die read-only DEV-Prüfung. Kein App-Code, kein SQL/DDL, keine Migration, kein DB-/Storage-Write, kein Restore und keine PROD-Änderung.
