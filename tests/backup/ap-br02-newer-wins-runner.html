@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>AP-BR02 – Browser-Regressionstest</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0f172a;--panel:#1e293b;--line:#334155;--text:#e2e8f0;--muted:#94a3b8;--blue:#60a5fa;--green:#4ade80;--red:#f87171}
+    *{box-sizing:border-box}body{margin:0;padding:20px 16px 36px;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,sans-serif}
+    main{max-width:760px;margin:auto}h1{font-size:1.35rem;margin:0 0 8px}p{color:var(--muted)}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:16px 0}
+    #summary{font-weight:700;font-size:1.15rem}#summary.pass{color:var(--green)}#summary.fail{color:var(--red)}ol{padding-left:24px}li{padding:8px 0;border-bottom:1px solid var(--line)}li:last-child{border:0}.status{font-weight:700}.pass .status{color:var(--green)}.fail .status{color:var(--red)}pre{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted);font-size:13px}
+    button{font:inherit;padding:11px 16px;border:1px solid var(--line);border-radius:10px;background:#334155;color:var(--text)}a{color:var(--blue)}
+  </style>
+</head>
+<body>
+<main>
+  <h1>AP-BR02 – Newer-wins Regression</h1>
+  <p>Isolierter Browser-Test mit synthetischen Daten. Kein Supabase-Client, keine Netzwerkzugriffe, keine Datenbankänderungen.</p>
+  <section class="panel" aria-live="polite">
+    <div id="summary">Test wird ausgeführt …</div>
+    <ol id="checks"></ol>
+    <pre id="details"></pre>
+  </section>
+  <p>Testquelle: <code>tests/backup/ap-br02-newer-wins.html</code> · Branch develop</p>
+  <button type="button" onclick="location.reload()">Test erneut ausführen</button>
+</main>
+<script type="module">
+import { buildMergePreview } from "../../src/backup/restore-planner.js";
+
+const summary = document.getElementById("summary");
+const list = document.getElementById("checks");
+const details = document.getElementById("details");
+const checks = [];
+function assert(name, condition, detail = "") {
+  checks.push({ name, passed: Boolean(condition), detail });
+}
+const current = { players: [{ id: "fixture-player-01", name: "Zielwert", first_name: "Test", updated_at: "2026-11-27T10:00:00.000Z" }] };
+const newerBackup = { players: [{ id: "fixture-player-01", name: "Backupwert", first_name: "Test", updated_at: "2026-11-27T11:00:00.000Z" }] };
+const olderBackup = { players: [{ id: "fixture-player-01", name: "Backupwert", first_name: "Test", updated_at: "2026-11-27T09:00:00.000Z" }] };
+const newer = buildMergePreview(newerBackup, current, ["players"]);
+assert("Neuerer Backup-Zeitstempel schlägt Aktualisierung vor", newer.updates === 1 && newer.kept === 0, JSON.stringify(newer));
+assert("Newer-wins löscht niemals Datensätze", newer.deletes === 0, String(newer.deletes));
+const older = buildMergePreview(olderBackup, current, ["players"]);
+assert("Älterer Backup-Zeitstempel behält den Zielwert", older.updates === 0 && older.kept === 1, JSON.stringify(older));
+assert("Älteres Backup löscht niemals Datensätze", older.deletes === 0, String(older.deletes));
+const equalBackup = { players: [{ id: "fixture-player-01", name: "Backupwert", first_name: "Test", updated_at: "2026-11-27T10:00:00.000Z" }] };
+const equal = buildMergePreview(equalBackup, current, ["players"]);
+assert("Gleicher Zeitstempel aktualisiert nicht", equal.updates === 0 && equal.kept === 1, JSON.stringify(equal));
+
+const passed = checks.filter(x => x.passed).length;
+for (const check of checks) {
+  const item = document.createElement("li");
+  item.className = check.passed ? "pass" : "fail";
+  const status = document.createElement("span");
+  status.className = "status";
+  status.textContent = check.passed ? "PASS — " : "FAIL — ";
+  item.append(status, document.createTextNode(check.name));
+  if (check.detail) {
+    const extra = document.createElement("pre");
+    extra.textContent = check.detail;
+    item.append(extra);
+  }
+  list.append(item);
+}
+summary.textContent = passed === checks.length ? "PASS · " + passed + "/" + checks.length + " Tests" : "FAIL · " + passed + "/" + checks.length + " Tests bestanden";
+summary.className = passed === checks.length ? "pass" : "fail";
+document.title = (passed === checks.length ? "PASS" : "FAIL") + " – AP-BR02 Regression";
+if (passed !== checks.length) details.textContent = "Mindestens ein Test ist fehlgeschlagen. Bitte Ergebnis und Details sichern.";
+</script>
+</body>
+</html>
