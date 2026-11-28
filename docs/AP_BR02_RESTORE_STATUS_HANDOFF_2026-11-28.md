@@ -74,3 +74,11 @@ Implementiert auf develop: `src/backup/restore-scope-contract.js` und `tests/bac
 - Tests ergänzen Clubadmin-Erlaubnis, Fremdverein-Mannschaft, fehlende Clubberechtigung und Fehler bei RLS-Zuordnungsprüfung. Bestehende Teamadmin-/Auth-Tests bleiben enthalten.
 - **Noch offen:** GitHub Actions/Typecheck-Ausführung und DEV-Deployment/Browsertest stehen aus. Diese Codeintegration ist kein bestätigter Laufzeitnachweis.
 - Unverändert: keine SQL-/Schemaänderung, keine Storage-Aktion, keine Writes, kein Restore und kein PROD-Deploy.
+
+
+### RS04 – Scope-Abschlusskorrektur
+
+- Zusätzlich wird bei **jedem Club-Backup** die Team-/Club-Zugehörigkeit mit dem JWT-/RLS-Client geprüft – auch wenn die Teamadmin-RPC bereits erlaubt. Damit kann ein Teamadmin-Grant keine Fremdverein-Mannschaft in einen Club-Paket-Scope hineinziehen.
+- Synthetischer Regressionstest ergänzt: Teamgrant + abweichende Clubzugehörigkeit → deny vor Service-Role-Client.
+- Aktuelle relevante Folgecommits: `4f08016` (korrekter Auth-Modulpfad), `3ff0ad4` (Club-Paket-Ancestry auch bei Teamgrant), `fd9f236` (Regressionstest). Versehentlich zunächst angelegter Root-Helfer wurde entfernt (`dc2ff77`).
+- Lokales Deno ist in der Arbeitsumgebung nicht installiert; Typecheck/Tests können hier nicht lokal behauptet werden. GitHub Actions muss den bestehenden Workflow `AP-BR02 Preview Handler Check` ausführen. Danach erst DEV-Deploy und realer read-only Rollen-Praxistest.
