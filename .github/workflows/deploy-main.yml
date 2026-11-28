@@ -1,0 +1,72 @@
+name: Main Deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy-main:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Configure PROD Supabase
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("index.html")
+          text = path.read_text()
+
+          dev_url = "https://pzazqvvoruqnqhcorbwx.supabase.co"
+          dev_key = "sb_publishable_hNQoCezONeov2Zfv_Sg7GA_ns2poaJq"
+
+          prod_url = "https://qdugtpzgefpswnnqbusd.supabase.co"
+          prod_key = "sb_publishable_O2lK6QCTWa4YlVdkljMcDw_zrSMfa3W"
+
+          if dev_url not in text:
+              raise SystemExit("DEV Supabase URL nicht gefunden.")
+
+          if dev_key not in text:
+              raise SystemExit("DEV Supabase Publishable Key nicht gefunden.")
+
+          text = text.replace(dev_url, prod_url)
+          text = text.replace(dev_key, prod_key)
+
+          if dev_url in text or dev_key in text:
+              raise SystemExit("DEV-Konfiguration ist noch enthalten.")
+
+          if prod_url not in text or prod_key not in text:
+              raise SystemExit("PROD-Konfiguration konnte nicht verifiziert werden.")
+
+          path.write_text(text)
+          PY
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
