@@ -386,3 +386,17 @@ Vor der nächsten Codeänderung zuerst die vorhandene Browser-Fixture-Struktur i
 - in beiden Fällen `deletes === 0`.
 
 Kein Restore, keine DB-/Storage-Schreiboperation, keine Migration und keine PROD-Änderung.
+
+
+## 16. Isolierte Newer-wins-Browser-Fixture angelegt (28.11.2026)
+
+Neu angelegt auf `develop`: `tests/backup/ap-br02-newer-wins.html` (Commit `b00de3369f8c0a43f3d44cd32a9112385d66b784`). Die Fixture importiert den echten `src/backup/restore-planner.js` und verwendet ausschließlich synthetische Player-Datensätze. Sie enthält fünf Assertions:
+- Backup-Zeitstempel neuer → genau ein Update, kein Keep;
+- kein Delete bei neuerem Backup;
+- Backup-Zeitstempel älter → kein Update, ein Keep;
+- kein Delete bei älterem Backup;
+- gleicher Zeitstempel → kein Update, ein Keep.
+
+**Ausführungsstatus: noch nicht ausgeführt.** GitHub-Quellprüfung bestätigt, dass die Datei erstellt wurde; daraus folgt kein Test-PASS. Für den Test die Seite im DEV-Repository/Preview öffnen (alternativ über einen lokalen statischen Server aus dem Repository-Root, nicht per `file://`) und die sichtbare Ausgabe kontrollieren. Erwartung: `5/5 passed`. Bei Import-/Browserfehlern bitte Ausgabe/Screenshot zurückmelden; keinen Restore starten.
+
+Die Fixture ist eine isolierte Testdatei und verändert weder die App-Oberfläche noch Daten. Kein Supabase-Aufruf, kein DB-/Storage-Write, kein Restore-Executor, keine Migration, keine PROD-Änderung.
