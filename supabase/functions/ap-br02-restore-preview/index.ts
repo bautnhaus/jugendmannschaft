@@ -57,13 +57,19 @@ Deno.serve(async (req: Request) => {
     const authHeader = req.headers.get("Authorization");
     if (!url || !anon || !service) return reply(req, { error: "Preview-Backend nicht konfiguriert." }, 500);
     if (!authHeader?.startsWith("Bearer ")) return reply(req, { error: "Anmeldung erforderlich." }, 401);
-    const authorization = await authorizePreviewTeam({ createClient, url, anonKey: anon, authHeader, teamId: scope.scope_id });
+    const authorization = await authorizePreviewTeam({
+      createClient, url, anonKey: anon, authHeader, teamId: scope.scope_id,
+      packageScopeType: scope.package_scope_type,
+      packageClubId: scope.package_club_id,
+    });
     if (!authorization.ok) {
       const messages: Record<string, string> = {
         AUTH_REQUIRED: "Anmeldung erforderlich.",
         AUTH_INVALID: "Benutzer konnte nicht authentifiziert werden.",
         PERMISSION_CHECK_FAILED: "Mannschaftsberechtigung konnte nicht geprüft werden.",
         TEAM_ACCESS_DENIED: "Kein Zugriff auf diesen Mannschaftskontext.",
+        CLUB_TEAM_CHECK_FAILED: "Vereins-/Mannschaftszugehörigkeit konnte nicht geprüft werden.",
+        TEAM_OUTSIDE_SELECTED_CLUB: "Die ausgewählte Mannschaft gehört nicht zum ausgewählten Verein.",
       };
       return reply(req, { error: messages[String(authorization.code)] || "Autorisierung fehlgeschlagen." }, authorization.status);
     }
