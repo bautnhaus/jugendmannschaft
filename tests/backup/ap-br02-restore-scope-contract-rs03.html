@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AP-BR02 – Restore Scope Contract</title>
+<style>body{font:16px system-ui;background:#111827;color:#e5e7eb;padding:20px}h1{font-size:1.3rem}.panel{background:#1f2937;border:1px solid #374151;border-radius:14px;padding:16px}.pass{color:#4ade80}.fail{color:#f87171}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style></head>
+<body><h1>AP-BR02 – Restore Scope Contract RS03</h1>
+<p>Synthetische Berechtigungstests. Nur trusted Fixture-Rollen und ausgewählter Kontext. Keine Supabase-Verbindung, keine Netzwerkzugriffe, keine Writes.</p>
+<div class="panel"><pre id="result">Tests laufen …</pre></div>
+<script type="module">
+import {authorizeRestoreScope} from "../../src/backup/restore-scope-contract.js";
+const out=document.getElementById("result"),checks=[];
+const categories=["team_core","training"];
+const teamA="team-a",teamB="team-b",clubA="club-a",clubB="club-b";
+const teamAdmin={teamIds:[teamA],clubIds:[],clubTeamIds:{[clubA]:[teamA]}};
+const clubAdmin={teamIds:[teamA],clubIds:[clubA],clubTeamIds:{[clubA]:[teamA,teamB]}};
+const superAdmin={isSuperAdmin:true,teamIds:[],clubIds:[],clubTeamIds:{[clubA]:[teamA,teamB]}};
+const contextTeam={type:"team",id:teamA},contextClub={type:"club",id:clubA};
+function check(name,opts,expected,reason){
+ const got=authorizeRestoreScope(opts);
+ const pass=got.decision===expected&&(!reason||got.reason===reason);
+ checks.push({name,pass,details:JSON.stringify(got)});
+}
+const base={requestedScope:{type:"team",id:teamA,categories},selectedContext:contextTeam,allowedCategories:categories};
+check("Team admin → own selected team allowed",{...base,trustedActor:teamAdmin},"allow");
+check("Team admin → foreign team denied",{...base,trustedActor:teamAdmin,requestedScope:{...base.requestedScope,id:teamB}},"deny","TEAM_NOT_AUTHORIZED");
+check("Team admin → missing explicit context denied",{...base,trustedActor:teamAdmin,selectedContext:{type:"none",id:""}},"deny","TEAM_CONTEXT_NOT_EXPLICIT");
+check("Club admin → own club and selected team allowed",{trustedActor:clubAdmin,requestedScope:{type:"club",id:clubA,teamIds:[teamA],categories},selectedContext:contextClub,allowedCategories:categories},"allow");
+check("Club admin → foreign club denied",{trustedActor:clubAdmin,requestedScope:{type:"club",id:clubB,teamIds:[teamA],categories},selectedContext:{type:"club",id:clubB},allowedCategories:categories},"deny","CLUB_NOT_AUTHORIZED");
+check("Club scope → team outside selected club denied",{trustedActor:clubAdmin,requestedScope:{type:"club",id:clubA,teamIds:[teamB,"foreign"],categories},selectedContext:contextClub,allowedCategories:categories},"deny","TEAM_OUTSIDE_SELECTED_CLUB");
+check("Superadmin → explicitly selected team allowed",{...base,trustedActor:superAdmin},"allow");
+check("Superadmin → no selected context denied",{...base,trustedActor:superAdmin,selectedContext:{type:"none",id:""}},"deny","TEAM_CONTEXT_NOT_EXPLICIT");
+check("Empty categories → denied",{...base,trustedActor:teamAdmin,requestedScope:{...base.requestedScope,categories:[]}},"deny","CATEGORY_SELECTION_INVALID");
+check("Untrusted actor absent → denied",{...base,trustedActor:null},"deny","TRUSTED_CONTEXT_MISSING");
+const passed=checks.filter(x=>x.pass).length;
+out.textContent=checks.map(x=>(x.pass?"PASS":"FAIL")+" — "+x.name+"\n"+x.details).join("\n\n")+"\n\nResult: "+passed+"/"+checks.length+" passed";
+out.className=passed===checks.length?"pass":"fail";
+document.title=passed===checks.length?"PASS – AP-BR02 Restore Scope Contract":"FAIL – AP-BR02 Restore Scope Contract";
+if(passed!==checks.length)throw new Error("Restore scope contract tests failed");
+</script></body></html>
