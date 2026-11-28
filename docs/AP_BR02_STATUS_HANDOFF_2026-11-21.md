@@ -1284,3 +1284,16 @@ DEV-only Codevorbereitung für den neuen read-only Preview-Endpunkt (keine Migra
 - Dies ist der erste bestätigte authentifizierte Zielzustands-Previewlauf über die bereitgestellte DEV-Edge-Function. Es wurde kein Restore angewendet; der `write_count=0`-Vertrag und die UI-Sicherheitsprüfung sind erfüllt. Keine DB-/Storage-Schreiboperation und keine PROD-Aktion.
 - Zusammen mit dem zuvor bestätigten isolierten Newer-wins-Test (5/5) und den Contract-/Handler-CI-Gates ist die **read-only Zielvorschau als DEV-Praxisschritt abgeschlossen**.
 - Nächster Arbeitsschritt: Restore-Executor-Spezifikation und Implementierungsgrenzen für V1 aus dem bereits dokumentierten Same-scope-/Never-delete-/Newer-wins-/Insert-only-Vertrag ableiten. Vor einem Executor sind noch Transaktions-/Atomaritätsstrategie, exakte feldbezogene Insert-/Update-Payloads, Actor-FK-Regel und Asset-Plan verbindlich abzuschließen. Keine Schreibfunktion oder RPC implementieren/deployen, bevor diese Gates und ein separater DEV-Write-Testplan geklärt sind.
+
+
+## Chat-Fortsetzung 28.11.2026 – Restore-Executor Read-only Schema-Gate + Write-plan-Fixtures
+
+- Den verbindlichen Executor-V1-Entwurf zuerst erneut geprüft: keine SQL-/DB-/Storage-Schreiboperation, kein Restore, keine PROD-Änderung ohne separate Freigabe.
+- Read-only Supabase-DEV-Katalogprüfung für AP-BR02-Constraints und Trigger durchgeführt. Relevante UNIQUE-Konflikte (Recommendation Run je Matchday, Recommendation Rank, Positions-/Season-Name, Season-Closure je Season) und fachliche Trigger (Matchday-Status-Reconciliation, Spieleraktiv-/Team-Schutz, active-player-Zuweisung, immutable Season-Closure-Audit) sind in `docs/AP_BR02_RESTORE_EXECUTOR_V1_DESIGN_2026-11-28.md` dokumentiert.
+- Spezifikation mit Schema-Gate ergänzt: Commit `262273a04e7f8f14b592a3fc685e98087f7570ef`.
+- Nächster geplanter Schritt – pure synthetische Write-plan-Fixtures – als Browser-Testseite angelegt: `tests/backup/ap-br02-write-plan-regression.html`. Tests prüfen insert-only-Kollision, Unique-Kollision (Positionsname), Recommendation-Rank-Kollision, Cross-team-/FK-Scope-Ablehnung und Never-delete.
+- Testdatei-Commit: `3824bff827f4a9a6ca006500b096f45f32a0132f`; kleine Assertion-Korrektur: `4b10359d7e1ebd5e612da2e369cac5ac80af97a8`.
+- GitHub Deploy DEV Run `46145521087` für Commit `3824bff…`: **completed / success**. Testseite sollte auf DEV verfügbar sein unter:
+  `https://dev.kadassist.de/tests/backup/ap-br02-write-plan-regression.html`
+- **Noch nicht durch Nutzer im iPhone-Browser ausgeführt/abgenommen.** Bitte nur die Testseite öffnen und das angezeigte Ergebnis (PASS/FAIL) zurückmelden. Keine echten Teamdaten werden berührt.
+- Danach: bei PASS Testresultat dokumentieren; als nächstes die synthetische Executor-Operationenmatrix/Idempotenz-Fixtures fertigstellen und den RPC-/Transaktionsentwurf security-reviewen. SQL-/RPC-Implementierung erst nach separater Freigabe.
